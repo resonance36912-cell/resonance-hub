@@ -18,20 +18,38 @@ export const listEmailSends = createServerFn({ method: "GET" })
 
     const { data, error } = await supabaseAdmin
       .from("subscription_email_sends")
-      .select("id, pf_payment_id, user_id, recipient_email, sku, app, tier, amount_cents, status, skipped_reason, created_at")
+      .select(
+        "id, pf_payment_id, user_id, recipient_email, sku, app, tier, amount_cents, status, skipped_reason, created_at, attempt_count, last_attempt_at, next_attempt_at, last_error",
+      )
       .order("created_at", { ascending: false })
       .limit(200);
 
     if (error) throw new Error(error.message);
 
     const sends = data ?? [];
+    const sendIds = sends.map((s) => s.id);
+
+    const { data: attempts } = sendIds.length
+      ? await supabaseAdmin
+          .from("subscription_email_attempts")
+          .select("id, send_id, attempt_number, status, error_message, message_id, created_at")
+          .in("send_id", sendIds)
+          .order("attempt_number", { ascending: true })
+      : { data: [] as any[] };
+
+    const attemptsBySend: Record<string, any[]> = {};
+    for (const a of attempts ?? []) {
+      (attemptsBySend[a.send_id] ||= []).push(a);
+    }
+
     const stats = {
       total: sends.length,
       queued: sends.filter((s) => s.status === "queued").length,
       sent: sends.filter((s) => s.status === "sent").length,
       failed: sends.filter((s) => s.status === "failed").length,
       suppressed: sends.filter((s) => s.status === "suppressed").length,
+      dlq: sends.filter((s) => s.status === "dlq").length,
     };
 
-    return { sends, stats };
+    return { sends, attemptsBySend, stats };
   });

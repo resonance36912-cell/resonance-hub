@@ -173,12 +173,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_email_attempts: {
+        Row: {
+          attempt_number: number
+          created_at: string
+          error_message: string | null
+          id: string
+          message_id: string | null
+          send_id: string
+          status: string
+        }
+        Insert: {
+          attempt_number: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          send_id: string
+          status: string
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message_id?: string | null
+          send_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_email_attempts_send_id_fkey"
+            columns: ["send_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_email_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_email_sends: {
         Row: {
           amount_cents: number
           app: string
+          attempt_count: number
           created_at: string
           id: string
+          last_attempt_at: string | null
+          last_error: string | null
+          next_attempt_at: string
           pf_payment_id: string
           recipient_email: string
           skipped_reason: string | null
@@ -190,8 +232,12 @@ export type Database = {
         Insert: {
           amount_cents: number
           app: string
+          attempt_count?: number
           created_at?: string
           id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          next_attempt_at?: string
           pf_payment_id: string
           recipient_email: string
           skipped_reason?: string | null
@@ -203,8 +249,12 @@ export type Database = {
         Update: {
           amount_cents?: number
           app?: string
+          attempt_count?: number
           created_at?: string
           id?: string
+          last_attempt_at?: string | null
+          last_error?: string | null
+          next_attempt_at?: string
           pf_payment_id?: string
           recipient_email?: string
           skipped_reason?: string | null
