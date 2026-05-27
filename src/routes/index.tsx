@@ -96,6 +96,7 @@ const apps: App[] = [
     priceLabel: "from R149 / month",
     priceNote: "Creator R149 · Pro R299 · Business R699",
     logo: logoCreativeStudio,
+    accent: "violet",
     status: "live",
   },
   {
@@ -121,6 +122,7 @@ const apps: App[] = [
     priceLabel: "Free",
     priceNote: "Listen, watch and shop — no subscription required",
     logo: logoPodcast,
+    accent: "cyan",
     status: "free",
   },
   {
@@ -146,6 +148,7 @@ const apps: App[] = [
     priceLabel: "Pricing TBA",
     priceNote: "Joining the ecosystem Q3 2026",
     logo: logoYouTubeOptimizer,
+    accent: "gold",
     status: "soon",
   },
 ];
