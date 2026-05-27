@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import resonanceLogo from "@/assets/resonance-logo.png";
-import resonanceLockupDark from "@/assets/resonance-lockup-dark.png";
+import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -163,11 +163,11 @@ function Index() {
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
         <a href="#" className="flex items-center gap-2.5 group" aria-label="The Resonance — Home">
           <img
-            src={resonanceLockupDark}
+            src={resonanceLockup}
             alt="The Resonance"
             width={1536}
             height={512}
-            className="h-7 w-auto"
+            className="h-7 w-auto brightness-0 invert"
           />
         </a>
         <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
@@ -431,11 +431,11 @@ function Index() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
             <img
-              src={resonanceLockupDark}
+              src={resonanceLockup}
               alt="The Resonance"
               width={1536}
               height={512}
-              className="h-6 w-auto opacity-60"
+              className="h-6 w-auto opacity-60 brightness-0 invert"
             />
             <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
               © {new Date().getFullYear()} The Resonance · Ecosystem Hub
