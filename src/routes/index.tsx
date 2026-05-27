@@ -2,6 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
+import logoEpublisher from "@/assets/logo-epublisher.png";
+import logoCreativeStudio from "@/assets/logo-creative-studio.png";
+import logoSyncVision from "@/assets/logo-sync-vision.png";
+import logoPodcast from "@/assets/logo-podcast.png";
+import logoCareerCompass from "@/assets/logo-career-compass.png";
+import logoYouTubeOptimizer from "@/assets/logo-youtube-optimizer.png";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
