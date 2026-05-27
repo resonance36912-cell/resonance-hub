@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
@@ -307,6 +308,121 @@ function BrandOrb({ className = "" }: { className?: string }) {
   );
 }
 
+const accentHsl: Record<App["accent"], string> = {
+  magenta: "295 90% 60%",
+  violet: "265 85% 65%",
+  pink: "325 90% 65%",
+  cyan: "190 90% 60%",
+  emerald: "150 80% 55%",
+  gold: "45 85% 60%",
+};
+
+function HeroCarousel({ items }: { items: App[] }) {
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(() => setI((p) => (p + 1) % items.length), 4200);
+    return () => clearInterval(t);
+  }, [paused, items.length]);
+
+  const active = items[i];
+  const c = accentHsl[active.accent];
+
+  return (
+    <div
+      className="relative aspect-square max-w-md mx-auto w-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      aria-roledescription="carousel"
+      aria-label="Resonance app showcase"
+    >
+      {/* Glow stage */}
+      <div className="absolute inset-0 -z-10">
+        <div
+          key={`glow-${i}`}
+          className="absolute inset-[8%] rounded-full blur-3xl opacity-60 animate-slide-fade"
+          style={{
+            background: `radial-gradient(circle at 50% 50%, hsl(${c} / 0.7), transparent 70%)`,
+          }}
+        />
+        <div
+          className="absolute inset-[2%] rounded-full border border-white/5 animate-orbit"
+          style={{ boxShadow: `inset 0 0 60px hsl(${c} / 0.15)` }}
+        />
+        <div
+          className="absolute inset-[18%] rounded-full border border-white/[0.04] animate-orbit"
+          style={{ animationDirection: "reverse", animationDuration: "60s" }}
+        />
+      </div>
+
+      {/* Logo stage */}
+      <div className="relative aspect-square">
+        <img
+          key={`logo-${i}`}
+          src={active.logo}
+          alt={`${active.name} logo`}
+          width={1024}
+          height={1024}
+          className="absolute inset-[14%] w-[72%] h-[72%] object-contain animate-slide-fade"
+          style={{ filter: `drop-shadow(0 0 30px hsl(${c} / 0.7))` }}
+        />
+      </div>
+
+      {/* Caption card */}
+      <div
+        key={`cap-${i}`}
+        className="absolute -bottom-2 left-2 right-2 sm:left-0 sm:right-0 rounded-2xl border border-white/10 bg-background/70 backdrop-blur-xl p-4 animate-slide-fade"
+        style={{ boxShadow: `0 20px 60px -20px hsl(${c} / 0.45)` }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1"
+              style={{ color: `hsl(${c})` }}
+            >
+              {active.attribute.icon} {active.attribute.label}
+            </div>
+            <div className="font-display text-base font-bold truncate">{active.name}</div>
+          </div>
+          <a
+            href={active.href}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+          >
+            Open →
+          </a>
+        </div>
+      </div>
+
+      {/* Dots */}
+      <div className="absolute -bottom-12 left-0 right-0 flex justify-center gap-2">
+        {items.map((it, idx) => (
+          <button
+            key={it.name}
+            type="button"
+            aria-label={`Show ${it.name}`}
+            aria-current={idx === i}
+            onClick={() => setI(idx)}
+            className="h-1.5 rounded-full transition-all"
+            style={{
+              width: idx === i ? 22 : 6,
+              background:
+                idx === i
+                  ? `hsl(${accentHsl[it.accent]})`
+                  : "hsl(0 0% 100% / 0.18)",
+              boxShadow:
+                idx === i ? `0 0 12px hsl(${accentHsl[it.accent]} / 0.7)` : "none",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Index() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
@@ -347,11 +463,11 @@ function Index() {
               <span className="text-[hsl(295_90%_75%)]">Multiple tools.</span>
               <span className="text-[hsl(190_90%_70%)]">Endless possibilities.</span>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.98] text-balance mb-8">
+            <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
               One Resonance account.{" "}
               <span className="text-gradient-brand">Multiple AI tools</span> for publishing, content, music videos, careers, and growth.
             </h1>
-            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[58ch] mb-10">
+            <p className="text-base md:text-lg text-white/70 leading-[1.65] text-pretty max-w-[58ch] mb-10">
               Create books, visuals, music-video concepts, career reports, podcast content, and YouTube growth plans — all under one South African–built creative ecosystem.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -369,8 +485,8 @@ function Index() {
               </a>
             </div>
           </div>
-          <div className="relative aspect-square max-w-md mx-auto w-full">
-            <BrandOrb className="w-full" />
+          <div className="md:pl-4">
+            <HeroCarousel items={apps} />
           </div>
         </section>
 
@@ -398,7 +514,7 @@ function Index() {
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               00 / Who it's for
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Find your pathway
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
@@ -459,7 +575,7 @@ function Index() {
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
                 01 / The Apps
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">The Ecosystem</h2>
+              <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">The Ecosystem</h2>
             </div>
             <p className="text-white/60 max-w-md text-sm leading-relaxed">
               Each app is independently deployed and self-serviced — but all share the same brand,
@@ -558,7 +674,7 @@ function Index() {
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               02 / Costings
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Transparent ZAR pricing
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
@@ -720,7 +836,7 @@ function Index() {
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               04 / Questions
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Frequently asked
             </h2>
           </div>
@@ -777,7 +893,7 @@ function Index() {
         >
           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_0%,hsl(295_90%_60%/0.4),transparent_60%)]" />
           <div className="relative">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Join the <span className="text-gradient-brand">frequency.</span>
             </h2>
             <p className="text-white/60 mb-10 max-w-md mx-auto">
