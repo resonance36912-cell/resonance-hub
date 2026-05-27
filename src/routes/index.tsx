@@ -288,34 +288,31 @@ function Index() {
 
       <main className="pt-28 pb-24 px-6 max-w-7xl mx-auto">
         {/* HERO */}
-        <section className="pt-12 pb-24 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
+        <section className="pt-12 pb-16 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-8">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              The Resonance Hub
+              Tools in tune with you
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] text-balance mb-8">
-              Tools{" "}
-              <span className="font-serif italic font-normal text-white/80">in tune</span>{" "}
-              <span className="text-gradient-brand">with you.</span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.98] text-balance mb-8">
+              One Resonance account.{" "}
+              <span className="text-gradient-brand">Multiple AI tools</span> for publishing, content, music videos, careers, and growth.
             </h1>
-            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[55ch] mb-10">
-              The Resonance is a family of apps — ePublisher, Creative Studio, Sync Vision, the
-              Podcast and the upcoming YouTube Optimizer — built on shared brand DNA, shared
-              payments, and the same conscious craft.
+            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[58ch] mb-10">
+              Create books, visuals, music-video concepts, career reports, podcast content, and YouTube growth plans — all under one South African–built creative ecosystem.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
-                href="#ecosystem"
+                href="https://www.resonanceonline.life"
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
               >
-                Explore the apps →
+                Start Free →
               </a>
               <a
                 href="#pricing"
                 className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
               >
-                See pricing
+                Compare Apps
               </a>
             </div>
           </div>
@@ -323,6 +320,84 @@ function Index() {
             <BrandOrb className="w-full" />
           </div>
         </section>
+
+        {/* TRUST STRIP */}
+        <section aria-label="Trust" className="mb-20 -mt-4">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/55">
+            {[
+              "🇿🇦 Built in South Africa",
+              "ZAR pricing",
+              "PayFast secure checkout",
+              "Cancel anytime",
+              "POPIA-conscious",
+              "Free tiers & pilots",
+            ].map((t) => (
+              <li key={t} className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02]">
+                {t}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* WHO IT'S FOR */}
+        <section id="who" className="mb-32 animate-reveal">
+          <div className="text-center mb-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              00 / Who it's for
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Find your pathway
+            </h2>
+            <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
+              Four kinds of creators meet the Resonance ecosystem first. Pick the one that sounds like you.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                title: "Authors & Publishers",
+                body: "Turn manuscripts, PDFs, and stories into polished audiovisual books.",
+                href: "https://www.resonanceonline.life",
+                cta: "Open ePublisher",
+              },
+              {
+                title: "Creators & Small Businesses",
+                body: "Generate posters, ads, brochures, videos, and product campaigns.",
+                href: "https://www.creativestudio.life",
+                cta: "Open Creative Studio",
+              },
+              {
+                title: "Musicians & Artists",
+                body: "Build music-video storyboards, character concepts, and AI-ready scene prompts.",
+                href: "https://www.syncvision.life",
+                cta: "Open Sync Vision",
+              },
+              {
+                title: "Students & Schools",
+                body: "Discover career paths, skills, bursaries, and role-fit insights.",
+                href: "https://www.career-compass.org",
+                cta: "Open Career Compass",
+              },
+            ].map((p) => (
+              <article
+                key={p.title}
+                className="rounded-2xl border border-white/10 bg-card/60 backdrop-blur-xl p-6 flex flex-col"
+              >
+                <h3 className="text-lg font-bold mb-2 tracking-tight">{p.title}</h3>
+                <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{p.body}</p>
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-bold uppercase tracking-widest text-white/80 hover:text-white border-t border-white/10 pt-4"
+                >
+                  {p.cta} →
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+
 
         {/* ECOSYSTEM */}
         <section id="ecosystem" className="mb-32">
