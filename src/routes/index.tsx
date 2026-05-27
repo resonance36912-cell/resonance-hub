@@ -476,7 +476,7 @@ function Index() {
                 Start with ePublisher →
               </a>
               <a
-                href="#apps"
+                href="#ecosystem"
                 className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
               >
                 Explore all tools
