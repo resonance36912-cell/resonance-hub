@@ -160,10 +160,14 @@ function Index() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-5 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <a href="#" className="flex items-center gap-3 group">
-          <div className="w-9 h-9">
-            <BrandOrb />
-          </div>
+        <a href="#" className="flex items-center gap-2.5 group" aria-label="The Resonance — Home">
+          <img
+            src={resonanceLogo}
+            alt=""
+            width={1024}
+            height={1024}
+            className="h-8 w-8 drop-shadow-[0_0_12px_hsl(295_90%_60%/0.6)]"
+          />
           <span className="text-sm font-bold tracking-tight">
             The <span className="text-gradient-brand">Resonance</span>
           </span>
