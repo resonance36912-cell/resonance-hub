@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import resonanceLogo from "@/assets/resonance-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -142,13 +143,15 @@ const accentMap: Record<App["accent"], { ring: string; dot: string; text: string
 
 function BrandOrb({ className = "" }: { className?: string }) {
   return (
-    <div
-      className={`relative aspect-square ${className}`}
-      aria-hidden
-    >
-      <div className="absolute inset-0 rounded-full bg-gradient-brand blur-2xl opacity-70 animate-orb" />
-      <div className="absolute inset-[8%] rounded-full bg-gradient-brand shadow-[inset_0_0_40px_rgba(255,255,255,0.25)]" />
-      <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.9),transparent_55%)]" />
+    <div className={`relative aspect-square ${className}`} aria-hidden>
+      <div className="absolute inset-[5%] rounded-full bg-gradient-brand blur-2xl opacity-50 animate-orb" />
+      <img
+        src={resonanceLogo}
+        alt=""
+        width={1024}
+        height={1024}
+        className="relative w-full h-full object-contain drop-shadow-[0_0_20px_hsl(295_90%_60%/0.5)]"
+      />
     </div>
   );
 }
@@ -188,10 +191,9 @@ function Index() {
               The Resonance Hub
             </div>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] text-balance mb-8">
-              One ecosystem.{" "}
-              <span className="text-gradient-brand">One frequency.</span>{" "}
-              <span className="font-serif italic font-normal text-white/80">Five tools</span>
-              <span className="text-white/40"> for the aligned mind.</span>
+              Tools{" "}
+              <span className="font-serif italic font-normal text-white/80">in tune</span>{" "}
+              <span className="text-gradient-brand">with you.</span>
             </h1>
             <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[55ch] mb-10">
               The Resonance is a family of apps — ePublisher, Creative Studio, Sync Vision, the
