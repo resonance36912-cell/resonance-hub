@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      payfast_itn_logs: {
+        Row: {
+          amount_cents: number | null
+          error_message: string | null
+          http_status: number
+          id: string
+          outcome: string
+          payment_status: string | null
+          pf_payment_id: string | null
+          raw_payload: Json
+          received_at: string
+          server_validated: boolean
+          signature_valid: boolean
+          sku: string | null
+          source_ip: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          error_message?: string | null
+          http_status: number
+          id?: string
+          outcome: string
+          payment_status?: string | null
+          pf_payment_id?: string | null
+          raw_payload: Json
+          received_at?: string
+          server_validated: boolean
+          signature_valid: boolean
+          sku?: string | null
+          source_ip?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          error_message?: string | null
+          http_status?: number
+          id?: string
+          outcome?: string
+          payment_status?: string | null
+          pf_payment_id?: string | null
+          raw_payload?: Json
+          received_at?: string
+          server_validated?: boolean
+          signature_valid?: boolean
+          sku?: string | null
+          source_ip?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           amount_cents: number
@@ -65,14 +116,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "user"
       subscription_app:
         | "epublisher"
         | "creative_studio"
@@ -214,6 +293,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "user"],
       subscription_app: [
         "epublisher",
         "creative_studio",
