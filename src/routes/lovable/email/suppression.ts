@@ -130,6 +130,22 @@ export const Route = createFileRoute("/lovable/email/suppression")({
           console.warn('Failed to mirror to email_suppression_list', { error: listError })
         }
 
+        // 1c. Proactively cancel any pending subscription email sends for this
+        // address so the retry worker doesn't attempt delivery again.
+        const { error: cancelError } = await supabase
+          .from('subscription_email_sends')
+          .update({
+            status: 'suppressed',
+            skipped_reason: `suppressed:${payload.reason}`,
+            last_attempt_at: new Date().toISOString(),
+            last_error: `suppressed:${payload.reason}`,
+          })
+          .eq('recipient_email', normalizedEmail)
+          .in('status', ['queued', 'failed'])
+        if (cancelError) {
+          console.warn('Failed to cancel pending subscription sends', { error: cancelError })
+        }
+
         // 2. Append a new log entry for the suppression event (never update existing rows)
         const sendLogStatus = mapReasonToStatus(payload.reason)
         const sendLogMessage = mapReasonToMessage(payload.reason)
