@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import resonanceLogo from "@/assets/resonance-logo.png";
-import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
