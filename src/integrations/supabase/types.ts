@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      email_suppression_list: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       payfast_itn_logs: {
         Row: {
           amount_cents: number | null
@@ -62,6 +83,48 @@ export type Database = {
           sku?: string | null
           source_ip?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      subscription_email_sends: {
+        Row: {
+          amount_cents: number
+          app: string
+          created_at: string
+          id: string
+          pf_payment_id: string
+          recipient_email: string
+          skipped_reason: string | null
+          sku: string
+          status: string
+          tier: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          app: string
+          created_at?: string
+          id?: string
+          pf_payment_id: string
+          recipient_email: string
+          skipped_reason?: string | null
+          sku: string
+          status?: string
+          tier: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          app?: string
+          created_at?: string
+          id?: string
+          pf_payment_id?: string
+          recipient_email?: string
+          skipped_reason?: string | null
+          sku?: string
+          status?: string
+          tier?: string
+          user_id?: string
         }
         Relationships: []
       }
