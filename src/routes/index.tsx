@@ -161,13 +161,13 @@ function Index() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <a href="#" className="flex items-center gap-2.5 group" aria-label="The Resonance — Home">
+        <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
           <img
             src={resonanceLockup}
             alt="The Resonance"
             width={1536}
             height={512}
-            className="h-7 w-auto brightness-0 invert"
+            className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
           />
         </a>
         <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
