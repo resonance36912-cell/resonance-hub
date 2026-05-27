@@ -76,7 +76,8 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
     handlers: {
       POST: async ({ request }) => {
         const passphrase = process.env.PAYFAST_PASSPHRASE ?? "";
-        const sandbox = process.env.PAYFAST_SANDBOX === "true";
+        const merchantId = process.env.PAYFAST_MERCHANT_ID ?? "";
+        const sandbox = merchantId === "10000100";
 
         const rawBody = await request.text();
         const params = Object.fromEntries(new URLSearchParams(rawBody).entries());
