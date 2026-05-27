@@ -139,13 +139,14 @@ type App = {
   accent: "violet" | "magenta" | "pink" | "cyan" | "emerald" | "gold";
   status: "live" | "soon" | "free";
   logo: string;
+  attribute: { icon: string; label: string; body: string };
 };
 
 const apps: App[] = [
   {
     name: "Resonance ePublisher",
     tagline:
-      "Turn any source into a polished book — outlines, chapters, narration, ePub & full AV exports.",
+      "Turn written stories into immersive, high-fidelity audiovisual books.",
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
     subscribeHref: "https://www.resonanceonline.life/pricing",
@@ -154,11 +155,16 @@ const apps: App[] = [
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
+    attribute: {
+      icon: "🧠",
+      label: "Intelligence (IQ)",
+      body: "Structuring knowledge, automated publishing workflows, and literary preservation.",
+    },
   },
   {
     name: "Creative Studio",
     tagline:
-      "AI-generated posters, brochures, ads and marketing videos from a single prompt or upload.",
+      "Design stunning visuals, cinematic promotional assets, and marketing media instantly.",
     domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
     subscribeHref: "https://www.creativestudio.life/pricing",
@@ -167,11 +173,16 @@ const apps: App[] = [
     logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
+    attribute: {
+      icon: "❤",
+      label: "Soul & Expression (EQ)",
+      body: "Visual storytelling, emotional design, and brand identity mapping.",
+    },
   },
   {
     name: "Sync Vision",
     tagline:
-      "AI-ready music video storyboards and character performances from uploaded media.",
+      "Plan music videos, synchronize lyrics, and visualize stories via AI-driven cinematic workflows.",
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
     subscribeHref: "https://www.syncvision.life/pricing",
@@ -180,11 +191,16 @@ const apps: App[] = [
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
+    attribute: {
+      icon: "🏃",
+      label: "Physical Execution (PQ)",
+      body: "High-fidelity video generation, precise character consistency, and frame-by-frame production.",
+    },
   },
   {
     name: "The Resonance Podcast",
     tagline:
-      "Episodes, clips, reviews and the Resonance shop — wellness, sustainability, mindful living.",
+      "Listen, learn, and get inspired by deep concepts, holistic development, and the future of AI.",
     domain: "resonance-podcast.com",
     href: "https://www.resonance-podcast.com",
     subscribeHref: "https://www.resonance-podcast.com",
@@ -193,11 +209,16 @@ const apps: App[] = [
     logo: logoPodcast,
     accent: "cyan",
     status: "free",
+    attribute: {
+      icon: "∞",
+      label: "Tri-Fold Integration (3-6-9)",
+      body: "Conversational exploration of Mind, Body, and Soul.",
+    },
   },
   {
     name: "Career Compass",
     tagline:
-      "Personality, skills and aptitude assessments matched to SA careers, bursaries and scarce skills.",
+      "Discover your true path, optimize your professional trajectory, and shape your future.",
     domain: "career-compass.org",
     href: "https://www.career-compass.org",
     subscribeHref: "https://www.career-compass.org/#how",
@@ -206,11 +227,16 @@ const apps: App[] = [
     logo: logoCareerCompass,
     accent: "emerald",
     status: "free",
+    attribute: {
+      icon: "🎯",
+      label: "Direction & Purpose",
+      body: "Aligning vocational execution with universal growth principles.",
+    },
   },
   {
     name: "YouTube Optimizer",
     tagline:
-      "Audit any channel and generate a full growth, optimization and monetization strategy.",
+      "Optimize metrics, scale your audience, and thrive sustainably on YouTube.",
     domain: "Coming soon",
     href: "#",
     subscribeHref: "#",
@@ -219,6 +245,11 @@ const apps: App[] = [
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "soon",
+    attribute: {
+      icon: "🚀",
+      label: "Velocity & Growth",
+      body: "Algorithmic mastery met with content authenticity.",
+    },
   },
 ];
 
