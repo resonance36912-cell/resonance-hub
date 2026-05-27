@@ -15,6 +15,7 @@ import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 
 const PricingRoute = PricingRouteImport.update({
@@ -47,6 +48,12 @@ const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   path: '/account/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   id: '/api/public/payfast/itn',
   path: '/api/public/payfast/itn',
@@ -61,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +78,7 @@ export interface FileRoutesByTo {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +89,7 @@ export interface FileRoutesById {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +101,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +111,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -109,6 +121,7 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +132,7 @@ export interface RootRouteChildren {
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   SitemapXmlRoute: typeof SitemapXmlRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payfast/itn': {
       id: '/api/public/payfast/itn'
       path: '/api/public/payfast/itn'
@@ -183,6 +204,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminWebhooksRoute: AdminWebhooksRoute,
   SitemapXmlRoute: SitemapXmlRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
