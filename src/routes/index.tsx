@@ -102,6 +102,23 @@ export const Route = createFileRoute("/")({
                 url: "https://www.syncvision.life",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
+              {
+                "@type": "FAQPage",
+                mainEntity: [
+                  ["Can I use Resonance tools for free?", "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students."],
+                  ["Do I need one account for all apps?", "Each app currently runs its own account. A shared Resonance account is on the roadmap."],
+                  ["Can I cancel anytime?", "Yes. Every subscription is cancel-anytime via PayFast."],
+                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast. Annual billing saves 20%."],
+                  ["Can schools use Career Compass?", "Yes — schools can join the rewards-based pilot."],
+                  ["Can publishers test ePublisher with one title first?", "Yes. Start with a single title on the free or Starter tier."],
+                  ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
+                  ["Can Creative Studio create ads and product visuals?", "Yes — posters, brochures, social ads, product mockups, and short marketing videos."],
+                ].map(([q, a]) => ({
+                  "@type": "Question",
+                  name: q,
+                  acceptedAnswer: { "@type": "Answer", text: a },
+                })),
+              },
             ],
           }),
         },
