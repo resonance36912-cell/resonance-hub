@@ -1,250 +1,433 @@
 import { createFileRoute } from "@tanstack/react-router";
-import resonantMotif from "@/assets/resonant-motif.jpg";
 
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "The Resonance — One ecosystem for the aligned mind" },
+      {
+        name: "description",
+        content:
+          "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+      },
+    ],
+  }),
 });
 
 type App = {
   name: string;
-  href?: string;
   tagline: string;
-  meta: string;
-  cta: string;
-  accent: "emerald" | "amber" | "violet" | "ruby";
-  status: "live" | "soon";
+  domain: string;
+  href: string;
+  subscribeHref: string;
+  priceLabel: string;
+  priceNote: string;
+  accent: "violet" | "magenta" | "pink" | "cyan" | "gold";
+  status: "live" | "soon" | "free";
 };
 
 const apps: App[] = [
   {
-    name: "Resonance Online",
+    name: "Resonance ePublisher",
+    tagline:
+      "Turn any source into a polished book — outlines, chapters, narration, ePub & full AV exports.",
+    domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
-    tagline: "Collective flow states for remote teams. Sync your work rhythms.",
-    meta: "Frequency 432Hz",
-    cta: "Enter the flow",
-    accent: "emerald",
+    subscribeHref: "https://www.resonanceonline.life/pricing",
+    priceLabel: "from R49 / month",
+    priceNote: "Free · Starter R49 · Creator R149 · Pro R299 · Business R699",
+    accent: "magenta",
     status: "live",
   },
   {
     name: "Creative Studio",
+    tagline:
+      "AI-generated posters, brochures, ads and marketing videos from a single prompt or upload.",
+    domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
-    tagline: "The workspace for unbounded ideation and visual harmony.",
-    meta: "Synthesis v2.4",
-    cta: "Launch Studio",
-    accent: "amber",
-    status: "live",
-  },
-  {
-    name: "Sync Vision",
-    href: "https://www.syncvision.life",
-    tagline: "Visualize time as a spectrum. Temporal alignment for visionaries.",
-    meta: "Temporal Layer",
-    cta: "Adjust Vision",
+    subscribeHref: "https://www.creativestudio.life/pricing",
+    priceLabel: "from R149 / month",
+    priceNote: "Creator R149 · Pro R299 · Business R699",
     accent: "violet",
     status: "live",
   },
   {
+    name: "Sync Vision",
+    tagline:
+      "AI-ready music video storyboards and character performances from uploaded media.",
+    domain: "syncvision.life",
+    href: "https://www.syncvision.life",
+    subscribeHref: "https://www.syncvision.life/pricing",
+    priceLabel: "from R149 / month",
+    priceNote: "Creator R149 · Pro R299 · Business R699",
+    accent: "pink",
+    status: "live",
+  },
+  {
+    name: "The Resonance Podcast",
+    tagline:
+      "Episodes, clips, reviews and the Resonance shop — wellness, sustainability, mindful living.",
+    domain: "resonance-podcast.com",
+    href: "https://www.resonance-podcast.com",
+    subscribeHref: "https://www.resonance-podcast.com",
+    priceLabel: "Free",
+    priceNote: "Listen, watch and shop — no subscription required",
+    accent: "cyan",
+    status: "free",
+  },
+  {
     name: "YouTube Optimizer",
-    tagline: "Resonating with your audience. Deep analytics meets intuitive design.",
-    meta: "Arriving Soon",
-    cta: "Coming Q3 2026",
-    accent: "ruby",
+    tagline:
+      "Audit any channel and generate a full growth, optimization and monetization strategy.",
+    domain: "Coming soon",
+    href: "#",
+    subscribeHref: "#",
+    priceLabel: "Pricing TBA",
+    priceNote: "Joining the ecosystem Q3 2026",
+    accent: "gold",
     status: "soon",
   },
 ];
 
-const accentMap: Record<App["accent"], { glow: string; border: string; text: string; dot: string }> = {
-  emerald: {
-    glow: "bg-[hsl(150_80%_50%/0.10)] group-hover:bg-[hsl(150_80%_50%/0.20)]",
-    border: "hover:border-[hsl(150_80%_50%/0.35)]",
-    text: "text-[hsl(150_80%_55%)]",
-    dot: "bg-[hsl(150_80%_50%)] shadow-[0_0_20px_hsl(150_80%_50%/0.6)]",
-  },
-  amber: {
-    glow: "bg-[hsl(35_90%_55%/0.10)] group-hover:bg-[hsl(35_90%_55%/0.20)]",
-    border: "hover:border-[hsl(35_90%_55%/0.35)]",
-    text: "text-[hsl(35_90%_60%)]",
-    dot: "bg-[hsl(35_90%_55%)] shadow-[0_0_20px_hsl(35_90%_55%/0.6)]",
-  },
+const accentMap: Record<App["accent"], { ring: string; dot: string; text: string; chip: string }> = {
   violet: {
-    glow: "bg-[hsl(260_80%_70%/0.10)] group-hover:bg-[hsl(260_80%_70%/0.20)]",
-    border: "hover:border-[hsl(260_80%_70%/0.35)]",
-    text: "text-[hsl(260_80%_75%)]",
-    dot: "bg-[hsl(260_80%_70%)] shadow-[0_0_20px_hsl(260_80%_70%/0.6)]",
+    ring: "hover:border-[hsl(265_85%_65%/0.45)] hover:shadow-[0_0_60px_-15px_hsl(265_85%_65%/0.6)]",
+    dot: "bg-[hsl(265_85%_65%)] shadow-[0_0_20px_hsl(265_85%_65%/0.8)]",
+    text: "text-[hsl(265_85%_75%)]",
+    chip: "bg-[hsl(265_85%_65%/0.12)] text-[hsl(265_85%_80%)] border-[hsl(265_85%_65%/0.3)]",
   },
-  ruby: {
-    glow: "",
-    border: "",
-    text: "text-[hsl(0_80%_65%)]",
-    dot: "",
+  magenta: {
+    ring: "hover:border-[hsl(295_90%_60%/0.45)] hover:shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]",
+    dot: "bg-[hsl(295_90%_60%)] shadow-[0_0_20px_hsl(295_90%_60%/0.8)]",
+    text: "text-[hsl(295_90%_70%)]",
+    chip: "bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_75%)] border-[hsl(295_90%_60%/0.3)]",
+  },
+  pink: {
+    ring: "hover:border-[hsl(325_90%_65%/0.45)] hover:shadow-[0_0_60px_-15px_hsl(325_90%_65%/0.6)]",
+    dot: "bg-[hsl(325_90%_65%)] shadow-[0_0_20px_hsl(325_90%_65%/0.8)]",
+    text: "text-[hsl(325_90%_75%)]",
+    chip: "bg-[hsl(325_90%_65%/0.12)] text-[hsl(325_90%_80%)] border-[hsl(325_90%_65%/0.3)]",
+  },
+  cyan: {
+    ring: "hover:border-[hsl(190_90%_60%/0.45)] hover:shadow-[0_0_60px_-15px_hsl(190_90%_60%/0.6)]",
+    dot: "bg-[hsl(190_90%_60%)] shadow-[0_0_20px_hsl(190_90%_60%/0.8)]",
+    text: "text-[hsl(190_90%_70%)]",
+    chip: "bg-[hsl(190_90%_60%/0.12)] text-[hsl(190_90%_75%)] border-[hsl(190_90%_60%/0.3)]",
+  },
+  gold: {
+    ring: "",
+    dot: "bg-white/40",
+    text: "text-white/60",
+    chip: "bg-white/5 text-white/60 border-white/10",
   },
 };
 
+function BrandOrb({ className = "" }: { className?: string }) {
+  return (
+    <div
+      className={`relative aspect-square ${className}`}
+      aria-hidden
+    >
+      <div className="absolute inset-0 rounded-full bg-gradient-brand blur-2xl opacity-70 animate-orb" />
+      <div className="absolute inset-[8%] rounded-full bg-gradient-brand shadow-[inset_0_0_40px_rgba(255,255,255,0.25)]" />
+      <div className="absolute inset-[18%] rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.9),transparent_55%)]" />
+    </div>
+  );
+}
+
 function Index() {
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-white/20">
-      <nav className="fixed top-0 w-full z-50 px-6 py-8 flex justify-between items-center mix-blend-difference">
-        <div className="text-xl font-extrabold tracking-tighter uppercase">Resonance</div>
-        <div className="hidden md:flex gap-8 text-[11px] font-bold tracking-[0.2em] uppercase">
-          <a href="#ecosystem" className="hover:text-[hsl(260_80%_75%)] transition-colors">
-            Ecosystem
-          </a>
-          <a href="#philosophy" className="hover:text-[hsl(260_80%_75%)] transition-colors">
-            Laboratory
-          </a>
-          <a href="#join" className="opacity-50 hover:opacity-100 transition-opacity">
-            Manifesto
-          </a>
+    <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
+      <nav className="fixed top-0 w-full z-50 px-6 py-5 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
+        <a href="#" className="flex items-center gap-3 group">
+          <div className="w-9 h-9">
+            <BrandOrb />
+          </div>
+          <span className="text-sm font-bold tracking-tight">
+            The <span className="text-gradient-brand">Resonance</span>
+          </span>
+        </a>
+        <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
+          <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
+          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <a href="#philosophy" className="hover:text-white transition-colors">Philosophy</a>
+          <a href="#join" className="hover:text-white transition-colors">Join</a>
         </div>
+        <a
+          href="https://www.resonanceonline.life"
+          className="hidden md:inline-flex text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
+        >
+          Launch
+        </a>
       </nav>
 
-      <main className="pt-32 pb-24 px-6 max-w-7xl mx-auto">
-        <section className="mb-32 animate-reveal">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-8xl font-extrabold tracking-tight leading-[0.9] text-balance mb-8">
-              Tools for the{" "}
-              <span className="font-serif italic font-normal text-muted">aligned</span> mind.
+      <main className="pt-28 pb-24 px-6 max-w-7xl mx-auto">
+        {/* HERO */}
+        <section className="pt-12 pb-24 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
+          <div>
+            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-8">
+              <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
+              The Resonance Hub
+            </div>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] text-balance mb-8">
+              One ecosystem.{" "}
+              <span className="text-gradient-brand">One frequency.</span>{" "}
+              <span className="font-serif italic font-normal text-white/80">Five tools</span>
+              <span className="text-white/40"> for the aligned mind.</span>
             </h1>
-            <p className="text-xl text-muted leading-relaxed text-pretty max-w-[45ch]">
-              A family of applications designed to harmonize your digital existence. We build
-              instruments for focus, creativity, and conscious connection.
+            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[55ch] mb-10">
+              The Resonance is a family of apps — ePublisher, Creative Studio, Sync Vision, the
+              Podcast and the upcoming YouTube Optimizer — built on shared brand DNA, shared
+              payments, and the same conscious craft.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="#ecosystem"
+                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
+              >
+                Explore the apps →
+              </a>
+              <a
+                href="#pricing"
+                className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
+              >
+                See pricing
+              </a>
+            </div>
+          </div>
+          <div className="relative aspect-square max-w-md mx-auto w-full">
+            <BrandOrb className="w-full" />
+          </div>
+        </section>
+
+        {/* ECOSYSTEM */}
+        <section id="ecosystem" className="mb-32">
+          <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+                01 / The Apps
+              </div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">The Ecosystem</h2>
+            </div>
+            <p className="text-white/60 max-w-md text-sm leading-relaxed">
+              Each app is independently deployed and self-serviced — but all share the same brand,
+              the same PayFast checkout, and the same Resonance account ethos.
             </p>
           </div>
-        </section>
 
-        <section id="ecosystem" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {apps.map((app, i) => {
-            const a = accentMap[app.accent];
-            const isSoon = app.status === "soon";
-            return (
-              <article
-                key={app.name}
-                className={`group relative overflow-hidden rounded-2xl bg-zinc-900/40 border border-border ${
-                  isSoon ? "border-dashed" : a.border
-                } aspect-[4/5] md:aspect-square flex flex-col p-8 transition-all duration-500 animate-reveal`}
-                style={{ animationDelay: `${200 + i * 100}ms` }}
-              >
-                {!isSoon && (
-                  <div
-                    className={`absolute -top-24 -right-24 size-64 blur-[100px] transition-all duration-700 ${a.glow}`}
-                  />
-                )}
-                <div className={`mt-auto ${isSoon ? "opacity-60" : ""}`}>
-                  <div
-                    className={`font-mono text-[10px] uppercase tracking-widest mb-4 ${a.text} ${
-                      isSoon ? "italic" : ""
-                    }`}
-                  >
-                    {app.meta}
-                  </div>
-                  <h3 className="text-4xl font-bold tracking-tight mb-2">{app.name}</h3>
-                  <p className="text-muted mb-8 max-w-[30ch]">{app.tagline}</p>
-                  {isSoon ? (
-                    <div className="text-xs font-bold uppercase tracking-widest text-white/40">
-                      {app.cta}
-                    </div>
-                  ) : (
-                    <a
-                      href={app.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {apps.map((app, i) => {
+              const a = accentMap[app.accent];
+              const disabled = app.status === "soon";
+              return (
+                <article
+                  key={app.name}
+                  className={`group relative overflow-hidden rounded-2xl bg-card/60 backdrop-blur-xl border border-white/10 ${
+                    disabled ? "opacity-70" : a.ring
+                  } flex flex-col p-7 transition-all duration-500 animate-reveal min-h-[340px]`}
+                  style={{ animationDelay: `${120 + i * 80}ms` }}
+                >
+                  <div className="flex items-start justify-between mb-6">
+                    <span
+                      className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${a.chip}`}
                     >
-                      {app.cta}
-                      <span aria-hidden>→</span>
-                    </a>
-                  )}
-                </div>
-                {!isSoon && (
-                  <div
-                    className={`absolute top-12 right-12 size-3 rounded-full animate-pulse-slow ${a.dot}`}
-                  />
-                )}
-              </article>
-            );
-          })}
+                      {app.status === "live" ? "Live" : app.status === "free" ? "Free" : "Soon"}
+                    </span>
+                    <div className={`size-2.5 rounded-full ${a.dot} animate-pulse-slow`} />
+                  </div>
+
+                  <h3 className="text-2xl font-bold tracking-tight mb-2">{app.name}</h3>
+                  <div className={`text-[11px] font-mono uppercase tracking-widest mb-4 ${a.text}`}>
+                    {app.domain}
+                  </div>
+                  <p className="text-white/65 text-sm leading-relaxed mb-6">{app.tagline}</p>
+
+                  <div className="mt-auto pt-6 border-t border-white/10">
+                    <div className="flex items-baseline justify-between mb-4">
+                      <span className="text-lg font-bold">{app.priceLabel}</span>
+                    </div>
+                    <p className="text-[11px] text-white/45 mb-5 leading-relaxed">
+                      {app.priceNote}
+                    </p>
+                    {disabled ? (
+                      <button
+                        disabled
+                        className="w-full px-4 py-2.5 rounded-full border border-dashed border-white/15 text-xs font-bold uppercase tracking-widest text-white/40 cursor-not-allowed"
+                      >
+                        Coming soon
+                      </button>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        <a
+                          href={app.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest text-center transition-colors"
+                        >
+                          Visit
+                        </a>
+                        <a
+                          href={app.subscribeHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest text-center shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)] hover:shadow-[0_0_35px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
+                        >
+                          {app.status === "free" ? "Open" : "Subscribe"}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         </section>
 
+        {/* PRICING TABLE */}
+        <section id="pricing" className="mb-32 animate-reveal">
+          <div className="text-center mb-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              02 / Costings
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Transparent ZAR pricing
+            </h2>
+            <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
+              All subscription apps share the same tier structure and the same PayFast checkout.
+              Pay once at the app of your choice, manage everything from your Resonance account.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+            <table className="w-full text-sm">
+              <thead className="bg-white/[0.03] border-b border-white/10">
+                <tr className="text-left">
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">App</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Free</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Starter</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Creator</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Pro</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Business</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {[
+                  ["Resonance ePublisher", "✓", "R49", "R149", "R299", "R699"],
+                  ["Creative Studio", "—", "—", "R149", "R299", "R699"],
+                  ["Sync Vision", "—", "—", "R149", "R299", "R699"],
+                  ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
+                  ["YouTube Optimizer", "TBA", "TBA", "TBA", "TBA", "TBA"],
+                ].map((row) => (
+                  <tr key={row[0]} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4 font-semibold">{row[0]}</td>
+                    {row.slice(1).map((cell, j) => (
+                      <td
+                        key={j}
+                        className={`px-6 py-4 font-mono text-white/75 ${
+                          cell.startsWith("R") ? "text-white" : ""
+                        }`}
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-center text-xs text-white/40 mt-6">
+            Prices in South African Rand (ZAR). Annual billing saves 20%. Secure card &amp; EFT via
+            PayFast. Cancel any subscription anytime.
+          </p>
+        </section>
+
+        {/* PHILOSOPHY */}
         <section
           id="philosophy"
-          className="mt-48 grid md:grid-cols-2 gap-24 items-center animate-reveal"
+          className="mb-32 grid md:grid-cols-2 gap-16 items-center animate-reveal"
         >
-          <div>
-            <img
-              src={resonantMotif}
-              alt="Tuning fork radiating concentric frequency waves"
-              loading="lazy"
-              width={1024}
-              height={1024}
-              className="w-full aspect-square rounded-full object-cover border border-white/5 opacity-80"
-            />
+          <div className="relative aspect-square max-w-sm mx-auto w-full">
+            <BrandOrb className="w-full" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold mb-6 tracking-tight">The Resonance Philosophy</h2>
-            <div className="space-y-6 text-muted leading-relaxed">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              03 / Philosophy
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
+              The Resonance Philosophy
+            </h2>
+            <div className="space-y-5 text-white/70 leading-relaxed">
               <p>
-                We believe technology shouldn't fragment our attention, but align it. Every app in
-                the Resonance ecosystem is built on the principle of{" "}
-                <span className="text-foreground">Harmonic UX</span>—where features respond to human
-                intuition like a tuned instrument.
+                Technology shouldn't fragment our attention — it should align it. Every Resonance
+                app is built on{" "}
+                <span className="text-white">Harmonic UX</span>: tools that respond to human
+                intuition the way a tuned instrument responds to breath.
               </p>
-              <p className="font-serif italic text-foreground/80">
+              <p className="font-serif italic text-white/85 text-lg">
                 "When the tool disappears, only the intention remains."
               </p>
-              <a
-                href="#join"
-                className="inline-block text-foreground underline underline-offset-8 font-bold text-sm tracking-wide"
-              >
-                Read the Manifesto
-              </a>
             </div>
           </div>
         </section>
 
+        {/* JOIN */}
         <section
           id="join"
-          className="mt-48 py-24 border-y border-border flex flex-col items-center text-center animate-reveal"
+          className="relative overflow-hidden rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl p-12 md:p-16 text-center animate-reveal"
         >
-          <h2 className="text-4xl font-bold tracking-tight mb-4">Join the frequency.</h2>
-          <p className="text-muted mb-12 max-w-[40ch]">
-            Get notified when we release new instruments for your creative ecosystem.
-          </p>
-          <form
-            className="w-full max-w-md flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-            }}
-          >
-            <input
-              type="email"
-              required
-              placeholder="email@domain.com"
-              className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(260_80%_70%)] transition-colors"
-            />
-            <button
-              type="submit"
-              className="px-8 py-3 bg-foreground text-background rounded-full font-bold text-sm hover:bg-[hsl(260_80%_70%)] hover:text-background transition-colors"
+          <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_0%,hsl(295_90%_60%/0.4),transparent_60%)]" />
+          <div className="relative">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Join the <span className="text-gradient-brand">frequency.</span>
+            </h2>
+            <p className="text-white/60 mb-10 max-w-md mx-auto">
+              Get notified as new instruments enter the Resonance ecosystem.
+            </p>
+            <form
+              className="w-full max-w-md mx-auto flex flex-col sm:flex-row gap-2"
+              onSubmit={(e) => e.preventDefault()}
             >
-              Subscribe
-            </button>
-          </form>
+              <input
+                type="email"
+                required
+                placeholder="email@domain.com"
+                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors"
+              />
+              <button
+                type="submit"
+                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)]"
+              >
+                Subscribe
+              </button>
+            </form>
+          </div>
         </section>
       </main>
 
-      <footer className="py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-8 max-w-7xl mx-auto border-t border-white/5 opacity-60">
-        <div className="text-[10px] font-mono uppercase tracking-widest">
-          © {new Date().getFullYear()} Resonance Apps Laboratory
-        </div>
-        <div className="flex gap-12 text-[10px] font-mono uppercase tracking-widest">
-          <a href="#" className="hover:text-white transition-colors">
-            Twitter
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            GitHub
-          </a>
-          <a href="#" className="hover:text-white transition-colors">
-            Mirror
-          </a>
+      <footer className="py-12 px-6 border-t border-white/5 max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7">
+              <BrandOrb />
+            </div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
+              © {new Date().getFullYear()} The Resonance · Ecosystem Hub
+            </div>
+          </div>
+          <div className="flex gap-8 text-[10px] font-mono uppercase tracking-widest text-white/50">
+            <a href="https://www.resonance-podcast.com" className="hover:text-white transition-colors">
+              Podcast
+            </a>
+            <a href="https://www.resonanceonline.life" className="hover:text-white transition-colors">
+              ePublisher
+            </a>
+            <a href="https://www.creativestudio.life" className="hover:text-white transition-colors">
+              Studio
+            </a>
+            <a href="https://www.syncvision.life" className="hover:text-white transition-colors">
+              SyncVision
+            </a>
+          </div>
         </div>
       </footer>
     </div>

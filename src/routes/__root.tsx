@@ -72,16 +72,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Resonance Apps — Tools for the aligned mind" },
+      { title: "The Resonance — One ecosystem for the aligned mind" },
       {
         name: "description",
         content:
-          "A family of applications designed to harmonize your digital existence. Explore Resonance Online, Creative Studio, Sync Vision and more.",
+          "The Resonance hub: ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. Unified brand, unified PayFast checkout.",
       },
-      { property: "og:title", content: "Resonance Apps" },
+      { property: "og:title", content: "The Resonance" },
       {
         property: "og:description",
-        content: "A family of applications designed to harmonize your digital existence.",
+        content: "One ecosystem. One frequency. Five tools for the aligned mind.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

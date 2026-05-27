@@ -24,29 +24,36 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-accent-emerald: var(--accent-emerald);
-  --color-accent-amber: var(--accent-amber);
-  --color-accent-violet: var(--accent-violet);
-  --color-accent-ruby: var(--accent-ruby);
+  --color-magenta: var(--magenta);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-cyan: var(--cyan);
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :root {
   --radius: 1rem;
-  --background: hsl(240 10% 4%);
+  /* Aligned with resonance-podcast.com — deep near-black with violet undertone */
+  --background: hsl(265 30% 4%);
   --foreground: hsl(0 0% 98%);
-  --card: hsl(240 6% 10%);
+  --card: hsl(265 20% 8%);
   --card-foreground: hsl(0 0% 98%);
-  --muted: hsl(240 5% 65%);
-  --muted-foreground: hsl(240 5% 65%);
-  --border: hsl(240 5% 15%);
-  --primary: hsl(0 0% 98%);
-  --primary-foreground: hsl(240 10% 4%);
-  --accent-emerald: hsl(150 80% 50%);
-  --accent-amber: hsl(35 90% 55%);
-  --accent-violet: hsl(260 80% 70%);
-  --accent-ruby: hsl(0 80% 60%);
+  --muted: hsl(265 10% 65%);
+  --muted-foreground: hsl(265 10% 65%);
+  --border: hsl(265 15% 16%);
+  --primary: hsl(290 90% 65%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  /* Brand spectrum — violet → magenta → pink (podcast palette) */
+  --violet: hsl(265 85% 65%);
+  --magenta: hsl(295 90% 60%);
+  --pink: hsl(325 90% 65%);
+  --cyan: hsl(190 90% 60%);
+
+  --gradient-brand: linear-gradient(135deg, hsl(265 85% 65%), hsl(295 90% 60%), hsl(325 90% 65%));
+  --gradient-brand-soft: linear-gradient(135deg, hsl(265 85% 65% / 0.15), hsl(325 90% 65% / 0.15));
+  --shadow-glow: 0 0 60px hsl(295 90% 60% / 0.35);
 }
 
 @keyframes reveal-up {
@@ -59,8 +66,30 @@
   50% { transform: scale(1.05); opacity: 0.9; }
 }
 
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.03); }
+}
+
+@keyframes gradient-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .animate-reveal { animation: reveal-up 1s var(--ease-out-expo) both; }
 .animate-pulse-slow { animation: pulse-ring 4s ease-in-out infinite; }
+.animate-orb { animation: orb-float 8s ease-in-out infinite; }
+
+.text-gradient-brand {
+  background: var(--gradient-brand);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-drift 8s ease-in-out infinite;
+}
+
+.bg-gradient-brand { background: var(--gradient-brand); }
 
 @layer base {
   * { border-color: var(--color-border); }
@@ -70,5 +99,10 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, hsl(295 90% 60% / 0.18), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 60%, hsl(265 85% 65% / 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 10% 90%, hsl(325 90% 65% / 0.10), transparent);
+    background-attachment: fixed;
   }
 }
