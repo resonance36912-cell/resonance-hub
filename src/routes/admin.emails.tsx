@@ -1,9 +1,11 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listEmailSends } from "@/lib/email-sends.functions";
+import { sendTestSubscriptionEmail } from "@/lib/test-email.functions";
+
 
 export const Route = createFileRoute("/admin/emails")({
   head: () => ({
@@ -42,11 +44,28 @@ const STATUS_STYLE: Record<string, string> = {
 
 function EmailsAdminPage() {
   const fetchSends = useServerFn(listEmailSends);
+  const sendTest = useServerFn(sendTestSubscriptionEmail);
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["admin-email-sends"],
     queryFn: () => fetchSends(),
   });
   const [filter, setFilter] = useState<string>("all");
+  const [testEmail, setTestEmail] = useState("");
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const testMutation = useMutation({
+    mutationFn: async (email: string) => sendTest({ data: { recipientEmail: email } }),
+    onSuccess: (res) => {
+      setTestResult(
+        res.ok
+          ? { ok: true, msg: res.message ?? "Email queued." }
+          : { ok: false, msg: res.error ?? "Send failed." },
+      );
+      if (res.ok) refetch();
+    },
+    onError: (err) =>
+      setTestResult({ ok: false, msg: err instanceof Error ? err.message : "Unknown error" }),
+  });
 
   const filtered = useMemo(() => {
     const list = (data?.sends ?? []) as Send[];
@@ -75,6 +94,50 @@ function EmailsAdminPage() {
             {isFetching ? "Refreshing…" : "Refresh"}
           </button>
         </header>
+
+        <section className="mb-8 rounded-xl border border-border bg-card p-5">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Send test email
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sends the branded <em>Subscription Confirmed</em> template to any address.
+          </p>
+          <form
+            className="mt-4 flex flex-wrap items-center gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setTestResult(null);
+              if (testEmail) testMutation.mutate(testEmail);
+            }}
+          >
+            <input
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              className="flex-1 min-w-[240px] rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+            <button
+              type="submit"
+              disabled={testMutation.isPending || !testEmail}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
+            >
+              {testMutation.isPending ? "Sending…" : "Send test email"}
+            </button>
+          </form>
+          {testResult && (
+            <p
+              className={`mt-3 text-sm ${
+                testResult.ok ? "text-emerald-400" : "text-red-400"
+              }`}
+            >
+              {testResult.ok ? "✓ " : "✗ "}
+              {testResult.msg}
+            </p>
+          )}
+        </section>
+
 
         {data && (
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
