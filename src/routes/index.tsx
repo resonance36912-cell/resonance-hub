@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import resonanceLogo from "@/assets/resonance-logo.png";
+import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -160,13 +161,14 @@ function Index() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-5 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <a href="#" className="flex items-center gap-3 group">
-          <div className="w-9 h-9">
-            <BrandOrb />
-          </div>
-          <span className="text-sm font-bold tracking-tight">
-            The <span className="text-gradient-brand">Resonance</span>
-          </span>
+        <a href="#" className="flex items-center gap-3 group" aria-label="The Resonance — Home">
+          <img
+            src={resonanceLockup}
+            alt="The Resonance"
+            width={1536}
+            height={1024}
+            className="h-8 md:h-9 w-auto brightness-0 invert"
+          />
         </a>
         <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
           <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
