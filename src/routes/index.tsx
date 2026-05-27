@@ -979,7 +979,8 @@ function Index() {
         {/* PHILOSOPHY */}
         <section
           id="philosophy"
-          className="mb-32 grid md:grid-cols-2 gap-16 items-center animate-reveal"
+          data-reveal
+          className="mb-32 grid md:grid-cols-2 gap-16 items-center"
         >
           <div className="relative aspect-square max-w-sm mx-auto w-full">
             <BrandOrb className="w-full" />
