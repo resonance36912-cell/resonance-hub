@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { sendLovableEmail } from "@lovable.dev/email-js";
-import { render } from "@react-email/components";
+import { render } from "@react-email/render";
 import * as React from "react";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
