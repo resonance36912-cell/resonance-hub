@@ -100,7 +100,12 @@ function EmailsAdminPage() {
               <Link to="/admin/webhooks" className="text-primary hover:underline">
                 View ITN webhook logs →
               </Link>
+              {" · "}
+              <Link to="/admin/email-domain" className="text-primary hover:underline">
+                Sender domain verification →
+              </Link>
             </p>
+
           </div>
           <button
             onClick={() => refetch()}
