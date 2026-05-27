@@ -67,6 +67,7 @@ function EmailsAdminPage() {
   const [filter, setFilter] = useState<string>("all");
   const [testEmail, setTestEmail] = useState("");
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const testMutation = useMutation({
     mutationFn: async (email: string) => sendTest({ data: { recipientEmail: email } }),
