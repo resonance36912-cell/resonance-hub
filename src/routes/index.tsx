@@ -764,10 +764,11 @@ function Index() {
               return (
                 <article
                   key={app.name}
-                  className={`group relative overflow-hidden rounded-2xl bg-card/60 backdrop-blur-xl border border-white/10 ${
+                  data-reveal
+                  className={`group card-sheen relative rounded-2xl bg-card/60 backdrop-blur-xl border border-white/10 ${
                     disabled ? "opacity-70" : a.ring
-                  } flex flex-col p-7 transition-all duration-500 animate-reveal min-h-[340px]`}
-                  style={{ animationDelay: `${120 + i * 80}ms` }}
+                  } flex flex-col p-7 transition-all duration-500 hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_30px_60px_-25px_hsl(295_90%_60%/0.45)] min-h-[340px]`}
+                  style={{ transitionDelay: `${i * 40}ms` }}
                 >
                   <div className="flex items-start justify-between mb-6">
                     <span
