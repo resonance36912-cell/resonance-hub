@@ -13,6 +13,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 
 const PricingRoute = PricingRouteImport.update({
@@ -35,6 +36,11 @@ const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   path: '/admin/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
+  id: '/account/subscriptions',
+  path: '/account/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   id: '/api/public/payfast/itn',
   path: '/api/public/payfast/itn',
@@ -44,6 +50,7 @@ const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/pricing'
+    | '/account/subscriptions'
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/pricing'
+    | '/account/subscriptions'
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/pricing'
+    | '/account/subscriptions'
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PricingRoute: typeof PricingRoute
+  AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   SitemapXmlRoute: typeof SitemapXmlRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -125,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/subscriptions': {
+      id: '/account/subscriptions'
+      path: '/account/subscriptions'
+      fullPath: '/account/subscriptions'
+      preLoaderRoute: typeof AccountSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payfast/itn': {
       id: '/api/public/payfast/itn'
       path: '/api/public/payfast/itn'
@@ -138,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PricingRoute: PricingRoute,
+  AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   SitemapXmlRoute: SitemapXmlRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
