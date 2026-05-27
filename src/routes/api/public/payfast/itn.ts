@@ -165,9 +165,47 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           return new Response("db error", { status: 500 });
         }
 
+        // Idempotent confirmation-email enqueue (only for active subscriptions with a payment id)
+        if (nextStatus === "active" && pfPaymentId) {
+          try {
+            const { data: userRec } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const recipient = userRec?.user?.email?.toLowerCase() ?? null;
+
+            if (recipient) {
+              const { data: suppressed } = await supabaseAdmin
+                .from("email_suppression_list")
+                .select("reason")
+                .eq("email", recipient)
+                .maybeSingle();
+
+              // Unique constraint on pf_payment_id => duplicate ITN can never enqueue twice
+              const { error: emailErr } = await supabaseAdmin
+                .from("subscription_email_sends")
+                .insert({
+                  pf_payment_id: pfPaymentId,
+                  user_id: userId,
+                  recipient_email: recipient,
+                  sku: sku!,
+                  app: def.app,
+                  tier: def.tier,
+                  amount_cents: def.amountCents,
+                  status: suppressed ? "suppressed" : "queued",
+                  skipped_reason: suppressed ? `suppressed:${suppressed.reason}` : null,
+                });
+
+              if (emailErr && emailErr.code !== "23505") {
+                console.error("subscription_email_sends insert failed:", emailErr);
+              }
+            }
+          } catch (err) {
+            console.error("Email idempotency block failed:", err);
+          }
+        }
+
         await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
           outcome: `subscription_${nextStatus}`, http_status: 200 });
         return new Response("ok", { status: 200 });
+
       },
     },
   },
