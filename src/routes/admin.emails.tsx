@@ -208,9 +208,8 @@ function EmailsAdminPage() {
                   const isOpen = expanded === s.id;
                   const retriable = s.status === "failed" || s.status === "queued";
                   return (
-                    <>
+                    <Fragment key={s.id}>
                       <tr
-                        key={s.id}
                         className="border-t border-border hover:bg-accent/30 cursor-pointer"
                         onClick={() => setExpanded(isOpen ? null : s.id)}
                       >
