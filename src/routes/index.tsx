@@ -126,6 +126,12 @@ const accentMap: Record<App["accent"], { ring: string; dot: string; text: string
     text: "text-[hsl(190_90%_70%)]",
     chip: "bg-[hsl(190_90%_60%/0.12)] text-[hsl(190_90%_75%)] border-[hsl(190_90%_60%/0.3)]",
   },
+  emerald: {
+    ring: "hover:border-[hsl(150_80%_55%/0.45)] hover:shadow-[0_0_60px_-15px_hsl(150_80%_55%/0.6)]",
+    dot: "bg-[hsl(150_80%_55%)] shadow-[0_0_20px_hsl(150_80%_55%/0.8)]",
+    text: "text-[hsl(150_80%_65%)]",
+    chip: "bg-[hsl(150_80%_55%/0.12)] text-[hsl(150_80%_70%)] border-[hsl(150_80%_55%/0.3)]",
+  },
   gold: {
     ring: "",
     dot: "bg-white/40",
