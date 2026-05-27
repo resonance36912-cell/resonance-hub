@@ -338,9 +338,14 @@ function Index() {
         {/* HERO */}
         <section className="pt-12 pb-16 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
           <div>
-            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-8">
+            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
               Tools in tune with you
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.22em] mb-8">
+              <span className="text-white/70">One account.</span>
+              <span className="text-[hsl(295_90%_75%)]">Multiple tools.</span>
+              <span className="text-[hsl(190_90%_70%)]">Endless possibilities.</span>
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.98] text-balance mb-8">
               One Resonance account.{" "}
