@@ -683,7 +683,7 @@ function Index() {
         </section>
 
         {/* WHO IT'S FOR */}
-        <section id="who" className="mb-32 animate-reveal">
+        <section id="who" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               00 / Who it's for
@@ -743,7 +743,7 @@ function Index() {
 
 
         {/* ECOSYSTEM */}
-        <section id="ecosystem" className="mb-32">
+        <section id="ecosystem" data-reveal className="mb-32">
           <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
@@ -844,7 +844,7 @@ function Index() {
         </section>
 
         {/* PRICING TABLE */}
-        <section id="pricing" className="mb-32 animate-reveal">
+        <section id="pricing" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               02 / Costings
@@ -1006,7 +1006,7 @@ function Index() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="mb-32 animate-reveal">
+        <section id="faq" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               04 / Questions
