@@ -33,13 +33,28 @@ type Send = {
   status: string;
   skipped_reason: string | null;
   created_at: string;
+  attempt_count: number;
+  last_attempt_at: string | null;
+  next_attempt_at: string | null;
+  last_error: string | null;
+};
+
+type Attempt = {
+  id: string;
+  send_id: string;
+  attempt_number: number;
+  status: string;
+  error_message: string | null;
+  message_id: string | null;
+  created_at: string;
 };
 
 const STATUS_STYLE: Record<string, string> = {
   sent: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40",
   queued: "bg-sky-500/15 text-sky-300 border-sky-500/40",
-  failed: "bg-red-500/15 text-red-300 border-red-500/40",
-  suppressed: "bg-amber-500/15 text-amber-300 border-amber-500/40",
+  failed: "bg-amber-500/15 text-amber-300 border-amber-500/40",
+  suppressed: "bg-zinc-500/15 text-zinc-300 border-zinc-500/40",
+  dlq: "bg-red-500/15 text-red-300 border-red-500/40",
 };
 
 function EmailsAdminPage() {
