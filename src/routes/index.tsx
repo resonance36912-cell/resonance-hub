@@ -22,7 +22,7 @@ type App = {
   subscribeHref: string;
   priceLabel: string;
   priceNote: string;
-  accent: "violet" | "magenta" | "pink" | "cyan" | "gold";
+  accent: "violet" | "magenta" | "pink" | "cyan" | "emerald" | "gold";
   status: "live" | "soon" | "free";
 };
 
@@ -76,6 +76,18 @@ const apps: App[] = [
     status: "free",
   },
   {
+    name: "Career Compass",
+    tagline:
+      "Personality, skills and aptitude assessments matched to SA careers, bursaries and scarce skills.",
+    domain: "career-compass.org",
+    href: "https://www.career-compass.org",
+    subscribeHref: "https://www.career-compass.org/#how",
+    priceLabel: "Free pilot",
+    priceNote: "First 50 students — rewards-based pilot. Paid tiers post-pilot.",
+    accent: "emerald",
+    status: "free",
+  },
+  {
     name: "YouTube Optimizer",
     tagline:
       "Audit any channel and generate a full growth, optimization and monetization strategy.",
@@ -113,6 +125,12 @@ const accentMap: Record<App["accent"], { ring: string; dot: string; text: string
     dot: "bg-[hsl(190_90%_60%)] shadow-[0_0_20px_hsl(190_90%_60%/0.8)]",
     text: "text-[hsl(190_90%_70%)]",
     chip: "bg-[hsl(190_90%_60%/0.12)] text-[hsl(190_90%_75%)] border-[hsl(190_90%_60%/0.3)]",
+  },
+  emerald: {
+    ring: "hover:border-[hsl(150_80%_55%/0.45)] hover:shadow-[0_0_60px_-15px_hsl(150_80%_55%/0.6)]",
+    dot: "bg-[hsl(150_80%_55%)] shadow-[0_0_20px_hsl(150_80%_55%/0.8)]",
+    text: "text-[hsl(150_80%_65%)]",
+    chip: "bg-[hsl(150_80%_55%/0.12)] text-[hsl(150_80%_70%)] border-[hsl(150_80%_55%/0.3)]",
   },
   gold: {
     ring: "",
@@ -316,6 +334,7 @@ function Index() {
                   ["Creative Studio", "—", "—", "R149", "R299", "R699"],
                   ["Sync Vision", "—", "—", "R149", "R299", "R699"],
                   ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
+                  ["Career Compass", "Pilot", "—", "—", "—", "—"],
                   ["YouTube Optimizer", "TBA", "TBA", "TBA", "TBA", "TBA"],
                 ].map((row) => (
                   <tr key={row[0]} className="hover:bg-white/[0.02] transition-colors">
@@ -426,6 +445,9 @@ function Index() {
             </a>
             <a href="https://www.syncvision.life" className="hover:text-white transition-colors">
               SyncVision
+            </a>
+            <a href="https://www.career-compass.org" className="hover:text-white transition-colors">
+              Career Compass
             </a>
           </div>
         </div>
