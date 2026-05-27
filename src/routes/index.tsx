@@ -508,6 +508,114 @@ function Index() {
           </ul>
         </section>
 
+        {/* PARTNER / CHANNEL BANNER */}
+        <section aria-label="Partners and channels" className="mb-20">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-[hsl(265_40%_10%/0.8)] via-[hsl(295_40%_10%/0.6)] to-[hsl(190_40%_10%/0.8)] backdrop-blur-xl p-6 md:p-8">
+            <div
+              className="absolute inset-0 -z-10 opacity-40"
+              style={{
+                background:
+                  "radial-gradient(ellipse 50% 80% at 20% 50%, hsl(295 90% 60% / 0.25), transparent), radial-gradient(ellipse 50% 80% at 80% 50%, hsl(190 90% 60% / 0.25), transparent)",
+              }}
+            />
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <div className="min-w-0">
+                <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-2">
+                  ✦ Featured · Partners & Channels
+                </div>
+                <h2 className="font-display text-xl md:text-2xl font-bold tracking-[-0.02em] text-white">
+                  Explore the wider Resonance network
+                </h2>
+                <p className="text-sm text-white/65 mt-1 max-w-xl">
+                  Sister sites, podcast home base, and the official YouTube channels.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 lg:max-w-[640px] w-full">
+                <a
+                  href="https://www.medi-tech.co.za"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(150_80%_55%/0.4)] px-3.5 py-3 transition-all"
+                >
+                  <span className="grid place-items-center size-9 rounded-lg bg-[hsl(150_80%_55%/0.15)] border border-[hsl(150_80%_55%/0.3)] text-base">
+                    🩺
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-[hsl(150_80%_65%)]">
+                      Partner site
+                    </span>
+                    <span className="block text-sm font-semibold text-white truncate">
+                      medi-tech.co.za
+                    </span>
+                  </span>
+                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                </a>
+                <a
+                  href="https://www.resonance-podcast.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(190_90%_60%/0.4)] px-3.5 py-3 transition-all"
+                >
+                  <span className="grid place-items-center size-9 rounded-lg bg-[hsl(190_90%_60%/0.15)] border border-[hsl(190_90%_60%/0.3)] text-base">
+                    🎙️
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-[hsl(190_90%_70%)]">
+                      Podcast
+                    </span>
+                    <span className="block text-sm font-semibold text-white truncate">
+                      resonance-podcast.com
+                    </span>
+                  </span>
+                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                </a>
+                <a
+                  href="https://www.youtube.com/@resonance36912"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(0_84%_60%/0.45)] px-3.5 py-3 transition-all"
+                >
+                  <span className="grid place-items-center size-9 rounded-lg bg-[hsl(0_84%_60%/0.15)] border border-[hsl(0_84%_60%/0.35)]">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-[hsl(0_84%_65%)]" aria-hidden>
+                      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-[hsl(0_84%_70%)]">
+                      YouTube
+                    </span>
+                    <span className="block text-sm font-semibold text-white truncate">
+                      @resonance36912
+                    </span>
+                  </span>
+                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                </a>
+                <a
+                  href="https://www.youtube.com/@theresonancefrequencies"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(0_84%_60%/0.45)] px-3.5 py-3 transition-all"
+                >
+                  <span className="grid place-items-center size-9 rounded-lg bg-[hsl(0_84%_60%/0.15)] border border-[hsl(0_84%_60%/0.35)]">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-[hsl(0_84%_65%)]" aria-hidden>
+                      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-[hsl(0_84%_70%)]">
+                      YouTube
+                    </span>
+                    <span className="block text-sm font-semibold text-white truncate">
+                      @theresonancefrequencies
+                    </span>
+                  </span>
+                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* WHO IT'S FOR */}
         <section id="who" className="mb-32 animate-reveal">
           <div className="text-center mb-12">
