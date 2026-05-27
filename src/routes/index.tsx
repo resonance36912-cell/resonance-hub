@@ -496,7 +496,15 @@ function Index() {
                   <div className={`text-[11px] font-mono uppercase tracking-widest mb-4 ${a.text}`}>
                     {app.domain}
                   </div>
-                  <p className="text-white/65 text-sm leading-relaxed mb-6">{app.tagline}</p>
+                  <p className="text-white/65 text-sm leading-relaxed mb-5">{app.tagline}</p>
+
+                  <div className={`rounded-xl border px-3.5 py-3 mb-2 ${a.chip}`}>
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5">
+                      <span aria-hidden className="text-base leading-none">{app.attribute.icon}</span>
+                      <span>{app.attribute.label}</span>
+                    </div>
+                    <p className="text-[12px] leading-relaxed text-white/70">{app.attribute.body}</p>
+                  </div>
 
                   <div className="mt-auto pt-6 border-t border-white/10">
                     <div className="flex items-baseline justify-between mb-4">
