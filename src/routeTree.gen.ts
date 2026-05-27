@@ -13,6 +13,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 
@@ -36,6 +37,11 @@ const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   path: '/admin/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/admin/emails',
+  path: '/admin/emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pricing'
     | '/account/subscriptions'
+    | '/admin/emails'
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pricing'
     | '/account/subscriptions'
+    | '/admin/emails'
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pricing'
     | '/account/subscriptions'
+    | '/admin/emails'
     | '/admin/webhooks'
     | '/sitemap/xml'
     | '/api/public/payfast/itn'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PricingRoute: typeof PricingRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminEmailsRoute: typeof AdminEmailsRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   SitemapXmlRoute: typeof SitemapXmlRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/admin/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/subscriptions': {
       id: '/account/subscriptions'
       path: '/account/subscriptions'
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PricingRoute: PricingRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   SitemapXmlRoute: SitemapXmlRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
