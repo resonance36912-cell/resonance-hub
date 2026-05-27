@@ -102,6 +102,23 @@ export const Route = createFileRoute("/")({
                 url: "https://www.syncvision.life",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
+              {
+                "@type": "FAQPage",
+                mainEntity: [
+                  ["Can I use Resonance tools for free?", "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students."],
+                  ["Do I need one account for all apps?", "Each app currently runs its own account. A shared Resonance account is on the roadmap."],
+                  ["Can I cancel anytime?", "Yes. Every subscription is cancel-anytime via PayFast."],
+                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast. Annual billing saves 20%."],
+                  ["Can schools use Career Compass?", "Yes — schools can join the rewards-based pilot."],
+                  ["Can publishers test ePublisher with one title first?", "Yes. Start with a single title on the free or Starter tier."],
+                  ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
+                  ["Can Creative Studio create ads and product visuals?", "Yes — posters, brochures, social ads, product mockups, and short marketing videos."],
+                ].map(([q, a]) => ({
+                  "@type": "Question",
+                  name: q,
+                  acceptedAnswer: { "@type": "Answer", text: a },
+                })),
+              },
             ],
           }),
         },
@@ -273,10 +290,10 @@ function Index() {
           />
         </a>
         <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
+          <a href="#who" className="hover:text-white transition-colors">Who it's for</a>
           <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
-          <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
-          <a href="#philosophy" className="hover:text-white transition-colors">Philosophy</a>
-          <a href="#join" className="hover:text-white transition-colors">Join</a>
+          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
         </div>
         <a
           href="https://www.resonanceonline.life"
@@ -288,34 +305,31 @@ function Index() {
 
       <main className="pt-28 pb-24 px-6 max-w-7xl mx-auto">
         {/* HERO */}
-        <section className="pt-12 pb-24 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
+        <section className="pt-12 pb-16 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-8">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              The Resonance Hub
+              Tools in tune with you
             </div>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] text-balance mb-8">
-              Tools{" "}
-              <span className="font-serif italic font-normal text-white/80">in tune</span>{" "}
-              <span className="text-gradient-brand">with you.</span>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.98] text-balance mb-8">
+              One Resonance account.{" "}
+              <span className="text-gradient-brand">Multiple AI tools</span> for publishing, content, music videos, careers, and growth.
             </h1>
-            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[55ch] mb-10">
-              The Resonance is a family of apps — ePublisher, Creative Studio, Sync Vision, the
-              Podcast and the upcoming YouTube Optimizer — built on shared brand DNA, shared
-              payments, and the same conscious craft.
+            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[58ch] mb-10">
+              Create books, visuals, music-video concepts, career reports, podcast content, and YouTube growth plans — all under one South African–built creative ecosystem.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
-                href="#ecosystem"
+                href="https://www.resonanceonline.life"
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
               >
-                Explore the apps →
+                Start Free →
               </a>
               <a
                 href="#pricing"
                 className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
               >
-                See pricing
+                Compare Apps
               </a>
             </div>
           </div>
@@ -323,6 +337,84 @@ function Index() {
             <BrandOrb className="w-full" />
           </div>
         </section>
+
+        {/* TRUST STRIP */}
+        <section aria-label="Trust" className="mb-20 -mt-4">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/55">
+            {[
+              "🇿🇦 Built in South Africa",
+              "ZAR pricing",
+              "PayFast secure checkout",
+              "Cancel anytime",
+              "POPIA-conscious",
+              "Free tiers & pilots",
+            ].map((t) => (
+              <li key={t} className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02]">
+                {t}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* WHO IT'S FOR */}
+        <section id="who" className="mb-32 animate-reveal">
+          <div className="text-center mb-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              00 / Who it's for
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Find your pathway
+            </h2>
+            <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
+              Four kinds of creators meet the Resonance ecosystem first. Pick the one that sounds like you.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                title: "Authors & Publishers",
+                body: "Turn manuscripts, PDFs, and stories into polished audiovisual books.",
+                href: "https://www.resonanceonline.life",
+                cta: "Open ePublisher",
+              },
+              {
+                title: "Creators & Small Businesses",
+                body: "Generate posters, ads, brochures, videos, and product campaigns.",
+                href: "https://www.creativestudio.life",
+                cta: "Open Creative Studio",
+              },
+              {
+                title: "Musicians & Artists",
+                body: "Build music-video storyboards, character concepts, and AI-ready scene prompts.",
+                href: "https://www.syncvision.life",
+                cta: "Open Sync Vision",
+              },
+              {
+                title: "Students & Schools",
+                body: "Discover career paths, skills, bursaries, and role-fit insights.",
+                href: "https://www.career-compass.org",
+                cta: "Open Career Compass",
+              },
+            ].map((p) => (
+              <article
+                key={p.title}
+                className="rounded-2xl border border-white/10 bg-card/60 backdrop-blur-xl p-6 flex flex-col"
+              >
+                <h3 className="text-lg font-bold mb-2 tracking-tight">{p.title}</h3>
+                <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{p.body}</p>
+                <a
+                  href={p.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] font-bold uppercase tracking-widest text-white/80 hover:text-white border-t border-white/10 pt-4"
+                >
+                  {p.cta} →
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+
 
         {/* ECOSYSTEM */}
         <section id="ecosystem" className="mb-32">
@@ -473,6 +565,80 @@ function Index() {
             Prices in South African Rand (ZAR). Annual billing saves 20%. Secure card &amp; EFT via
             PayFast. Cancel any subscription anytime.
           </p>
+
+          {/* BUNDLES */}
+          <div className="mt-16">
+            <div className="text-center mb-10">
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+                Ecosystem bundles
+              </div>
+              <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
+                Buy the ecosystem, not just an app
+              </h3>
+              <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
+                One subscription, multiple Resonance tools. Pick the bundle that matches how you create.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  name: "Resonance Starter Bundle",
+                  price: "R99",
+                  body: "ePublisher Starter + basic Creative Studio credits.",
+                },
+                {
+                  name: "Creator Bundle",
+                  price: "R249",
+                  body: "ePublisher Creator + Creative Studio Creator + limited Sync Vision.",
+                  featured: true,
+                },
+                {
+                  name: "Resonance Pro Bundle",
+                  price: "R499",
+                  body: "ePublisher Pro + Creative Studio Pro + Sync Vision Pro.",
+                },
+                {
+                  name: "Business Bundle",
+                  price: "R999",
+                  body: "All Business tools + priority support + onboarding call.",
+                },
+              ].map((b) => (
+                <article
+                  key={b.name}
+                  className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
+                    b.featured
+                      ? "border-[hsl(295_90%_60%/0.4)] bg-card/80 shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]"
+                      : "border-white/10 bg-card/50"
+                  }`}
+                >
+                  {b.featured && (
+                    <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]">
+                      Most popular
+                    </span>
+                  )}
+                  <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
+                  <div className="flex items-baseline gap-1 mb-4">
+                    <span className="text-3xl font-extrabold">{b.price}</span>
+                    <span className="text-xs text-white/50">/ month</span>
+                  </div>
+                  <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
+                  <a
+                    href="mailto:hello@reson8.life?subject=Bundle%20interest"
+                    className={`w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
+                      b.featured
+                        ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
+                        : "border border-white/15 hover:border-white/40"
+                    }`}
+                  >
+                    Request bundle
+                  </a>
+                </article>
+              ))}
+            </div>
+            <p className="text-center text-xs text-white/40 mt-6">
+              Bundles billed monthly via PayFast. Cancel anytime. Annual billing saves 20%.
+            </p>
+          </div>
         </section>
 
         {/* PHILOSOPHY */}
@@ -501,6 +667,62 @@ function Index() {
                 "When the tool disappears, only the intention remains."
               </p>
             </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section id="faq" className="mb-32 animate-reveal">
+          <div className="text-center mb-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              04 / Questions
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Frequently asked
+            </h2>
+          </div>
+          <div className="max-w-3xl mx-auto divide-y divide-white/10 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+            {[
+              {
+                q: "Can I use Resonance tools for free?",
+                a: "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students. Creative Studio and Sync Vision offer trial credits.",
+              },
+              {
+                q: "Do I need one account for all apps?",
+                a: "Each app currently runs its own account. A shared Resonance account is on the roadmap — your subscriptions and billing will unify automatically when it launches.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. Every subscription is cancel-anytime via PayFast. No long-term contracts.",
+              },
+              {
+                q: "Are prices in South African Rand?",
+                a: "All prices are in ZAR and processed locally through PayFast (card and EFT). Annual billing saves 20%.",
+              },
+              {
+                q: "Can schools use Career Compass?",
+                a: "Yes — schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
+              },
+              {
+                q: "Can publishers test ePublisher with one title first?",
+                a: "Absolutely. Start with a single title on the free or Starter tier, then upgrade for full audiovisual exports and backlist conversion.",
+              },
+              {
+                q: "Does Sync Vision generate final videos or AI-ready storyboards?",
+                a: "Sync Vision produces AI-ready music-video storyboards, character performances, and scene prompts — ready to feed into your video generation pipeline.",
+              },
+              {
+                q: "Can Creative Studio create ads and product visuals?",
+                a: "Yes — posters, brochures, social ads, product mockups, and short marketing videos from a single prompt or upload.",
+              },
+            ].map((item) => (
+              <details key={item.q} className="group p-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none font-semibold text-base">
+                  <span>{item.q}</span>
+                  <span className="ml-4 text-white/40 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+                </summary>
+                <p className="mt-3 text-sm text-white/65 leading-relaxed">{item.a}</p>
+              </details>
+            ))}
           </div>
         </section>
 
