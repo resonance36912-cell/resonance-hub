@@ -22,7 +22,7 @@ type App = {
   subscribeHref: string;
   priceLabel: string;
   priceNote: string;
-  accent: "violet" | "magenta" | "pink" | "cyan" | "gold";
+  accent: "violet" | "magenta" | "pink" | "cyan" | "emerald" | "gold";
   status: "live" | "soon" | "free";
 };
 
@@ -73,6 +73,18 @@ const apps: App[] = [
     priceLabel: "Free",
     priceNote: "Listen, watch and shop — no subscription required",
     accent: "cyan",
+    status: "free",
+  },
+  {
+    name: "Career Compass",
+    tagline:
+      "Personality, skills and aptitude assessments matched to SA careers, bursaries and scarce skills.",
+    domain: "career-compass.org",
+    href: "https://www.career-compass.org",
+    subscribeHref: "https://www.career-compass.org/#how",
+    priceLabel: "Free pilot",
+    priceNote: "First 50 students — rewards-based pilot. Paid tiers post-pilot.",
+    accent: "emerald",
     status: "free",
   },
   {
