@@ -69,6 +69,7 @@ type App = {
   priceNote: string;
   accent: "violet" | "magenta" | "pink" | "cyan" | "emerald" | "gold";
   status: "live" | "soon" | "free";
+  logo: string;
 };
 
 const apps: App[] = [
