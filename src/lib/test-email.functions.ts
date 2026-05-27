@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 import { z } from 'zod'
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
 
@@ -12,7 +13,6 @@ export const sendTestSubscriptionEmail = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context
 
-    // Admin only
     const { data: roleRow } = await supabase
       .from('user_roles')
       .select('role')
@@ -24,15 +24,13 @@ export const sendTestSubscriptionEmail = createServerFn({ method: 'POST' })
       return { ok: false as const, error: 'Forbidden — admin role required.' }
     }
 
-    // Fetch caller's access token to forward to the send route
-    const { data: sessionData } = await supabase.auth.getSession()
-    const accessToken = sessionData?.session?.access_token
-
-    if (!accessToken) {
-      return { ok: false as const, error: 'No active session token.' }
+    const req = getRequest()
+    const accessToken = req?.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+    if (!accessToken || !req) {
+      return { ok: false as const, error: 'Missing bearer token.' }
     }
 
-    const origin = process.env.PUBLIC_SITE_URL || 'https://www.reson8.life'
+    const origin = new URL(req.url).origin
     const idempotencyKey = `test-subscription-${userId}-${Date.now()}`
 
     try {
