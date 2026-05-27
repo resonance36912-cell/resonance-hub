@@ -423,10 +423,62 @@ function HeroCarousel({ items }: { items: App[] }) {
   );
 }
 
+const NAV_LINKS = [
+  { id: "who", label: "Who it's for" },
+  { id: "ecosystem", label: "Ecosystem" },
+  { id: "pricing", label: "Pricing" },
+  { id: "philosophy", label: "Philosophy" },
+  { id: "faq", label: "FAQ" },
+] as const;
+
+function useActiveSection(ids: readonly string[]) {
+  const [active, setActive] = useState<string>(ids[0]);
+  useEffect(() => {
+    const els = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [ids]);
+  return active;
+}
+
+function useScrollReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
 function Index() {
+  const active = useActiveSection(NAV_LINKS.map((l) => l.id));
+  useScrollReveal();
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 flex justify-between items-center backdrop-blur-xl bg-background/70 border-b border-white/5">
         <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
           <img
             src={resonanceLockup}
@@ -436,11 +488,26 @@ function Index() {
             className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
           />
         </a>
-        <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
-          <a href="#who" className="hover:text-white transition-colors">Who it's for</a>
-          <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+        <div className="hidden md:flex gap-7 text-[11px] font-semibold tracking-[0.2em] uppercase">
+          {NAV_LINKS.map((l) => {
+            const isActive = active === l.id;
+            return (
+              <a
+                key={l.id}
+                href={`#${l.id}`}
+                className={`relative transition-colors ${
+                  isActive ? "text-white" : "text-white/55 hover:text-white"
+                }`}
+              >
+                {l.label}
+                <span
+                  className={`absolute -bottom-1.5 left-0 h-px bg-gradient-brand transition-all duration-500 ${
+                    isActive ? "w-full opacity-100" : "w-0 opacity-0"
+                  }`}
+                />
+              </a>
+            );
+          })}
         </div>
         <a
           href="https://www.resonanceonline.life"
@@ -449,6 +516,7 @@ function Index() {
           Launch
         </a>
       </nav>
+
 
       <main className="pt-28 pb-24 px-6 max-w-7xl mx-auto">
         {/* HERO */}
