@@ -305,8 +305,17 @@ function Index() {
                     >
                       {app.status === "live" ? "Live" : app.status === "free" ? "Free" : "Soon"}
                     </span>
-                    <div className={`size-2.5 rounded-full ${a.dot} animate-pulse-slow`} />
+                  <div className={`size-2.5 rounded-full ${a.dot} animate-pulse-slow`} />
                   </div>
+
+                  <img
+                    src={app.logo}
+                    alt={`${app.name} logo`}
+                    width={56}
+                    height={56}
+                    loading="lazy"
+                    className="w-14 h-14 object-contain rounded-xl mb-4"
+                  />
 
                   <h3 className="text-2xl font-bold tracking-tight mb-2">{app.name}</h3>
                   <div className={`text-[11px] font-mono uppercase tracking-widest mb-4 ${a.text}`}>
