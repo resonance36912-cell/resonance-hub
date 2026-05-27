@@ -42,15 +42,18 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
         const apiKey = process.env.LOVABLE_API_KEY;
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
 
         if (!apiKey || !supabaseUrl || !serviceKey) {
           return Response.json({ error: "Server configuration error" }, { status: 500 });
         }
 
-        // Caller auth: pg_cron sends the publishable key in the `apikey` header.
+        // Caller auth: only accept the server-side LOVABLE_API_KEY or the
+        // service role key. The Supabase publishable/anon key is exposed in
+        // the browser bundle and must NOT be accepted here. pg_cron should
+        // be configured to send LOVABLE_API_KEY (or the service role key)
+        // in the `apikey` header.
         const callerKey = request.headers.get("apikey") ?? "";
-        if (callerKey !== publishableKey && callerKey !== serviceKey) {
+        if (callerKey !== apiKey && callerKey !== serviceKey) {
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
 
