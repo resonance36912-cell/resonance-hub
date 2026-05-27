@@ -72,19 +72,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Resonance Apps — Tools for the aligned mind" },
+      {
+        name: "description",
+        content:
+          "A family of applications designed to harmonize your digital existence. Explore Resonance Online, Creative Studio, Sync Vision and more.",
+      },
+      { property: "og:title", content: "Resonance Apps" },
+      {
+        property: "og:description",
+        content: "A family of applications designed to harmonize your digital existence.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "canonical", href: "/" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Lora:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
   }),
