@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      subscriptions: {
+        Row: {
+          amount_cents: number
+          app: Database["public"]["Enums"]["subscription_app"]
+          billing_cycle: string
+          cancelled_at: string | null
+          created_at: string
+          currency: string
+          current_period_end: string | null
+          id: string
+          payfast_payment_id: string | null
+          payfast_token: string | null
+          status: Database["public"]["Enums"]["subscription_status"]
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          app: Database["public"]["Enums"]["subscription_app"]
+          billing_cycle?: string
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          payfast_payment_id?: string | null
+          payfast_token?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          app?: Database["public"]["Enums"]["subscription_app"]
+          billing_cycle?: string
+          cancelled_at?: string | null
+          created_at?: string
+          currency?: string
+          current_period_end?: string | null
+          id?: string
+          payfast_payment_id?: string | null
+          payfast_token?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +73,20 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      subscription_app:
+        | "epublisher"
+        | "creative_studio"
+        | "sync_vision"
+        | "youtube_optimizer"
+        | "all_access"
+      subscription_status: "pending" | "active" | "past_due" | "cancelled"
+      subscription_tier:
+        | "free"
+        | "starter"
+        | "creator"
+        | "pro"
+        | "business"
+        | "all_access"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +213,23 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      subscription_app: [
+        "epublisher",
+        "creative_studio",
+        "sync_vision",
+        "youtube_optimizer",
+        "all_access",
+      ],
+      subscription_status: ["pending", "active", "past_due", "cancelled"],
+      subscription_tier: [
+        "free",
+        "starter",
+        "creator",
+        "pro",
+        "business",
+        "all_access",
+      ],
+    },
   },
 } as const
