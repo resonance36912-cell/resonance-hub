@@ -139,13 +139,14 @@ type App = {
   accent: "violet" | "magenta" | "pink" | "cyan" | "emerald" | "gold";
   status: "live" | "soon" | "free";
   logo: string;
+  attribute: { icon: string; label: string; body: string };
 };
 
 const apps: App[] = [
   {
     name: "Resonance ePublisher",
     tagline:
-      "Turn any source into a polished book — outlines, chapters, narration, ePub & full AV exports.",
+      "Turn written stories into immersive, high-fidelity audiovisual books.",
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
     subscribeHref: "https://www.resonanceonline.life/pricing",
@@ -154,11 +155,16 @@ const apps: App[] = [
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
+    attribute: {
+      icon: "🧠",
+      label: "Intelligence (IQ)",
+      body: "Structuring knowledge, automated publishing workflows, and literary preservation.",
+    },
   },
   {
     name: "Creative Studio",
     tagline:
-      "AI-generated posters, brochures, ads and marketing videos from a single prompt or upload.",
+      "Design stunning visuals, cinematic promotional assets, and marketing media instantly.",
     domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
     subscribeHref: "https://www.creativestudio.life/pricing",
@@ -167,11 +173,16 @@ const apps: App[] = [
     logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
+    attribute: {
+      icon: "❤",
+      label: "Soul & Expression (EQ)",
+      body: "Visual storytelling, emotional design, and brand identity mapping.",
+    },
   },
   {
     name: "Sync Vision",
     tagline:
-      "AI-ready music video storyboards and character performances from uploaded media.",
+      "Plan music videos, synchronize lyrics, and visualize stories via AI-driven cinematic workflows.",
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
     subscribeHref: "https://www.syncvision.life/pricing",
@@ -180,11 +191,16 @@ const apps: App[] = [
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
+    attribute: {
+      icon: "🏃",
+      label: "Physical Execution (PQ)",
+      body: "High-fidelity video generation, precise character consistency, and frame-by-frame production.",
+    },
   },
   {
     name: "The Resonance Podcast",
     tagline:
-      "Episodes, clips, reviews and the Resonance shop — wellness, sustainability, mindful living.",
+      "Listen, learn, and get inspired by deep concepts, holistic development, and the future of AI.",
     domain: "resonance-podcast.com",
     href: "https://www.resonance-podcast.com",
     subscribeHref: "https://www.resonance-podcast.com",
@@ -193,11 +209,16 @@ const apps: App[] = [
     logo: logoPodcast,
     accent: "cyan",
     status: "free",
+    attribute: {
+      icon: "∞",
+      label: "Tri-Fold Integration (3-6-9)",
+      body: "Conversational exploration of Mind, Body, and Soul.",
+    },
   },
   {
     name: "Career Compass",
     tagline:
-      "Personality, skills and aptitude assessments matched to SA careers, bursaries and scarce skills.",
+      "Discover your true path, optimize your professional trajectory, and shape your future.",
     domain: "career-compass.org",
     href: "https://www.career-compass.org",
     subscribeHref: "https://www.career-compass.org/#how",
@@ -206,11 +227,16 @@ const apps: App[] = [
     logo: logoCareerCompass,
     accent: "emerald",
     status: "free",
+    attribute: {
+      icon: "🎯",
+      label: "Direction & Purpose",
+      body: "Aligning vocational execution with universal growth principles.",
+    },
   },
   {
     name: "YouTube Optimizer",
     tagline:
-      "Audit any channel and generate a full growth, optimization and monetization strategy.",
+      "Optimize metrics, scale your audience, and thrive sustainably on YouTube.",
     domain: "Coming soon",
     href: "#",
     subscribeHref: "#",
@@ -219,6 +245,11 @@ const apps: App[] = [
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "soon",
+    attribute: {
+      icon: "🚀",
+      label: "Velocity & Growth",
+      body: "Algorithmic mastery met with content authenticity.",
+    },
   },
 ];
 
@@ -307,9 +338,14 @@ function Index() {
         {/* HERO */}
         <section className="pt-12 pb-16 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
           <div>
-            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-8">
+            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
               Tools in tune with you
+            </div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.22em] mb-8">
+              <span className="text-white/70">One account.</span>
+              <span className="text-[hsl(295_90%_75%)]">Multiple tools.</span>
+              <span className="text-[hsl(190_90%_70%)]">Endless possibilities.</span>
             </div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.98] text-balance mb-8">
               One Resonance account.{" "}
@@ -465,7 +501,15 @@ function Index() {
                   <div className={`text-[11px] font-mono uppercase tracking-widest mb-4 ${a.text}`}>
                     {app.domain}
                   </div>
-                  <p className="text-white/65 text-sm leading-relaxed mb-6">{app.tagline}</p>
+                  <p className="text-white/65 text-sm leading-relaxed mb-5">{app.tagline}</p>
+
+                  <div className={`rounded-xl border px-3.5 py-3 mb-2 ${a.chip}`}>
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] mb-1.5">
+                      <span aria-hidden className="text-base leading-none">{app.attribute.icon}</span>
+                      <span>{app.attribute.label}</span>
+                    </div>
+                    <p className="text-[12px] leading-relaxed text-white/70">{app.attribute.body}</p>
+                  </div>
 
                   <div className="mt-auto pt-6 border-t border-white/10">
                     <div className="flex items-baseline justify-between mb-4">
