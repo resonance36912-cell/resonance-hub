@@ -548,6 +548,80 @@ function Index() {
             Prices in South African Rand (ZAR). Annual billing saves 20%. Secure card &amp; EFT via
             PayFast. Cancel any subscription anytime.
           </p>
+
+          {/* BUNDLES */}
+          <div className="mt-16">
+            <div className="text-center mb-10">
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+                Ecosystem bundles
+              </div>
+              <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
+                Buy the ecosystem, not just an app
+              </h3>
+              <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
+                One subscription, multiple Resonance tools. Pick the bundle that matches how you create.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                {
+                  name: "Resonance Starter Bundle",
+                  price: "R99",
+                  body: "ePublisher Starter + basic Creative Studio credits.",
+                },
+                {
+                  name: "Creator Bundle",
+                  price: "R249",
+                  body: "ePublisher Creator + Creative Studio Creator + limited Sync Vision.",
+                  featured: true,
+                },
+                {
+                  name: "Resonance Pro Bundle",
+                  price: "R499",
+                  body: "ePublisher Pro + Creative Studio Pro + Sync Vision Pro.",
+                },
+                {
+                  name: "Business Bundle",
+                  price: "R999",
+                  body: "All Business tools + priority support + onboarding call.",
+                },
+              ].map((b) => (
+                <article
+                  key={b.name}
+                  className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
+                    b.featured
+                      ? "border-[hsl(295_90%_60%/0.4)] bg-card/80 shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]"
+                      : "border-white/10 bg-card/50"
+                  }`}
+                >
+                  {b.featured && (
+                    <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]">
+                      Most popular
+                    </span>
+                  )}
+                  <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
+                  <div className="flex items-baseline gap-1 mb-4">
+                    <span className="text-3xl font-extrabold">{b.price}</span>
+                    <span className="text-xs text-white/50">/ month</span>
+                  </div>
+                  <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
+                  <a
+                    href="mailto:hello@reson8.life?subject=Bundle%20interest"
+                    className={`w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
+                      b.featured
+                        ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
+                        : "border border-white/15 hover:border-white/40"
+                    }`}
+                  >
+                    Request bundle
+                  </a>
+                </article>
+              ))}
+            </div>
+            <p className="text-center text-xs text-white/40 mt-6">
+              Bundles billed monthly via PayFast. Cancel anytime. Annual billing saves 20%.
+            </p>
+          </div>
         </section>
 
         {/* PHILOSOPHY */}
