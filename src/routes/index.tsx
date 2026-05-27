@@ -209,7 +209,7 @@ function Index() {
         </a>
         <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
           <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+          <a href="/pricing" className="hover:text-white transition-colors">Pricing</a>
           <a href="#philosophy" className="hover:text-white transition-colors">Philosophy</a>
           <a href="#join" className="hover:text-white transition-colors">Join</a>
         </div>
