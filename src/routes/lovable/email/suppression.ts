@@ -121,6 +121,15 @@ export const Route = createFileRoute("/lovable/email/suppression")({
           return Response.json({ error: 'Failed to write suppression' }, { status: 500 })
         }
 
+        // 1b. Mirror to email_suppression_list (used by PayFast subscription
+        // emails — admin-visible). Ignore unique-violation duplicates.
+        const { error: listError } = await supabase
+          .from('email_suppression_list')
+          .insert({ email: normalizedEmail, reason: payload.reason })
+        if (listError && listError.code !== '23505') {
+          console.warn('Failed to mirror to email_suppression_list', { error: listError })
+        }
+
         // 2. Append a new log entry for the suppression event (never update existing rows)
         const sendLogStatus = mapReasonToStatus(payload.reason)
         const sendLogMessage = mapReasonToMessage(payload.reason)
