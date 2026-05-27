@@ -653,6 +653,62 @@ function Index() {
           </div>
         </section>
 
+        {/* FAQ */}
+        <section id="faq" className="mb-32 animate-reveal">
+          <div className="text-center mb-12">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              04 / Questions
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Frequently asked
+            </h2>
+          </div>
+          <div className="max-w-3xl mx-auto divide-y divide-white/10 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+            {[
+              {
+                q: "Can I use Resonance tools for free?",
+                a: "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students. Creative Studio and Sync Vision offer trial credits.",
+              },
+              {
+                q: "Do I need one account for all apps?",
+                a: "Each app currently runs its own account. A shared Resonance account is on the roadmap — your subscriptions and billing will unify automatically when it launches.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. Every subscription is cancel-anytime via PayFast. No long-term contracts.",
+              },
+              {
+                q: "Are prices in South African Rand?",
+                a: "All prices are in ZAR and processed locally through PayFast (card and EFT). Annual billing saves 20%.",
+              },
+              {
+                q: "Can schools use Career Compass?",
+                a: "Yes — schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
+              },
+              {
+                q: "Can publishers test ePublisher with one title first?",
+                a: "Absolutely. Start with a single title on the free or Starter tier, then upgrade for full audiovisual exports and backlist conversion.",
+              },
+              {
+                q: "Does Sync Vision generate final videos or AI-ready storyboards?",
+                a: "Sync Vision produces AI-ready music-video storyboards, character performances, and scene prompts — ready to feed into your video generation pipeline.",
+              },
+              {
+                q: "Can Creative Studio create ads and product visuals?",
+                a: "Yes — posters, brochures, social ads, product mockups, and short marketing videos from a single prompt or upload.",
+              },
+            ].map((item) => (
+              <details key={item.q} className="group p-6">
+                <summary className="flex items-center justify-between cursor-pointer list-none font-semibold text-base">
+                  <span>{item.q}</span>
+                  <span className="ml-4 text-white/40 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+                </summary>
+                <p className="mt-3 text-sm text-white/65 leading-relaxed">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* JOIN */}
         <section
           id="join"
