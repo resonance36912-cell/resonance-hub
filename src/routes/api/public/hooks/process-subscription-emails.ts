@@ -194,6 +194,30 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
               })
               .eq("id", row.id);
 
+            // Auto-suppress on terminal failures so we don't keep retrying a
+            // permanently bad address across future subscription events.
+            if (terminal) {
+              const reason = permanent ? "hard_bounce" : "max_retries_exceeded";
+              const recipient = row.recipient_email.toLowerCase();
+              const [{ error: listErr }, { error: globalErr }] = await Promise.all([
+                supabase
+                  .from("email_suppression_list")
+                  .insert({ email: recipient, reason }),
+                supabase
+                  .from("suppressed_emails")
+                  .upsert(
+                    { email: recipient, reason, metadata: { source: "subscription_retry", last_error: errMsg } },
+                    { onConflict: "email" },
+                  ),
+              ]);
+              if (listErr && listErr.code !== "23505") {
+                console.warn("Failed to add to email_suppression_list", listErr);
+              }
+              if (globalErr) {
+                console.warn("Failed to upsert suppressed_emails", globalErr);
+              }
+            }
+
             if (terminal) dlq++;
             else failed++;
           }
