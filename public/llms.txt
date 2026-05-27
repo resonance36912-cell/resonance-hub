@@ -1,0 +1,16 @@
+# The Resonance
+
+> The Resonance is an ecosystem of conscious creative tools — ePublisher, Creative Studio, Sync Vision, the Resonance Podcast, Career Compass and the upcoming YouTube Optimizer — sharing one brand, one PayFast checkout and one account ethos.
+
+## Pages
+
+- [Home](/): Overview of the Resonance ecosystem, the apps, philosophy and how to join.
+- [Pricing](/pricing): Transparent ZAR pricing for every app and the All-Access bundle, billed via PayFast.
+
+## Apps
+
+- [Resonance ePublisher](https://www.resonanceonline.life): Turn any source into a polished book — outlines, chapters, narration, ePub and AV exports.
+- [Creative Studio](https://www.creativestudio.life): AI-generated posters, brochures, ads and marketing videos.
+- [Sync Vision](https://www.syncvision.life): AI-ready music video storyboards and character performances.
+- [The Resonance Podcast](https://www.resonance-podcast.com): Episodes, clips, reviews and the Resonance shop.
+- [Career Compass](https://www.career-compass.org): Personality, skills and aptitude assessments matched to SA careers.

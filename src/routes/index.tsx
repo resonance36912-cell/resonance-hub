@@ -54,6 +54,58 @@ export const Route = createFileRoute("/")({
       links: [
         { rel: "canonical", href: `${origin}/` },
       ],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                name: "The Resonance",
+                url: `${origin}/`,
+                logo: `${origin}/og-logo.png`,
+                sameAs: [
+                  "https://www.resonanceonline.life",
+                  "https://www.creativestudio.life",
+                  "https://www.syncvision.life",
+                  "https://www.resonance-podcast.com",
+                  "https://www.career-compass.org",
+                ],
+              },
+              {
+                "@type": "WebSite",
+                name: "The Resonance",
+                url: `${origin}/`,
+              },
+              {
+                "@type": "SoftwareApplication",
+                name: "Resonance ePublisher",
+                applicationCategory: "MultimediaApplication",
+                operatingSystem: "Web",
+                url: "https://www.resonanceonline.life",
+                offers: { "@type": "Offer", price: "49", priceCurrency: "ZAR" },
+              },
+              {
+                "@type": "SoftwareApplication",
+                name: "Creative Studio",
+                applicationCategory: "DesignApplication",
+                operatingSystem: "Web",
+                url: "https://www.creativestudio.life",
+                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
+              },
+              {
+                "@type": "SoftwareApplication",
+                name: "Sync Vision",
+                applicationCategory: "MultimediaApplication",
+                operatingSystem: "Web",
+                url: "https://www.syncvision.life",
+                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
+              },
+            ],
+          }),
+        },
+      ],
     };
   },
   component: Index,
@@ -469,9 +521,14 @@ function Index() {
               className="w-full max-w-md mx-auto flex flex-col sm:flex-row gap-2"
               onSubmit={(e) => e.preventDefault()}
             >
+              <label htmlFor="join-email" className="sr-only">
+                Email address
+              </label>
               <input
+                id="join-email"
                 type="email"
                 required
+                aria-label="Email address"
                 placeholder="email@domain.com"
                 className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors"
               />

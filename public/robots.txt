@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 
 # Resonance Apps Hub — all public pages are indexable
-Sitemap: https://resonance-hub-life.lovable.app/sitemap.xml
+Sitemap: https://reson8.life/sitemap.xml
