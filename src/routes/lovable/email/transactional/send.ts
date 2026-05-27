@@ -59,6 +59,21 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        // Restrict this endpoint to admin users. The endpoint accepts an
+        // arbitrary recipientEmail and templateData, so allowing any
+        // authenticated user would enable branded phishing/fraud via the
+        // Resonance email infrastructure.
+        const { data: roleRow, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle()
+
+        if (roleError || !roleRow) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
+
         // Parse request body
         let templateName: string
         let recipientEmail: string
