@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import resonanceLogo from "@/assets/resonance-logo.png";
+import resonanceLockupDark from "@/assets/resonance-lockup-dark.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -159,18 +160,15 @@ function BrandOrb({ className = "" }: { className?: string }) {
 function Index() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-5 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
         <a href="#" className="flex items-center gap-2.5 group" aria-label="The Resonance — Home">
           <img
-            src={resonanceLogo}
-            alt=""
-            width={1024}
-            height={1024}
-            className="h-8 w-8 drop-shadow-[0_0_12px_hsl(295_90%_60%/0.6)]"
+            src={resonanceLockupDark}
+            alt="The Resonance"
+            width={1536}
+            height={512}
+            className="h-7 w-auto"
           />
-          <span className="text-sm font-bold tracking-tight">
-            The <span className="text-gradient-brand">Resonance</span>
-          </span>
         </a>
         <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
           <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
@@ -432,9 +430,13 @@ function Index() {
       <footer className="py-12 px-6 border-t border-white/5 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7">
-              <BrandOrb />
-            </div>
+            <img
+              src={resonanceLockupDark}
+              alt="The Resonance"
+              width={1536}
+              height={512}
+              className="h-6 w-auto opacity-60"
+            />
             <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
               © {new Date().getFullYear()} The Resonance · Ecosystem Hub
             </div>
