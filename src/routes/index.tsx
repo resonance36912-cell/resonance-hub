@@ -514,7 +514,7 @@ function Index() {
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               00 / Who it's for
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Find your pathway
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
@@ -575,7 +575,7 @@ function Index() {
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
                 01 / The Apps
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">The Ecosystem</h2>
+              <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">The Ecosystem</h2>
             </div>
             <p className="text-white/60 max-w-md text-sm leading-relaxed">
               Each app is independently deployed and self-serviced — but all share the same brand,
@@ -674,7 +674,7 @@ function Index() {
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               02 / Costings
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Transparent ZAR pricing
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
@@ -836,7 +836,7 @@ function Index() {
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               04 / Questions
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Frequently asked
             </h2>
           </div>
@@ -893,7 +893,7 @@ function Index() {
         >
           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_0%,hsl(295_90%_60%/0.4),transparent_60%)]" />
           <div className="relative">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
               Join the <span className="text-gradient-brand">frequency.</span>
             </h2>
             <p className="text-white/60 mb-10 max-w-md mx-auto">
