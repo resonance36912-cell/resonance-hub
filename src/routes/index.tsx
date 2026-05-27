@@ -308,6 +308,121 @@ function BrandOrb({ className = "" }: { className?: string }) {
   );
 }
 
+const accentHsl: Record<App["accent"], string> = {
+  magenta: "295 90% 60%",
+  violet: "265 85% 65%",
+  pink: "325 90% 65%",
+  cyan: "190 90% 60%",
+  emerald: "150 80% 55%",
+  gold: "45 85% 60%",
+};
+
+function HeroCarousel({ items }: { items: App[] }) {
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(() => setI((p) => (p + 1) % items.length), 4200);
+    return () => clearInterval(t);
+  }, [paused, items.length]);
+
+  const active = items[i];
+  const c = accentHsl[active.accent];
+
+  return (
+    <div
+      className="relative aspect-square max-w-md mx-auto w-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      aria-roledescription="carousel"
+      aria-label="Resonance app showcase"
+    >
+      {/* Glow stage */}
+      <div className="absolute inset-0 -z-10">
+        <div
+          key={`glow-${i}`}
+          className="absolute inset-[8%] rounded-full blur-3xl opacity-60 animate-slide-fade"
+          style={{
+            background: `radial-gradient(circle at 50% 50%, hsl(${c} / 0.7), transparent 70%)`,
+          }}
+        />
+        <div
+          className="absolute inset-[2%] rounded-full border border-white/5 animate-orbit"
+          style={{ boxShadow: `inset 0 0 60px hsl(${c} / 0.15)` }}
+        />
+        <div
+          className="absolute inset-[18%] rounded-full border border-white/[0.04] animate-orbit"
+          style={{ animationDirection: "reverse", animationDuration: "60s" }}
+        />
+      </div>
+
+      {/* Logo stage */}
+      <div className="relative aspect-square">
+        <img
+          key={`logo-${i}`}
+          src={active.logo}
+          alt={`${active.name} logo`}
+          width={1024}
+          height={1024}
+          className="absolute inset-[14%] w-[72%] h-[72%] object-contain animate-slide-fade"
+          style={{ filter: `drop-shadow(0 0 30px hsl(${c} / 0.7))` }}
+        />
+      </div>
+
+      {/* Caption card */}
+      <div
+        key={`cap-${i}`}
+        className="absolute -bottom-2 left-2 right-2 sm:left-0 sm:right-0 rounded-2xl border border-white/10 bg-background/70 backdrop-blur-xl p-4 animate-slide-fade"
+        style={{ boxShadow: `0 20px 60px -20px hsl(${c} / 0.45)` }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div
+              className="text-[10px] font-mono uppercase tracking-[0.22em] mb-1"
+              style={{ color: `hsl(${c})` }}
+            >
+              {active.attribute.icon} {active.attribute.label}
+            </div>
+            <div className="font-display text-base font-bold truncate">{active.name}</div>
+          </div>
+          <a
+            href={active.href}
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+          >
+            Open →
+          </a>
+        </div>
+      </div>
+
+      {/* Dots */}
+      <div className="absolute -bottom-12 left-0 right-0 flex justify-center gap-2">
+        {items.map((it, idx) => (
+          <button
+            key={it.name}
+            type="button"
+            aria-label={`Show ${it.name}`}
+            aria-current={idx === i}
+            onClick={() => setI(idx)}
+            className="h-1.5 rounded-full transition-all"
+            style={{
+              width: idx === i ? 22 : 6,
+              background:
+                idx === i
+                  ? `hsl(${accentHsl[it.accent]})`
+                  : "hsl(0 0% 100% / 0.18)",
+              boxShadow:
+                idx === i ? `0 0 12px hsl(${accentHsl[it.accent]} / 0.7)` : "none",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Index() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
