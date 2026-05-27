@@ -2,6 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
+import logoEpublisher from "@/assets/logo-epublisher.png";
+import logoCreativeStudio from "@/assets/logo-creative-studio.png";
+import logoSyncVision from "@/assets/logo-sync-vision.png";
+import logoPodcast from "@/assets/logo-podcast.png";
+import logoCareerCompass from "@/assets/logo-career-compass.png";
+import logoYouTubeOptimizer from "@/assets/logo-youtube-optimizer.png";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -63,6 +69,7 @@ type App = {
   priceNote: string;
   accent: "violet" | "magenta" | "pink" | "cyan" | "emerald" | "gold";
   status: "live" | "soon" | "free";
+  logo: string;
 };
 
 const apps: App[] = [
@@ -75,6 +82,7 @@ const apps: App[] = [
     subscribeHref: "https://www.resonanceonline.life/pricing",
     priceLabel: "from R49 / month",
     priceNote: "Free · Starter R49 · Creator R149 · Pro R299 · Business R699",
+    logo: logoEpublisher,
     accent: "magenta",
     status: "live",
   },
@@ -87,6 +95,7 @@ const apps: App[] = [
     subscribeHref: "https://www.creativestudio.life/pricing",
     priceLabel: "from R149 / month",
     priceNote: "Creator R149 · Pro R299 · Business R699",
+    logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
   },
@@ -99,6 +108,7 @@ const apps: App[] = [
     subscribeHref: "https://www.syncvision.life/pricing",
     priceLabel: "from R149 / month",
     priceNote: "Creator R149 · Pro R299 · Business R699",
+    logo: logoSyncVision,
     accent: "pink",
     status: "live",
   },
@@ -111,6 +121,7 @@ const apps: App[] = [
     subscribeHref: "https://www.resonance-podcast.com",
     priceLabel: "Free",
     priceNote: "Listen, watch and shop — no subscription required",
+    logo: logoPodcast,
     accent: "cyan",
     status: "free",
   },
@@ -123,6 +134,7 @@ const apps: App[] = [
     subscribeHref: "https://www.career-compass.org/#how",
     priceLabel: "Free pilot",
     priceNote: "First 50 students — rewards-based pilot. Paid tiers post-pilot.",
+    logo: logoCareerCompass,
     accent: "emerald",
     status: "free",
   },
@@ -135,6 +147,7 @@ const apps: App[] = [
     subscribeHref: "#",
     priceLabel: "Pricing TBA",
     priceNote: "Joining the ecosystem Q3 2026",
+    logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "soon",
   },
@@ -292,8 +305,17 @@ function Index() {
                     >
                       {app.status === "live" ? "Live" : app.status === "free" ? "Free" : "Soon"}
                     </span>
-                    <div className={`size-2.5 rounded-full ${a.dot} animate-pulse-slow`} />
+                  <div className={`size-2.5 rounded-full ${a.dot} animate-pulse-slow`} />
                   </div>
+
+                  <img
+                    src={app.logo}
+                    alt={`${app.name} logo`}
+                    width={56}
+                    height={56}
+                    loading="lazy"
+                    className="w-14 h-14 object-contain rounded-xl mb-4"
+                  />
 
                   <h3 className="text-2xl font-bold tracking-tight mb-2">{app.name}</h3>
                   <div className={`text-[11px] font-mono uppercase tracking-widest mb-4 ${a.text}`}>
