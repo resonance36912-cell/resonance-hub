@@ -446,6 +446,9 @@ function Index() {
             <a href="https://www.syncvision.life" className="hover:text-white transition-colors">
               SyncVision
             </a>
+            <a href="https://www.career-compass.org" className="hover:text-white transition-colors">
+              Career Compass
+            </a>
           </div>
         </div>
       </footer>
