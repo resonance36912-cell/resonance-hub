@@ -334,6 +334,7 @@ function Index() {
                   ["Creative Studio", "—", "—", "R149", "R299", "R699"],
                   ["Sync Vision", "—", "—", "R149", "R299", "R699"],
                   ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
+                  ["Career Compass", "Pilot", "—", "—", "—", "—"],
                   ["YouTube Optimizer", "TBA", "TBA", "TBA", "TBA", "TBA"],
                 ].map((row) => (
                   <tr key={row[0]} className="hover:bg-white/[0.02] transition-colors">
