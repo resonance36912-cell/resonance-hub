@@ -21,6 +21,7 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
+import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -85,6 +86,12 @@ const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   path: '/api/public/payfast/itn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksProcessSubscriptionEmailsRoute =
+  ApiPublicHooksProcessSubscriptionEmailsRouteImport.update({
+    id: '/api/public/hooks/process-subscription-emails',
+    path: '/api/public/hooks/process-subscription-emails',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -109,6 +117,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -124,6 +133,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/sitemap/xml': typeof SitemapXmlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/sitemap/xml'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/sitemap/xml'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -168,6 +180,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/sitemap/xml'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -183,6 +196,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   SitemapXmlRoute: typeof SitemapXmlRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -275,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-subscription-emails': {
+      id: '/api/public/hooks/process-subscription-emails'
+      path: '/api/public/hooks/process-subscription-emails'
+      fullPath: '/api/public/hooks/process-subscription-emails'
+      preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -287,6 +308,8 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   SitemapXmlRoute: SitemapXmlRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksProcessSubscriptionEmailsRoute:
+    ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
