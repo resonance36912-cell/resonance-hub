@@ -458,30 +458,28 @@ function Index() {
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
               Tools in tune with you
             </div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-bold uppercase tracking-[0.22em] mb-8">
-              <span className="text-white/70">One account.</span>
-              <span className="text-[hsl(295_90%_75%)]">Multiple tools.</span>
-              <span className="text-[hsl(190_90%_70%)]">Endless possibilities.</span>
-            </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
-              One Resonance account.{" "}
-              <span className="text-gradient-brand">Multiple AI tools</span> for publishing, content, music videos, careers, and growth.
+              AI tools for creators, learners, and businesses —{" "}
+              <span className="text-gradient-brand">all in one Resonance ecosystem.</span>
             </h1>
-            <p className="text-base md:text-lg text-white/70 leading-[1.65] text-pretty max-w-[58ch] mb-10">
-              Create books, visuals, music-video concepts, career reports, podcast content, and YouTube growth plans — all under one South African–built creative ecosystem.
+            <p className="text-base md:text-lg text-white/70 leading-[1.65] text-pretty max-w-[58ch] mb-6">
+              Create books, visuals, music-video concepts, career reports, podcast content, and growth strategies from one connected Resonance Hub.
+            </p>
+            <p className="text-sm text-white/55 leading-relaxed max-w-[58ch] mb-10">
+              Free and paid plans in South African Rand. PayFast supported. Cancel anytime.
             </p>
             <div className="flex flex-wrap gap-3">
               <a
                 href="https://www.resonanceonline.life"
-                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
+                className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
               >
-                Start Free →
+                Start with ePublisher →
               </a>
               <a
-                href="#pricing"
-                className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
+                href="#apps"
+                className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
               >
-                Compare Apps
+                Explore all tools
               </a>
             </div>
           </div>
