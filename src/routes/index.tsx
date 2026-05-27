@@ -1,19 +1,56 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const origin = await getRequestOrigin();
+    return { origin };
+  },
+  head: ({ loaderData }) => {
+    const origin = loaderData?.origin ?? "https://resonance-hub-life.lovable.app";
+    return {
+      meta: [
+        { title: "The Resonance — One ecosystem for the aligned mind" },
+        {
+          name: "description",
+          content:
+            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+        },
+        {
+          property: "og:title",
+          content: "The Resonance — One ecosystem for the aligned mind",
+        },
+        {
+          property: "og:description",
+          content:
+            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+        },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: `${origin}/` },
+        { property: "og:image", content: `${origin}/og-logo.png` },
+        { property: "og:image:alt", content: "The Resonance logo" },
+        { property: "og:site_name", content: "The Resonance" },
+        { name: "twitter:card", content: "summary_large_image" },
+        {
+          name: "twitter:title",
+          content: "The Resonance — One ecosystem for the aligned mind",
+        },
+        {
+          name: "twitter:description",
+          content:
+            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+        },
+        { name: "twitter:image", content: `${origin}/og-logo.png` },
+        { name: "twitter:image:alt", content: "The Resonance logo" },
+      ],
+      links: [
+        { rel: "canonical", href: `${origin}/` },
+      ],
+    };
+  },
   component: Index,
-  head: () => ({
-    meta: [
-      { title: "The Resonance — One ecosystem for the aligned mind" },
-      {
-        name: "description",
-        content:
-          "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
-      },
-    ],
-  }),
 });
 
 type App = {

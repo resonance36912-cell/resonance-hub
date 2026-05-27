@@ -72,29 +72,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "The Resonance — One ecosystem for the aligned mind" },
-      {
-        name: "description",
-        content:
-          "The Resonance hub: ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. Unified brand, unified PayFast checkout.",
-      },
-      { property: "og:title", content: "The Resonance — One ecosystem for the aligned mind" },
-      {
-        property: "og:description",
-        content: "One ecosystem. One frequency. Five tools for the aligned mind.",
-      },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "The Resonance" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "The Resonance — One ecosystem for the aligned mind" },
-      { name: "description", content: "Resonance Hub is a website that hosts and showcases a suite of Resonance Apps, offering a unified platform for various digital tools." },
-      { property: "og:description", content: "Resonance Hub is a website that hosts and showcases a suite of Resonance Apps, offering a unified platform for various digital tools." },
-      { name: "twitter:description", content: "Resonance Hub is a website that hosts and showcases a suite of Resonance Apps, offering a unified platform for various digital tools." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1499df13-7d71-4fab-81ce-e18e0a71d8a3/id-preview-719d7a5e--4e81bcd7-27d5-4200-87cf-73948cf6cb07.lovable.app-1779864513026.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1499df13-7d71-4fab-81ce-e18e0a71d8a3/id-preview-719d7a5e--4e81bcd7-27d5-4200-87cf-73948cf6cb07.lovable.app-1779864513026.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "canonical", href: "/" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
