@@ -155,8 +155,8 @@ function EmailsAdminPage() {
 
 
         {data && (
-          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {(["total", "queued", "sent", "failed", "suppressed"] as const).map((k) => (
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-6">
+            {(["total", "queued", "sent", "failed", "suppressed", "dlq"] as const).map((k) => (
               <button
                 key={k}
                 onClick={() => setFilter(k === "total" ? "all" : k)}
@@ -195,39 +195,110 @@ function EmailsAdminPage() {
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Recipient</th>
                   <th className="px-4 py-3">App · Tier</th>
-                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3">Attempts</th>
+                  <th className="px-4 py-3">Next retry</th>
                   <th className="px-4 py-3">pf_payment_id</th>
-                  <th className="px-4 py-3">Notes</th>
+                  <th className="px-4 py-3 w-8"></th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((s) => (
-                  <tr key={s.id} className="border-t border-border hover:bg-accent/30">
-                    <td className="px-4 py-3 font-mono text-xs">
-                      {new Date(s.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block rounded border px-2 py-0.5 text-xs ${
-                          STATUS_STYLE[s.status] ?? "bg-muted text-muted-foreground border-border"
-                        }`}
+                {filtered.map((s) => {
+                  const attempts = (data?.attemptsBySend?.[s.id] ?? []) as Attempt[];
+                  const isOpen = expanded === s.id;
+                  const retriable = s.status === "failed" || s.status === "queued";
+                  return (
+                    <>
+                      <tr
+                        key={s.id}
+                        className="border-t border-border hover:bg-accent/30 cursor-pointer"
+                        onClick={() => setExpanded(isOpen ? null : s.id)}
                       >
-                        {s.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs">{s.recipient_email}</td>
-                    <td className="px-4 py-3 font-mono text-xs">
-                      {s.app} · {s.tier}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs">
-                      R{(s.amount_cents / 100).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs">{s.pf_payment_id}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {s.skipped_reason ?? "—"}
-                    </td>
-                  </tr>
-                ))}
+                        <td className="px-4 py-3 font-mono text-xs">
+                          {new Date(s.created_at).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block rounded border px-2 py-0.5 text-xs ${
+                              STATUS_STYLE[s.status] ?? "bg-muted text-muted-foreground border-border"
+                            }`}
+                          >
+                            {s.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs">{s.recipient_email}</td>
+                        <td className="px-4 py-3 font-mono text-xs">
+                          {s.app} · {s.tier}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">
+                          {s.attempt_count} / 5
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                          {retriable && s.next_attempt_at
+                            ? new Date(s.next_attempt_at).toLocaleTimeString()
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">{s.pf_payment_id}</td>
+                        <td className="px-4 py-3 text-xs text-muted-foreground">{isOpen ? "▾" : "▸"}</td>
+                      </tr>
+                      {isOpen && (
+                        <tr className="border-t border-border bg-muted/20">
+                          <td colSpan={8} className="px-4 py-4">
+                            {s.last_error && (
+                              <div className="mb-3 rounded border border-red-500/30 bg-red-500/5 p-3 text-xs text-red-300">
+                                <strong>Last error:</strong> {s.last_error}
+                              </div>
+                            )}
+                            {s.skipped_reason && (
+                              <div className="mb-3 text-xs text-muted-foreground">
+                                Skipped: {s.skipped_reason}
+                              </div>
+                            )}
+                            <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">
+                              Delivery attempts
+                            </p>
+                            {attempts.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">No attempts recorded yet.</p>
+                            ) : (
+                              <table className="w-full text-xs">
+                                <thead className="text-muted-foreground">
+                                  <tr>
+                                    <th className="px-2 py-1 text-left">#</th>
+                                    <th className="px-2 py-1 text-left">When</th>
+                                    <th className="px-2 py-1 text-left">Status</th>
+                                    <th className="px-2 py-1 text-left">Error</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {attempts.map((a) => (
+                                    <tr key={a.id} className="border-t border-border/60">
+                                      <td className="px-2 py-1 font-mono">{a.attempt_number}</td>
+                                      <td className="px-2 py-1 font-mono">
+                                        {new Date(a.created_at).toLocaleString()}
+                                      </td>
+                                      <td className="px-2 py-1">
+                                        <span
+                                          className={`inline-block rounded border px-1.5 py-0.5 ${
+                                            STATUS_STYLE[a.status] ??
+                                            "bg-muted text-muted-foreground border-border"
+                                          }`}
+                                        >
+                                          {a.status}
+                                        </span>
+                                      </td>
+                                      <td className="px-2 py-1 text-muted-foreground">
+                                        {a.error_message ?? "—"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
               </tbody>
             </table>
           </div>
