@@ -15,6 +15,7 @@ import { Route as SitemapXmlRouteImport } from './routes/sitemap.xml'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -51,6 +52,11 @@ const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/admin/emails',
   path: '/admin/emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEmailDomainRoute = AdminEmailDomainRouteImport.update({
+  id: '/admin/email-domain',
+  path: '/admin/email-domain',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pricing'
     | '/account/subscriptions'
+    | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/webhooks'
     | '/email/unsubscribe'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pricing'
     | '/account/subscriptions'
+    | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/webhooks'
     | '/email/unsubscribe'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/'
     | '/pricing'
     | '/account/subscriptions'
+    | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/webhooks'
     | '/email/unsubscribe'
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PricingRoute: typeof PricingRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/emails'
       fullPath: '/admin/emails'
       preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/email-domain': {
+      id: '/admin/email-domain'
+      path: '/admin/email-domain'
+      fullPath: '/admin/email-domain'
+      preLoaderRoute: typeof AdminEmailDomainRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/subscriptions': {
@@ -303,6 +323,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PricingRoute: PricingRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
