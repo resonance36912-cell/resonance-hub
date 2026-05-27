@@ -463,11 +463,11 @@ function Index() {
               <span className="text-[hsl(295_90%_75%)]">Multiple tools.</span>
               <span className="text-[hsl(190_90%_70%)]">Endless possibilities.</span>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.98] text-balance mb-8">
+            <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
               One Resonance account.{" "}
               <span className="text-gradient-brand">Multiple AI tools</span> for publishing, content, music videos, careers, and growth.
             </h1>
-            <p className="text-lg md:text-xl text-white/70 leading-relaxed text-pretty max-w-[58ch] mb-10">
+            <p className="text-base md:text-lg text-white/70 leading-[1.65] text-pretty max-w-[58ch] mb-10">
               Create books, visuals, music-video concepts, career reports, podcast content, and YouTube growth plans — all under one South African–built creative ecosystem.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -485,8 +485,8 @@ function Index() {
               </a>
             </div>
           </div>
-          <div className="relative aspect-square max-w-md mx-auto w-full">
-            <BrandOrb className="w-full" />
+          <div className="md:pl-4">
+            <HeroCarousel items={apps} />
           </div>
         </section>
 
