@@ -105,9 +105,39 @@
 
 .bg-gradient-brand { background: var(--gradient-brand); }
 
+/* Scroll-triggered reveal */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s var(--ease-out-expo), transform 0.9s var(--ease-out-expo);
+  will-change: opacity, transform;
+}
+[data-reveal].is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}
+
+/* App card hover sheen */
+.card-sheen { position: relative; overflow: hidden; }
+.card-sheen::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(115deg, transparent 35%, hsl(0 0% 100% / 0.06) 50%, transparent 65%);
+  transform: translateX(-100%);
+  transition: transform 0.9s var(--ease-out-expo);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.card-sheen:hover::before { transform: translateX(100%); }
+
 @layer base {
   * { border-color: var(--color-border); }
-  html { color-scheme: dark; }
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scroll-padding-top: 88px;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
