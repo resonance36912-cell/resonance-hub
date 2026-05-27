@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/")({
-  component: Index,
-  head: () => ({
+  loader: async () => {
+    const origin = await getRequestOrigin();
+    return { origin };
+  },
+  head: ({ loaderData }) => ({
     meta: [
       { title: "The Resonance — One ecosystem for the aligned mind" },
       {
@@ -12,8 +16,38 @@ export const Route = createFileRoute("/")({
         content:
           "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
       },
+      {
+        property: "og:title",
+        content: "The Resonance — One ecosystem for the aligned mind",
+      },
+      {
+        property: "og:description",
+        content:
+          "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${loaderData.origin}/` },
+      { property: "og:image", content: `${loaderData.origin}/og-logo.png` },
+      { property: "og:image:alt", content: "The Resonance logo" },
+      { property: "og:site_name", content: "The Resonance" },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "The Resonance — One ecosystem for the aligned mind",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+      },
+      { name: "twitter:image", content: `${loaderData.origin}/og-logo.png` },
+      { name: "twitter:image:alt", content: "The Resonance logo" },
+    ],
+    links: [
+      { rel: "canonical", href: `${loaderData.origin}/` },
     ],
   }),
+  component: Index,
 });
 
 type App = {
