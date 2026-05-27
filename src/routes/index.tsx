@@ -423,10 +423,62 @@ function HeroCarousel({ items }: { items: App[] }) {
   );
 }
 
+const NAV_LINKS = [
+  { id: "who", label: "Who it's for" },
+  { id: "ecosystem", label: "Ecosystem" },
+  { id: "pricing", label: "Pricing" },
+  { id: "philosophy", label: "Philosophy" },
+  { id: "faq", label: "FAQ" },
+] as const;
+
+function useActiveSection(ids: readonly string[]) {
+  const [active, setActive] = useState<string>(ids[0]);
+  useEffect(() => {
+    const els = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [ids]);
+  return active;
+}
+
+function useScrollReveal() {
+  useEffect(() => {
+    const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
 function Index() {
+  const active = useActiveSection(NAV_LINKS.map((l) => l.id));
+  useScrollReveal();
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 flex justify-between items-center backdrop-blur-xl bg-background/70 border-b border-white/5">
         <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
           <img
             src={resonanceLockup}
@@ -436,11 +488,26 @@ function Index() {
             className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
           />
         </a>
-        <div className="hidden md:flex gap-8 text-[11px] font-semibold tracking-[0.2em] uppercase text-white/70">
-          <a href="#who" className="hover:text-white transition-colors">Who it's for</a>
-          <a href="#ecosystem" className="hover:text-white transition-colors">Ecosystem</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+        <div className="hidden md:flex gap-7 text-[11px] font-semibold tracking-[0.2em] uppercase">
+          {NAV_LINKS.map((l) => {
+            const isActive = active === l.id;
+            return (
+              <a
+                key={l.id}
+                href={`#${l.id}`}
+                className={`relative transition-colors ${
+                  isActive ? "text-white" : "text-white/55 hover:text-white"
+                }`}
+              >
+                {l.label}
+                <span
+                  className={`absolute -bottom-1.5 left-0 h-px bg-gradient-brand transition-all duration-500 ${
+                    isActive ? "w-full opacity-100" : "w-0 opacity-0"
+                  }`}
+                />
+              </a>
+            );
+          })}
         </div>
         <a
           href="https://www.resonanceonline.life"
@@ -449,6 +516,7 @@ function Index() {
           Launch
         </a>
       </nav>
+
 
       <main className="pt-28 pb-24 px-6 max-w-7xl mx-auto">
         {/* HERO */}
@@ -615,7 +683,7 @@ function Index() {
         </section>
 
         {/* WHO IT'S FOR */}
-        <section id="who" className="mb-32 animate-reveal">
+        <section id="who" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               00 / Who it's for
@@ -675,7 +743,7 @@ function Index() {
 
 
         {/* ECOSYSTEM */}
-        <section id="ecosystem" className="mb-32">
+        <section id="ecosystem" data-reveal className="mb-32">
           <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
@@ -696,10 +764,11 @@ function Index() {
               return (
                 <article
                   key={app.name}
-                  className={`group relative overflow-hidden rounded-2xl bg-card/60 backdrop-blur-xl border border-white/10 ${
+                  data-reveal
+                  className={`group card-sheen relative rounded-2xl bg-card/60 backdrop-blur-xl border border-white/10 ${
                     disabled ? "opacity-70" : a.ring
-                  } flex flex-col p-7 transition-all duration-500 animate-reveal min-h-[340px]`}
-                  style={{ animationDelay: `${120 + i * 80}ms` }}
+                  } flex flex-col p-7 transition-all duration-500 hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_30px_60px_-25px_hsl(295_90%_60%/0.45)] min-h-[340px]`}
+                  style={{ transitionDelay: `${i * 40}ms` }}
                 >
                   <div className="flex items-start justify-between mb-6">
                     <span
@@ -775,7 +844,7 @@ function Index() {
         </section>
 
         {/* PRICING TABLE */}
-        <section id="pricing" className="mb-32 animate-reveal">
+        <section id="pricing" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               02 / Costings
@@ -910,7 +979,8 @@ function Index() {
         {/* PHILOSOPHY */}
         <section
           id="philosophy"
-          className="mb-32 grid md:grid-cols-2 gap-16 items-center animate-reveal"
+          data-reveal
+          className="mb-32 grid md:grid-cols-2 gap-16 items-center"
         >
           <div className="relative aspect-square max-w-sm mx-auto w-full">
             <BrandOrb className="w-full" />
@@ -937,7 +1007,7 @@ function Index() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="mb-32 animate-reveal">
+        <section id="faq" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
               04 / Questions
