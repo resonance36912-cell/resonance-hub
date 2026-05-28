@@ -152,7 +152,7 @@ const apps: App[] = [
     href: "https://www.resonanceonline.life",
     subscribeHref: "https://www.resonanceonline.life/pricing",
     priceLabel: "from R49 / month",
-    priceNote: "Free · Starter R49 · Creator R149 · Pro R299 · Business R699",
+    priceNote: "Free · Starter R49 · Creator R199 · Pro R449 · Business R999",
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
@@ -187,8 +187,8 @@ const apps: App[] = [
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
     subscribeHref: "https://www.syncvision.life/pricing",
-    priceLabel: "from R149 / month",
-    priceNote: "Creator R149 · Pro R299 · Business R699",
+    priceLabel: "from R549 / month",
+    priceNote: "Creator R549 · Pro R1,399 · Business R2,799",
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
@@ -238,14 +238,14 @@ const apps: App[] = [
     name: "YouTube Optimizer",
     tagline:
       "Optimize metrics, scale your audience, and thrive sustainably on YouTube.",
-    domain: "Coming soon",
-    href: "#",
-    subscribeHref: "#",
-    priceLabel: "Pricing TBA",
-    priceNote: "Joining the ecosystem Q3 2026",
+    domain: "resonanceoptimizer.lovable.app",
+    href: "https://resonanceoptimizer.lovable.app",
+    subscribeHref: "https://resonanceoptimizer.lovable.app",
+    priceLabel: "from R149 / month",
+    priceNote: "Starter R149 · Pro R599 · Business R2,999",
     logo: logoYouTubeOptimizer,
     accent: "gold",
-    status: "soon",
+    status: "live",
     attribute: {
       icon: "🚀",
       label: "Velocity & Growth",
@@ -872,12 +872,12 @@ function Index() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {[
-                  ["Resonance ePublisher", "✓", "R49", "R149", "R299", "R699"],
+                  ["Resonance ePublisher", "✓", "R49", "R199", "R449", "R999"],
                   ["Creative Studio", "—", "—", "R149", "R299", "R699"],
-                  ["Sync Vision", "—", "—", "R149", "R299", "R699"],
+                  ["Sync Vision", "—", "—", "R549", "R1,399", "R2,799"],
                   ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
                   ["Career Compass", "Pilot", "—", "—", "—", "—"],
-                  ["YouTube Optimizer", "TBA", "TBA", "TBA", "TBA", "TBA"],
+                  ["YouTube Optimizer", "—", "R149", "—", "R599", "R2,999"],
                 ].map((row) => (
                   <tr key={row[0]} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4 font-semibold">{row[0]}</td>
@@ -918,23 +918,23 @@ function Index() {
               {[
                 {
                   name: "Resonance Starter Bundle",
-                  price: "R99",
+                  price: "R149",
                   body: "ePublisher Starter + basic Creative Studio credits.",
                 },
                 {
                   name: "Creator Bundle",
-                  price: "R249",
-                  body: "ePublisher Creator + Creative Studio Creator + limited Sync Vision.",
+                  price: "R449",
+                  body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter.",
                   featured: true,
                 },
                 {
                   name: "Resonance Pro Bundle",
-                  price: "R499",
-                  body: "ePublisher Pro + Creative Studio Pro + Sync Vision Pro.",
+                  price: "R1,499",
+                  body: "Pro tier across ePublisher, Creative Studio, Sync Vision & YouTube Optimizer.",
                 },
                 {
                   name: "Business Bundle",
-                  price: "R999",
+                  price: "R3,499",
                   body: "All Business tools + priority support + onboarding call.",
                 },
               ].map((b) => (
