@@ -108,7 +108,7 @@ function SubscriptionsPage() {
                       to="/pricing"
                       className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition"
                     >
-                      Upgrade — R499/mo
+                      Upgrade — R1,499/mo
                     </Link>
                   )}
                 </div>
