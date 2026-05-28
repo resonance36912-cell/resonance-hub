@@ -15,6 +15,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
@@ -54,6 +55,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   id: '/success',
   path: '/success',
+  getParentRoute: () => CheckoutRoute,
+} as any)
+const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
+  id: '/cancel',
+  path: '/cancel',
   getParentRoute: () => CheckoutRoute,
 } as any)
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/webhooks'
+    | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/lovable/email/suppression'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/webhooks'
+    | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/lovable/email/suppression'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/webhooks'
+    | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/lovable/email/suppression'
@@ -283,6 +295,13 @@ declare module '@tanstack/react-router' {
       path: '/success'
       fullPath: '/checkout/success'
       preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
+    '/checkout/cancel': {
+      id: '/checkout/cancel'
+      path: '/cancel'
+      fullPath: '/checkout/cancel'
+      preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof CheckoutRoute
     }
     '/admin/webhooks': {
@@ -359,10 +378,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface CheckoutRouteChildren {
+  CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
 }
 
 const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
 }
 
