@@ -173,6 +173,33 @@ export type Database = {
         }
         Relationships: []
       }
+      sku_costs: {
+        Row: {
+          cost_cents: number
+          created_at: string
+          currency: string
+          notes: string | null
+          sku: string
+          updated_at: string
+        }
+        Insert: {
+          cost_cents?: number
+          created_at?: string
+          currency?: string
+          notes?: string | null
+          sku: string
+          updated_at?: string
+        }
+        Update: {
+          cost_cents?: number
+          created_at?: string
+          currency?: string
+          notes?: string | null
+          sku?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       subscription_email_attempts: {
         Row: {
           attempt_number: number
