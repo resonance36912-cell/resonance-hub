@@ -872,12 +872,12 @@ function Index() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {[
-                  ["Resonance ePublisher", "✓", "R49", "R149", "R299", "R699"],
+                  ["Resonance ePublisher", "✓", "R49", "R199", "R449", "R999"],
                   ["Creative Studio", "—", "—", "R149", "R299", "R699"],
-                  ["Sync Vision", "—", "—", "R149", "R299", "R699"],
+                  ["Sync Vision", "—", "—", "R549", "R1,399", "R2,799"],
                   ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
                   ["Career Compass", "Pilot", "—", "—", "—", "—"],
-                  ["YouTube Optimizer", "TBA", "TBA", "TBA", "TBA", "TBA"],
+                  ["YouTube Optimizer", "—", "R149", "—", "R599", "R2,999"],
                 ].map((row) => (
                   <tr key={row[0]} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4 font-semibold">{row[0]}</td>
