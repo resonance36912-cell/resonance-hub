@@ -21,6 +21,7 @@ import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -87,6 +88,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEntitlementRoute = ApiPublicEntitlementRouteImport.update({
+  id: '/api/public/entitlement',
+  path: '/api/public/entitlement',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
     id: '/lovable/email/transactional/send',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
@@ -245,6 +257,7 @@ export interface RootRouteChildren {
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -339,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/entitlement': {
+      id: '/api/public/entitlement'
+      path: '/api/public/entitlement'
+      fullPath: '/api/public/entitlement'
+      preLoaderRoute: typeof ApiPublicEntitlementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/transactional/send': {
       id: '/lovable/email/transactional/send'
       path: '/lovable/email/transactional/send'
@@ -401,6 +421,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEmailsRoute: AdminEmailsRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
@@ -412,3 +433,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
