@@ -95,7 +95,7 @@ function SubscriptionsPage() {
                   <p className="mt-1 text-sm text-muted-foreground max-w-md">
                     {bundleActive
                       ? `Unlocks Pro tier across every Resonance app. Renews ${formatDate(bundle?.current_period_end ?? null)}.`
-                      : "One subscription unlocks Pro tier across all current and upcoming Resonance apps for R499/month."}
+                      : "One subscription unlocks Pro tier across all current and upcoming Resonance apps for R1,499/month."}
                   </p>
                 </div>
                 <div className="text-right">
