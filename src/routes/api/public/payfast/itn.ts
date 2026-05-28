@@ -11,17 +11,20 @@ const SKU_CATALOG: Record<
   string,
   { app: string; tier: string; amountCents: number; cycle: "monthly" | "annual" }
 > = {
-  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 4900,  cycle: "monthly" },
-  "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 14900, cycle: "monthly" },
-  "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 29900, cycle: "monthly" },
-  "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 69900, cycle: "monthly" },
+  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 4900,   cycle: "monthly" },
+  "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly" },
+  "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly" },
+  "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 99900,  cycle: "monthly" },
   "creative_studio:creator:monthly":  { app: "creative_studio", tier: "creator",  amountCents: 14900, cycle: "monthly" },
   "creative_studio:pro:monthly":      { app: "creative_studio", tier: "pro",      amountCents: 29900, cycle: "monthly" },
   "creative_studio:business:monthly": { app: "creative_studio", tier: "business", amountCents: 69900, cycle: "monthly" },
-  "sync_vision:creator:monthly":  { app: "sync_vision", tier: "creator",  amountCents: 14900, cycle: "monthly" },
-  "sync_vision:pro:monthly":      { app: "sync_vision", tier: "pro",      amountCents: 29900, cycle: "monthly" },
-  "sync_vision:business:monthly": { app: "sync_vision", tier: "business", amountCents: 69900, cycle: "monthly" },
-  "all_access:all_access:monthly": { app: "all_access", tier: "all_access", amountCents: 49900, cycle: "monthly" },
+  "sync_vision:creator:monthly":  { app: "sync_vision", tier: "creator",  amountCents: 54900,  cycle: "monthly" },
+  "sync_vision:pro:monthly":      { app: "sync_vision", tier: "pro",      amountCents: 139900, cycle: "monthly" },
+  "sync_vision:business:monthly": { app: "sync_vision", tier: "business", amountCents: 279900, cycle: "monthly" },
+  "youtube_optimizer:starter:monthly":  { app: "youtube_optimizer", tier: "starter",  amountCents: 14900,  cycle: "monthly" },
+  "youtube_optimizer:pro:monthly":      { app: "youtube_optimizer", tier: "pro",      amountCents: 59900,  cycle: "monthly" },
+  "youtube_optimizer:business:monthly": { app: "youtube_optimizer", tier: "business", amountCents: 299900, cycle: "monthly" },
+  "all_access:all_access:monthly": { app: "all_access", tier: "all_access", amountCents: 149900, cycle: "monthly" },
 };
 
 function buildSignature(params: Record<string, string>, passphrase: string): string {
