@@ -918,23 +918,23 @@ function Index() {
               {[
                 {
                   name: "Resonance Starter Bundle",
-                  price: "R99",
+                  price: "R149",
                   body: "ePublisher Starter + basic Creative Studio credits.",
                 },
                 {
                   name: "Creator Bundle",
-                  price: "R249",
-                  body: "ePublisher Creator + Creative Studio Creator + limited Sync Vision.",
+                  price: "R449",
+                  body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter.",
                   featured: true,
                 },
                 {
                   name: "Resonance Pro Bundle",
-                  price: "R499",
-                  body: "ePublisher Pro + Creative Studio Pro + Sync Vision Pro.",
+                  price: "R1,499",
+                  body: "Pro tier across ePublisher, Creative Studio, Sync Vision & YouTube Optimizer.",
                 },
                 {
                   name: "Business Bundle",
-                  price: "R999",
+                  price: "R3,499",
                   body: "All Business tools + priority support + onboarding call.",
                 },
               ].map((b) => (
