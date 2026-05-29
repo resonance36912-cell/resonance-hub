@@ -168,7 +168,7 @@ const apps: App[] = [
       "Design stunning visuals, cinematic promotional assets, and marketing media instantly.",
     domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
-    subscribeHref: "https://www.creativestudio.life/pricing",
+    subscribeHref: "/pricing#creative_studio",
     priceLabel: "from R149 / month",
     priceNote: "Creator R149 · Pro R299 · Business R699",
     logo: logoCreativeStudio,
