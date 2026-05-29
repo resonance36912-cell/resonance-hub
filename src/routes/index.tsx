@@ -240,7 +240,7 @@ const apps: App[] = [
       "Optimize metrics, scale your audience, and thrive sustainably on YouTube.",
     domain: "resonanceoptimizer.lovable.app",
     href: "https://resonanceoptimizer.lovable.app",
-    subscribeHref: "https://resonanceoptimizer.lovable.app",
+    subscribeHref: "/youtube-optimizer/pricing",
     priceLabel: "from R149 / month",
     priceNote: "Free · Starter R149 · Pro R599 · Business R2,999",
     logo: logoYouTubeOptimizer,
