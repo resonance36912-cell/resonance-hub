@@ -1120,7 +1120,7 @@ function Index() {
             </p>
             <form
               className="w-full max-w-md mx-auto flex flex-col sm:flex-row gap-2"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={onJoinSubmit}
             >
               <label htmlFor="join-email" className="sr-only">
                 Email address
@@ -1131,15 +1131,29 @@ function Index() {
                 required
                 aria-label="Email address"
                 placeholder="email@domain.com"
-                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors"
+                value={joinEmail}
+                onChange={(e) => setJoinEmail(e.target.value)}
+                disabled={joinStatus === "loading"}
+                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors disabled:opacity-60"
               />
               <button
                 type="submit"
-                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)]"
+                disabled={joinStatus === "loading" || joinStatus === "ok"}
+                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60"
               >
-                Subscribe
+                {joinStatus === "loading" ? "Subscribing…" : joinStatus === "ok" ? "Subscribed ✓" : "Subscribe"}
               </button>
             </form>
+            {joinMsg && (
+              <p
+                role="status"
+                className={`mt-4 text-sm ${
+                  joinStatus === "ok" ? "text-emerald-300" : "text-red-300"
+                }`}
+              >
+                {joinMsg}
+              </p>
+            )}
           </div>
         </section>
       </main>
