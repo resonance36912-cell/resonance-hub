@@ -200,8 +200,7 @@ function PricingPage() {
                   </ul>
                   <a
                     href={p.href}
-                    target="_blank"
-                    rel="noreferrer"
+                    {...(p.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                     className={`text-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
                       p.featured
                         ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
@@ -210,6 +209,7 @@ function PricingPage() {
                   >
                     {p.cta}
                   </a>
+
                 </article>
               ))}
             </div>
