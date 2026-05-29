@@ -897,9 +897,18 @@ function Index() {
             </table>
           </div>
           <p className="text-center text-xs text-white/40 mt-6">
-            Prices in South African Rand (ZAR). Annual billing saves 20%. Secure card &amp; EFT via
-            PayFast. Cancel any subscription anytime.
+            Prices in South African Rand (ZAR). Secure card &amp; EFT via PayFast. Cancel any
+            subscription anytime.
           </p>
+          <div className="text-center mt-6">
+            <Link
+              to="/pricing"
+              className="inline-block px-6 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest transition-colors"
+            >
+              See full pricing →
+            </Link>
+          </div>
+
 
           {/* BUNDLES */}
           <div className="mt-16">
