@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listAllSubscriptions, type AdminSubRow } from "@/lib/admin-revenue.functions";
+import { getVisitStats } from "@/lib/visits.functions";
+import { listPayfastAudit } from "@/lib/payfast-audit.functions";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -31,13 +33,31 @@ const zar = (cents: number) =>
 
 function AdminHome() {
   const fetchAll = useServerFn(listAllSubscriptions);
+  const fetchVisits = useServerFn(getVisitStats);
+  const fetchAudit = useServerFn(listPayfastAudit);
   const navigate = useNavigate();
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-home"],
     queryFn: () => fetchAll(),
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
+  const visitsQ = useQuery({
+    queryKey: ["admin-visits"],
+    queryFn: () => fetchVisits(),
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
+  const auditQ = useQuery({
+    queryKey: ["admin-payfast-audit"],
+    queryFn: () => fetchAudit(),
+    refetchInterval: 20000,
+    refetchOnWindowFocus: true,
   });
 
   const rows = (data?.rows ?? []) as AdminSubRow[];
+  const visits = visitsQ.data;
+  const traces = auditQ.data?.traces ?? [];
 
   const kpis = useMemo(() => {
     const realised = rows.filter((r) => r.status === "active" || r.status === "past_due");
