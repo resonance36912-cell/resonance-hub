@@ -89,9 +89,24 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         const userId = params.custom_str1 || null;
         const paymentStatus = params.payment_status ?? null;
         const pfPaymentId = params.pf_payment_id ?? null;
+        const mPaymentId = params.m_payment_id ?? null;
         const grossCents = params.amount_gross
           ? Math.round(parseFloat(params.amount_gross) * 100)
           : null;
+
+        const expectedCents = sku ? SKU_CATALOG[sku]?.amountCents ?? null : null;
+
+        console.log(JSON.stringify({
+          event: "payfast_itn",
+          m_payment_id: mPaymentId,
+          pf_payment_id: pfPaymentId,
+          sku,
+          user_id: userId,
+          received_amount_cents: grossCents,
+          expected_amount_cents: expectedCents,
+          payment_status: paymentStatus,
+          source_ip: sourceIp,
+        }));
 
         const baseLog = {
           sku, user_id: userId, amount_cents: grossCents,
