@@ -39,10 +39,10 @@ const apps: { key: string; name: string; accent: string; plans: Plan[] }[] = [
     accent: "295 90% 60%",
     plans: [
       { name: "Free", zar: "R0", cadence: "forever", blurb: "Try the editor", features: ["1 project", "Watermarked exports"], cta: "Start free", href: "https://www.resonanceonline.life" },
-      { name: "Starter", zar: "R49", cadence: "/ month", blurb: "Solo writers", features: ["3 projects", "ePub export"], cta: "Subscribe", href: "https://www.resonanceonline.life/pricing" },
-      { name: "Creator", zar: "R199", cadence: "/ month", blurb: "Most popular", features: ["10 projects", "Audio narration", "AV exports"], cta: "Subscribe", href: "https://www.resonanceonline.life/pricing", featured: true },
-      { name: "Pro", zar: "R449", cadence: "/ month", blurb: "Full toolkit", features: ["Unlimited projects", "Custom voices"], cta: "Subscribe", href: "https://www.resonanceonline.life/pricing" },
-      { name: "Business", zar: "R999", cadence: "/ month", blurb: "Teams & imprints", features: ["Team seats", "Priority support"], cta: "Subscribe", href: "https://www.resonanceonline.life/pricing" },
+      { name: "Starter", zar: "R49", cadence: "/ month", blurb: "Solo writers", features: ["3 projects", "ePub export"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=starter" },
+      { name: "Creator", zar: "R199", cadence: "/ month", blurb: "Most popular", features: ["10 projects", "Audio narration", "AV exports"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=creator", featured: true },
+      { name: "Pro", zar: "R449", cadence: "/ month", blurb: "Full toolkit", features: ["Unlimited projects", "Custom voices"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=pro" },
+      { name: "Business", zar: "R999", cadence: "/ month", blurb: "Teams & imprints", features: ["Team seats", "Priority support"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=business" },
     ],
   },
   {
@@ -50,9 +50,9 @@ const apps: { key: string; name: string; accent: string; plans: Plan[] }[] = [
     name: "Creative Studio",
     accent: "265 85% 65%",
     plans: [
-      { name: "Creator", zar: "R149", cadence: "/ month", blurb: "Solo creators", features: ["Posters, brochures, ads", "HD exports"], cta: "Subscribe", href: "https://www.creativestudio.life/pricing" },
-      { name: "Pro", zar: "R299", cadence: "/ month", blurb: "Most popular", features: ["Marketing videos", "Brand kits"], cta: "Subscribe", href: "https://www.creativestudio.life/pricing", featured: true },
-      { name: "Business", zar: "R699", cadence: "/ month", blurb: "Agencies", features: ["Team seats", "White-label"], cta: "Subscribe", href: "https://www.creativestudio.life/pricing" },
+      { name: "Creator", zar: "R149", cadence: "/ month", blurb: "Solo creators", features: ["Posters, brochures, ads", "HD exports"], cta: "Subscribe", href: "/checkout?app=creative_studio&plan=creator" },
+      { name: "Pro", zar: "R299", cadence: "/ month", blurb: "Most popular", features: ["Marketing videos", "Brand kits"], cta: "Subscribe", href: "/checkout?app=creative_studio&plan=pro", featured: true },
+      { name: "Business", zar: "R699", cadence: "/ month", blurb: "Agencies", features: ["Team seats", "White-label"], cta: "Subscribe", href: "/checkout?app=creative_studio&plan=business" },
     ],
   },
   {
@@ -60,9 +60,9 @@ const apps: { key: string; name: string; accent: string; plans: Plan[] }[] = [
     name: "Sync Vision",
     accent: "325 90% 65%",
     plans: [
-      { name: "Creator", zar: "R549", cadence: "/ month", blurb: "First storyboards", features: ["AI storyboards", "Watermarked previews"], cta: "Subscribe", href: "https://www.syncvision.life/pricing" },
-      { name: "Pro", zar: "R1,399", cadence: "/ month", blurb: "Most popular", features: ["Character performances", "HD renders"], cta: "Subscribe", href: "https://www.syncvision.life/pricing", featured: true },
-      { name: "Business", zar: "R2,799", cadence: "/ month", blurb: "Studios", features: ["Multi-artist projects", "Priority queue"], cta: "Subscribe", href: "https://www.syncvision.life/pricing" },
+      { name: "Creator", zar: "R549", cadence: "/ month", blurb: "First storyboards", features: ["AI storyboards", "Watermarked previews"], cta: "Subscribe", href: "/checkout?app=sync_vision&plan=creator" },
+      { name: "Pro", zar: "R1,399", cadence: "/ month", blurb: "Most popular", features: ["Character performances", "HD renders"], cta: "Subscribe", href: "/checkout?app=sync_vision&plan=pro", featured: true },
+      { name: "Business", zar: "R2,799", cadence: "/ month", blurb: "Studios", features: ["Multi-artist projects", "Priority queue"], cta: "Subscribe", href: "/checkout?app=sync_vision&plan=business" },
     ],
   },
   {
@@ -71,12 +71,13 @@ const apps: { key: string; name: string; accent: string; plans: Plan[] }[] = [
     accent: "10 90% 60%",
     plans: [
       { name: "Free", zar: "R0", cadence: "forever", blurb: "Try the optimizer", features: ["1 channel audit", "5 AI thumbnails", "Basic analytics"], cta: "Start free", href: "https://resonanceoptimizer.lovable.app" },
-      { name: "Starter", zar: "R149", cadence: "/ month", blurb: "First audits", features: ["5 deep channel audits", "20 AI thumbnails"], cta: "Subscribe", href: "https://reson8.life/youtube-optimizer/pricing" },
-      { name: "Pro", zar: "R599", cadence: "/ month", blurb: "Most popular", features: ["20 audits", "100 thumbnails", "Growth roadmap"], cta: "Subscribe", href: "https://reson8.life/youtube-optimizer/pricing", featured: true },
-      { name: "Business", zar: "R2,999", cadence: "/ month", blurb: "Agency teams", features: ["100 audits", "500 thumbnails", "Team seats"], cta: "Subscribe", href: "https://reson8.life/youtube-optimizer/pricing" },
+      { name: "Starter", zar: "R149", cadence: "/ month", blurb: "First audits", features: ["5 deep channel audits", "20 AI thumbnails"], cta: "Subscribe", href: "/checkout?app=youtube_optimizer&plan=starter" },
+      { name: "Pro", zar: "R599", cadence: "/ month", blurb: "Most popular", features: ["20 audits", "100 thumbnails", "Growth roadmap"], cta: "Subscribe", href: "/checkout?app=youtube_optimizer&plan=pro", featured: true },
+      { name: "Business", zar: "R2,999", cadence: "/ month", blurb: "Agency teams", features: ["100 audits", "500 thumbnails", "Team seats"], cta: "Subscribe", href: "/checkout?app=youtube_optimizer&plan=business" },
     ],
   },
 ];
+
 
 function PricingPage() {
   return (
