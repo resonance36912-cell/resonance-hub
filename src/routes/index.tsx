@@ -976,15 +976,16 @@ function Index() {
                   </div>
                   <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
                   <a
-                    href="mailto:hello@reson8.life?subject=Bundle%20interest"
-                    className={`w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
+                    href={b.href}
+                    className={`inline-block w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
                       b.featured
                         ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
                         : "border border-white/15 hover:border-white/40"
                     }`}
                   >
-                    Request bundle
+                    {b.cta}
                   </a>
+
                 </article>
               ))}
             </div>
