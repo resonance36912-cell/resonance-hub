@@ -219,12 +219,13 @@ function PricingPage() {
         <section className="text-center mt-20 pt-10 border-t border-white/10">
           <p className="text-white/55 text-sm max-w-2xl mx-auto leading-relaxed">
             All prices in ZAR including VAT. Payments processed by PayFast (EFT, card, SnapScan,
-            Zapper, Instant EFT). Yearly billing saves you 2 months. Need a custom plan?{" "}
+            Zapper, Instant EFT). Need a custom plan?{" "}
             <a href="mailto:hello@resonance-podcast.com" className="underline hover:text-white">
               Talk to us
             </a>
             .
           </p>
+
         </section>
       </main>
     </div>
