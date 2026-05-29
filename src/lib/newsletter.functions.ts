@@ -10,7 +10,7 @@ const InputSchema = z.object({
 export const subscribeNewsletter = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const req = (context as { request?: Request }).request;
+    const req = (context as unknown as { request?: Request }).request;
     const user_agent = req?.headers.get("user-agent") ?? null;
     const source_ip =
       req?.headers.get("cf-connecting-ip") ??
