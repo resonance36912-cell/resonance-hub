@@ -36,28 +36,38 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
+  async function finalizeAdmin(userId: string) {
+    try {
+      await promote();
+    } catch {
+      // ignore — role check below decides access
+    }
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (role) {
+      navigate({ to: "/admin" });
+    } else {
+      setError("This account does not have admin access. Ask an existing admin to grant the role.");
+    }
+  }
+
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
-      if (!session?.user) return;
-      try {
-        await promote();
-      } catch {
-        // ignore — role check below decides access
-      }
-      const { data: role } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (role) {
-        navigate({ to: "/admin" });
-      } else {
-        setError("This account does not have admin access. Ask an existing admin to grant the role.");
-      }
+    // Handle case where user lands on this page already signed in
+    // (e.g. after email confirmation link, or returning after sign-in).
+    let cancelled = false;
+    supabase.auth.getUser().then(({ data }) => {
+      if (cancelled || !data.user) return;
+      finalizeAdmin(data.user.id);
     });
-    return () => subscription.unsubscribe();
-  }, [navigate, promote]);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -66,8 +76,11 @@ function AdminLoginPage() {
     setNotice(null);
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (data.user) {
+          await finalizeAdmin(data.user.id);
+        }
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -77,6 +90,8 @@ function AdminLoginPage() {
         if (error) throw error;
         if (!data.session) {
           setNotice("Check your email to confirm your account, then return here to sign in.");
+        } else if (data.user) {
+          await finalizeAdmin(data.user.id);
         }
       }
     } catch (e) {
@@ -85,6 +100,7 @@ function AdminLoginPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
