@@ -186,7 +186,7 @@ const apps: App[] = [
       "Plan music videos, synchronize lyrics, and visualize stories via AI-driven cinematic workflows.",
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
-    subscribeHref: "https://www.syncvision.life/pricing",
+    subscribeHref: "/pricing#sync_vision",
     priceLabel: "from R549 / month",
     priceNote: "Creator R549 · Pro R1,399 · Business R2,799",
     logo: logoSyncVision,
