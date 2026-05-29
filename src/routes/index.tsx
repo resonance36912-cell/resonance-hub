@@ -242,7 +242,7 @@ const apps: App[] = [
     href: "https://resonanceoptimizer.lovable.app",
     subscribeHref: "https://resonanceoptimizer.lovable.app",
     priceLabel: "from R149 / month",
-    priceNote: "Starter R149 · Pro R599 · Business R2,999",
+    priceNote: "Free · Starter R149 · Pro R599 · Business R2,999",
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "live",

@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -47,6 +48,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
+  id: '/youtube-optimizer/pricing',
+  path: '/youtube-optimizer/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByTo {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -208,6 +217,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/youtube-optimizer/pricing'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/youtube-optimizer/pricing'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/email/unsubscribe'
+    | '/youtube-optimizer/pricing'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
@@ -270,6 +282,7 @@ export interface RootRouteChildren {
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/youtube-optimizer/pricing': {
+      id: '/youtube-optimizer/pricing'
+      path: '/youtube-optimizer/pricing'
+      fullPath: '/youtube-optimizer/pricing'
+      preLoaderRoute: typeof YoutubeOptimizerPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/email/unsubscribe': {
@@ -442,6 +462,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRevenueRoute: AdminRevenueRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
@@ -454,3 +475,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

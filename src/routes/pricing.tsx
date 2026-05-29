@@ -70,9 +70,10 @@ const apps: { key: string; name: string; accent: string; plans: Plan[] }[] = [
     name: "YouTube Optimizer",
     accent: "10 90% 60%",
     plans: [
-      { name: "Starter", zar: "R149", cadence: "/ month", blurb: "First audits", features: ["5 deep channel audits", "20 AI thumbnails"], cta: "Subscribe", href: "https://resonanceoptimizer.lovable.app" },
-      { name: "Pro", zar: "R599", cadence: "/ month", blurb: "Most popular", features: ["20 audits", "100 thumbnails", "Growth roadmap"], cta: "Subscribe", href: "https://resonanceoptimizer.lovable.app", featured: true },
-      { name: "Business", zar: "R2,999", cadence: "/ month", blurb: "Agency teams", features: ["100 audits", "500 thumbnails", "Team seats"], cta: "Subscribe", href: "https://resonanceoptimizer.lovable.app" },
+      { name: "Free", zar: "R0", cadence: "forever", blurb: "Try the optimizer", features: ["1 channel audit", "5 AI thumbnails", "Basic analytics"], cta: "Start free", href: "https://resonanceoptimizer.lovable.app" },
+      { name: "Starter", zar: "R149", cadence: "/ month", blurb: "First audits", features: ["5 deep channel audits", "20 AI thumbnails"], cta: "Subscribe", href: "https://reson8.life/youtube-optimizer/pricing" },
+      { name: "Pro", zar: "R599", cadence: "/ month", blurb: "Most popular", features: ["20 audits", "100 thumbnails", "Growth roadmap"], cta: "Subscribe", href: "https://reson8.life/youtube-optimizer/pricing", featured: true },
+      { name: "Business", zar: "R2,999", cadence: "/ month", blurb: "Agency teams", features: ["100 audits", "500 thumbnails", "Team seats"], cta: "Subscribe", href: "https://reson8.life/youtube-optimizer/pricing" },
     ],
   },
 ];
