@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listAllSubscriptions, type AdminSubRow } from "@/lib/admin-revenue.functions";
+import { getVisitStats } from "@/lib/visits.functions";
+import { listPayfastAudit } from "@/lib/payfast-audit.functions";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -31,13 +33,31 @@ const zar = (cents: number) =>
 
 function AdminHome() {
   const fetchAll = useServerFn(listAllSubscriptions);
+  const fetchVisits = useServerFn(getVisitStats);
+  const fetchAudit = useServerFn(listPayfastAudit);
   const navigate = useNavigate();
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-home"],
     queryFn: () => fetchAll(),
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
+  const visitsQ = useQuery({
+    queryKey: ["admin-visits"],
+    queryFn: () => fetchVisits(),
+    refetchInterval: 15000,
+    refetchOnWindowFocus: true,
+  });
+  const auditQ = useQuery({
+    queryKey: ["admin-payfast-audit"],
+    queryFn: () => fetchAudit(),
+    refetchInterval: 20000,
+    refetchOnWindowFocus: true,
   });
 
   const rows = (data?.rows ?? []) as AdminSubRow[];
+  const visits = visitsQ.data;
+  const traces = auditQ.data?.traces ?? [];
 
   const kpis = useMemo(() => {
     const realised = rows.filter((r) => r.status === "active" || r.status === "past_due");
@@ -84,7 +104,7 @@ function AdminHome() {
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Resonance Admin</p>
             <h1 className="mt-2 text-3xl font-semibold">Sales Overview</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Live view of every subscription across the Resonance ecosystem.
+              Live view of subscriptions, PayFast payments, and site traffic. Auto-refreshes every 15s.
             </p>
           </div>
           <button
@@ -104,7 +124,7 @@ function AdminHome() {
 
         {data && (
           <>
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <Kpi label="Active subs" value={String(kpis.activeCount)} />
               <Kpi label="Total subs" value={String(kpis.totalCount)} />
               <Kpi label="Revenue (realised)" value={zar(kpis.revenue)} />
@@ -113,6 +133,13 @@ function AdminHome() {
                 value={zar(kpis.profit)}
                 accent={kpis.profit >= 0 ? "text-emerald-400" : "text-red-400"}
               />
+            </section>
+
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+              <Kpi label="Visits (24h)" value={visits ? String(visits.total24h) : "—"} />
+              <Kpi label="Unique sessions (24h)" value={visits ? String(visits.uniqueSessions24h) : "—"} />
+              <Kpi label="Visits (7d)" value={visits ? String(visits.total7d) : "—"} />
+              <Kpi label="Visits (all time)" value={visits ? String(visits.totalAll) : "—"} />
             </section>
 
             <section className="mb-10">
@@ -174,6 +201,128 @@ function AdminHome() {
                   </table>
                 </div>
               )}
+            </section>
+
+            <section className="mb-10 grid lg:grid-cols-2 gap-6">
+              <div>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Recent PayFast payments
+                </h2>
+                {traces.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No PayFast activity yet.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-border bg-card">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2">When</th>
+                          <th className="px-3 py-2">SKU</th>
+                          <th className="px-3 py-2 text-right">Sent</th>
+                          <th className="px-3 py-2 text-right">Accepted</th>
+                          <th className="px-3 py-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {traces.slice(0, 8).map((t) => {
+                          const when =
+                            t.launch?.created_at ?? t.itns[0]?.received_at ?? "";
+                          const badge =
+                            t.match === "match"
+                              ? "text-emerald-400"
+                              : t.match === "mismatch"
+                              ? "text-red-400"
+                              : t.match === "rejected"
+                              ? "text-red-400"
+                              : "text-muted-foreground";
+                          return (
+                            <tr key={t.m_payment_id} className="border-t border-border">
+                              <td className="px-3 py-2 font-mono text-xs">
+                                {when ? new Date(when).toLocaleString() : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-xs">
+                                {t.launch?.sku ?? t.itns[0]?.sku ?? "—"}
+                              </td>
+                              <td className="px-3 py-2 text-right font-mono text-xs">
+                                {t.sent_amount_cents != null ? zar(t.sent_amount_cents) : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-right font-mono text-xs">
+                                {t.accepted_amount_cents != null
+                                  ? zar(t.accepted_amount_cents)
+                                  : "—"}
+                              </td>
+                              <td className={`px-3 py-2 text-xs ${badge}`}>{t.match}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Top pages (24h)
+                </h2>
+                {!visits || visits.topPaths.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No visits in the last 24 hours.</p>
+                ) : (
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2">Path</th>
+                          <th className="px-3 py-2 text-right">Hits</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visits.topPaths.map((p) => (
+                          <tr key={p.path} className="border-t border-border">
+                            <td className="px-3 py-2 font-mono text-xs truncate max-w-[260px]">
+                              {p.path}
+                            </td>
+                            <td className="px-3 py-2 text-right font-mono">{p.count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <h2 className="mt-6 mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Recent visits
+                </h2>
+                {!visits || visits.recent.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No recent visits.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-border bg-card">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2">When</th>
+                          <th className="px-3 py-2">Path</th>
+                          <th className="px-3 py-2">Referrer</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visits.recent.map((v) => (
+                          <tr key={v.id} className="border-t border-border">
+                            <td className="px-3 py-2 font-mono text-xs">
+                              {new Date(v.created_at).toLocaleTimeString()}
+                            </td>
+                            <td className="px-3 py-2 font-mono text-xs truncate max-w-[180px]">
+                              {v.path}
+                            </td>
+                            <td className="px-3 py-2 text-xs truncate max-w-[180px] text-muted-foreground">
+                              {v.referrer ?? "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </section>
           </>
         )}
