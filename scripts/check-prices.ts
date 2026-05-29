@@ -45,15 +45,8 @@ function centsToZar(cents: number): string {
 const findings: Finding[] = [];
 const checked: string[] = [];
 
-// Match plan objects that include a Hub checkout href, e.g.:
-//   { name: "Starter", zar: "R99", ..., href: "/checkout?app=epublisher&plan=starter" }
-//   { ..., href: "https://reson8.life/checkout?app=youtube_optimizer&plan=pro" }
-// Also match the All-Access bundle anchor:
-//   href="/checkout?app=all_access&plan=all_access" with a nearby "R1,499"
-const PLAN_RE =
-  /zar:\s*"(R[^"]+)"[\s\S]{0,400}?href:\s*"[^"]*checkout\?app=([a-z_]+)&plan=([a-z_]+)[^"]*"/g;
-const BUNDLE_RE =
-  /(R[\d.,]+)[\s\S]{0,400}?href="\/checkout\?app=(all_access)&plan=(all_access)"/g;
+
+
 
 for (const rel of PRICING_FILES) {
   const abs = resolve(ROOT, rel);
