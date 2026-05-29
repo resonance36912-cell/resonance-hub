@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check:prices": "bun run scripts/check-prices.ts",
-    "prebuild": "bun run scripts/check-prices.ts"
+    "test:payfast": "bun run scripts/test-payfast-itn.ts",
+    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
