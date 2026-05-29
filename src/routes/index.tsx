@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
@@ -150,7 +150,7 @@ const apps: App[] = [
       "Turn written stories into immersive, high-fidelity audiovisual books.",
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
-    subscribeHref: "https://www.resonanceonline.life/pricing",
+    subscribeHref: "/pricing#epublisher",
     priceLabel: "from R49 / month",
     priceNote: "Free · Starter R49 · Creator R199 · Pro R449 · Business R999",
     logo: logoEpublisher,
@@ -168,7 +168,7 @@ const apps: App[] = [
       "Design stunning visuals, cinematic promotional assets, and marketing media instantly.",
     domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
-    subscribeHref: "https://www.creativestudio.life/pricing",
+    subscribeHref: "/pricing#creative_studio",
     priceLabel: "from R149 / month",
     priceNote: "Creator R149 · Pro R299 · Business R699",
     logo: logoCreativeStudio,
@@ -186,7 +186,7 @@ const apps: App[] = [
       "Plan music videos, synchronize lyrics, and visualize stories via AI-driven cinematic workflows.",
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
-    subscribeHref: "https://www.syncvision.life/pricing",
+    subscribeHref: "/pricing#sync_vision",
     priceLabel: "from R549 / month",
     priceNote: "Creator R549 · Pro R1,399 · Business R2,799",
     logo: logoSyncVision,
@@ -240,7 +240,7 @@ const apps: App[] = [
       "Optimize metrics, scale your audience, and thrive sustainably on YouTube.",
     domain: "resonanceoptimizer.lovable.app",
     href: "https://resonanceoptimizer.lovable.app",
-    subscribeHref: "https://resonanceoptimizer.lovable.app",
+    subscribeHref: "/youtube-optimizer/pricing",
     priceLabel: "from R149 / month",
     priceNote: "Free · Starter R149 · Pro R599 · Business R2,999",
     logo: logoYouTubeOptimizer,
@@ -828,12 +828,12 @@ function Index() {
                         </a>
                         <a
                           href={app.subscribeHref}
-                          target="_blank"
-                          rel="noreferrer"
+                          {...(app.subscribeHref.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                           className="px-3 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest text-center shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)] hover:shadow-[0_0_35px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
                         >
                           {app.status === "free" ? "Open" : "Subscribe"}
                         </a>
+
                       </div>
                     )}
                   </div>
@@ -897,9 +897,18 @@ function Index() {
             </table>
           </div>
           <p className="text-center text-xs text-white/40 mt-6">
-            Prices in South African Rand (ZAR). Annual billing saves 20%. Secure card &amp; EFT via
-            PayFast. Cancel any subscription anytime.
+            Prices in South African Rand (ZAR). Secure card &amp; EFT via PayFast. Cancel any
+            subscription anytime.
           </p>
+          <div className="text-center mt-6">
+            <Link
+              to="/pricing"
+              className="inline-block px-6 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest transition-colors"
+            >
+              See full pricing →
+            </Link>
+          </div>
+
 
           {/* BUNDLES */}
           <div className="mt-16">
@@ -920,24 +929,33 @@ function Index() {
                   name: "Resonance Starter Bundle",
                   price: "R149",
                   body: "ePublisher Starter + basic Creative Studio credits.",
+                  href: "mailto:hello@reson8.life?subject=Starter%20Bundle%20interest",
+                  cta: "Request bundle",
                 },
                 {
                   name: "Creator Bundle",
                   price: "R449",
                   body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter.",
                   featured: true,
+                  href: "mailto:hello@reson8.life?subject=Creator%20Bundle%20interest",
+                  cta: "Request bundle",
                 },
                 {
                   name: "Resonance Pro Bundle",
                   price: "R1,499",
                   body: "Pro tier across ePublisher, Creative Studio, Sync Vision & YouTube Optimizer.",
+                  href: "/checkout?app=all_access&plan=all_access",
+                  cta: "Subscribe",
                 },
                 {
                   name: "Business Bundle",
                   price: "R3,499",
                   body: "All Business tools + priority support + onboarding call.",
+                  href: "mailto:hello@reson8.life?subject=Business%20Bundle%20interest",
+                  cta: "Request bundle",
                 },
               ].map((b) => (
+
                 <article
                   key={b.name}
                   className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
@@ -958,15 +976,16 @@ function Index() {
                   </div>
                   <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
                   <a
-                    href="mailto:hello@reson8.life?subject=Bundle%20interest"
-                    className={`w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
+                    href={b.href}
+                    className={`inline-block w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
                       b.featured
                         ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
                         : "border border-white/15 hover:border-white/40"
                     }`}
                   >
-                    Request bundle
+                    {b.cta}
                   </a>
+
                 </article>
               ))}
             </div>
