@@ -105,7 +105,7 @@ function PricingPage() {
           </h1>
           <p className="text-lg text-white/65 max-w-2xl mx-auto leading-relaxed">
             Every paid app shares the same tiers, the same PayFast checkout, and the same
-            cancellation flow. Save 2 months on any plan when you pay yearly.
+            cancellation flow. Monthly billing in ZAR — cancel anytime.
           </p>
         </section>
 
