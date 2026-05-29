@@ -138,12 +138,13 @@ function PricingPage() {
                 <div className="text-6xl font-extrabold tracking-tight mb-1">R1,499</div>
                 <div className="text-white/60 text-sm mb-6">/ month</div>
                 <a
-                  href="#"
+                  href="/checkout?app=all_access&plan=all_access"
                   className="inline-block px-8 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
                 >
                   Get All-Access →
                 </a>
                 <p className="text-[11px] text-white/45 mt-3">PayFast · ZAR · cancel anytime</p>
+
               </div>
             </div>
           </div>
