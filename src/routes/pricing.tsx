@@ -39,7 +39,7 @@ const apps: { key: string; name: string; accent: string; plans: Plan[] }[] = [
     accent: "295 90% 60%",
     plans: [
       { name: "Free", zar: "R0", cadence: "forever", blurb: "Try the editor", features: ["1 project", "Watermarked exports"], cta: "Start free", href: "https://www.resonanceonline.life" },
-      { name: "Starter", zar: "R49", cadence: "/ month", blurb: "Solo writers", features: ["3 projects", "ePub export"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=starter" },
+      { name: "Starter", zar: "R99", cadence: "/ month", blurb: "Solo writers", features: ["3 projects", "ePub export"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=starter" },
       { name: "Creator", zar: "R199", cadence: "/ month", blurb: "Most popular", features: ["10 projects", "Audio narration", "AV exports"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=creator", featured: true },
       { name: "Pro", zar: "R449", cadence: "/ month", blurb: "Full toolkit", features: ["Unlimited projects", "Custom voices"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=pro" },
       { name: "Business", zar: "R999", cadence: "/ month", blurb: "Teams & imprints", features: ["Team seats", "Priority support"], cta: "Subscribe", href: "/checkout?app=epublisher&plan=business" },

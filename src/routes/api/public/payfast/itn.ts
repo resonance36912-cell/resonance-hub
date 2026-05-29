@@ -11,7 +11,7 @@ const SKU_CATALOG: Record<
   string,
   { app: string; tier: string; amountCents: number; cycle: "monthly" | "annual" }
 > = {
-  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 4900,   cycle: "monthly" },
+  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly" },
   "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly" },
   "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly" },
   "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 99900,  cycle: "monthly" },

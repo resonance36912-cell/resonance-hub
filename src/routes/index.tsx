@@ -151,8 +151,9 @@ const apps: App[] = [
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
     subscribeHref: "/pricing#epublisher",
-    priceLabel: "from R49 / month",
-    priceNote: "Free · Starter R49 · Creator R199 · Pro R449 · Business R999",
+    priceLabel: "from R99 / month",
+    priceNote: "Free · Starter R99 · Creator R199 · Pro R449 · Business R999",
+
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
@@ -872,7 +873,7 @@ function Index() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {[
-                  ["Resonance ePublisher", "✓", "R49", "R199", "R449", "R999"],
+                  ["Resonance ePublisher", "✓", "R99", "R199", "R449", "R999"],
                   ["Creative Studio", "—", "—", "R149", "R299", "R699"],
                   ["Sync Vision", "—", "—", "R549", "R1,399", "R2,799"],
                   ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
