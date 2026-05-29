@@ -202,6 +202,128 @@ function AdminHome() {
                 </div>
               )}
             </section>
+
+            <section className="mb-10 grid lg:grid-cols-2 gap-6">
+              <div>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Recent PayFast payments
+                </h2>
+                {traces.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No PayFast activity yet.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-border bg-card">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2">When</th>
+                          <th className="px-3 py-2">SKU</th>
+                          <th className="px-3 py-2 text-right">Sent</th>
+                          <th className="px-3 py-2 text-right">Accepted</th>
+                          <th className="px-3 py-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {traces.slice(0, 8).map((t) => {
+                          const when =
+                            t.launch?.created_at ?? t.itns[0]?.received_at ?? "";
+                          const badge =
+                            t.match === "match"
+                              ? "text-emerald-400"
+                              : t.match === "mismatch"
+                              ? "text-red-400"
+                              : t.match === "rejected"
+                              ? "text-red-400"
+                              : "text-muted-foreground";
+                          return (
+                            <tr key={t.m_payment_id} className="border-t border-border">
+                              <td className="px-3 py-2 font-mono text-xs">
+                                {when ? new Date(when).toLocaleString() : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-xs">
+                                {t.launch?.sku ?? t.itns[0]?.sku ?? "—"}
+                              </td>
+                              <td className="px-3 py-2 text-right font-mono text-xs">
+                                {t.sent_amount_cents != null ? zar(t.sent_amount_cents) : "—"}
+                              </td>
+                              <td className="px-3 py-2 text-right font-mono text-xs">
+                                {t.accepted_amount_cents != null
+                                  ? zar(t.accepted_amount_cents)
+                                  : "—"}
+                              </td>
+                              <td className={`px-3 py-2 text-xs ${badge}`}>{t.match}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Top pages (24h)
+                </h2>
+                {!visits || visits.topPaths.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No visits in the last 24 hours.</p>
+                ) : (
+                  <div className="overflow-hidden rounded-xl border border-border bg-card">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2">Path</th>
+                          <th className="px-3 py-2 text-right">Hits</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visits.topPaths.map((p) => (
+                          <tr key={p.path} className="border-t border-border">
+                            <td className="px-3 py-2 font-mono text-xs truncate max-w-[260px]">
+                              {p.path}
+                            </td>
+                            <td className="px-3 py-2 text-right font-mono">{p.count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <h2 className="mt-6 mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Recent visits
+                </h2>
+                {!visits || visits.recent.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No recent visits.</p>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-border bg-card">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2">When</th>
+                          <th className="px-3 py-2">Path</th>
+                          <th className="px-3 py-2">Referrer</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visits.recent.map((v) => (
+                          <tr key={v.id} className="border-t border-border">
+                            <td className="px-3 py-2 font-mono text-xs">
+                              {new Date(v.created_at).toLocaleTimeString()}
+                            </td>
+                            <td className="px-3 py-2 font-mono text-xs truncate max-w-[180px]">
+                              {v.path}
+                            </td>
+                            <td className="px-3 py-2 text-xs truncate max-w-[180px] text-muted-foreground">
+                              {v.referrer ?? "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </section>
           </>
         )}
 
