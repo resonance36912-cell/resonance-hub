@@ -929,24 +929,33 @@ function Index() {
                   name: "Resonance Starter Bundle",
                   price: "R149",
                   body: "ePublisher Starter + basic Creative Studio credits.",
+                  href: "mailto:hello@reson8.life?subject=Starter%20Bundle%20interest",
+                  cta: "Request bundle",
                 },
                 {
                   name: "Creator Bundle",
                   price: "R449",
                   body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter.",
                   featured: true,
+                  href: "mailto:hello@reson8.life?subject=Creator%20Bundle%20interest",
+                  cta: "Request bundle",
                 },
                 {
                   name: "Resonance Pro Bundle",
                   price: "R1,499",
                   body: "Pro tier across ePublisher, Creative Studio, Sync Vision & YouTube Optimizer.",
+                  href: "/checkout?app=all_access&plan=all_access",
+                  cta: "Subscribe",
                 },
                 {
                   name: "Business Bundle",
                   price: "R3,499",
                   body: "All Business tools + priority support + onboarding call.",
+                  href: "mailto:hello@reson8.life?subject=Business%20Bundle%20interest",
+                  cta: "Request bundle",
                 },
               ].map((b) => (
+
                 <article
                   key={b.name}
                   className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
