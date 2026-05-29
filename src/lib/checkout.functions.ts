@@ -25,7 +25,7 @@ export type SkuDef = {
 // Monthly catalog mirrors SKU_CATALOG in routes/api/public/payfast/itn.ts
 // Prices reflect 2026-05-28 repricing audit (target ≥70% gross margin).
 export const SKU_CATALOG: Record<string, SkuDef> = {
-  "epublisher:starter:monthly":       { sku: "epublisher:starter:monthly",       app: "epublisher",       tier: "starter",    cycle: "monthly", amountCents: 4900,   label: "ePublisher · Starter" },
+  "epublisher:starter:monthly":       { sku: "epublisher:starter:monthly",       app: "epublisher",       tier: "starter",    cycle: "monthly", amountCents: 9900,   label: "ePublisher · Starter" },
   "epublisher:creator:monthly":       { sku: "epublisher:creator:monthly",       app: "epublisher",       tier: "creator",    cycle: "monthly", amountCents: 19900,  label: "ePublisher · Creator" },
   "epublisher:pro:monthly":           { sku: "epublisher:pro:monthly",           app: "epublisher",       tier: "pro",        cycle: "monthly", amountCents: 44900,  label: "ePublisher · Pro" },
   "epublisher:business:monthly":      { sku: "epublisher:business:monthly",      app: "epublisher",       tier: "business",   cycle: "monthly", amountCents: 99900,  label: "ePublisher · Business" },
