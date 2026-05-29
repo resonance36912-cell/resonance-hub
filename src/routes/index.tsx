@@ -150,7 +150,7 @@ const apps: App[] = [
       "Turn written stories into immersive, high-fidelity audiovisual books.",
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
-    subscribeHref: "https://www.resonanceonline.life/pricing",
+    subscribeHref: "/pricing#epublisher",
     priceLabel: "from R49 / month",
     priceNote: "Free · Starter R49 · Creator R199 · Pro R449 · Business R999",
     logo: logoEpublisher,
