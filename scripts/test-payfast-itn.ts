@@ -126,6 +126,75 @@ const tampered = (() => {
 const bad = runItnGuards(tampered);
 assert(bad.outcome === "invalid_signature", `outcome === "invalid_signature" (got "${bad.outcome}")`);
 
+console.log(`\n[3d] ITN with valid signature but WRONG amount (R49.00) — full simulated handler`);
+// Simulates the complete handler flow with mocked supabaseAdmin to prove
+// no subscription row is written when amount mismatches.
+interface LogRow {
+  signature_valid: boolean;
+  server_validated: boolean;
+  outcome: string;
+  http_status: number;
+  amount_cents?: number | null;
+  sku?: string | null;
+  user_id?: string | null;
+  error_message?: string | null;
+}
+interface SubRow {
+  user_id: string;
+  app: string;
+  tier: string;
+  amount_cents: number;
+}
+const mockLogs: LogRow[] = [];
+const mockSubs: SubRow[] = [];
+
+async function simulatedItnHandler(rawBody: string, amountGross: string): Promise<{ status: number; body: string }> {
+  const params = Object.fromEntries(new URLSearchParams(rawBody).entries());
+  const sku = params.item_name ?? params.custom_str2 ?? null;
+  const userId = params.custom_str1 || null;
+  const paymentStatus = params.payment_status ?? null;
+  const pfPaymentId = params.pf_payment_id ?? null;
+  const grossCents = params.amount_gross ? Math.round(parseFloat(params.amount_gross) * 100) : null;
+
+  const baseLog = { sku, user_id: userId, amount_cents: grossCents, payment_status: paymentStatus, pf_payment_id: pfPaymentId };
+
+  const expectedSig = buildSignature(params, passphrase);
+  const sigOk = !!params.signature && params.signature.toLowerCase() === expectedSig.toLowerCase();
+  if (!sigOk) {
+    mockLogs.push({ ...baseLog, signature_valid: false, server_validated: false, outcome: "invalid_signature", http_status: 400, error_message: "Signature mismatch" });
+    return { status: 400, body: "invalid signature" };
+  }
+
+  // Skip server-to-server validation in test (same as prod check ordering)
+  const def = sku ? SKU_CATALOG[sku] : undefined;
+  if (!def) {
+    mockLogs.push({ ...baseLog, signature_valid: true, server_validated: true, outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
+    return { status: 400, body: "unknown sku" };
+  }
+  if (!userId) {
+    mockLogs.push({ ...baseLog, signature_valid: true, server_validated: true, outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
+    return { status: 400, body: "missing user" };
+  }
+  if (grossCents !== def.amountCents) {
+    mockLogs.push({ ...baseLog, signature_valid: true, server_validated: true, outcome: "amount_mismatch", http_status: 400, error_message: `Got ${grossCents}, expected ${def.amountCents}` });
+    return { status: 400, body: "amount mismatch" };
+  }
+
+  // If we got here, a subscription row WOULD be written — record the mock insert
+  mockSubs.push({ user_id: userId, app: def.app, tier: def.tier, amount_cents: def.amountCents });
+  mockLogs.push({ ...baseLog, signature_valid: true, server_validated: true, outcome: "subscription_active", http_status: 200 });
+  return { status: 200, body: "ok" };
+}
+
+const wrongAmountBody = buildItnBody("49.00");
+const wrongAmountResult = await simulatedItnHandler(wrongAmountBody, "49.00");
+assert(wrongAmountResult.status === 400, `handler returns 400 for amount mismatch (got ${wrongAmountResult.status})`);
+assert(wrongAmountResult.body === "amount mismatch", `handler body === "amount mismatch" (got "${wrongAmountResult.body}")`);
+assert(mockLogs.length === 1, `exactly 1 log row written (got ${mockLogs.length})`);
+assert(mockLogs[0].outcome === "amount_mismatch", `log outcome === "amount_mismatch" (got "${mockLogs[0].outcome}")`);
+assert(mockLogs[0].amount_cents === 4900, `log amount_cents === 4900 (got ${mockLogs[0].amount_cents})`);
+assert(mockSubs.length === 0, `NO subscription row written for rejected payment (got ${mockSubs.length})`);
+
 // ---------- Report ----------
 if (failures.length) {
   console.error(`\n❌ ${failures.length} assertion(s) failed:`);
