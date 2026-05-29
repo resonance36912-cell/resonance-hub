@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "check:prices": "bun run scripts/check-prices.ts",
     "test:payfast": "bun run scripts/test-payfast-itn.ts",
-    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts"
+    "verify:epublisher": "bun run scripts/verify-epublisher-checkout.ts",
+    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
