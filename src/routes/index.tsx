@@ -828,12 +828,12 @@ function Index() {
                         </a>
                         <a
                           href={app.subscribeHref}
-                          target="_blank"
-                          rel="noreferrer"
+                          {...(app.subscribeHref.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                           className="px-3 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest text-center shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)] hover:shadow-[0_0_35px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
                         >
                           {app.status === "free" ? "Open" : "Subscribe"}
                         </a>
+
                       </div>
                     )}
                   </div>
