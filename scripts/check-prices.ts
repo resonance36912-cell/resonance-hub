@@ -66,12 +66,27 @@ for (const rel of PRICING_FILES) {
   }
 
   const matches: Array<{ zar: string; app: string; plan: string }> = [];
-  for (const m of src.matchAll(PLAN_RE)) {
-    matches.push({ zar: m[1], app: m[2], plan: m[3] });
+
+  // Split on `{ name:` so each chunk holds exactly one plan object.
+  // Inside a chunk, require BOTH a zar string and a Hub checkout href.
+  const chunks = src.split(/\{\s*name:\s*"/);
+  for (const chunk of chunks.slice(1)) {
+    const zarM = chunk.match(/zar:\s*"(R[^"]+)"/);
+    const hrefM = chunk.match(
+      /href:\s*"[^"]*checkout\?app=([a-z_]+)&plan=([a-z_]+)[^"]*"/,
+    );
+    if (zarM && hrefM) {
+      matches.push({ zar: zarM[1], app: hrefM[1], plan: hrefM[2] });
+    }
   }
+
+  // All-Access bundle anchor (rendered as <a> outside the plan array).
+  const BUNDLE_RE =
+    /(R[\d.,]+)[^<]{0,200}<\/div>[\s\S]{0,400}?href="\/checkout\?app=(all_access)&plan=(all_access)"/g;
   for (const m of src.matchAll(BUNDLE_RE)) {
     matches.push({ zar: m[1], app: m[2], plan: m[3] });
   }
+
 
   if (matches.length === 0) {
     console.warn(`[check-prices] no priced plans matched in ${rel}`);
