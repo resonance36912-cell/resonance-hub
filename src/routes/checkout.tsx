@@ -15,7 +15,7 @@ const SearchSchema = z.object({
   app: z.string().optional(),
   plan: z.string().optional(),
   sku: z.string().optional(),
-  cycle: z.enum(["monthly", "annual"]).optional(),
+  cycle: z.literal("monthly").optional(),
   return_to: z.string().url().optional(),
 });
 

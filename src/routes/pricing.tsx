@@ -8,7 +8,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "One shared ZAR pricing matrix across every Resonance app. Pay monthly or yearly via PayFast. Bundle access from R499/month.",
+          "One shared ZAR pricing matrix across every Resonance app. Monthly PayFast billing. All-Access bundle from R1,499/month.",
       },
       { property: "og:title", content: "Pricing — The Resonance" },
       {
@@ -105,7 +105,7 @@ function PricingPage() {
           </h1>
           <p className="text-lg text-white/65 max-w-2xl mx-auto leading-relaxed">
             Every paid app shares the same tiers, the same PayFast checkout, and the same
-            cancellation flow. Save 2 months on any plan when you pay yearly.
+            cancellation flow. Monthly billing in ZAR — cancel anytime.
           </p>
         </section>
 
@@ -116,7 +116,7 @@ function PricingPage() {
             <div className="relative grid md:grid-cols-[1.5fr_1fr] gap-8 items-center">
               <div>
                 <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/70 mb-3">
-                  Featured · save up to R598/mo
+                  Featured · save up to R1,247/mo
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
                   All-Access bundle
@@ -133,7 +133,7 @@ function PricingPage() {
                 </ul>
               </div>
               <div className="text-center md:text-right">
-                <div className="text-6xl font-extrabold tracking-tight mb-1">R499</div>
+                <div className="text-6xl font-extrabold tracking-tight mb-1">R1,499</div>
                 <div className="text-white/60 text-sm mb-6">/ month</div>
                 <a
                   href="#"
