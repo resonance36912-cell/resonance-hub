@@ -154,9 +154,11 @@ function PricingPage() {
         {apps.map((app, ai) => (
           <section
             key={app.key}
-            className="mb-20 animate-reveal"
+            id={app.key}
+            className="mb-20 animate-reveal scroll-mt-24"
             style={{ animationDelay: `${150 + ai * 80}ms` }}
           >
+
             <div className="flex items-baseline gap-4 mb-8">
               <div
                 className="size-3 rounded-full"
