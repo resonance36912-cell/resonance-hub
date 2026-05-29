@@ -104,7 +104,7 @@ function AdminHome() {
             <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Resonance Admin</p>
             <h1 className="mt-2 text-3xl font-semibold">Sales Overview</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Live view of every subscription across the Resonance ecosystem.
+              Live view of subscriptions, PayFast payments, and site traffic. Auto-refreshes every 15s.
             </p>
           </div>
           <button
@@ -124,7 +124,7 @@ function AdminHome() {
 
         {data && (
           <>
-            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <Kpi label="Active subs" value={String(kpis.activeCount)} />
               <Kpi label="Total subs" value={String(kpis.totalCount)} />
               <Kpi label="Revenue (realised)" value={zar(kpis.revenue)} />
@@ -133,6 +133,13 @@ function AdminHome() {
                 value={zar(kpis.profit)}
                 accent={kpis.profit >= 0 ? "text-emerald-400" : "text-red-400"}
               />
+            </section>
+
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+              <Kpi label="Visits (24h)" value={visits ? String(visits.total24h) : "—"} />
+              <Kpi label="Unique sessions (24h)" value={visits ? String(visits.uniqueSessions24h) : "—"} />
+              <Kpi label="Visits (7d)" value={visits ? String(visits.total7d) : "—"} />
+              <Kpi label="Visits (all time)" value={visits ? String(visits.totalAll) : "—"} />
             </section>
 
             <section className="mb-10">
