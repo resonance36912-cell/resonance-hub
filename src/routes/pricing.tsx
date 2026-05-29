@@ -8,7 +8,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "One shared ZAR pricing matrix across every Resonance app. Pay monthly or yearly via PayFast. Bundle access from R499/month.",
+          "One shared ZAR pricing matrix across every Resonance app. Monthly PayFast billing. All-Access bundle from R1,499/month.",
       },
       { property: "og:title", content: "Pricing — The Resonance" },
       {
