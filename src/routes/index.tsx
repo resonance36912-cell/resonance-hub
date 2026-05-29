@@ -85,7 +85,7 @@ export const Route = createFileRoute("/")({
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
                 url: "https://www.resonanceonline.life",
-                offers: { "@type": "Offer", price: "49", priceCurrency: "ZAR" },
+                offers: { "@type": "Offer", price: "99", priceCurrency: "ZAR" },
               },
               {
                 "@type": "SoftwareApplication",
