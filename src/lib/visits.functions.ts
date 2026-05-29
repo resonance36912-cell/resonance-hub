@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getWebRequest } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
@@ -26,7 +26,7 @@ export const recordVisit = createServerFn({ method: "POST" })
     let userAgent: string | null = null;
     let sourceIp: string | null = null;
     try {
-      const req = getWebRequest();
+      const req = getRequest();
       userAgent = req?.headers.get("user-agent") ?? null;
       sourceIp =
         req?.headers.get("cf-connecting-ip") ??
