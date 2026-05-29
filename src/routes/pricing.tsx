@@ -133,7 +133,7 @@ function PricingPage() {
                 </ul>
               </div>
               <div className="text-center md:text-right">
-                <div className="text-6xl font-extrabold tracking-tight mb-1">R499</div>
+                <div className="text-6xl font-extrabold tracking-tight mb-1">R1,499</div>
                 <div className="text-white/60 text-sm mb-6">/ month</div>
                 <a
                   href="#"
