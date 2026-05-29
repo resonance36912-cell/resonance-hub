@@ -1,6 +1,8 @@
 import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
@@ -26,33 +28,57 @@ export const Route = createFileRoute("/admin/login")({
 
 function AdminLoginPage() {
   const navigate = useNavigate();
+  const promote = useServerFn(bootstrapAdmin);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
       if (!session?.user) return;
+      try {
+        await promote();
+      } catch {
+        // ignore — role check below decides access
+      }
       const { data: role } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      if (role) navigate({ to: "/admin" });
-      else setError("This account does not have admin access.");
+      if (role) {
+        navigate({ to: "/admin" });
+      } else {
+        setError("This account does not have admin access. Ask an existing admin to grant the role.");
+      }
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, promote]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/admin/login` },
+        });
+        if (error) throw error;
+        if (!data.session) {
+          setNotice("Check your email to confirm your account, then return here to sign in.");
+        }
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -65,25 +91,48 @@ function AdminLoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Resonance</p>
-          <h1 className="mt-2 text-3xl font-semibold">Admin Sign In</h1>
+          <h1 className="mt-2 text-3xl font-semibold">
+            Admin {mode === "signin" ? "Sign In" : "Sign Up"}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Restricted access. Admin role required.
+            Restricted access. The first account created is automatically promoted to admin.
           </p>
         </div>
 
-        <form
-          onSubmit={submit}
-          className="space-y-4 rounded-2xl border border-border bg-card p-6"
-        >
+        <div className="mb-4 flex rounded-full border border-border bg-card p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => { setMode("signin"); setError(null); setNotice(null); }}
+            className={`flex-1 rounded-full px-4 py-2 transition ${
+              mode === "signin" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMode("signup"); setError(null); setNotice(null); }}
+            className={`flex-1 rounded-full px-4 py-2 transition ${
+              mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Create account
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-6">
           {error && (
             <div className="rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
               {error}
             </div>
           )}
+          {notice && (
+            <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+              {notice}
+            </div>
+          )}
           <div>
-            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Email
-            </label>
+            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Email</label>
             <input
               type="email"
               required
@@ -94,9 +143,7 @@ function AdminLoginPage() {
             />
           </div>
           <div>
-            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Password
-            </label>
+            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Password</label>
             <input
               type="password"
               required
@@ -111,7 +158,9 @@ function AdminLoginPage() {
             disabled={busy}
             className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
-            {busy ? "Signing in…" : "Sign in"}
+            {busy
+              ? (mode === "signin" ? "Signing in…" : "Creating account…")
+              : (mode === "signin" ? "Sign in" : "Create admin account")}
           </button>
           <p className="text-center text-xs text-muted-foreground">
             <Link to="/" className="hover:underline">← Back to site</Link>
