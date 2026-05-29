@@ -122,6 +122,33 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          source: string | null
+          source_ip: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          source?: string | null
+          source_ip?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          source?: string | null
+          source_ip?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       payfast_itn_logs: {
         Row: {
           amount_cents: number | null

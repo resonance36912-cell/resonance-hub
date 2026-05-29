@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
@@ -477,6 +479,27 @@ function useScrollReveal() {
 function Index() {
   const active = useActiveSection(NAV_LINKS.map((l) => l.id));
   useScrollReveal();
+  const subscribe = useServerFn(subscribeNewsletter);
+  const [joinEmail, setJoinEmail] = useState("");
+  const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [joinMsg, setJoinMsg] = useState<string | null>(null);
+
+  async function onJoinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!joinEmail) return;
+    setJoinStatus("loading");
+    setJoinMsg(null);
+    try {
+      await subscribe({ data: { email: joinEmail, source: "home_join" } });
+      setJoinStatus("ok");
+      setJoinMsg("You're on the list. Welcome to the frequency.");
+      setJoinEmail("");
+    } catch (err) {
+      setJoinStatus("error");
+      setJoinMsg((err as Error).message || "Something went wrong. Try again.");
+    }
+  }
+
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-3.5 flex justify-between items-center backdrop-blur-xl bg-background/70 border-b border-white/5">
@@ -1097,7 +1120,7 @@ function Index() {
             </p>
             <form
               className="w-full max-w-md mx-auto flex flex-col sm:flex-row gap-2"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={onJoinSubmit}
             >
               <label htmlFor="join-email" className="sr-only">
                 Email address
@@ -1108,15 +1131,29 @@ function Index() {
                 required
                 aria-label="Email address"
                 placeholder="email@domain.com"
-                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors"
+                value={joinEmail}
+                onChange={(e) => setJoinEmail(e.target.value)}
+                disabled={joinStatus === "loading"}
+                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors disabled:opacity-60"
               />
               <button
                 type="submit"
-                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)]"
+                disabled={joinStatus === "loading" || joinStatus === "ok"}
+                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60"
               >
-                Subscribe
+                {joinStatus === "loading" ? "Subscribing…" : joinStatus === "ok" ? "Subscribed ✓" : "Subscribe"}
               </button>
             </form>
+            {joinMsg && (
+              <p
+                role="status"
+                className={`mt-4 text-sm ${
+                  joinStatus === "ok" ? "text-emerald-300" : "text-red-300"
+                }`}
+              >
+                {joinMsg}
+              </p>
+            )}
           </div>
         </section>
       </main>
