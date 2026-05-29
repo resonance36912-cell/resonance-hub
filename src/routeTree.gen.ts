@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
@@ -20,6 +21,7 @@ import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
+import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
@@ -49,6 +51,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
@@ -84,6 +91,11 @@ const AdminRevenueRoute = AdminRevenueRouteImport.update({
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
   id: '/admin/payfast-audit',
   path: '/admin/payfast-audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin/login',
+  path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
@@ -149,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -156,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -172,6 +186,7 @@ export interface FileRoutesByTo {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -179,6 +194,7 @@ export interface FileRoutesByTo {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/admin': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -196,6 +212,7 @@ export interface FileRoutesById {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -203,6 +220,7 @@ export interface FileRoutesById {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -221,6 +239,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
+    | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
     | '/admin/webhooks'
@@ -228,6 +247,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/youtube-optimizer/pricing'
+    | '/admin/'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
@@ -244,6 +264,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
+    | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
     | '/admin/webhooks'
@@ -251,6 +272,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/youtube-optimizer/pricing'
+    | '/admin'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
@@ -267,6 +289,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
+    | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
     | '/admin/webhooks'
@@ -274,6 +297,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/email/unsubscribe'
     | '/youtube-optimizer/pricing'
+    | '/admin/'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
@@ -291,11 +315,13 @@ export interface RootRouteChildren {
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -333,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/youtube-optimizer/pricing': {
@@ -382,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/payfast-audit'
       fullPath: '/admin/payfast-audit'
       preLoaderRoute: typeof AdminPayfastAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/emails': {
@@ -479,11 +519,13 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
@@ -496,13 +538,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
