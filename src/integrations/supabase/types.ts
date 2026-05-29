@@ -173,6 +173,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payfast_launch_logs: {
+        Row: {
+          action_url: string
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          m_payment_id: string
+          return_to: string | null
+          sandbox: boolean
+          sku: string
+          source_ip: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action_url: string
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          m_payment_id: string
+          return_to?: string | null
+          sandbox?: boolean
+          sku: string
+          source_ip?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action_url?: string
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          m_payment_id?: string
+          return_to?: string | null
+          sandbox?: boolean
+          sku?: string
+          source_ip?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       sku_costs: {
         Row: {
           cost_cents: number

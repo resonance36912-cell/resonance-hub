@@ -19,6 +19,7 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
@@ -78,6 +79,11 @@ const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
+  id: '/admin/payfast-audit',
+  path: '/admin/payfast-audit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
+    | '/admin/payfast-audit'
     | '/admin/revenue'
     | '/admin/webhooks'
     | '/checkout/cancel'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
+    | '/admin/payfast-audit'
     | '/admin/revenue'
     | '/admin/webhooks'
     | '/checkout/cancel'
@@ -256,6 +267,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
+    | '/admin/payfast-audit'
     | '/admin/revenue'
     | '/admin/webhooks'
     | '/checkout/cancel'
@@ -279,6 +291,7 @@ export interface RootRouteChildren {
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -362,6 +375,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payfast-audit': {
+      id: '/admin/payfast-audit'
+      path: '/admin/payfast-audit'
+      fullPath: '/admin/payfast-audit'
+      preLoaderRoute: typeof AdminPayfastAuditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/emails': {
@@ -459,6 +479,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,

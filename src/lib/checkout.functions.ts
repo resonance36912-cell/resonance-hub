@@ -3,6 +3,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { createHash } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 /**
  * Hub checkout: builds a signed PayFast launch payload for a given SKU.
@@ -114,6 +115,38 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
     };
 
     fields.signature = buildSignature(fields, passphrase);
+
+    // Structured launch log: console + audit table
+    const sourceIp = req.headers.get("x-forwarded-for") ?? null;
+    const userAgent = req.headers.get("user-agent") ?? null;
+
+    console.log(JSON.stringify({
+      event: "payfast_launch",
+      user_id: context.userId,
+      sku: def.sku,
+      amount_cents: def.amountCents,
+      amount_zar: amount,
+      m_payment_id: fields.m_payment_id,
+      sandbox,
+      source_ip: sourceIp,
+    }));
+
+    try {
+      await supabaseAdmin.from("payfast_launch_logs").insert({
+        user_id: context.userId,
+        sku: def.sku,
+        m_payment_id: fields.m_payment_id,
+        amount_cents: def.amountCents,
+        currency: "ZAR",
+        action_url: action,
+        sandbox,
+        source_ip: sourceIp,
+        user_agent: userAgent,
+        return_to: returnTo,
+      });
+    } catch (err) {
+      console.error("Failed to write payfast_launch_logs:", err);
+    }
 
     return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label };
   });
