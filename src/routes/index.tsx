@@ -479,6 +479,27 @@ function useScrollReveal() {
 function Index() {
   const active = useActiveSection(NAV_LINKS.map((l) => l.id));
   useScrollReveal();
+  const subscribe = useServerFn(subscribeNewsletter);
+  const [joinEmail, setJoinEmail] = useState("");
+  const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [joinMsg, setJoinMsg] = useState<string | null>(null);
+
+  async function onJoinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!joinEmail) return;
+    setJoinStatus("loading");
+    setJoinMsg(null);
+    try {
+      await subscribe({ data: { email: joinEmail, source: "home_join" } });
+      setJoinStatus("ok");
+      setJoinMsg("You're on the list. Welcome to the frequency.");
+      setJoinEmail("");
+    } catch (err) {
+      setJoinStatus("error");
+      setJoinMsg((err as Error).message || "Something went wrong. Try again.");
+    }
+  }
+
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-3.5 flex justify-between items-center backdrop-blur-xl bg-background/70 border-b border-white/5">
