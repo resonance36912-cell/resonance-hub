@@ -25,3 +25,6 @@ jobs:
 
       - name: Verify ePublisher tier amounts (end-to-end)
         run: bun run verify:epublisher
+
+      - name: Verify ALL Resonance App tiers (end-to-end)
+        run: bun run verify:all-apps
