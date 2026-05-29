@@ -16,14 +16,14 @@ export const Route = createFileRoute("/admin/emails")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/" });
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: "/" });
+    if (!roleRow) throw redirect({ to: "/admin/login" });
   },
   component: EmailsAdminPage,
 });
