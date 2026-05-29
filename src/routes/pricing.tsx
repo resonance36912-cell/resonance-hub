@@ -116,7 +116,7 @@ function PricingPage() {
             <div className="relative grid md:grid-cols-[1.5fr_1fr] gap-8 items-center">
               <div>
                 <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/70 mb-3">
-                  Featured · save up to R598/mo
+                  Featured · save up to R1,247/mo
                 </div>
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
                   All-Access bundle
