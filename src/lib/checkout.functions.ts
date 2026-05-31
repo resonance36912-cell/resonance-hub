@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createHash } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { isAllowedReturnTo } from "./return-to-allowlist";
+
 
 /**
  * Hub checkout: builds a signed PayFast launch payload for a given SKU.
