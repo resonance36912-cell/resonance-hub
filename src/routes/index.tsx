@@ -376,6 +376,8 @@ function HeroCarousel({ items }: { items: App[] }) {
           alt={`${active.name} logo`}
           width={1024}
           height={1024}
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-[14%] w-[72%] h-[72%] object-contain animate-slide-fade"
           style={{ filter: `drop-shadow(0 0 30px hsl(${c} / 0.7))` }}
         />
