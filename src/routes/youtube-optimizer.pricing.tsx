@@ -85,7 +85,7 @@ function YouTubeOptimizerPricingPage() {
           to="/"
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
-          ← Hub
+          ← Back to Hub
         </Link>
       </nav>
 
