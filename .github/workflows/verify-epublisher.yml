@@ -28,3 +28,6 @@ jobs:
 
       - name: Verify ALL Resonance App tiers (end-to-end)
         run: bun run verify:all-apps
+
+      - name: Verify Back to Hub coverage on all user-facing pages
+        run: bun run verify:back-to-hub
