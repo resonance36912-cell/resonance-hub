@@ -32,8 +32,15 @@
  * The script is identical across the suite so the contract cannot drift.
  */
 
-import { readdirSync, statSync, readFileSync, existsSync } from "node:fs";
-import { join, relative } from "node:path";
+import {
+  readdirSync,
+  statSync,
+  readFileSync,
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+} from "node:fs";
+import { join, relative, dirname } from "node:path";
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
