@@ -198,14 +198,6 @@ function lintFile(rel: string): Violation[] {
 }
 
 const candidates = walk(SRC);
-
-if (candidates.length === 0) {
-  console.log(
-    "✅ verify-discernment-usage: no content-generation routes found in this repo (Hub). Skipping.",
-  );
-  process.exit(0);
-}
-
 const allViolations: Violation[] = [];
 for (const file of candidates) {
   allViolations.push(...lintFile(file));
@@ -213,12 +205,10 @@ for (const file of candidates) {
 
 // Always write a machine-readable violations file so the workflow can
 // create a GitHub Check Run with annotations and a link to the report.
-import { mkdirSync, writeFileSync as _wf } from "node:fs";
-import { dirname as _dn } from "node:path";
 const VIOLATIONS_OUT =
   process.env.VIOLATIONS_OUT ?? "reports/discernment-violations.json";
-mkdirSync(_dn(VIOLATIONS_OUT), { recursive: true });
-_wf(
+mkdirSync(dirname(VIOLATIONS_OUT), { recursive: true });
+writeFileSync(
   VIOLATIONS_OUT,
   JSON.stringify(
     {
@@ -231,6 +221,13 @@ _wf(
     2,
   ),
 );
+
+if (candidates.length === 0) {
+  console.log(
+    "✅ verify-discernment-usage: no content-generation routes found in this repo (Hub). Skipping.",
+  );
+  process.exit(0);
+}
 
 // Emit one GitHub-Actions annotation per violation when running in CI.
 // Format: ::error file=PATH,line=N,col=N,title=TITLE::MESSAGE
