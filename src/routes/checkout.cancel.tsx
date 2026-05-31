@@ -1,10 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
+import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
 
 const Search = z.object({
   sku: z.string().optional(),
-  return_to: z.string().url().optional(),
+  return_to: z
+    .string()
+    .url()
+    .refine(isAllowedReturnTo, {
+      message: "return_to must point to a known Resonance app origin",
+    })
+    .optional(),
 });
 
 export const Route = createFileRoute("/checkout/cancel")({
@@ -20,6 +27,7 @@ export const Route = createFileRoute("/checkout/cancel")({
 
 function CancelPage() {
   const { sku, return_to } = Route.useSearch();
+
   return (
     <div className="min-h-screen text-foreground">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
