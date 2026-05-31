@@ -1083,7 +1083,7 @@ function Index() {
                 a: "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students. Creative Studio and Sync Vision offer trial credits.",
               },
               {
-                q: "Do I need one account for all apps?",
+                q: "Is there a single login across every app?",
                 a: "One Hub billing account today — your subscriptions and invoices live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
               },
               {
