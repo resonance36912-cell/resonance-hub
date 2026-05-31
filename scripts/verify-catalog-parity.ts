@@ -8,7 +8,8 @@
  * customer could be charged an amount the ITN won't accept.
  *
  * This script tokenises both files (no TypeScript compile) and compares
- * the parsed entries.
+ * the parsed entries. Field ordering inside the object literal is NOT
+ * significant.
  */
 import { readFileSync } from "node:fs";
 
@@ -16,17 +17,19 @@ type Entry = { app: string; tier: string; amountCents: number; cycle: string };
 
 function parseCatalog(src: string): Record<string, Entry> {
   const out: Record<string, Entry> = {};
-  // Match lines like: "key:foo:bar": { ... app: "foo", tier: "bar", amountCents: 9900, ..., cycle: "monthly" }
-  const lineRe =
-    /"([a-z_]+:[a-z_]+:[a-z]+)"\s*:\s*\{[^}]*app:\s*"([^"]+)"[^}]*tier:\s*"([^"]+)"[^}]*amountCents:\s*(\d+)[^}]*cycle:\s*"([^"]+)"/g;
+  // Match each `"key": { ...balanced... }` block at top level of the SKU_CATALOG.
+  const blockRe = /"([a-z_]+:[a-z_]+:[a-z]+)"\s*:\s*\{([^{}]*)\}/g;
   let m: RegExpExecArray | null;
-  while ((m = lineRe.exec(src))) {
-    out[m[1]] = {
-      app: m[2],
-      tier: m[3],
-      amountCents: Number(m[4]),
-      cycle: m[5],
-    };
+  while ((m = blockRe.exec(src))) {
+    const key = m[1];
+    const body = m[2];
+    const app = /app:\s*"([^"]+)"/.exec(body)?.[1];
+    const tier = /tier:\s*"([^"]+)"/.exec(body)?.[1];
+    const amt = /amountCents:\s*(\d+)/.exec(body)?.[1];
+    const cycle = /cycle:\s*"([^"]+)"/.exec(body)?.[1];
+    if (app && tier && amt && cycle) {
+      out[key] = { app, tier, amountCents: Number(amt), cycle };
+    }
   }
   return out;
 }
