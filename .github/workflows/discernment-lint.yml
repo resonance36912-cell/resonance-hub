@@ -129,10 +129,82 @@ jobs:
               core.info('Created Discernment usage PR comment.');
             }
 
+      - name: Publish Discernment check run
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'reports/discernment-violations.json';
+            if (!fs.existsSync(path)) {
+              core.info('No violations file; skipping check run.');
+              return;
+            }
+            const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const violations = data.violations || [];
+            const outcome = process.env.LINT_OUTCOME;
+            const { owner, repo } = context.repo;
+            const sha = context.payload.pull_request
+              ? context.payload.pull_request.head.sha
+              : context.sha;
+            const runId = context.runId;
+            const artifactsUrl =
+              `${context.serverUrl}/${owner}/${repo}/actions/runs/${runId}#artifacts`;
+
+            // Aggregate by rule
+            const byRule = {};
+            for (const v of violations) {
+              byRule[v.rule] = (byRule[v.rule] || 0) + 1;
+            }
+            const ruleRows = Object.entries(byRule)
+              .sort((a, b) => b[1] - a[1])
+              .map(([rule, n]) => `| \`${rule}\` | ${n} |`).join('\n');
+
+            const conclusion = outcome === 'success' ? 'success' : 'failure';
+            const summary = outcome === 'success'
+              ? `✅ All ${data.routesScanned} generation route(s) satisfy the Discernment contract.`
+              : `❌ ${violations.length} violation(s) across ${data.routesScanned} generation route(s).`;
+            const text = [
+              summary,
+              '',
+              `**Full report artifact:** [discernment-usage-report](${artifactsUrl})`,
+              '',
+              violations.length
+                ? '### Violations by rule\n\n| Rule | Count |\n| --- | ---: |\n' + ruleRows
+                : '',
+            ].filter(Boolean).join('\n');
+
+            // GitHub caps annotations at 50 per Check Run update.
+            const annotations = violations.slice(0, 50).map(v => ({
+              path: v.file,
+              start_line: v.line,
+              end_line: v.line,
+              annotation_level: 'failure',
+              title: `Discernment: ${v.rule}`,
+              message: v.fix ? `${v.message}\nFix: ${v.fix}` : v.message,
+            }));
+
+            await github.rest.checks.create({
+              owner, repo,
+              name: 'Discernment Contract',
+              head_sha: sha,
+              status: 'completed',
+              conclusion,
+              output: {
+                title: summary,
+                summary,
+                text,
+                annotations,
+              },
+            });
+            core.info(`Published Discernment check run (${conclusion}, ${annotations.length} annotations).`);
+
       - name: Fail job if lint failed
         if: steps.lint.outcome == 'failure'
         run: |
-          echo "::error::Discernment lint failed — see PR comment / job log."
+          echo "::error::Discernment lint failed — see PR comment / check run."
           exit 1
 
   parity:
