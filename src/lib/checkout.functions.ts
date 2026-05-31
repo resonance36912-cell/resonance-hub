@@ -64,8 +64,15 @@ function buildSignature(params: Record<string, string>, passphrase: string): str
 
 const LaunchInput = z.object({
   sku: z.string().min(3).max(80),
-  returnTo: z.string().url().optional(),
+  returnTo: z
+    .string()
+    .url()
+    .refine(isAllowedReturnTo, {
+      message: "returnTo must point to a known Resonance app origin",
+    })
+    .optional(),
 });
+
 
 export type PayfastLaunch = {
   action: string;
