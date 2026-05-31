@@ -109,9 +109,9 @@ export const Route = createFileRoute("/")({
                 "@type": "FAQPage",
                 mainEntity: [
                   ["Can I use Resonance tools for free?", "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students."],
-                  ["Do I need one account for all apps?", "Each app currently runs its own account. A shared Resonance account is on the roadmap."],
+                  ["Do I need one account for all apps?", "One Hub billing account today — manage subscriptions across every Resonance app from one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition."],
                   ["Can I cancel anytime?", "Yes. Every subscription is cancel-anytime via PayFast."],
-                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast. Annual billing saves 20%."],
+                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT). Monthly billing only."],
                   ["Can schools use Career Compass?", "Yes — schools can join the rewards-based pilot."],
                   ["Can publishers test ePublisher with one title first?", "Yes. Start with a single title on the free or Starter tier."],
                   ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
@@ -877,8 +877,8 @@ function Index() {
               Transparent ZAR pricing
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-              All subscription apps share the same tier structure and the same PayFast checkout.
-              Pay once at the app of your choice, manage everything from your Resonance account.
+              Pay at the app of your choice through the shared PayFast checkout. One Hub billing
+              account today; unified app login is on the roadmap.
             </p>
           </div>
 
@@ -950,33 +950,37 @@ function Index() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 {
-                  name: "Resonance Starter Bundle",
-                  price: "R149",
-                  body: "ePublisher Starter + basic Creative Studio credits.",
+                  name: "Resonance All-Access",
+                  price: "R1,499",
+                  body: "Pro tier across ePublisher, Creative Studio, Sync Vision — plus early access to YouTube Optimizer. Billed monthly via PayFast.",
+                  featured: true,
+                  href: "/checkout?app=all_access&plan=all_access",
+                  cta: "Subscribe",
+                  available: true,
+                },
+                {
+                  name: "Starter Bundle",
+                  price: "Custom",
+                  body: "ePublisher Starter + basic Creative Studio credits. Request a quote — not yet on PayFast.",
                   href: "mailto:hello@reson8.life?subject=Starter%20Bundle%20interest",
                   cta: "Request bundle",
+                  available: false,
                 },
                 {
                   name: "Creator Bundle",
-                  price: "R449",
-                  body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter.",
-                  featured: true,
+                  price: "Custom",
+                  body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter. Request a quote — not yet on PayFast.",
                   href: "mailto:hello@reson8.life?subject=Creator%20Bundle%20interest",
                   cta: "Request bundle",
-                },
-                {
-                  name: "Resonance Pro Bundle",
-                  price: "R1,499",
-                  body: "Pro tier across ePublisher, Creative Studio, Sync Vision & YouTube Optimizer.",
-                  href: "/checkout?app=all_access&plan=all_access",
-                  cta: "Subscribe",
+                  available: false,
                 },
                 {
                   name: "Business Bundle",
-                  price: "R3,499",
-                  body: "All Business tools + priority support + onboarding call.",
+                  price: "Custom",
+                  body: "All Business tools + priority support + onboarding call. Request a quote — not yet on PayFast.",
                   href: "mailto:hello@reson8.life?subject=Business%20Bundle%20interest",
                   cta: "Request bundle",
+                  available: false,
                 },
               ].map((b) => (
 
@@ -988,15 +992,19 @@ function Index() {
                       : "border-white/10 bg-card/50"
                   }`}
                 >
-                  {b.featured && (
+                  {b.featured ? (
                     <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]">
-                      Most popular
+                      Available now
+                    </span>
+                  ) : (
+                    <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/60">
+                      Custom quote
                     </span>
                   )}
                   <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
                   <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-3xl font-extrabold">{b.price}</span>
-                    <span className="text-xs text-white/50">/ month</span>
+                    {b.available && <span className="text-xs text-white/50">/ month</span>}
                   </div>
                   <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
                   <a
@@ -1014,7 +1022,8 @@ function Index() {
               ))}
             </div>
             <p className="text-center text-xs text-white/40 mt-6">
-              Bundles billed monthly via PayFast. Cancel anytime. Annual billing saves 20%.
+              Only All-Access is purchasable directly. Other bundles are custom quotes — billed
+              monthly via PayFast once activated. Cancel anytime.
             </p>
           </div>
         </section>
@@ -1075,7 +1084,7 @@ function Index() {
               },
               {
                 q: "Are prices in South African Rand?",
-                a: "All prices are in ZAR and processed locally through PayFast (card and EFT). Annual billing saves 20%.",
+                a: "All prices are in ZAR and processed locally through PayFast (card and EFT). Monthly billing only.",
               },
               {
                 q: "Can schools use Career Compass?",
