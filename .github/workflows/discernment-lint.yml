@@ -70,6 +70,18 @@ jobs:
       - name: Run Discernment lint
         run: bun run scripts/verify-discernment-usage.ts
 
+      - name: Generate Discernment usage report
+        if: always()
+        run: bun run scripts/report-discernment-usage.ts
+
+      - name: Upload Discernment report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discernment-usage-report
+          path: reports/discernment-usage.md
+          if-no-files-found: ignore
+
   parity:
     name: Contract file parity vs Hub
     runs-on: ubuntu-latest

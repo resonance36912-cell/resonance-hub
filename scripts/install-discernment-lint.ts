@@ -65,6 +65,7 @@ const CONTRACT_FILES = [
   "src/lib/discernment.ts",
   "src/lib/discernment-guard.ts",
   "scripts/verify-discernment-usage.ts",
+  "scripts/report-discernment-usage.ts",
 ];
 
 function ensureDir(p: string) {
@@ -96,6 +97,12 @@ const VERIFY_CMD = "bun run scripts/verify-discernment-usage.ts";
 if (pkg.scripts["verify:discernment-usage"] !== VERIFY_CMD) {
   pkg.scripts["verify:discernment-usage"] = VERIFY_CMD;
   console.log("✓ added scripts.verify:discernment-usage");
+}
+
+const REPORT_CMD = "bun run scripts/report-discernment-usage.ts";
+if (pkg.scripts["report:discernment-usage"] !== REPORT_CMD) {
+  pkg.scripts["report:discernment-usage"] = REPORT_CMD;
+  console.log("✓ added scripts.report:discernment-usage");
 }
 
 const prebuild: string = pkg.scripts.prebuild ?? "";
