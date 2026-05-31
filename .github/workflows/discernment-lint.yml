@@ -1,0 +1,105 @@
+name: Discernment Lint (Reusable)
+
+# Reusable workflow for every Resonance spoke (ePublisher, Creative Studio,
+# Sync Vision, YouTube Optimizer). It runs the canonical generation-route
+# Discernment linter and fails the PR if any `*generate*` route bypasses the
+# shared guard or provenance label.
+#
+# Usage from a spoke repo (.github/workflows/discernment-lint.yml):
+#
+#   name: Discernment Lint
+#   on:
+#     pull_request:
+#       paths:
+#         - 'src/**/*generate*.functions.ts'
+#         - 'src/**/*generate*.server.ts'
+#         - 'src/routes/api/**/*generate*.ts'
+#         - 'scripts/verify-discernment-usage.ts'
+#         - 'src/lib/discernment*.ts'
+#     push:
+#       branches: [main]
+#   jobs:
+#     discernment:
+#       uses: resonance-org/resonance-hub/.github/workflows/discernment-lint.yml@main
+#
+# The spoke MUST keep `scripts/verify-discernment-usage.ts` and
+# `src/lib/discernment-guard.ts` byte-identical to the Hub copies — the
+# `parity` job below enforces that by checksumming against the Hub at
+# workflow run time.
+
+on:
+  workflow_call:
+    inputs:
+      hub-ref:
+        description: Git ref of resonance-hub to compare contract files against.
+        required: false
+        type: string
+        default: main
+      hub-repo:
+        description: Owner/name of the Hub repo that owns the contract.
+        required: false
+        type: string
+        default: resonance-org/resonance-hub
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Generation-route lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout spoke
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify Discernment lint script is present
+        run: |
+          test -f scripts/verify-discernment-usage.ts \
+            || (echo "::error::Missing scripts/verify-discernment-usage.ts. Copy it from resonance-hub." && exit 1)
+          test -f src/lib/discernment.ts \
+            || (echo "::error::Missing src/lib/discernment.ts. Copy it from resonance-hub." && exit 1)
+          test -f src/lib/discernment-guard.ts \
+            || (echo "::error::Missing src/lib/discernment-guard.ts. Copy it from resonance-hub." && exit 1)
+
+      - name: Run Discernment lint
+        run: bun run scripts/verify-discernment-usage.ts
+
+  parity:
+    name: Contract file parity vs Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout spoke
+        uses: actions/checkout@v4
+        with:
+          path: spoke
+
+      - name: Checkout Hub (contract source of truth)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.hub-repo }}
+          ref: ${{ inputs.hub-ref }}
+          path: hub
+
+      - name: Compare contract files
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in \
+            scripts/verify-discernment-usage.ts \
+            src/lib/discernment.ts \
+            src/lib/discernment-guard.ts
+          do
+            if ! diff -q "hub/$f" "spoke/$f" >/dev/null 2>&1; then
+              echo "::error file=$f::Spoke copy of $f drifts from resonance-hub@${{ inputs.hub-ref }}. Re-sync the file from the Hub."
+              diff -u "hub/$f" "spoke/$f" || true
+              fail=1
+            fi
+          done
+          exit $fail
