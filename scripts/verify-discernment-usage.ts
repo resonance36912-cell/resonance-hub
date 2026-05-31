@@ -2,20 +2,34 @@
 /**
  * verify-discernment-usage.ts
  *
- * CI guard: every server-side content-generation route in the suite MUST call
- * `assertBriefDiscernment` before producing paid output.
+ * CI lint: every server-side content-generation route in a Resonance spoke
+ * MUST go through the shared Discernment contract. A route is considered a
+ * generation route if its path matches any of:
  *
- * The Hub itself does not host generation routes; this verifier exists so the
- * shared contract is enforced wherever the Hub's `discernment-guard` is used.
- * It scans for files matching:
+ *    src/**\/*generate*.functions.ts(x)
+ *    src/**\/*generate*.server.ts(x)
+ *    src/routes/api/**\/*generate*.ts(x)
  *
- *    src/**\/*generate*.functions.ts
- *    src/**\/*generate*.server.ts
- *    src/routes/api/**\/*generate*.ts
+ * Each generation route must satisfy ALL of the following invariants. Any
+ * violation fails the build with a precise, fixable error.
  *
- * Each match must contain `assertBriefDiscernment(`.
- * If no candidate files exist (current Hub state), the verifier passes with a
- * note — so the script is safe to drop into any spoke repo unchanged.
+ *  1. Import from "@/lib/discernment-guard"
+ *  2. Call `assertBriefDiscernment(` at least once
+ *  3. Call `formatProvenanceLabel(` at least once (paid output must be labeled)
+ *  4. Handle `DiscernmentBlockedError` (catch, instanceof check, or re-export)
+ *     — OR explicitly opt out with an inline marker comment:
+ *         // discernment:bubble-up  (the error is intentionally propagated)
+ *  5. Must NOT bypass the guard via banned patterns:
+ *       - `// discernment:skip` without a paired `// discernment:reason: ...`
+ *       - calling `verifyBriefDiscernment(` directly (use the guard instead)
+ *
+ * Spokes opt a single file out only by adding BOTH marker comments:
+ *
+ *    // discernment:skip
+ *    // discernment:reason: <why this route does not produce paid output>
+ *
+ * The Hub itself hosts no generation routes, so the linter no-ops here.
+ * The script is identical across the suite so the contract cannot drift.
  */
 
 import { readdirSync, statSync, readFileSync, existsSync } from "node:fs";
@@ -26,7 +40,13 @@ const SRC = join(ROOT, "src");
 
 const FILE_PATTERN = /generate.*\.(functions|server)\.tsx?$/i;
 const API_GEN_PATTERN = /\/api\/.*generate[^/]*\.tsx?$/i;
-const REQUIRED_CALL = "assertBriefDiscernment(";
+
+interface Violation {
+  file: string;
+  rule: string;
+  message: string;
+  fix?: string;
+}
 
 function walk(dir: string, out: string[] = []): string[] {
   if (!existsSync(dir)) return out;
@@ -51,6 +71,87 @@ function walk(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+function lintFile(rel: string): Violation[] {
+  const src = readFileSync(join(ROOT, rel), "utf8");
+  const violations: Violation[] = [];
+
+  // Opt-out path (must include BOTH marker comments)
+  const hasSkip = /\/\/\s*discernment:skip\b/.test(src);
+  const hasReason = /\/\/\s*discernment:reason:\s*\S+/.test(src);
+  if (hasSkip && hasReason) return [];
+  if (hasSkip && !hasReason) {
+    violations.push({
+      file: rel,
+      rule: "skip-requires-reason",
+      message:
+        "Found `// discernment:skip` without a paired `// discernment:reason: <why>` comment.",
+      fix: "Add a `// discernment:reason: <why this route does not produce paid output>` comment next to the skip marker.",
+    });
+    return violations;
+  }
+
+  // Rule 5b: must not call verifyBriefDiscernment directly
+  if (/\bverifyBriefDiscernment\s*\(/.test(src)) {
+    violations.push({
+      file: rel,
+      rule: "no-direct-verify",
+      message:
+        "Generation routes must not call `verifyBriefDiscernment` directly — it bypasses the throw-on-fail guard.",
+      fix: 'Replace with `assertBriefDiscernment(...)` imported from "@/lib/discernment-guard".',
+    });
+  }
+
+  // Rule 1: import from discernment-guard
+  if (!/from\s+["']@\/lib\/discernment-guard["']/.test(src)) {
+    violations.push({
+      file: rel,
+      rule: "missing-guard-import",
+      message:
+        "Generation route does not import from `@/lib/discernment-guard`.",
+      fix: 'Add: `import { assertBriefDiscernment, formatProvenanceLabel, DiscernmentBlockedError } from "@/lib/discernment-guard";`',
+    });
+  }
+
+  // Rule 2: must call assertBriefDiscernment
+  if (!/\bassertBriefDiscernment\s*\(/.test(src)) {
+    violations.push({
+      file: rel,
+      rule: "missing-assert-call",
+      message:
+        "Generation route never calls `assertBriefDiscernment(...)` before producing output.",
+      fix: "Call `assertBriefDiscernment(briefInput)` before any paid generation work.",
+    });
+  }
+
+  // Rule 3: must label provenance on paid output
+  if (!/\bformatProvenanceLabel\s*\(/.test(src)) {
+    violations.push({
+      file: rel,
+      rule: "missing-provenance-label",
+      message:
+        "Generation route never calls `formatProvenanceLabel(...)` — paid outputs must carry a provenance label.",
+      fix: "Return `formatProvenanceLabel(evaluation.dataProvenance)` alongside the generated output.",
+    });
+  }
+
+  // Rule 4: must handle DiscernmentBlockedError or explicitly bubble it up
+  const bubblesUp = /\/\/\s*discernment:bubble-up\b/.test(src);
+  const handlesBlocked =
+    /DiscernmentBlockedError/.test(src) &&
+    (/\bcatch\b/.test(src) || /instanceof\s+DiscernmentBlockedError/.test(src));
+  if (!bubblesUp && !handlesBlocked) {
+    violations.push({
+      file: rel,
+      rule: "unhandled-blocked-error",
+      message:
+        "Generation route neither catches `DiscernmentBlockedError` nor declares `// discernment:bubble-up`.",
+      fix: "Wrap generation in `try { ... } catch (err) { if (err instanceof DiscernmentBlockedError) { ... } throw err; }`, OR add a `// discernment:bubble-up` comment if the error is intentionally propagated to the caller.",
+    });
+  }
+
+  return violations;
+}
+
 const candidates = walk(SRC);
 
 if (candidates.length === 0) {
@@ -60,24 +161,32 @@ if (candidates.length === 0) {
   process.exit(0);
 }
 
-const violations: string[] = [];
+const allViolations: Violation[] = [];
 for (const file of candidates) {
-  const src = readFileSync(join(ROOT, file), "utf8");
-  if (!src.includes(REQUIRED_CALL)) {
-    violations.push(file);
-  }
+  allViolations.push(...lintFile(file));
 }
 
-if (violations.length > 0) {
-  console.error("❌ Discernment guard missing in generation routes:");
-  for (const v of violations) {
-    console.error(
-      `   - ${v}\n     Add: import { assertBriefDiscernment } from "@/lib/discernment-guard";`,
-    );
+if (allViolations.length > 0) {
+  console.error(
+    `❌ verify-discernment-usage: ${allViolations.length} violation(s) across ${candidates.length} generation route(s):\n`,
+  );
+  const byFile = new Map<string, Violation[]>();
+  for (const v of allViolations) {
+    const list = byFile.get(v.file) ?? [];
+    list.push(v);
+    byFile.set(v.file, list);
+  }
+  for (const [file, vs] of byFile) {
+    console.error(`  ${file}`);
+    for (const v of vs) {
+      console.error(`    • [${v.rule}] ${v.message}`);
+      if (v.fix) console.error(`      fix: ${v.fix}`);
+    }
+    console.error("");
   }
   process.exit(1);
 }
 
 console.log(
-  `✅ verify-discernment-usage: ${candidates.length} generation route(s) call assertBriefDiscernment.`,
+  `✅ verify-discernment-usage: ${candidates.length} generation route(s) pass all 5 Discernment lint rules.`,
 );
