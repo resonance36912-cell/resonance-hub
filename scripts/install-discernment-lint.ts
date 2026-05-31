@@ -65,6 +65,7 @@ const CONTRACT_FILES = [
   "src/lib/discernment.ts",
   "src/lib/discernment-guard.ts",
   "scripts/verify-discernment-usage.ts",
+  "scripts/report-discernment-usage.ts",
 ];
 
 function ensureDir(p: string) {
