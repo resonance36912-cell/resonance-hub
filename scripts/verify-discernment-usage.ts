@@ -32,8 +32,15 @@
  * The script is identical across the suite so the contract cannot drift.
  */
 
-import { readdirSync, statSync, readFileSync, existsSync } from "node:fs";
-import { join, relative } from "node:path";
+import {
+  readdirSync,
+  statSync,
+  readFileSync,
+  existsSync,
+  mkdirSync,
+  writeFileSync,
+} from "node:fs";
+import { join, relative, dirname } from "node:path";
 
 const ROOT = process.cwd();
 const SRC = join(ROOT, "src");
@@ -191,17 +198,35 @@ function lintFile(rel: string): Violation[] {
 }
 
 const candidates = walk(SRC);
+const allViolations: Violation[] = [];
+for (const file of candidates) {
+  allViolations.push(...lintFile(file));
+}
+
+// Always write a machine-readable violations file so the workflow can
+// create a GitHub Check Run with annotations and a link to the report.
+const VIOLATIONS_OUT =
+  process.env.VIOLATIONS_OUT ?? "reports/discernment-violations.json";
+mkdirSync(dirname(VIOLATIONS_OUT), { recursive: true });
+writeFileSync(
+  VIOLATIONS_OUT,
+  JSON.stringify(
+    {
+      generatedAt: new Date().toISOString(),
+      routesScanned: candidates.length,
+      violationCount: allViolations.length,
+      violations: allViolations,
+    },
+    null,
+    2,
+  ),
+);
 
 if (candidates.length === 0) {
   console.log(
     "✅ verify-discernment-usage: no content-generation routes found in this repo (Hub). Skipping.",
   );
   process.exit(0);
-}
-
-const allViolations: Violation[] = [];
-for (const file of candidates) {
-  allViolations.push(...lintFile(file));
 }
 
 // Emit one GitHub-Actions annotation per violation when running in CI.
