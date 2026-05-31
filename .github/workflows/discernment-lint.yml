@@ -186,7 +186,7 @@ jobs:
               message: v.fix ? `${v.message}\nFix: ${v.fix}` : v.message,
             }));
 
-            await github.rest.checks.create({
+            const { data: check } = await github.rest.checks.create({
               owner, repo,
               name: 'Discernment Contract',
               head_sha: sha,
@@ -200,12 +200,73 @@ jobs:
               },
             });
             core.info(`Published Discernment check run (${conclusion}, ${annotations.length} annotations).`);
+            core.setOutput('check_url', check.html_url);
+            core.setOutput('check_id', String(check.id));
+            core.setOutput('conclusion', conclusion);
+            core.setOutput('summary', summary);
+            core.setOutput('rule_rows', ruleRows);
+            core.setOutput('violation_count', String(violations.length));
+            core.setOutput('routes_scanned', String(data.routesScanned));
+            core.setOutput('artifacts_url', artifactsUrl);
+
+      - name: Post / update Discernment check-run PR summary
+        if: always() && github.event_name == 'pull_request' && steps.check_run.outputs.check_url
+        uses: actions/github-script@v7
+        env:
+          CHECK_URL: ${{ steps.check_run.outputs.check_url }}
+          CONCLUSION: ${{ steps.check_run.outputs.conclusion }}
+          SUMMARY: ${{ steps.check_run.outputs.summary }}
+          RULE_ROWS: ${{ steps.check_run.outputs.rule_rows }}
+          VIOLATION_COUNT: ${{ steps.check_run.outputs.violation_count }}
+          ROUTES_SCANNED: ${{ steps.check_run.outputs.routes_scanned }}
+          ARTIFACTS_URL: ${{ steps.check_run.outputs.artifacts_url }}
+        with:
+          script: |
+            const marker = '<!-- discernment-check-summary -->';
+            const {
+              CHECK_URL, CONCLUSION, SUMMARY,
+              RULE_ROWS, VIOLATION_COUNT, ROUTES_SCANNED, ARTIFACTS_URL,
+            } = process.env;
+            const badge = CONCLUSION === 'success' ? '✅ **Passed**' : '❌ **Failed**';
+            const breakdown = Number(VIOLATION_COUNT) > 0 && RULE_ROWS
+              ? `\n\n**Violation breakdown**\n\n| Rule | Count |\n| --- | ---: |\n${RULE_ROWS}`
+              : '\n\n_No violations._';
+            const body = [
+              marker,
+              `### Discernment Contract Check — ${badge}`,
+              '',
+              SUMMARY,
+              '',
+              `🔗 [Open the Discernment Contract check run](${CHECK_URL})`,
+              `📎 [Download full usage report artifact](${ARTIFACTS_URL})`,
+              '',
+              `Routes scanned: **${ROUTES_SCANNED}** · Violations: **${VIOLATION_COUNT}**`,
+              breakdown,
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number, per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body,
+              });
+              core.info(`Updated check-run summary comment #${existing.id}.`);
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body,
+              });
+              core.info('Created Discernment check-run summary comment.');
+            }
 
       - name: Fail job if lint failed
         if: steps.lint.outcome == 'failure'
         run: |
           echo "::error::Discernment lint failed — see PR comment / check run."
           exit 1
+
 
   parity:
     name: Contract file parity vs Hub
