@@ -132,6 +132,48 @@ A file can opt out only by adding BOTH marker comments:
 The Hub itself hosts no generation routes, so the linter no-ops there —
 but the script is identical across the suite so the contract cannot drift.
 
+### Wiring a spoke (one-shot)
+
+From the spoke repo root, run the Hub bootstrap script:
+
+```bash
+HUB_DIR=../resonance-hub \
+  bun run ../resonance-hub/scripts/install-discernment-lint.ts
+```
+
+This will:
+
+1. Copy `src/lib/discernment.ts`, `src/lib/discernment-guard.ts`, and
+   `scripts/verify-discernment-usage.ts` from the Hub into the spoke
+   (overwriting any drift).
+2. Add `verify:discernment-usage` to `package.json` and append it to
+   `prebuild` if not already wired.
+3. Write `.github/workflows/discernment-lint.yml` that calls the Hub's
+   reusable workflow on every PR (and on pushes to `main`).
+
+### Reusable GitHub workflow
+
+The Hub publishes `.github/workflows/discernment-lint.yml` as a
+`workflow_call` target. Each spoke's workflow is a 3-line stub:
+
+```yaml
+jobs:
+  discernment:
+    uses: resonance-org/resonance-hub/.github/workflows/discernment-lint.yml@main
+```
+
+The reusable workflow runs two jobs:
+
+- **lint** — installs deps and runs `verify-discernment-usage.ts`.
+- **parity** — checks out the Hub at `inputs.hub-ref` (default `main`) and
+  diffs `discernment.ts`, `discernment-guard.ts`, and the linter script
+  against the spoke's copies. Any drift fails the PR with an annotation
+  pointing at the file to re-sync.
+
+Together, the prebuild hook blocks local builds and the PR workflow blocks
+merges, so no generation route can reach production without the guard and
+provenance label.
+
 ## Versioning
 
 Breaking changes to `BriefDiscernmentInput`, `DataProvenance`, or
