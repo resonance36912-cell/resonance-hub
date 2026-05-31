@@ -204,6 +204,27 @@ for (const file of candidates) {
   allViolations.push(...lintFile(file));
 }
 
+// Always write a machine-readable violations file so the workflow can
+// create a GitHub Check Run with annotations and a link to the report.
+import { mkdirSync, writeFileSync as _wf } from "node:fs";
+import { dirname as _dn } from "node:path";
+const VIOLATIONS_OUT =
+  process.env.VIOLATIONS_OUT ?? "reports/discernment-violations.json";
+mkdirSync(_dn(VIOLATIONS_OUT), { recursive: true });
+_wf(
+  VIOLATIONS_OUT,
+  JSON.stringify(
+    {
+      generatedAt: new Date().toISOString(),
+      routesScanned: candidates.length,
+      violationCount: allViolations.length,
+      violations: allViolations,
+    },
+    null,
+    2,
+  ),
+);
+
 // Emit one GitHub-Actions annotation per violation when running in CI.
 // Format: ::error file=PATH,line=N,col=N,title=TITLE::MESSAGE
 // See: https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions
