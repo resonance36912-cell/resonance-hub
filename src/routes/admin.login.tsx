@@ -29,6 +29,12 @@ export const Route = createFileRoute("/admin/login")({
 function AdminLoginPage() {
   const navigate = useNavigate();
   const promote = useServerFn(bootstrapAdmin);
+  // Only expose the "Create account" tab when an invite query param is present
+  // (e.g. /admin/login?invite=1). Server-side bootstrap is also gated by the
+  // ADMIN_BOOTSTRAP_EMAILS allowlist — this is just UX hardening.
+  const signupAllowed =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).has("invite");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,6 +88,9 @@ function AdminLoginPage() {
           await finalizeAdmin(data.user.id);
         }
       } else {
+        if (!signupAllowed) {
+          throw new Error("Account creation is disabled. Contact an existing admin for an invite link.");
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -111,30 +120,32 @@ function AdminLoginPage() {
             Admin {mode === "signin" ? "Sign In" : "Sign Up"}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Restricted access. The first account created is automatically promoted to admin.
+            Restricted access. Sign in with your authorised admin account.
           </p>
         </div>
 
-        <div className="mb-4 flex rounded-full border border-border bg-card p-1 text-sm">
-          <button
-            type="button"
-            onClick={() => { setMode("signin"); setError(null); setNotice(null); }}
-            className={`flex-1 rounded-full px-4 py-2 transition ${
-              mode === "signin" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode("signup"); setError(null); setNotice(null); }}
-            className={`flex-1 rounded-full px-4 py-2 transition ${
-              mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Create account
-          </button>
-        </div>
+        {signupAllowed && (
+          <div className="mb-4 flex rounded-full border border-border bg-card p-1 text-sm">
+            <button
+              type="button"
+              onClick={() => { setMode("signin"); setError(null); setNotice(null); }}
+              className={`flex-1 rounded-full px-4 py-2 transition ${
+                mode === "signin" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Sign in
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMode("signup"); setError(null); setNotice(null); }}
+              className={`flex-1 rounded-full px-4 py-2 transition ${
+                mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Create account
+            </button>
+          </div>
+        )}
 
         <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-6">
           {error && (
