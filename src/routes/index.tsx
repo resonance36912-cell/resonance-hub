@@ -1076,7 +1076,7 @@ function Index() {
               },
               {
                 q: "Do I need one account for all apps?",
-                a: "Each app currently runs its own account. A shared Resonance account is on the roadmap — your subscriptions and billing will unify automatically when it launches.",
+                a: "One Hub billing account today — your subscriptions and invoices live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
               },
               {
                 q: "Can I cancel anytime?",

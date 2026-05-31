@@ -102,12 +102,13 @@ function PricingPage() {
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95] mb-6">
             One{" "}
-            <span className="font-serif italic font-normal text-white/80">Resonance</span>{" "}
+            <span className="font-serif italic font-normal text-white/80">Hub billing</span>{" "}
             <span className="text-gradient-brand">account.</span>
           </h1>
           <p className="text-lg text-white/65 max-w-2xl mx-auto leading-relaxed">
-            Every paid app shares the same tiers, the same PayFast checkout, and the same
-            cancellation flow. Monthly billing in ZAR — cancel anytime.
+            Subscribe to any paid app through the shared PayFast checkout and manage everything
+            in one place. Monthly billing in ZAR — cancel anytime. Unified app login is on the
+            roadmap.
           </p>
         </section>
 
@@ -124,14 +125,17 @@ function PricingPage() {
                   All-Access bundle
                 </h2>
                 <p className="text-white/70 leading-relaxed max-w-xl mb-6">
-                  Pro tier on ePublisher, Creative Studio and Sync Vision — plus early access to
-                  the YouTube Optimizer when it ships. One subscription, one statement line.
+                  Active All-Access grants: <span className="text-white">ePublisher Pro</span>,
+                  {" "}<span className="text-white">Creative Studio Pro</span>,
+                  {" "}<span className="text-white">Sync Vision Pro</span>, plus
+                  {" "}<span className="text-white">YouTube Optimizer early-access</span>. One
+                  subscription, one statement line.
                 </p>
                 <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/80 mb-6">
                   <li>✓ ePublisher Pro</li>
                   <li>✓ Creative Studio Pro</li>
                   <li>✓ Sync Vision Pro</li>
-                  <li>✓ Optimizer early-access</li>
+                  <li>✓ YouTube Optimizer early-access</li>
                 </ul>
               </div>
               <div className="text-center md:text-right">
