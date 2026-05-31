@@ -129,6 +129,12 @@ function Shell({ children }: { children: React.ReactNode }) {
         <Link to="/" className="flex items-center gap-2.5 min-w-0">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
         </Link>
+        <Link
+          to="/"
+          className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+        >
+          ← Back to Hub
+        </Link>
       </nav>
       <main className="pt-28 pb-24 px-6 max-w-xl mx-auto">
         <div className="rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl p-8">

@@ -62,6 +62,14 @@ function SubscriptionsPage() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-5xl px-6 py-12">
         <header className="mb-10">
+          <div className="mb-6">
+            <Link
+              to="/"
+              className="inline-flex items-center text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+            >
+              ← Back to Hub
+            </Link>
+          </div>
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">My Account</p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Subscriptions</h1>
           {data?.email && (

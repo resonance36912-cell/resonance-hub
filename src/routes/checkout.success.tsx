@@ -22,9 +22,15 @@ function SuccessPage() {
   const { return_to } = Route.useSearch();
   return (
     <div className="min-h-screen text-foreground">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 backdrop-blur-xl bg-background/60 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
         <Link to="/" className="inline-flex">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
+        </Link>
+        <Link
+          to="/"
+          className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+        >
+          ← Back to Hub
         </Link>
       </nav>
       <main className="pt-32 pb-24 px-6 max-w-xl mx-auto text-center">
