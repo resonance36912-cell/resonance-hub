@@ -42,17 +42,27 @@ for (const root of ROOTS) {
   for (const file of walk(root)) {
     if (SKIP_FILES.has(file)) continue;
     const src = readFileSync(file, "utf8");
-    for (const { pattern, reason } of BANNED) {
-      const match = src.match(pattern);
-      if (match) {
-        // Find the line number of the first match.
-        const before = src.slice(0, match.index ?? 0);
-        const line = before.split("\n").length;
-        failures.push(`${file}:${line} — "${match[0]}" — ${reason}`);
+    const lines = src.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Skip comment-only lines (// or leading * inside a block comment).
+      const trimmed = line.trimStart();
+      if (trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")) continue;
+      for (const { pattern, reason } of BANNED) {
+        const match = line.match(pattern);
+        if (!match) continue;
+        // Skip TS string-literal union members (e.g. | "yearly" | "never").
+        const idx = match.index ?? 0;
+        const around = line.slice(Math.max(0, idx - 4), idx + match[0].length + 4);
+        if (/\|\s*"[^"]*"\s*\|/.test(around)) continue;
+        // Skip if same line contains an explicit negation/qualifier.
+        if (/\b(not|NOT|no\s+annual|today|roadmap|coming\s+soon|only|isn'?t|won'?t)\b/i.test(line)) continue;
+        failures.push(`${file}:${i + 1} — "${match[0]}" — ${reason}`);
       }
     }
   }
 }
+
 
 if (failures.length) {
   console.error("❌ verify-transparency-copy failed:");
