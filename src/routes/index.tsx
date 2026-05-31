@@ -117,7 +117,7 @@ export const Route = createFileRoute("/")({
                 "@type": "FAQPage",
                 mainEntity: [
                   ["Can I use Resonance tools for free?", "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students."],
-                  ["Do I need one account for all apps?", "One Hub billing account today — manage subscriptions across every Resonance app from one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition."],
+                  ["Is there a single login across every app?", "One Hub billing account today — manage subscriptions across every Resonance app from one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition."],
                   ["Can I cancel anytime?", "Yes. Every subscription is cancel-anytime via PayFast."],
                   ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT). Monthly billing only."],
                   ["Can schools use Career Compass?", "Yes — schools can join the rewards-based pilot."],
@@ -1083,7 +1083,7 @@ function Index() {
                 a: "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students. Creative Studio and Sync Vision offer trial credits.",
               },
               {
-                q: "Do I need one account for all apps?",
+                q: "Is there a single login across every app?",
                 a: "One Hub billing account today — your subscriptions and invoices live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
               },
               {

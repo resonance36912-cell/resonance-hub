@@ -22,7 +22,10 @@
     "verify:catalog-parity": "bun run scripts/verify-catalog-parity.ts",
     "verify:app-registry": "bun run scripts/verify-app-registry.ts",
     "verify:security": "bun run scripts/verify-security-invariants.ts",
-    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts && bun run scripts/verify-no-stale-domains.ts && bun run scripts/verify-bundle-copy.ts && bun run scripts/verify-honest-copy.ts && bun run scripts/verify-catalog-parity.ts && bun run scripts/verify-security-invariants.ts"
+    "verify:all-access": "bun run scripts/verify-all-access.ts",
+    "verify:pricing": "bun run scripts/verify-pricing.ts",
+    "verify:transparency-copy": "bun run scripts/verify-transparency-copy.ts",
+    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts && bun run scripts/verify-no-stale-domains.ts && bun run scripts/verify-bundle-copy.ts && bun run scripts/verify-honest-copy.ts && bun run scripts/verify-catalog-parity.ts && bun run scripts/verify-security-invariants.ts && bun run scripts/verify-all-access.ts && bun run scripts/verify-pricing.ts && bun run scripts/verify-transparency-copy.ts"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
