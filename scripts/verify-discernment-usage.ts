@@ -46,6 +46,29 @@ interface Violation {
   rule: string;
   message: string;
   fix?: string;
+  line: number;
+  col?: number;
+}
+
+/**
+ * Best-effort anchor line for an "absent" rule violation. Annotations need
+ * a concrete line, so we point reviewers at the most relevant spot:
+ *   1. the first `createServerFn(` call
+ *   2. else the first exported declaration
+ *   3. else line 1
+ */
+function anchorLine(src: string, marker?: RegExp): { line: number; col?: number } {
+  const lines = src.split("\n");
+  const probes: RegExp[] = marker
+    ? [marker]
+    : [/createServerFn\s*\(/, /^export\s+(const|function|async)\b/];
+  for (const re of probes) {
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(re);
+      if (m) return { line: i + 1, col: (m.index ?? 0) + 1 };
+    }
+  }
+  return { line: 1 };
 }
 
 function walk(dir: string, out: string[] = []): string[] {
@@ -80,26 +103,34 @@ function lintFile(rel: string): Violation[] {
   const hasReason = /\/\/\s*discernment:reason:\s*\S+/.test(src);
   if (hasSkip && hasReason) return [];
   if (hasSkip && !hasReason) {
+    const at = anchorLine(src, /\/\/\s*discernment:skip\b/);
     violations.push({
       file: rel,
       rule: "skip-requires-reason",
       message:
         "Found `// discernment:skip` without a paired `// discernment:reason: <why>` comment.",
       fix: "Add a `// discernment:reason: <why this route does not produce paid output>` comment next to the skip marker.",
+      line: at.line,
+      col: at.col,
     });
     return violations;
   }
 
   // Rule 5b: must not call verifyBriefDiscernment directly
   if (/\bverifyBriefDiscernment\s*\(/.test(src)) {
+    const at = anchorLine(src, /\bverifyBriefDiscernment\s*\(/);
     violations.push({
       file: rel,
       rule: "no-direct-verify",
       message:
         "Generation routes must not call `verifyBriefDiscernment` directly — it bypasses the throw-on-fail guard.",
       fix: 'Replace with `assertBriefDiscernment(...)` imported from "@/lib/discernment-guard".',
+      line: at.line,
+      col: at.col,
     });
   }
+
+  const fallback = anchorLine(src);
 
   // Rule 1: import from discernment-guard
   if (!/from\s+["']@\/lib\/discernment-guard["']/.test(src)) {
@@ -109,6 +140,7 @@ function lintFile(rel: string): Violation[] {
       message:
         "Generation route does not import from `@/lib/discernment-guard`.",
       fix: 'Add: `import { assertBriefDiscernment, formatProvenanceLabel, DiscernmentBlockedError } from "@/lib/discernment-guard";`',
+      line: 1,
     });
   }
 
@@ -120,6 +152,8 @@ function lintFile(rel: string): Violation[] {
       message:
         "Generation route never calls `assertBriefDiscernment(...)` before producing output.",
       fix: "Call `assertBriefDiscernment(briefInput)` before any paid generation work.",
+      line: fallback.line,
+      col: fallback.col,
     });
   }
 
@@ -131,6 +165,8 @@ function lintFile(rel: string): Violation[] {
       message:
         "Generation route never calls `formatProvenanceLabel(...)` — paid outputs must carry a provenance label.",
       fix: "Return `formatProvenanceLabel(evaluation.dataProvenance)` alongside the generated output.",
+      line: fallback.line,
+      col: fallback.col,
     });
   }
 
@@ -146,6 +182,8 @@ function lintFile(rel: string): Violation[] {
       message:
         "Generation route neither catches `DiscernmentBlockedError` nor declares `// discernment:bubble-up`.",
       fix: "Wrap generation in `try { ... } catch (err) { if (err instanceof DiscernmentBlockedError) { ... } throw err; }`, OR add a `// discernment:bubble-up` comment if the error is intentionally propagated to the caller.",
+      line: fallback.line,
+      col: fallback.col,
     });
   }
 
@@ -164,6 +202,25 @@ if (candidates.length === 0) {
 const allViolations: Violation[] = [];
 for (const file of candidates) {
   allViolations.push(...lintFile(file));
+}
+
+// Emit one GitHub-Actions annotation per violation when running in CI.
+// Format: ::error file=PATH,line=N,col=N,title=TITLE::MESSAGE
+// See: https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions
+const inGitHub = process.env.GITHUB_ACTIONS === "true";
+function ghEscape(s: string): string {
+  return s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+}
+if (inGitHub) {
+  for (const v of allViolations) {
+    const title = ghEscape(`Discernment: ${v.rule}`);
+    const msg = ghEscape(v.fix ? `${v.message}\nFix: ${v.fix}` : v.message);
+    const col = v.col ? `,col=${v.col}` : "";
+    // eslint-disable-next-line no-console
+    console.log(
+      `::error file=${v.file},line=${v.line}${col},title=${title}::${msg}`,
+    );
+  }
 }
 
 if (allViolations.length > 0) {
