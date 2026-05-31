@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import { deriveFeatures, type Tier } from "@/lib/entitlement.functions";
 
 /**
  * Public entitlement endpoint for spoke apps.
@@ -31,10 +32,17 @@ const CORS = {
   "Access-Control-Max-Age": "86400",
 } as const;
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS },
+    headers: {
+      "Content-Type": "application/json",
+      // Short private cache so spokes can hit this endpoint freely without
+      // hammering the DB. 60s matches the audit's recommendation.
+      "Cache-Control": "private, max-age=60",
+      ...CORS,
+      ...extraHeaders,
+    },
   });
 }
 
@@ -92,27 +100,41 @@ export const Route = createFileRoute("/api/public/entitlement")({
         const bundle = active.find((r) => r.app === "all_access");
         const direct = active.find((r) => r.app === app);
         const winner = bundle ?? direct;
+        const checkedAt = new Date().toISOString();
 
         if (!winner) {
           return json({
+            ok: true,
             app,
             userId,
             tier: "free",
             status: "inactive",
-            currentPeriodEnd: null,
-            hasAccess: false,
             source: "none",
+            expiresAt: null,
+            features: deriveFeatures(app, "free"),
+            checkedAt,
+            // legacy aliases
+            hasAccess: false,
+            currentPeriodEnd: null,
           });
         }
 
+        const tier = winner.tier as Tier;
+        const source = winner.app === "all_access" ? "all_access" : "direct";
+
         return json({
+          ok: true,
           app,
           userId,
-          tier: winner.tier,
+          tier,
           status: winner.status,
-          currentPeriodEnd: winner.current_period_end,
+          source,
+          expiresAt: winner.current_period_end,
+          features: deriveFeatures(app, tier),
+          checkedAt,
+          // legacy aliases
           hasAccess: true,
-          source: winner.app === "all_access" ? "bundle" : "direct",
+          currentPeriodEnd: winner.current_period_end,
         });
       },
     },

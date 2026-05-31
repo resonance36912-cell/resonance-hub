@@ -16,7 +16,12 @@
     "verify:all-apps": "bun run scripts/verify-all-apps-checkout.ts",
     "report:epublisher": "bun run scripts/report-epublisher-checkout.ts",
     "verify:back-to-hub": "bun run scripts/verify-back-to-hub.ts",
-    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts"
+    "verify:no-stale-domains": "bun run scripts/verify-no-stale-domains.ts",
+    "verify:bundle-copy": "bun run scripts/verify-bundle-copy.ts",
+    "verify:honest-copy": "bun run scripts/verify-honest-copy.ts",
+    "verify:catalog-parity": "bun run scripts/verify-catalog-parity.ts",
+    "verify:app-registry": "bun run scripts/verify-app-registry.ts",
+    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts && bun run scripts/verify-no-stale-domains.ts && bun run scripts/verify-bundle-copy.ts && bun run scripts/verify-honest-copy.ts && bun run scripts/verify-catalog-parity.ts"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",

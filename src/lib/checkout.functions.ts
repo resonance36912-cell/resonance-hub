@@ -12,7 +12,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
  * to PayFast. ITN posts back to /api/public/payfast/itn.
  */
 
-export type Cycle = "monthly" | "annual";
+// Annual billing is NOT supported. If/when annual SKUs are added,
+// extend the union and add matching entries to SKU_CATALOG + ITN SKU_CATALOG.
+export type Cycle = "monthly";
 
 export type SkuDef = {
   sku: string;

@@ -1,60 +1,111 @@
-## Goal
-Produce one machine-readable OpenAPI 3.1 document at `/mnt/documents/resonance-hub-openapi.yaml` (plus a short human-readable `/mnt/documents/resonance-hub-openapi.md` index) that describes every HTTP-callable endpoint of the Hub: public webhook/API routes, internal serverFn RPCs, page routes, and Lovable email-worker hooks.
+# Resonance Hub — Source-of-Truth Sweep
 
-## What gets documented
+Goal: make the Hub the single source of truth. One registry, one pricing catalog, one entitlement contract, one honest account promise, one verified checkout path. Scope = all 17 audit items.
 
-### A. Public API & webhooks (`/api/public/*`, `/email/*`)
-- `POST /api/public/payfast/itn` — PayFast ITN webhook (form-urlencoded, signature + S2S validate, 7 outcome branches).
-- `GET  /api/public/entitlement?app=…` — spoke entitlement check.
-- `POST /api/public/hooks/process-subscription-emails` — cron-triggered email drain.
-- `GET  /email/unsubscribe?token=…` — one-click unsubscribe landing.
-- `POST /email/unsubscribe` — confirm unsubscribe.
+Decisions locked from your answers:
+- **Annual** → remove all annual copy; do NOT add annual SKUs.
+- **Bundles** → only `all_access` is purchasable; Starter / Creator / Pro / Business become "Request bundle".
+- **Domains** → use the audit's live list (incl. podcast + career_compass).
 
-### B. Lovable email worker hooks (`/lovable/email/*`)
-- `POST /lovable/email/suppression`
-- `POST /lovable/email/queue/process`
-- `GET/POST /lovable/email/transactional/{preview,send}`
+---
 
-### C. Server-function RPCs (TanStack `createServerFn`)
-Documented as `POST /__server_fn/<name>` virtual paths with `x-server-fn: true` and a note that real calls go through the TanStack RPC transport with `{ data: <input> }` envelope and `Authorization: Bearer <supabase-jwt>` (attached by `attachSupabaseAuth`). Covered:
+## Phase 1 — Source of truth (registry + catalogs)
 
-| Function | Method | Auth | Input | Returns |
-|---|---|---|---|---|
-| `createPayfastLaunch` | POST | user | `{sku, returnTo?}` | `{action, fields, sku, amountCents, label}` |
-| `getMySubscriptions` | GET | user | – | `{subscriptions[], email}` |
-| `getEntitlement` | POST | user | `{app}` | entitlement DTO |
-| `recordVisit` / `getVisitStats` | POST/GET | anon / admin | path, etc. | – / stats |
-| `subscribeNewsletter` | POST | anon | `{email, source?}` | `{ok}` |
-| `getRequestOrigin` | GET | – | – | `{origin}` |
-| `bootstrapAdmin` | POST | first-user | – | `{ok}` |
-| `listAllSubscriptions` / `upsertSkuCost` | GET/POST | admin | – / `{sku,costCents,…}` | – |
-| `listItnLogs` / `listPayfastAudit` | GET | admin | – | logs / traces |
-| `listEmailSends` / `sendTestSubscriptionEmail` | GET/POST | admin | – / `{email,sku}` | – |
-| `checkEmailDomain` | POST | admin | `{domain}` | DNS status |
+1. Create `src/lib/app-registry.ts` exporting `APP_REGISTRY` (single object used everywhere):
+   - `epublisher` → https://www.resonanceonline.life
+   - `creative_studio` → https://www.creativestudio.life
+   - `sync_vision` → https://www.syncvision.life
+   - `youtube_optimizer` → https://resonanceoptimizer.lovable.app
+   - `podcast` → https://www.resonance-podcast.com (status: live, no SKU)
+   - `career_compass` → https://www.career-compass.org (status: live, no SKU)
+   - Fields: `key, label, publicUrl, appUrl, status, hasBilling, tagline, useCase`.
+2. Replace every hardcoded spoke URL across `src/routes/index.tsx`, `pricing.tsx`, `youtube-optimizer.pricing.tsx`, account, checkout return URLs, sitemap, and SEO with `APP_REGISTRY[key].appUrl`.
+3. Confirm `src/lib/checkout.functions.ts` `SKU_CATALOG` and `src/routes/api/public/payfast/itn.ts` `SKU_CATALOG` stay byte-identical. No annual entries added. Drop the `Cycle = "monthly" | "annual"` union down to `"monthly"`.
 
-### D. Page routes (informational)
-List of GET HTML routes (`/`, `/pricing`, `/youtube-optimizer/pricing`, `/checkout`, `/checkout/success`, `/checkout/cancel`, `/account/subscriptions`, `/admin/*`, `/sitemap.xml`) with auth requirements — no request/response schemas.
+## Phase 2 — Honest copy
 
-## OpenAPI structure
+4. Replace "One Resonance account" everywhere with: *"One Hub billing account today. Unified app login is on the roadmap."*
+5. Strip "Annual billing saves 20%" and any annual toggles / yearly columns from `index.tsx`, `pricing.tsx`, `youtube-optimizer.pricing.tsx`.
+6. Bundles strip on homepage: keep only **All-Access** as purchasable. Starter / Creator / Pro / Business become cards with a "Request bundle" mailto/contact CTA — no checkout link, no price implied as PayFast-billed.
+7. Remove "same tier structure across apps" wording — the live table has gaps.
+8. All-Access entitlement wording standardised everywhere to: `epublisher:pro + creative_studio:pro + sync_vision:pro + youtube_optimizer:early_access`. Same sentence on homepage, pricing, account, and API response.
 
-- `openapi: 3.1.0`, `info` block (title, version from `package.json`, contact, license).
-- `servers`: production (`https://reson8.life`), preview (`https://project--4e81bcd7-…-dev.lovable.app`), stable published.
-- `tags`: Webhooks, PublicAPI, Checkout, Subscriptions, Account, Admin, EmailWorker, Pages, ServerFn.
-- `components.securitySchemes`:
-  - `supabaseBearer` (HTTP bearer JWT) — used by serverFn + admin pages.
-  - `payfastSignature` (apiKey, custom, in body: `signature` field) — documented for ITN.
-  - `cronSecret` (apiKey header, optional) — for `/api/public/hooks/*`.
-  - `none` — for fully public endpoints.
-- `components.schemas`: `SkuKey` (enum of all 14 SKUs), `SkuDef`, `PayfastLaunch`, `Subscription`, `ItnPayload`, `ItnOutcome` (enum), `EntitlementResponse`, `VisitStats`, `Error`, `RpcError`.
-- `components.responses`: `400Validation`, `401Unauthorized`, `403Forbidden`, `404NotFound`, `500ServerError`, `PayfastSignatureRejected`, `AmountMismatch`.
-- Every operation has explicit `responses` for 2xx + each documented failure branch (e.g. ITN lists all 7 outcomes with example bodies).
+## Phase 3 — Entitlement contract
 
-## Deliverables
+9. Update `src/lib/entitlement.functions.ts` and `src/routes/api/public/entitlement.ts` to return:
+   ```
+   { ok, app, userId, tier, status, source, expiresAt, features, checkedAt }
+   ```
+   where `source ∈ "direct" | "all_access" | "admin_override" | "trial"` and `features` is a per-app map derived from tier.
+10. Add cache headers: `Cache-Control: private, max-age=60`.
+11. New admin route `src/routes/admin.entitlement-diagnostics.tsx` listing last 50 entitlement checks (new `entitlement_log` table + RLS + admin policy via `has_role`), with status/source/error/spoke-app filters. Migration + `GRANT`s per the public-schema rule.
 
-1. `/mnt/documents/resonance-hub-openapi.yaml` — the full spec (≈700–900 lines).
-2. `/mnt/documents/resonance-hub-openapi.md` — short reader's guide: how to view (Swagger UI / Redocly), how serverFn paths map to real RPC URLs, and which endpoints are CI-verified.
+## Phase 4 — Checkout UX hardening
 
-## Out of scope
-- Auto-generation from source (would need a build step); the YAML is hand-written from the catalog above and the existing audit doc.
-- Supabase REST/PostgREST endpoints (not exposed publicly by the Hub).
-- Spoke-app endpoints (separate repos).
+12. `src/routes/checkout.tsx`: add preflight panel (selected app, tier, price, cycle, return URL, user email).
+13. Replace bare "Loading…" with a 5s timeout fallback panel:
+    > Preparing secure PayFast checkout…
+    Buttons: **Sign in**, **Create account**, **Retry checkout**, **Back to pricing**, **Back to Hub**.
+14. Treat "expired session" and "auth missing" as distinct visible states, not silent spinners.
+
+## Phase 5 — PayFast ITN hardening
+
+15. In `src/routes/api/public/payfast/itn.ts`: keep signature + S2S + canonical amount check (already in place). Add:
+    - Optional source-IP allowlist using `CF-Connecting-IP` (env-flag gated so dev/local doesn't break).
+    - Log `cf-connecting-ip`, `x-forwarded-for`, `user-agent`, raw `amount_gross`, outcome, sku, m_payment_id.
+16. Add cache-busting headers to `pricing.tsx` and `index.tsx` route responses (`Cache-Control: public, max-age=0, must-revalidate`) to prevent stale R49 / old prices surviving edge cache.
+
+## Phase 6 — UX & SEO
+
+17. Homepage:
+    - New hero CTA "Choose your tool" (replaces ePublisher-first launch).
+    - Use-case comparison strip (Book / Ads / Music video / Career report / YouTube growth / Podcast).
+    - Status badges (Live / Beta / Pilot / Coming soon) sourced from `APP_REGISTRY[key].status`.
+    - "Which tool should I use?" mini wizard (client-side, no backend).
+    - Trust block: ZAR billing, PayFast, cancel anytime, POPIA-conscious, South African-built.
+18. Pricing: add "Best for" row, "What you get this month" subline per tier, "All-Access saves you R…/mo" computed from catalog.
+19. SEO (per-route `head()` in TanStack Start):
+    - `SoftwareApplication` JSON-LD on each app's section/route.
+    - `OfferCatalog` JSON-LD on `pricing.tsx`.
+    - `Organization` JSON-LD in `__root.tsx`.
+    - Canonical → `https://reson8.life/<path>` on leaves only.
+    - Regenerate `sitemap[.]xml.ts` entries from `APP_REGISTRY` + canonical Hub routes.
+
+## Phase 7 — Verification (CI-blocking)
+
+Extend `scripts/` and wire into `package.json prebuild` (already running today):
+20. `verify-app-registry.ts` — every URL in `APP_REGISTRY` returns 200 or controlled 3xx.
+21. Extend `check-prices.ts` — fail if any "R\d+" or "/mo" string in `src/routes/**` doesn't match a `SKU_CATALOG` entry, **or** any "annual"/"yearly"/"save 20%" string appears anywhere.
+22. `verify-no-stale-domains.ts` — fail on `creative_studio:.*resonancestudio\.life`, `resonancesyncvision\.life`, `optimizer\.resonance\.life`, etc.
+23. `verify-bundle-copy.ts` — fail if "Starter Bundle|Creator Bundle|Business Bundle" appears with a price or checkout link (only All-Access may).
+24. `verify-one-account-copy.ts` — fail on the literal string "One Resonance account".
+25. `verify-catalog-parity.ts` — assert checkout `SKU_CATALOG` deep-equals ITN `SKU_CATALOG`.
+26. Extend `verify-all-apps-checkout.ts` to cover the unauthenticated → fallback panel path.
+27. `verify-back-to-hub.ts` already covers route coverage; extend to new admin routes.
+
+## Phase 8 — Tests
+
+28. Vitest cases for: stale annual copy, stale bundle copy, old domain refs, unauth checkout fallback render, all_access → per-app entitlement mapping, entitlement response shape.
+
+---
+
+## Technical details
+
+- **Migrations**: one new table `entitlement_log(id, user_id, app, tier, status, source, error, ip, ua, created_at)` with RLS (`has_role(auth.uid(),'admin')` for SELECT) + `GRANT SELECT,INSERT … TO authenticated; GRANT ALL … TO service_role;`.
+- **No schema change** to existing `subscriptions` table.
+- **No new secrets** required; PayFast IP allowlist gated behind optional env `PAYFAST_IP_ALLOWLIST`.
+- **Routes added**: `admin.entitlement-diagnostics.tsx`. Server fns added: `listEntitlementLog`, `logEntitlementCheck` (internal, called from `/api/public/entitlement`).
+- **`src/integrations/supabase/types.ts`** regenerates automatically — not edited by hand.
+- **Risk**: rewriting homepage hero/wizard is the largest visual change; everything else is surgical. Existing CI `prebuild` will catch drift before deploy.
+
+## Priority order (matches your audit)
+
+1. Copy fixes (one-account, annual, bundles) — same day.
+2. APP_REGISTRY centralisation + sitemap/SEO regen.
+3. Entitlement contract + diagnostics route.
+4. Checkout fallback UX.
+5. ITN logging + cache-bust headers.
+6. Homepage UX (CTA, wizard, badges, trust block).
+7. Verify scripts + Vitest, wired into prebuild.
+
+Approve and I'll start at Phase 1.
