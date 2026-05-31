@@ -97,20 +97,39 @@ and `.long` in a tooltip or in the exported PDF/DOCX footer.
 - `public_estimate` → caution tone
 - `insufficient` → blocked tone (do not render the output)
 
-## CI enforcement
+## CI enforcement (lint rules)
 
 Each spoke MUST include `scripts/verify-discernment-usage.ts` (copied from
 the Hub) and wire `verify:discernment-usage` into its `prebuild` step.
 
-The verifier scans for files matching:
+The linter scans for files matching:
 
 - `src/**/*generate*.functions.ts`
 - `src/**/*generate*.server.ts`
 - `src/routes/api/**/*generate*.ts`
 
-and fails the build if any of them does not call `assertBriefDiscernment(`.
+and enforces 5 rules per file:
 
-The Hub itself hosts no generation routes, so the verifier no-ops there —
+1. **missing-guard-import** — must `import` from `@/lib/discernment-guard`.
+2. **missing-assert-call** — must call `assertBriefDiscernment(...)`.
+3. **missing-provenance-label** — must call `formatProvenanceLabel(...)`.
+4. **unhandled-blocked-error** — must `catch` `DiscernmentBlockedError`, OR
+   declare `// discernment:bubble-up` if the error is intentionally
+   propagated to the caller.
+5. **no-direct-verify** — must not call `verifyBriefDiscernment` directly
+   (it bypasses the throw-on-fail guard).
+
+A file can opt out only by adding BOTH marker comments:
+
+```ts
+// discernment:skip
+// discernment:reason: <why this route does not produce paid output>
+```
+
+`// discernment:skip` without a paired reason fails the lint
+(`skip-requires-reason`).
+
+The Hub itself hosts no generation routes, so the linter no-ops there —
 but the script is identical across the suite so the contract cannot drift.
 
 ## Versioning
