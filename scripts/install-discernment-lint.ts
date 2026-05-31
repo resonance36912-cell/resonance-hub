@@ -136,8 +136,15 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   discernment:
+    permissions:
+      contents: read
+      pull-requests: write
     uses: resonance-org/resonance-hub/.github/workflows/discernment-lint.yml@main
 `;
 writeFileSync(workflowPath, workflow);
