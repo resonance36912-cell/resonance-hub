@@ -146,6 +146,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      checks: write
     uses: resonance-org/resonance-hub/.github/workflows/discernment-lint.yml@main
 `;
 writeFileSync(workflowPath, workflow);
