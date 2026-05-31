@@ -88,6 +88,9 @@ function AdminLoginPage() {
           await finalizeAdmin(data.user.id);
         }
       } else {
+        if (!signupAllowed) {
+          throw new Error("Account creation is disabled. Contact an existing admin for an invite link.");
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
