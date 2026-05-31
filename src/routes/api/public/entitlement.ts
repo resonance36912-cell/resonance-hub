@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
-import { deriveFeatures, type Tier } from "@/lib/entitlement.functions";
+import { deriveFeatures, logEntitlementCheck, type Tier } from "@/lib/entitlement.functions";
 
 /**
  * Public entitlement endpoint for spoke apps.
@@ -52,6 +52,8 @@ export const Route = createFileRoute("/api/public/entitlement")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
       GET: async ({ request }) => {
+        const sourceIp = request.headers.get("x-forwarded-for") ?? request.headers.get("cf-connecting-ip");
+        const userAgent = request.headers.get("user-agent");
         const url = new URL(request.url);
         const appParam = url.searchParams.get("app");
         const parsed = AppSchema.safeParse(appParam);
@@ -62,10 +64,14 @@ export const Route = createFileRoute("/api/public/entitlement")({
 
         const authHeader = request.headers.get("authorization") ?? "";
         if (!authHeader.toLowerCase().startsWith("bearer ")) {
+          void logEntitlementCheck({ userId: null, app, tier: null, status: "unauthorized", source: null, error: "missing_bearer", sourceIp, userAgent });
           return json({ error: "Missing Bearer token" }, 401);
         }
         const token = authHeader.slice(7).trim();
-        if (!token) return json({ error: "Missing Bearer token" }, 401);
+        if (!token) {
+          void logEntitlementCheck({ userId: null, app, tier: null, status: "unauthorized", source: null, error: "empty_bearer", sourceIp, userAgent });
+          return json({ error: "Missing Bearer token" }, 401);
+        }
 
         const SUPABASE_URL = process.env.SUPABASE_URL!;
         const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
@@ -73,7 +79,6 @@ export const Route = createFileRoute("/api/public/entitlement")({
           return json({ error: "Server misconfigured" }, 500);
         }
 
-        // Authenticated client (RLS applies as the calling user)
         const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
           global: { headers: { Authorization: `Bearer ${token}` } },
           auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
@@ -81,6 +86,7 @@ export const Route = createFileRoute("/api/public/entitlement")({
 
         const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
         if (claimsErr || !claimsData?.claims?.sub) {
+          void logEntitlementCheck({ userId: null, app, tier: null, status: "unauthorized", source: null, error: "invalid_token", sourceIp, userAgent });
           return json({ error: "Invalid or expired token" }, 401);
         }
         const userId = claimsData.claims.sub as string;
@@ -93,6 +99,7 @@ export const Route = createFileRoute("/api/public/entitlement")({
 
         if (error) {
           console.error("entitlement query failed:", error);
+          void logEntitlementCheck({ userId, app, tier: "free", status: "inactive", source: "none", error: error.message, sourceIp, userAgent });
           return json({ error: "Lookup failed" }, 500);
         }
 
@@ -103,6 +110,7 @@ export const Route = createFileRoute("/api/public/entitlement")({
         const checkedAt = new Date().toISOString();
 
         if (!winner) {
+          void logEntitlementCheck({ userId, app, tier: "free", status: "inactive", source: "none", sourceIp, userAgent });
           return json({
             ok: true,
             app,
@@ -113,7 +121,6 @@ export const Route = createFileRoute("/api/public/entitlement")({
             expiresAt: null,
             features: deriveFeatures(app, "free"),
             checkedAt,
-            // legacy aliases
             hasAccess: false,
             currentPeriodEnd: null,
           });
@@ -121,6 +128,7 @@ export const Route = createFileRoute("/api/public/entitlement")({
 
         const tier = winner.tier as Tier;
         const source = winner.app === "all_access" ? "all_access" : "direct";
+        void logEntitlementCheck({ userId, app, tier, status: winner.status, source, sourceIp, userAgent });
 
         return json({
           ok: true,
@@ -132,7 +140,6 @@ export const Route = createFileRoute("/api/public/entitlement")({
           expiresAt: winner.current_period_end,
           features: deriveFeatures(app, tier),
           checkedAt,
-          // legacy aliases
           hasAccess: true,
           currentPeriodEnd: winner.current_period_end,
         });

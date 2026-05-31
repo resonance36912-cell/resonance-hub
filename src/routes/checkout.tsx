@@ -150,11 +150,23 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payload, setPayload] = useState<PayfastLaunch | null>(null);
+  const [slow, setSlow] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const def = SKU_CATALOG[sku];
 
   useEffect(() => {
     if (payload && formRef.current) formRef.current.submit();
   }, [payload]);
+
+  // Surface a "still working" fallback if the launch hasn't returned in 5s.
+  useEffect(() => {
+    if (!loading) {
+      setSlow(false);
+      return;
+    }
+    const t = setTimeout(() => setSlow(true), 5000);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   async function start() {
     setLoading(true);
@@ -170,14 +182,29 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
 
   return (
     <div>
-      <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm">
-        <div className="text-white/55 text-[11px] uppercase tracking-widest mb-1">Signed in as</div>
-        <div className="text-white">{email}</div>
+      {/* Preflight panel — what is actually about to happen */}
+      <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm space-y-2">
+        <Row label="Plan" value={def?.label ?? sku} />
+        <Row label="Price" value={def ? `R${(def.amountCents / 100).toFixed(2)} / month` : "—"} />
+        <Row label="Billing" value="Monthly · cancel anytime" />
+        <Row label="Account" value={email} />
+        {returnTo && <Row label="Returns to" value={new URL(returnTo).host} />}
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300">
-          {error}
+        <div className="mb-4 rounded-lg border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300 space-y-2">
+          <div>{error}</div>
+          <div className="flex gap-2 pt-1">
+            <button onClick={start} className="text-xs underline">
+              Retry
+            </button>
+            <Link to="/pricing" className="text-xs underline">
+              Back to pricing
+            </Link>
+            <Link to="/" className="text-xs underline">
+              Back to Hub
+            </Link>
+          </div>
         </div>
       )}
 
@@ -189,6 +216,27 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
         {loading || payload ? "Redirecting to PayFast…" : "Pay with PayFast →"}
       </button>
 
+      {slow && !payload && !error && (
+        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200 space-y-2">
+          <div>This is taking longer than usual. PayFast may be slow to respond.</div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setLoading(false);
+                setSlow(false);
+                start();
+              }}
+              className="underline"
+            >
+              Retry now
+            </button>
+            <Link to="/pricing" className="underline">
+              Back to pricing
+            </Link>
+          </div>
+        </div>
+      )}
+
       {payload && (
         <form ref={formRef} method="POST" action={payload.action} className="hidden">
           {Object.entries(payload.fields).map(([k, v]) => (
@@ -196,6 +244,15 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
           ))}
         </form>
       )}
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <div className="text-white/55 text-[11px] uppercase tracking-widest">{label}</div>
+      <div className="text-white text-sm text-right truncate">{value}</div>
     </div>
   );
 }
