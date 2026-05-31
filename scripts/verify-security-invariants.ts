@@ -58,6 +58,7 @@ const SECRET_PATTERNS: { name: string; re: RegExp }[] = [
 const ALLOW_INNER_HTML = new Set<string>([
   "src/routes/sitemap[.]xml.ts", // server-rendered XML, no user input
   "src/routes/index.tsx", // JSON-LD <script> with static schema
+  "src/components/ui/chart.tsx", // shadcn-generated CSS variables block
 ]);
 
 for (const file of walk("src")) {
