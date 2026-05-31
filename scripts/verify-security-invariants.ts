@@ -39,12 +39,11 @@ function* walk(dir: string): Generator<string> {
 const isServerOnly = (f: string) =>
   /\.server\.(ts|tsx)$/.test(f) ||
   /\.functions\.(ts|tsx)$/.test(f) ||
-  f.includes("/src/routes/api/") ||
-  f.includes("/src/integrations/supabase/auth-middleware") ||
-  f.includes("/src/integrations/supabase/client.server") ||
-  f.includes("/src/integrations/supabase/auth-attacher") ||
-  f.includes("/src/start.ts") ||
-  f.includes("/src/server.ts") ||
+  /(^|\/)src\/routes\/api\//.test(f) ||
+  /(^|\/)src\/routes\/email\//.test(f) ||
+  /(^|\/)src\/routes\/lovable\//.test(f) ||
+  /(^|\/)src\/integrations\/supabase\/(auth-middleware|client\.server|auth-attacher)/.test(f) ||
+  /(^|\/)src\/(start|server)\.ts$/.test(f) ||
   f.startsWith("scripts/");
 
 const SECRET_PATTERNS: { name: string; re: RegExp }[] = [
