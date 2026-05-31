@@ -7,9 +7,12 @@ import { createHash } from "crypto";
  * Every request — success or failure — is recorded in payfast_itn_logs.
  */
 
+// Monthly only. Annual billing is NOT offered. Keep this byte-identical
+// to src/lib/checkout.functions.ts SKU_CATALOG — verify-catalog-parity.ts
+// enforces this in CI.
 const SKU_CATALOG: Record<
   string,
-  { app: string; tier: string; amountCents: number; cycle: "monthly" | "annual" }
+  { app: string; tier: string; amountCents: number; cycle: "monthly" }
 > = {
   "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly" },
   "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly" },
@@ -155,8 +158,8 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           paymentStatus === "FAILED" ? "past_due" : "pending";
 
         const periodEnd = new Date();
-        if (def.cycle === "monthly") periodEnd.setMonth(periodEnd.getMonth() + 1);
-        else periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+        // Monthly-only billing. See note on SKU_CATALOG above.
+        periodEnd.setMonth(periodEnd.getMonth() + 1);
 
         const { error } = await supabaseAdmin
           .from("subscriptions")
