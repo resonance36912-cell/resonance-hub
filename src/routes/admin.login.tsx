@@ -29,6 +29,12 @@ export const Route = createFileRoute("/admin/login")({
 function AdminLoginPage() {
   const navigate = useNavigate();
   const promote = useServerFn(bootstrapAdmin);
+  // Only expose the "Create account" tab when an invite query param is present
+  // (e.g. /admin/login?invite=1). Server-side bootstrap is also gated by the
+  // ADMIN_BOOTSTRAP_EMAILS allowlist — this is just UX hardening.
+  const signupAllowed =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).has("invite");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
