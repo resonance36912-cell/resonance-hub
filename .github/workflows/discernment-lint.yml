@@ -130,8 +130,10 @@ jobs:
             }
 
       - name: Publish Discernment check run
+        id: check_run
         if: always()
         uses: actions/github-script@v7
+
         env:
           LINT_OUTCOME: ${{ steps.lint.outcome }}
         with:
