@@ -103,6 +103,14 @@ export const Route = createFileRoute("/")({
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
                 url: "https://www.syncvision.life",
+                offers: { "@type": "Offer", price: "549", priceCurrency: "ZAR" },
+              },
+              {
+                "@type": "SoftwareApplication",
+                name: "YouTube Optimizer",
+                applicationCategory: "BusinessApplication",
+                operatingSystem: "Web",
+                url: "https://resonanceoptimizer.lovable.app",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
               {

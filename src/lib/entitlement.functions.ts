@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const AppSchema = z.enum([
   "epublisher",
@@ -15,7 +17,6 @@ export type Tier = "free" | "starter" | "creator" | "pro" | "business" | "all_ac
 export type EntitlementStatus = "active" | "pending" | "past_due" | "cancelled" | "inactive";
 export type EntitlementSource = "direct" | "all_access" | "admin_override" | "trial" | "none";
 
-/** Per-app feature flags derived from (app, tier). Keep in sync with spoke apps. */
 export type EntitlementFeatures = Record<string, boolean>;
 
 export type Entitlement = {
@@ -33,11 +34,6 @@ export type Entitlement = {
   currentPeriodEnd: string | null;
 };
 
-/**
- * Canonical feature map. Spokes can read either `features.<key>` or
- * derive their own from `tier`. Keys are stable; never remove without
- * coordinating spoke releases.
- */
 export function deriveFeatures(app: AppKey, tier: Tier): EntitlementFeatures {
   const isPro = tier === "pro" || tier === "business" || tier === "all_access";
   const isBusiness = tier === "business";
@@ -53,12 +49,7 @@ export function deriveFeatures(app: AppKey, tier: Tier): EntitlementFeatures {
         teamSeats: isBusiness,
       };
     case "creative_studio":
-      return {
-        posters: isPaid,
-        videos: isPro,
-        teamSeats: isBusiness,
-        whiteLabel: isBusiness,
-      };
+      return { posters: isPaid, videos: isPro, teamSeats: isBusiness, whiteLabel: isBusiness };
     case "sync_vision":
       return {
         storyboards: isPaid,
@@ -79,18 +70,49 @@ export function deriveFeatures(app: AppKey, tier: Tier): EntitlementFeatures {
 }
 
 /**
- * Resolve a user's effective tier for a given app.
- * If the user holds an active `all_access` bundle, that wins.
- *
- * Returns the canonical Entitlement contract. Backwards-compat fields
- * (`hasAccess`, `currentPeriodEnd`) are populated for legacy spoke callers.
+ * Fire-and-forget audit write. Never throws into the request path —
+ * a failed log must NOT cause the entitlement check itself to fail.
  */
+export async function logEntitlementCheck(args: {
+  userId: string | null;
+  app: string;
+  tier: string | null;
+  status: string;
+  source: string | null;
+  error?: string | null;
+  sourceIp?: string | null;
+  userAgent?: string | null;
+}): Promise<void> {
+  try {
+    await supabaseAdmin.from("entitlement_log").insert({
+      user_id: args.userId,
+      app: args.app,
+      tier: args.tier,
+      status: args.status,
+      source: args.source,
+      error: args.error ?? null,
+      source_ip: args.sourceIp ?? null,
+      user_agent: args.userAgent ?? null,
+    });
+  } catch (err) {
+    console.error("entitlement_log insert failed:", err);
+  }
+}
+
 export const getEntitlement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { app: AppKey }) => ({ app: AppSchema.parse(input.app) }))
   .handler(async ({ data, context }): Promise<Entitlement> => {
     const { supabase, userId } = context;
     const checkedAt = new Date().toISOString();
+    let req: ReturnType<typeof getRequest> | null = null;
+    try {
+      req = getRequest();
+    } catch {
+      req = null;
+    }
+    const sourceIp = req?.headers.get("x-forwarded-for") ?? null;
+    const userAgent = req?.headers.get("user-agent") ?? null;
 
     const { data: rows, error } = await supabase
       .from("subscriptions")
@@ -100,6 +122,16 @@ export const getEntitlement = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("getEntitlement query failed:", error);
+      void logEntitlementCheck({
+        userId,
+        app: data.app,
+        tier: "free",
+        status: "inactive",
+        source: "none",
+        error: error.message,
+        sourceIp,
+        userAgent,
+      });
       return {
         ok: false,
         app: data.app,
@@ -121,6 +153,15 @@ export const getEntitlement = createServerFn({ method: "POST" })
     const winner = bundle ?? direct;
 
     if (!winner) {
+      void logEntitlementCheck({
+        userId,
+        app: data.app,
+        tier: "free",
+        status: "inactive",
+        source: "none",
+        sourceIp,
+        userAgent,
+      });
       return {
         ok: true,
         app: data.app,
@@ -136,9 +177,18 @@ export const getEntitlement = createServerFn({ method: "POST" })
       };
     }
 
-    const source: EntitlementSource =
-      winner === bundle ? "all_access" : "direct";
+    const source: EntitlementSource = winner === bundle ? "all_access" : "direct";
     const tier = winner.tier as Tier;
+
+    void logEntitlementCheck({
+      userId,
+      app: data.app,
+      tier,
+      status: winner.status,
+      source,
+      sourceIp,
+      userAgent,
+    });
 
     return {
       ok: true,
