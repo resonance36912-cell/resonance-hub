@@ -46,6 +46,29 @@ interface Violation {
   rule: string;
   message: string;
   fix?: string;
+  line: number;
+  col?: number;
+}
+
+/**
+ * Best-effort anchor line for an "absent" rule violation. Annotations need
+ * a concrete line, so we point reviewers at the most relevant spot:
+ *   1. the first `createServerFn(` call
+ *   2. else the first exported declaration
+ *   3. else line 1
+ */
+function anchorLine(src: string, marker?: RegExp): { line: number; col?: number } {
+  const lines = src.split("\n");
+  const probes: RegExp[] = marker
+    ? [marker]
+    : [/createServerFn\s*\(/, /^export\s+(const|function|async)\b/];
+  for (const re of probes) {
+    for (let i = 0; i < lines.length; i++) {
+      const m = lines[i].match(re);
+      if (m) return { line: i + 1, col: (m.index ?? 0) + 1 };
+    }
+  }
+  return { line: 1 };
 }
 
 function walk(dir: string, out: string[] = []): string[] {
