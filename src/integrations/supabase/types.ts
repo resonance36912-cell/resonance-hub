@@ -122,6 +122,45 @@ export type Database = {
         }
         Relationships: []
       }
+      entitlement_log: {
+        Row: {
+          app: string
+          created_at: string
+          error: string | null
+          id: string
+          source: string | null
+          source_ip: string | null
+          status: string
+          tier: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          app: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          source?: string | null
+          source_ip?: string | null
+          status: string
+          tier?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          app?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          source?: string | null
+          source_ip?: string | null
+          status?: string
+          tier?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
