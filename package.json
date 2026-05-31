@@ -15,7 +15,8 @@
     "verify:epublisher": "bun run scripts/verify-epublisher-checkout.ts",
     "verify:all-apps": "bun run scripts/verify-all-apps-checkout.ts",
     "report:epublisher": "bun run scripts/report-epublisher-checkout.ts",
-    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts"
+    "verify:back-to-hub": "bun run scripts/verify-back-to-hub.ts",
+    "prebuild": "bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
