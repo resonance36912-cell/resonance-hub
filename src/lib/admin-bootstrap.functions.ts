@@ -4,8 +4,13 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 /**
  * Bootstrap an admin: if the user_roles table contains NO admin rows yet,
- * grant the currently signed-in user the admin role. Once any admin exists,
- * this becomes a no-op — additional admins must be granted manually.
+ * grant the currently signed-in user the admin role — BUT ONLY when their
+ * email is in the server-side `ADMIN_BOOTSTRAP_EMAILS` allowlist (comma-
+ * separated). Without that env var, this function is a no-op, which closes
+ * the first-user privilege-escalation race: an attacker who signs up before
+ * the legitimate admin on a fresh deploy can no longer claim admin rights.
+ *
+ * Once any admin exists, this is a no-op regardless of env.
  */
 export const bootstrapAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -20,6 +25,25 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
 
     if (existing && existing.length > 0) {
       return { promoted: false, reason: "admin_exists" as const };
+    }
+
+    const allowlistRaw = process.env.ADMIN_BOOTSTRAP_EMAILS ?? "";
+    const allowlist = allowlistRaw
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (allowlist.length === 0) {
+      return { promoted: false, reason: "bootstrap_disabled" as const };
+    }
+
+    const claimEmail =
+      typeof (context.claims as Record<string, unknown>).email === "string"
+        ? ((context.claims as Record<string, unknown>).email as string).toLowerCase()
+        : null;
+
+    if (!claimEmail || !allowlist.includes(claimEmail)) {
+      return { promoted: false, reason: "not_allowlisted" as const };
     }
 
     const { error: insertErr } = await supabaseAdmin
