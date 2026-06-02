@@ -174,11 +174,13 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
 };
 
 /**
- * All-Access entitlement mapping — the EXACT tier each paid app grants
- * when a user holds an active all_access subscription. Public copy and
- * pricing UI MUST match this map.
+ * All-Access grant summary — what an active all_access subscription
+ * displays as unlocked per app. This is DISPLAY-ONLY copy; runtime
+ * entitlement checks MUST use the subscriptions table and TIER_RANK,
+ * never this static map. Per-workflow minimum tiers live in spoke
+ * registries and route handlers (e.g. generate-poster → creator).
  */
-export const ALL_ACCESS_ENTITLEMENTS = {
+export const ALL_ACCESS_GRANTS = {
   epublisher: { tier: "pro", source: "all_access" },
   creative_studio: { tier: "pro", source: "all_access" },
   sync_vision: { tier: "pro", source: "all_access" },
