@@ -103,7 +103,7 @@ Feature flags: `channelAudits`, `thumbnails`, `growthRoadmap`, `teamSeats`
 
 - SKU: `all_access:all_access:monthly` (R1,499/mo)
 - Grants `pro` tier in every per-app gate (see
-  `ALL_ACCESS_ENTITLEMENTS` in `src/lib/app-registry.ts`).
+  `ALL_ACCESS_GRANTS` in `src/lib/app-registry.ts`).
 - Spokes treat `source === "all_access"` exactly like a direct `pro`
   subscription — no special UI, just an "All-Access" badge if desired.
 
