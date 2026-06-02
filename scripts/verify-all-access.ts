@@ -16,13 +16,13 @@ const failures: string[] = [];
 const paidKeys = Object.keys(APP_REGISTRY).filter((k) => k !== "all_access");
 
 for (const k of paidKeys) {
-  if (!(k in ALL_ACCESS_ENTITLEMENTS)) {
-    failures.push(`ALL_ACCESS_ENTITLEMENTS is missing app "${k}"`);
+  if (!(k in ALL_ACCESS_GRANTS)) {
+    failures.push(`ALL_ACCESS_GRANTS is missing app "${k}"`);
   }
 }
 
 const ALLOWED_TIERS = new Set(["free", "starter", "creator", "pro", "business", "all_access"]);
-for (const [app, mapping] of Object.entries(ALL_ACCESS_ENTITLEMENTS)) {
+for (const [app, mapping] of Object.entries(ALL_ACCESS_GRANTS)) {
   if (!ALLOWED_TIERS.has(mapping.tier)) {
     failures.push(`All-Access mapping for "${app}" uses unknown tier "${mapping.tier}"`);
   }
