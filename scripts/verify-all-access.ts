@@ -4,13 +4,13 @@
  * entitlement contract actually grants.
  *
  * Rules:
- *  1. ALL_ACCESS_ENTITLEMENTS must cover every paid app (minus all_access).
+ *  1. ALL_ACCESS_GRANTS must cover every paid app (minus all_access).
  *  2. Each mapped tier must exist in the Tier union used by entitlement.functions.ts.
  *  3. Career Compass and The Resonance Podcast must NEVER appear in the map
  *     or in user-facing All-Access copy.
  */
 import { readFileSync } from "node:fs";
-import { ALL_ACCESS_ENTITLEMENTS, APP_REGISTRY } from "../src/lib/app-registry";
+import { ALL_ACCESS_GRANTS, APP_REGISTRY } from "../src/lib/app-registry";
 
 const failures: string[] = [];
 const paidKeys = Object.keys(APP_REGISTRY).filter((k) => k !== "all_access");
