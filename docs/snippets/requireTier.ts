@@ -1,9 +1,22 @@
 /**
- * Canonical server-side tier gate for every Resonance spoke.
+ * ============================================================================
+ *  VENDORED FILE — DO NOT EDIT IN SPOKE REPOS
+ * ============================================================================
+ *  Canonical source: resonance-hub  →  docs/snippets/requireTier.ts
+ *  Vendor target:    <spoke>/src/lib/requireTier.ts
  *
- * Copy this file verbatim into your spoke at `src/lib/requireTier.ts`
- * (or `src/lib/server/requireTier.ts`). Do not re-design the gate logic,
- * the 402 body shape, or the tier order — compliance depends on exact parity.
+ *  Rules for spokes:
+ *   1. Copy this file VERBATIM into `src/lib/requireTier.ts`.
+ *   2. Do not modify TIER_RANK, the 402 body shape, the cache TTL, or the
+ *      HUB_URL fallback — compliance depends on exact parity with the hub.
+ *   3. If the hub bumps this file, re-copy the whole file. Never hand-merge.
+ *   4. Local-only customisation goes in a sibling wrapper module
+ *      (e.g. `src/lib/tier-gate.ts`), never in this file.
+ *
+ *  See docs/spoke-sync-instructions.md in the hub for the full sync contract.
+ * ============================================================================
+ *
+ * Canonical server-side tier gate for every Resonance spoke.
  *
  * Usage (inside a TanStack Start `createServerFn` handler):
  *
