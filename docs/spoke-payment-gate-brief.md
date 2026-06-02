@@ -105,7 +105,12 @@ export const generatePoster = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(/* … */)
   .handler(async ({ data, context }) => {
-    await requireTier(context, "creative_studio", "creator");
+    await requireTier({
+      context,
+      app: "creative_studio",
+      required: "creator",
+      returnTo: "https://creativestudio.life/generate/poster",
+    });
     // …actual generation work…
   });
 ```
@@ -129,9 +134,10 @@ export const generatePoster = createServerFn({ method: "POST" })
 4. Cache the entitlement result for ≤60s per user to avoid hammering the hub.
 5. Treat any non-200 from the hub as **no access** (fail closed).
 
-A reference TypeScript implementation lives in
-[`creative-studio-payment-gate.md`](./creative-studio-payment-gate.md) §3 —
-copy verbatim into each spoke; do not re-design.
+The canonical TypeScript implementation lives at
+[`docs/snippets/requireTier.ts`](./snippets/requireTier.ts) — copy it verbatim
+into each spoke (`src/lib/requireTier.ts` or `src/lib/server/requireTier.ts`).
+Do not re-design the gate logic, the 402 body shape, or the tier order.
 
 ---
 
