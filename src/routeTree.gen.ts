@@ -33,6 +33,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -159,6 +160,12 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicGenerateCreativeStudioPosterRoute =
+  ApiPublicGenerateCreativeStudioPosterRouteImport.update({
+    id: '/api/public/generate/creative-studio/poster',
+    path: '/api/public/generate/creative-studio/poster',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -211,6 +219,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -238,6 +247,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/generate/creative-studio/poster'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -292,6 +303,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/generate/creative-studio/poster'
   id:
     | '__root__'
     | '/'
@@ -318,6 +330,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/generate/creative-studio/poster'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -343,6 +356,7 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  ApiPublicGenerateCreativeStudioPosterRoute: typeof ApiPublicGenerateCreativeStudioPosterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -515,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/generate/creative-studio/poster': {
+      id: '/api/public/generate/creative-studio/poster'
+      path: '/api/public/generate/creative-studio/poster'
+      fullPath: '/api/public/generate/creative-studio/poster'
+      preLoaderRoute: typeof ApiPublicGenerateCreativeStudioPosterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -556,6 +577,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  ApiPublicGenerateCreativeStudioPosterRoute:
+    ApiPublicGenerateCreativeStudioPosterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
