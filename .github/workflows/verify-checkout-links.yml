@@ -23,5 +23,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Unit tests for dynamic-CTA tracing + SKU validation helpers
+        run: bun run test:checkout-links
+
       - name: Verify all pricing pages use relative /checkout URLs with valid SKUs
         run: bun run verify:checkout-links
+
