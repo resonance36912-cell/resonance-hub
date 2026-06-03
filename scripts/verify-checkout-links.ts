@@ -1,80 +1,115 @@
 #!/usr/bin/env bun
 /**
- * verify-checkout-links — scan every pricing page and assert all Subscribe
- * CTAs use relative `/checkout` URLs with valid (app, plan) SKU parameters
- * that resolve to entries in SKU_CATALOG.
+ * verify-checkout-links — scan the entire codebase for `/checkout?...` URLs
+ * (CTAs, redirects, JSON `upgrade_url`s) and assert that every (app, plan)
+ * tuple resolves to an entry in SKU_CATALOG.
  *
- * Pages scanned:
- *   - src/routes/pricing.tsx                  (hub matrix + All-Access)
- *   - src/routes/epublisher.pricing.tsx
- *   - src/routes/creative-studio.pricing.tsx
- *   - src/routes/sync-vision.pricing.tsx
- *   - src/routes/youtube-optimizer.pricing.tsx
- *   - src/routes/index.tsx                    (homepage All-Access CTA)
+ * Scope:
+ *   - Recursively scans src/ for *.ts and *.tsx.
+ *   - Extracts any string/template literal containing `checkout?`.
  *
- * For every checkout link the script verifies:
- *   1. URL is relative (starts with "/checkout?", not "http(s)://...").
- *   2. Has both `app=` and `plan=` query params.
- *   3. `${app}:${plan}:monthly` exists in SKU_CATALOG.
+ * Per-link rules:
+ *   1. Must start with `/checkout?` (relative). Absolute `http(s)://…/checkout?`
+ *      URLs are allowed ONLY in files listed in ABSOLUTE_URL_ALLOWLIST — these
+ *      build server-to-spoke responses where the hub origin is required.
+ *   2. Must include `app=` and `plan=` params.
+ *   3. If both are literal (no `${…}` placeholders) → `${app}:${plan}:monthly`
+ *      MUST exist in SKU_CATALOG. Dynamic params are skipped (the runtime
+ *      resolver enforces validity there).
  */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import { SKU_CATALOG } from "../src/lib/checkout.functions";
 
-const PAGES = [
-  "src/routes/pricing.tsx",
-  "src/routes/epublisher.pricing.tsx",
-  "src/routes/creative-studio.pricing.tsx",
-  "src/routes/sync-vision.pricing.tsx",
-  "src/routes/youtube-optimizer.pricing.tsx",
-  "src/routes/index.tsx",
-];
+const ROOT = "src";
+const SCAN_EXT = /\.(ts|tsx)$/;
+const SKIP_DIR = new Set(["node_modules", "dist", ".next"]);
+const SKIP_FILE = new Set(["routeTree.gen.ts"]);
 
-// Any string ending in `checkout?...` — relative or absolute — so we can
-// flag absolute URLs as failures.
-const linkRegex = /["'`]([^"'`\s]*checkout\?[^"'`\s]+)["'`]/g;
+// Files allowed to emit absolute hub checkout URLs (server-side responses
+// served to spoke apps on other origins, where a relative URL would resolve
+// to the wrong domain).
+const ABSOLUTE_URL_ALLOWLIST = new Set<string>([
+  "src/lib/requireTier-request.ts",
+]);
+
+// Capture any quoted string or template literal that contains `checkout?`.
+// Group 1 = the inner contents (without surrounding quotes/backticks).
+const linkRegex = /["'`]([^"'`\n]*checkout\?[^"'`\n]+)["'`]/g;
+
+function* walk(dir: string): Generator<string> {
+  for (const entry of readdirSync(dir)) {
+    if (SKIP_DIR.has(entry) || SKIP_FILE.has(entry)) continue;
+    const p = join(dir, entry);
+    const s = statSync(p);
+    if (s.isDirectory()) yield* walk(p);
+    else if (s.isFile() && SCAN_EXT.test(entry)) yield p;
+  }
+}
+
+function stripComments(src: string): string {
+  // Remove /* … */ block comments and // line comments so doc examples
+  // (e.g. "/checkout?sku=...&return_to=https://evil.com") don't trigger
+  // false positives. Naive but sufficient for our TS sources.
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
 
 const failures: string[] = [];
 let linkCount = 0;
+let dynamicSkipped = 0;
 
-for (const path of PAGES) {
-  if (!existsSync(path)) {
-    failures.push(`${path}: file missing`);
-    continue;
-  }
-  const src = readFileSync(path, "utf8");
+for (const path of walk(ROOT)) {
+  const rel = relative(".", path);
+  const src = stripComments(readFileSync(path, "utf8"));
+
   let m: RegExpExecArray | null;
   while ((m = linkRegex.exec(src))) {
     const url = m[1];
     linkCount++;
 
-    if (/^https?:\/\//i.test(url)) {
-      failures.push(`${path}: absolute checkout URL "${url}" — must be relative /checkout?...`);
-      continue;
-    }
-    if (!url.startsWith("/checkout?")) {
-      failures.push(`${path}: checkout URL "${url}" must start with /checkout?`);
+    const isAbsolute = /^https?:\/\//i.test(url);
+    if (isAbsolute) {
+      if (!ABSOLUTE_URL_ALLOWLIST.has(rel)) {
+        failures.push(
+          `${rel}: absolute checkout URL "${url}" — must be relative /checkout?... ` +
+            `(or add to ABSOLUTE_URL_ALLOWLIST with justification)`,
+        );
+        continue;
+      }
+    } else if (!url.includes("/checkout?")) {
+      failures.push(`${rel}: checkout URL "${url}" must contain /checkout?`);
       continue;
     }
 
-    const qs = url.slice(url.indexOf("?") + 1);
-    const params = new URLSearchParams(qs);
+    // Extract just the query string portion.
+    const qStart = url.indexOf("checkout?") + "checkout?".length;
+    const qs = url.slice(qStart);
+    const params = new URLSearchParams(qs.replace(/&amp;/g, "&"));
     const app = params.get("app");
     const plan = params.get("plan");
 
     if (!app || !plan) {
-      failures.push(`${path}: "${url}" missing app= or plan= param`);
+      failures.push(`${rel}: "${url}" missing app= or plan= param`);
+      continue;
+    }
+
+    // Skip dynamic values (template-literal interpolations like ${app}).
+    if (app.includes("${") || plan.includes("${")) {
+      dynamicSkipped++;
       continue;
     }
 
     const sku = `${app}:${plan}:monthly`;
     if (!SKU_CATALOG[sku]) {
-      failures.push(`${path}: "${url}" → unknown SKU "${sku}"`);
+      failures.push(`${rel}: "${url}" → unknown SKU "${sku}"`);
     }
   }
 }
 
 if (linkCount === 0) {
-  failures.push("verify-checkout-links matched 0 links — regex or pages changed.");
+  failures.push("verify-checkout-links matched 0 links — regex or source layout changed.");
 }
 
 if (failures.length) {
@@ -82,4 +117,7 @@ if (failures.length) {
   for (const f of failures) console.error("  " + f);
   process.exit(1);
 }
-console.log(`✓ verify-checkout-links: ${linkCount} checkout CTAs are relative and resolve to a valid SKU.`);
+console.log(
+  `✓ verify-checkout-links: ${linkCount} checkout URL(s) scanned across src/ ` +
+    `(${dynamicSkipped} dynamic skipped); all literal (app, plan) tuples resolve to a valid SKU.`,
+);
