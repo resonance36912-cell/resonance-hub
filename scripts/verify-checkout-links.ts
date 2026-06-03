@@ -26,6 +26,8 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { SKU_CATALOG } from "../src/lib/checkout.functions";
+import { stripComments, extractFieldLiteral } from "./lib/checkout-link-verify";
+
 
 const ROOT = "src";
 const SCAN_EXT = /\.(ts|tsx)$/;
