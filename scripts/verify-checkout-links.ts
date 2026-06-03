@@ -71,11 +71,8 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
-function stripComments(src: string): string {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
-}
+
+
 
 const failures: string[] = [];
 const allFiles = [...walk(ROOT)];
