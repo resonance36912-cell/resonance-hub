@@ -24,6 +24,7 @@
     "verify:security": "bun run scripts/verify-security-invariants.ts",
     "verify:all-access": "bun run scripts/verify-all-access.ts",
     "verify:pricing": "bun run scripts/verify-pricing.ts",
+    "verify:checkout-links": "bun run scripts/verify-checkout-links.ts",
     "verify:transparency-copy": "bun run scripts/verify-transparency-copy.ts",
     "verify:discernment-usage": "bun run scripts/verify-discernment-usage.ts",
     "report:discernment-usage": "bun run scripts/report-discernment-usage.ts",
