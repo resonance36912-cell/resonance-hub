@@ -51,7 +51,7 @@ const plans: Plan[] = [
     blurb: "First audits",
     features: ["5 deep channel audits", "20 AI thumbnails", "Title & tag optimizer"],
     cta: "Subscribe",
-    href: "https://reson8.life/checkout?app=youtube_optimizer&plan=starter",
+    href: "/checkout?app=youtube_optimizer&plan=starter",
   },
   {
     name: "Pro",
@@ -60,7 +60,7 @@ const plans: Plan[] = [
     blurb: "Most popular",
     features: ["20 audits", "100 thumbnails", "Growth roadmap", "Competitor tracking"],
     cta: "Subscribe",
-    href: "https://reson8.life/checkout?app=youtube_optimizer&plan=pro",
+    href: "/checkout?app=youtube_optimizer&plan=pro",
     featured: true,
   },
   {
@@ -70,7 +70,7 @@ const plans: Plan[] = [
     blurb: "Agency teams",
     features: ["100 audits", "500 thumbnails", "Team seats", "White-label reports", "Priority support"],
     cta: "Subscribe",
-    href: "https://reson8.life/checkout?app=youtube_optimizer&plan=business",
+    href: "/checkout?app=youtube_optimizer&plan=business",
   },
 ];
 
@@ -143,8 +143,7 @@ function YouTubeOptimizerPricingPage() {
                 </ul>
                 <a
                   href={p.href}
-                  target="_blank"
-                  rel="noreferrer"
+                  {...(p.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                   className={`text-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
                     p.featured
                       ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
@@ -170,12 +169,12 @@ function YouTubeOptimizerPricingPage() {
                 Bundle ePublisher Pro, Creative Studio Pro, Sync Vision Pro and YouTube Optimizer Pro
                 into one All-Access subscription.
               </p>
-              <a
-                href="https://reson8.life/pricing"
+              <Link
+                to="/pricing"
                 className="inline-block px-8 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
               >
                 View All-Access pricing →
-              </a>
+              </Link>
               <p className="text-[11px] text-white/45 mt-3">PayFast · ZAR · cancel anytime</p>
             </div>
           </div>
