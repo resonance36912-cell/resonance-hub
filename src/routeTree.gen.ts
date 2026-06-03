@@ -15,7 +15,10 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
+import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
+import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
@@ -65,9 +68,24 @@ const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
   path: '/youtube-optimizer/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
+  id: '/sync-vision/pricing',
+  path: '/sync-vision/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EpublisherPricingRoute = EpublisherPricingRouteImport.update({
+  id: '/epublisher/pricing',
+  path: '/epublisher/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreativeStudioPricingRoute = CreativeStudioPricingRouteImport.update({
+  id: '/creative-studio/pricing',
+  path: '/creative-studio/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
@@ -182,7 +200,10 @@ export interface FileRoutesByFullPath {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
@@ -209,7 +230,10 @@ export interface FileRoutesByTo {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
@@ -237,7 +261,10 @@ export interface FileRoutesById {
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
@@ -266,7 +293,10 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/creative-studio/pricing'
     | '/email/unsubscribe'
+    | '/epublisher/pricing'
+    | '/sync-vision/pricing'
     | '/youtube-optimizer/pricing'
     | '/admin/'
     | '/api/public/entitlement'
@@ -293,7 +323,10 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/creative-studio/pricing'
     | '/email/unsubscribe'
+    | '/epublisher/pricing'
+    | '/sync-vision/pricing'
     | '/youtube-optimizer/pricing'
     | '/admin'
     | '/api/public/entitlement'
@@ -320,7 +353,10 @@ export interface FileRouteTypes {
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
+    | '/creative-studio/pricing'
     | '/email/unsubscribe'
+    | '/epublisher/pricing'
+    | '/sync-vision/pricing'
     | '/youtube-optimizer/pricing'
     | '/admin/'
     | '/api/public/entitlement'
@@ -346,7 +382,10 @@ export interface RootRouteChildren {
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
+  CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  EpublisherPricingRoute: typeof EpublisherPricingRoute
+  SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
@@ -403,11 +442,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YoutubeOptimizerPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sync-vision/pricing': {
+      id: '/sync-vision/pricing'
+      path: '/sync-vision/pricing'
+      fullPath: '/sync-vision/pricing'
+      preLoaderRoute: typeof SyncVisionPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/epublisher/pricing': {
+      id: '/epublisher/pricing'
+      path: '/epublisher/pricing'
+      fullPath: '/epublisher/pricing'
+      preLoaderRoute: typeof EpublisherPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creative-studio/pricing': {
+      id: '/creative-studio/pricing'
+      path: '/creative-studio/pricing'
+      fullPath: '/creative-studio/pricing'
+      preLoaderRoute: typeof CreativeStudioPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/success': {
@@ -566,7 +626,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
+  CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  EpublisherPricingRoute: EpublisherPricingRoute,
+  SyncVisionPricingRoute: SyncVisionPricingRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
@@ -583,13 +646,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
