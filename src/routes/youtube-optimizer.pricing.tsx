@@ -143,8 +143,7 @@ function YouTubeOptimizerPricingPage() {
                 </ul>
                 <a
                   href={p.href}
-                  target="_blank"
-                  rel="noreferrer"
+                  {...(p.href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                   className={`text-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
                     p.featured
                       ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
@@ -170,12 +169,12 @@ function YouTubeOptimizerPricingPage() {
                 Bundle ePublisher Pro, Creative Studio Pro, Sync Vision Pro and YouTube Optimizer Pro
                 into one All-Access subscription.
               </p>
-              <a
-                href="https://reson8.life/pricing"
+              <Link
+                to="/pricing"
                 className="inline-block px-8 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
               >
                 View All-Access pricing →
-              </a>
+              </Link>
               <p className="text-[11px] text-white/45 mt-3">PayFast · ZAR · cancel anytime</p>
             </div>
           </div>
