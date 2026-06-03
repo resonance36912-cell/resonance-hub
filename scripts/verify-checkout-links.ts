@@ -179,47 +179,8 @@ for (const [contractFile, contract] of Object.entries(DYNAMIC_CTA_CONTRACTS)) {
   }
 }
 
-/**
- * Extract a string-literal value for `field` from an object-literal arg block.
- * Supports:
- *   - direct string literal: `field: "value"`
- *   - identifier referencing a `const NAME = "value" as const;` in the same file
- */
-function extractFieldLiteral(
-  argBlock: string,
-  field: string,
-  fullSrc: string,
-  fileLabel: string,
-): { value: string; error?: undefined } | { value?: undefined; error: string } {
-  const fieldRe = new RegExp(`\\b${field}\\s*:\\s*([^,\\n}]+)`);
-  const fm = argBlock.match(fieldRe);
-  if (!fm) {
-    return { error: `${fileLabel}: call missing "${field}" property` };
-  }
-  const raw = fm[1].trim().replace(/,$/, "").trim();
 
-  // Direct string literal.
-  const strLit = raw.match(/^["']([^"']+)["']$/);
-  if (strLit) return { value: strLit[1] };
 
-  // Identifier — look up `const IDENT = "value" as const;` in the same file.
-  const ident = raw.match(/^[A-Za-z_$][\w$]*$/);
-  if (ident) {
-    const constRe = new RegExp(
-      `\\bconst\\s+${ident[0]}\\s*=\\s*["']([^"']+)["']\\s*(?:as\\s+const)?\\s*;`,
-    );
-    const cm = fullSrc.match(constRe);
-    if (cm) return { value: cm[1] };
-    return {
-      error: `${fileLabel}: "${field}: ${ident[0]}" — could not resolve identifier to a string literal; ` +
-        `inline the value or define it as \`const ${ident[0]} = "..." as const;\` in the same file.`,
-    };
-  }
-
-  return {
-    error: `${fileLabel}: "${field}: ${raw}" — value must be a string literal or an in-file const literal.`,
-  };
-}
 
 // ── Report ──────────────────────────────────────────────────────────────────
 if (linkCount === 0) {
