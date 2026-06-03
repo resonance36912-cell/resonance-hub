@@ -47,13 +47,23 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
+function stripComments(src: string): string {
+  // Remove /* … */ block comments and // line comments so doc examples
+  // (e.g. "/checkout?sku=...&return_to=https://evil.com") don't trigger
+  // false positives. Naive but sufficient for our TS sources.
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
 const failures: string[] = [];
 let linkCount = 0;
 let dynamicSkipped = 0;
 
 for (const path of walk(ROOT)) {
   const rel = relative(".", path);
-  const src = readFileSync(path, "utf8");
+  const src = stripComments(readFileSync(path, "utf8"));
+
   let m: RegExpExecArray | null;
   while ((m = linkRegex.exec(src))) {
     const url = m[1];
