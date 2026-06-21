@@ -1,6 +1,7 @@
 // Cron: scan recent perf telemetry across apps, ask Lovable AI for cross-app suggestions.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { RCGF_PRINCIPLES_FOR_AI, RCGF_VERSION } from "@/lib/rcgf";
 
 type PerfRow = {
   app_id: string;
@@ -67,13 +68,17 @@ async function authorSuggestionsWithAI(
     error_rate: Number(b.errorRate.toFixed(3)),
   }));
 
-  const systemPrompt = `You are the Resonance Optimization Protocol cross-app analyst.
+  const systemPrompt = `${RCGF_PRINCIPLES_FOR_AI}
+
+You are the Resonance Optimization Protocol cross-app analyst, operating under RCGF v${RCGF_VERSION}.
 You receive aggregated 24h perf buckets across multiple Resonance apps.
 Return JSON: {"suggestions":[{"app":"<slug-or-null>","title":"...","rationale":"...","target_scope":"...","current_value":...,"suggested_value":...}]}.
 Rules:
 - Only propose changes when p95_ms > 8000 or error_rate > 0.05.
 - If a problem appears in MULTIPLE apps, set "app": null (broadcast candidate).
 - target_scope is a dot-path (e.g. "video.max_concurrent_jobs").
+- "rationale" MUST cite the bucket evidence (samples, p95_ms, error_rate) it relies on, per Article VII.
+- Never invent metrics that are not in the input. If evidence is thin, return {"suggestions":[]}.
 - Max 5 suggestions. Return only valid JSON, no prose.`;
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
