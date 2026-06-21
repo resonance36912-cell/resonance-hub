@@ -161,6 +161,284 @@ export type Database = {
         }
         Relationships: []
       }
+      hub_apps: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          last_seen_at: string | null
+          name: string
+          public_url: string | null
+          signing_key_hash: string
+          signing_key_prefix: string
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_seen_at?: string | null
+          name: string
+          public_url?: string | null
+          signing_key_hash: string
+          signing_key_prefix: string
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_seen_at?: string | null
+          name?: string
+          public_url?: string | null
+          signing_key_hash?: string
+          signing_key_prefix?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hub_audit_events: {
+        Row: {
+          actor_user_id: string | null
+          app_id: string | null
+          created_at: string
+          id: number
+          kind: string
+          payload: Json
+        }
+        Insert: {
+          actor_user_id?: string | null
+          app_id?: string | null
+          created_at?: string
+          id?: number
+          kind: string
+          payload?: Json
+        }
+        Update: {
+          actor_user_id?: string | null
+          app_id?: string | null
+          created_at?: string
+          id?: number
+          kind?: string
+          payload?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_audit_events_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_outcomes: {
+        Row: {
+          app_id: string
+          baseline: Json | null
+          baseline_at: string
+          created_at: string
+          hub_suggestion_id: string
+          id: string
+          measured: Json | null
+          measured_at: string | null
+          verdict: string | null
+        }
+        Insert: {
+          app_id: string
+          baseline?: Json | null
+          baseline_at?: string
+          created_at?: string
+          hub_suggestion_id: string
+          id?: string
+          measured?: Json | null
+          measured_at?: string | null
+          verdict?: string | null
+        }
+        Update: {
+          app_id?: string
+          baseline?: Json | null
+          baseline_at?: string
+          created_at?: string
+          hub_suggestion_id?: string
+          id?: string
+          measured?: Json | null
+          measured_at?: string | null
+          verdict?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_outcomes_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hub_outcomes_hub_suggestion_id_fkey"
+            columns: ["hub_suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "hub_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_perf_events: {
+        Row: {
+          action: string
+          app_id: string
+          duration_ms: number | null
+          error_code: string | null
+          id: number
+          metadata: Json
+          occurred_at: string
+          provider: string | null
+          received_at: string
+          status: string | null
+          step: string
+        }
+        Insert: {
+          action: string
+          app_id: string
+          duration_ms?: number | null
+          error_code?: string | null
+          id?: number
+          metadata?: Json
+          occurred_at: string
+          provider?: string | null
+          received_at?: string
+          status?: string | null
+          step: string
+        }
+        Update: {
+          action?: string
+          app_id?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          id?: number
+          metadata?: Json
+          occurred_at?: string
+          provider?: string | null
+          received_at?: string
+          status?: string | null
+          step?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_perf_events_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_suggestions: {
+        Row: {
+          app_id: string | null
+          broadcast: boolean
+          category: string | null
+          created_at: string
+          current_value: Json | null
+          evidence: Json
+          id: string
+          local_id: string | null
+          rationale: string | null
+          source: string
+          status: string
+          suggested_value: Json | null
+          target_key: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          app_id?: string | null
+          broadcast?: boolean
+          category?: string | null
+          created_at?: string
+          current_value?: Json | null
+          evidence?: Json
+          id?: string
+          local_id?: string | null
+          rationale?: string | null
+          source: string
+          status?: string
+          suggested_value?: Json | null
+          target_key?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          app_id?: string | null
+          broadcast?: boolean
+          category?: string | null
+          created_at?: string
+          current_value?: Json | null
+          evidence?: Json
+          id?: string
+          local_id?: string | null
+          rationale?: string | null
+          source?: string
+          status?: string
+          suggested_value?: Json | null
+          target_key?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_suggestions_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_tunables: {
+        Row: {
+          actor_user_id: string | null
+          app_id: string
+          id: string
+          target_key: string
+          updated_at: string
+          value_now: Json | null
+          value_prior: Json | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          app_id: string
+          id?: string
+          target_key: string
+          updated_at?: string
+          value_now?: Json | null
+          value_prior?: Json | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          app_id?: string
+          id?: string
+          target_key?: string
+          updated_at?: string
+          value_now?: Json | null
+          value_prior?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_tunables_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string

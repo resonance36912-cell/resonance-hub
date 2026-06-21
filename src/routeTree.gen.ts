@@ -22,6 +22,7 @@ import { Route as CreativeStudioPricingRouteImport } from './routes/creative-stu
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -34,8 +35,14 @@ import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/en
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicRopPullBroadcastsRouteImport } from './routes/api/public/rop/pull-broadcasts'
+import { Route as ApiPublicRopIngestSuggestionRouteImport } from './routes/api/public/rop/ingest-suggestion'
+import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/rop/ingest-perf'
+import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
+import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
 import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -103,6 +110,11 @@ const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   path: '/admin/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRopRoute = AdminRopRouteImport.update({
+  id: '/admin/rop',
+  path: '/admin/rop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
@@ -167,6 +179,29 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicRopPullBroadcastsRoute =
+  ApiPublicRopPullBroadcastsRouteImport.update({
+    id: '/api/public/rop/pull-broadcasts',
+    path: '/api/public/rop/pull-broadcasts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopIngestSuggestionRoute =
+  ApiPublicRopIngestSuggestionRouteImport.update({
+    id: '/api/public/rop/ingest-suggestion',
+    path: '/api/public/rop/ingest-suggestion',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopIngestPerfRoute = ApiPublicRopIngestPerfRouteImport.update({
+  id: '/api/public/rop/ingest-perf',
+  path: '/api/public/rop/ingest-perf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRopIngestAppliedRoute =
+  ApiPublicRopIngestAppliedRouteImport.update({
+    id: '/api/public/rop/ingest-applied',
+    path: '/api/public/rop/ingest-applied',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   id: '/api/public/payfast/itn',
   path: '/api/public/payfast/itn',
@@ -176,6 +211,18 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
   ApiPublicHooksProcessSubscriptionEmailsRouteImport.update({
     id: '/api/public/hooks/process-subscription-emails',
     path: '/api/public/hooks/process-subscription-emails',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopCronMeasureOutcomesRoute =
+  ApiPublicRopCronMeasureOutcomesRouteImport.update({
+    id: '/api/public/rop/cron/measure-outcomes',
+    path: '/api/public/rop/cron/measure-outcomes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopCronCrossAppScanRoute =
+  ApiPublicRopCronCrossAppScanRouteImport.update({
+    id: '/api/public/rop/cron/cross-app-scan',
+    path: '/api/public/rop/cron/cross-app-scan',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicGenerateCreativeStudioPosterRoute =
@@ -197,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -210,10 +258,16 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -227,6 +281,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -240,10 +295,16 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -258,6 +319,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -271,10 +333,16 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,6 +358,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
+    | '/admin/rop'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -303,10 +372,16 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
     | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -320,6 +395,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
+    | '/admin/rop'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -333,10 +409,16 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
     | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
   id:
     | '__root__'
     | '/'
@@ -350,6 +432,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
+    | '/admin/rop'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -363,10 +446,16 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
     | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -381,6 +470,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminRopRoute: typeof AdminRopRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -392,10 +482,16 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
+  ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
+  ApiPublicRopIngestPerfRoute: typeof ApiPublicRopIngestPerfRoute
+  ApiPublicRopIngestSuggestionRoute: typeof ApiPublicRopIngestSuggestionRoute
+  ApiPublicRopPullBroadcastsRoute: typeof ApiPublicRopPullBroadcastsRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicGenerateCreativeStudioPosterRoute: typeof ApiPublicGenerateCreativeStudioPosterRoute
+  ApiPublicRopCronCrossAppScanRoute: typeof ApiPublicRopCronCrossAppScanRoute
+  ApiPublicRopCronMeasureOutcomesRoute: typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -491,6 +587,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/rop': {
+      id: '/admin/rop'
+      path: '/admin/rop'
+      fullPath: '/admin/rop'
+      preLoaderRoute: typeof AdminRopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/revenue': {
       id: '/admin/revenue'
       path: '/admin/revenue'
@@ -575,6 +678,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/rop/pull-broadcasts': {
+      id: '/api/public/rop/pull-broadcasts'
+      path: '/api/public/rop/pull-broadcasts'
+      fullPath: '/api/public/rop/pull-broadcasts'
+      preLoaderRoute: typeof ApiPublicRopPullBroadcastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-suggestion': {
+      id: '/api/public/rop/ingest-suggestion'
+      path: '/api/public/rop/ingest-suggestion'
+      fullPath: '/api/public/rop/ingest-suggestion'
+      preLoaderRoute: typeof ApiPublicRopIngestSuggestionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-perf': {
+      id: '/api/public/rop/ingest-perf'
+      path: '/api/public/rop/ingest-perf'
+      fullPath: '/api/public/rop/ingest-perf'
+      preLoaderRoute: typeof ApiPublicRopIngestPerfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-applied': {
+      id: '/api/public/rop/ingest-applied'
+      path: '/api/public/rop/ingest-applied'
+      fullPath: '/api/public/rop/ingest-applied'
+      preLoaderRoute: typeof ApiPublicRopIngestAppliedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payfast/itn': {
       id: '/api/public/payfast/itn'
       path: '/api/public/payfast/itn'
@@ -587,6 +718,20 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/process-subscription-emails'
       fullPath: '/api/public/hooks/process-subscription-emails'
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/cron/measure-outcomes': {
+      id: '/api/public/rop/cron/measure-outcomes'
+      path: '/api/public/rop/cron/measure-outcomes'
+      fullPath: '/api/public/rop/cron/measure-outcomes'
+      preLoaderRoute: typeof ApiPublicRopCronMeasureOutcomesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/cron/cross-app-scan': {
+      id: '/api/public/rop/cron/cross-app-scan'
+      path: '/api/public/rop/cron/cross-app-scan'
+      fullPath: '/api/public/rop/cron/cross-app-scan'
+      preLoaderRoute: typeof ApiPublicRopCronCrossAppScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/generate/creative-studio/poster': {
@@ -625,6 +770,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminRevenueRoute: AdminRevenueRoute,
+  AdminRopRoute: AdminRopRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
@@ -637,11 +783,17 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
+  ApiPublicRopIngestAppliedRoute: ApiPublicRopIngestAppliedRoute,
+  ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,
+  ApiPublicRopIngestSuggestionRoute: ApiPublicRopIngestSuggestionRoute,
+  ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiPublicGenerateCreativeStudioPosterRoute:
     ApiPublicGenerateCreativeStudioPosterRoute,
+  ApiPublicRopCronCrossAppScanRoute: ApiPublicRopCronCrossAppScanRoute,
+  ApiPublicRopCronMeasureOutcomesRoute: ApiPublicRopCronMeasureOutcomesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
