@@ -93,6 +93,7 @@ function AdminHome() {
     { to: "/admin/payfast-audit", label: "PayFast Audit", desc: "Launch ↔ ITN trace and amount reconciliation." },
     { to: "/admin/webhooks", label: "Raw ITN Log", desc: "Every ITN webhook received from PayFast." },
     { to: "/admin/entitlement-diagnostics", label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
+    { to: "/admin/rop", label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
     { to: "/admin/emails", label: "Email Queue", desc: "Transactional sends and delivery status." },
     { to: "/admin/email-domain", label: "Email Domain", desc: "Sending domain configuration and DNS." },
   ] as const;
