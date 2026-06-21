@@ -161,71 +161,109 @@ export type Database = {
         }
         Relationships: []
       }
+      hub_app_access: {
+        Row: {
+          app_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_app_access_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hub_apps: {
         Row: {
           created_at: string
           created_by: string | null
           id: string
-          last_seen_at: string | null
+          metadata: Json
           name: string
-          public_url: string | null
+          origin_url: string | null
           signing_key_hash: string
           signing_key_prefix: string
           slug: string
           status: string
           updated_at: string
+          workspace_id: string | null
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           id?: string
-          last_seen_at?: string | null
+          metadata?: Json
           name: string
-          public_url?: string | null
+          origin_url?: string | null
           signing_key_hash: string
           signing_key_prefix: string
           slug: string
           status?: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string | null
           id?: string
-          last_seen_at?: string | null
+          metadata?: Json
           name?: string
-          public_url?: string | null
+          origin_url?: string | null
           signing_key_hash?: string
           signing_key_prefix?: string
           slug?: string
           status?: string
           updated_at?: string
+          workspace_id?: string | null
         }
         Relationships: []
       }
       hub_audit_events: {
         Row: {
+          actor_kind: string
           actor_user_id: string | null
           app_id: string | null
           created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
           id: number
-          kind: string
           payload: Json
         }
         Insert: {
+          actor_kind: string
           actor_user_id?: string | null
           app_id?: string | null
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
           id?: number
-          kind: string
           payload?: Json
         }
         Update: {
+          actor_kind?: string
           actor_user_id?: string | null
           app_id?: string | null
           created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
           id?: number
-          kind?: string
           payload?: Json
         }
         Relationships: [
@@ -241,36 +279,48 @@ export type Database = {
       hub_outcomes: {
         Row: {
           app_id: string
-          baseline: Json | null
-          baseline_at: string
+          baseline_value: number | null
           created_at: string
-          hub_suggestion_id: string
+          delta_pct: number | null
           id: string
-          measured: Json | null
-          measured_at: string | null
-          verdict: string | null
+          metric: string
+          notes: string | null
+          observed_value: number | null
+          sample_size: number | null
+          suggestion_id: string
+          verdict: Database["public"]["Enums"]["hub_outcome_verdict"]
+          window_end: string
+          window_start: string
         }
         Insert: {
           app_id: string
-          baseline?: Json | null
-          baseline_at?: string
+          baseline_value?: number | null
           created_at?: string
-          hub_suggestion_id: string
+          delta_pct?: number | null
           id?: string
-          measured?: Json | null
-          measured_at?: string | null
-          verdict?: string | null
+          metric: string
+          notes?: string | null
+          observed_value?: number | null
+          sample_size?: number | null
+          suggestion_id: string
+          verdict?: Database["public"]["Enums"]["hub_outcome_verdict"]
+          window_end: string
+          window_start: string
         }
         Update: {
           app_id?: string
-          baseline?: Json | null
-          baseline_at?: string
+          baseline_value?: number | null
           created_at?: string
-          hub_suggestion_id?: string
+          delta_pct?: number | null
           id?: string
-          measured?: Json | null
-          measured_at?: string | null
-          verdict?: string | null
+          metric?: string
+          notes?: string | null
+          observed_value?: number | null
+          sample_size?: number | null
+          suggestion_id?: string
+          verdict?: Database["public"]["Enums"]["hub_outcome_verdict"]
+          window_end?: string
+          window_start?: string
         }
         Relationships: [
           {
@@ -281,8 +331,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "hub_outcomes_hub_suggestion_id_fkey"
-            columns: ["hub_suggestion_id"]
+            foreignKeyName: "hub_outcomes_suggestion_id_fkey"
+            columns: ["suggestion_id"]
             isOneToOne: false
             referencedRelation: "hub_suggestions"
             referencedColumns: ["id"]
@@ -291,43 +341,40 @@ export type Database = {
       }
       hub_perf_events: {
         Row: {
-          action: string
           app_id: string
-          duration_ms: number | null
-          error_code: string | null
+          client_ts: string
+          event_type: string
           id: number
-          metadata: Json
-          occurred_at: string
-          provider: string | null
-          received_at: string
-          status: string | null
-          step: string
+          ingested_at: string
+          metric: string | null
+          scope: string | null
+          tags: Json
+          value_num: number | null
+          value_text: string | null
         }
         Insert: {
-          action: string
           app_id: string
-          duration_ms?: number | null
-          error_code?: string | null
+          client_ts: string
+          event_type: string
           id?: number
-          metadata?: Json
-          occurred_at: string
-          provider?: string | null
-          received_at?: string
-          status?: string | null
-          step: string
+          ingested_at?: string
+          metric?: string | null
+          scope?: string | null
+          tags?: Json
+          value_num?: number | null
+          value_text?: string | null
         }
         Update: {
-          action?: string
           app_id?: string
-          duration_ms?: number | null
-          error_code?: string | null
+          client_ts?: string
+          event_type?: string
           id?: number
-          metadata?: Json
-          occurred_at?: string
-          provider?: string | null
-          received_at?: string
-          status?: string | null
-          step?: string
+          ingested_at?: string
+          metric?: string | null
+          scope?: string | null
+          tags?: Json
+          value_num?: number | null
+          value_text?: string | null
         }
         Relationships: [
           {
@@ -341,53 +388,68 @@ export type Database = {
       }
       hub_suggestions: {
         Row: {
+          admin_note: string | null
           app_id: string | null
+          applied_at: string | null
+          approved_at: string | null
           broadcast: boolean
-          category: string | null
-          created_at: string
-          current_value: Json | null
+          confidence: number | null
+          created_by: string | null
           evidence: Json
           id: string
-          local_id: string | null
-          rationale: string | null
-          source: string
-          status: string
-          suggested_value: Json | null
-          target_key: string | null
+          proposed_at: string
+          proposed_change: Json
+          rationale: string
+          rejected_at: string | null
+          reverted_at: string | null
+          source: Database["public"]["Enums"]["hub_suggestion_source"]
+          status: Database["public"]["Enums"]["hub_suggestion_status"]
+          superseded_by: string | null
+          target_scope: string
           title: string
           updated_at: string
         }
         Insert: {
+          admin_note?: string | null
           app_id?: string | null
+          applied_at?: string | null
+          approved_at?: string | null
           broadcast?: boolean
-          category?: string | null
-          created_at?: string
-          current_value?: Json | null
+          confidence?: number | null
+          created_by?: string | null
           evidence?: Json
           id?: string
-          local_id?: string | null
-          rationale?: string | null
-          source: string
-          status?: string
-          suggested_value?: Json | null
-          target_key?: string | null
+          proposed_at?: string
+          proposed_change: Json
+          rationale: string
+          rejected_at?: string | null
+          reverted_at?: string | null
+          source: Database["public"]["Enums"]["hub_suggestion_source"]
+          status?: Database["public"]["Enums"]["hub_suggestion_status"]
+          superseded_by?: string | null
+          target_scope: string
           title: string
           updated_at?: string
         }
         Update: {
+          admin_note?: string | null
           app_id?: string | null
+          applied_at?: string | null
+          approved_at?: string | null
           broadcast?: boolean
-          category?: string | null
-          created_at?: string
-          current_value?: Json | null
+          confidence?: number | null
+          created_by?: string | null
           evidence?: Json
           id?: string
-          local_id?: string | null
-          rationale?: string | null
-          source?: string
-          status?: string
-          suggested_value?: Json | null
-          target_key?: string | null
+          proposed_at?: string
+          proposed_change?: Json
+          rationale?: string
+          rejected_at?: string | null
+          reverted_at?: string | null
+          source?: Database["public"]["Enums"]["hub_suggestion_source"]
+          status?: Database["public"]["Enums"]["hub_suggestion_status"]
+          superseded_by?: string | null
+          target_scope?: string
           title?: string
           updated_at?: string
         }
@@ -399,35 +461,45 @@ export type Database = {
             referencedRelation: "hub_apps"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hub_suggestions_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "hub_suggestions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       hub_tunables: {
         Row: {
-          actor_user_id: string | null
           app_id: string
+          applied_at: string
+          applied_by: string | null
+          applied_from: string | null
           id: string
-          target_key: string
+          key: string
           updated_at: string
-          value_now: Json | null
-          value_prior: Json | null
+          value: Json
         }
         Insert: {
-          actor_user_id?: string | null
           app_id: string
+          applied_at?: string
+          applied_by?: string | null
+          applied_from?: string | null
           id?: string
-          target_key: string
+          key: string
           updated_at?: string
-          value_now?: Json | null
-          value_prior?: Json | null
+          value: Json
         }
         Update: {
-          actor_user_id?: string | null
           app_id?: string
+          applied_at?: string
+          applied_by?: string | null
+          applied_from?: string | null
           id?: string
-          target_key?: string
+          key?: string
           updated_at?: string
-          value_now?: Json | null
-          value_prior?: Json | null
+          value?: Json
         }
         Relationships: [
           {
@@ -437,7 +509,35 @@ export type Database = {
             referencedRelation: "hub_apps"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "hub_tunables_applied_from_fkey"
+            columns: ["applied_from"]
+            isOneToOne: false
+            referencedRelation: "hub_suggestions"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      hub_user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["hub_app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["hub_app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["hub_app_role"]
+          user_id?: string
+        }
+        Relationships: []
       }
       newsletter_subscribers: {
         Row: {
@@ -830,6 +930,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      hub_has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["hub_app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      hub_user_app_access: {
+        Args: { _app_id: string; _user_id: string }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -850,6 +961,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      hub_app_role: "hub_admin" | "app_owner"
+      hub_outcome_verdict: "improved" | "neutral" | "regressed" | "inconclusive"
+      hub_suggestion_source: "rule" | "ai" | "cross_app" | "manual"
+      hub_suggestion_status:
+        | "pending"
+        | "approved"
+        | "applied"
+        | "reverted"
+        | "rejected"
+        | "superseded"
       subscription_app:
         | "epublisher"
         | "creative_studio"
@@ -992,6 +1113,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      hub_app_role: ["hub_admin", "app_owner"],
+      hub_outcome_verdict: ["improved", "neutral", "regressed", "inconclusive"],
+      hub_suggestion_source: ["rule", "ai", "cross_app", "manual"],
+      hub_suggestion_status: [
+        "pending",
+        "approved",
+        "applied",
+        "reverted",
+        "rejected",
+        "superseded",
+      ],
       subscription_app: [
         "epublisher",
         "creative_studio",
