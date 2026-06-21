@@ -22,6 +22,7 @@ import { Route as CreativeStudioPricingRouteImport } from './routes/creative-stu
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -107,6 +108,11 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
   path: '/admin/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRopRoute = AdminRopRouteImport.update({
+  id: '/admin/rop',
+  path: '/admin/rop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -311,6 +319,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
+    | '/admin/rop'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
+    | '/admin/rop'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -421,6 +432,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/revenue'
+    | '/admin/rop'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -458,6 +470,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminRopRoute: typeof AdminRopRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -572,6 +585,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/webhooks'
       fullPath: '/admin/webhooks'
       preLoaderRoute: typeof AdminWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/rop': {
+      id: '/admin/rop'
+      path: '/admin/rop'
+      fullPath: '/admin/rop'
+      preLoaderRoute: typeof AdminRopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/revenue': {
@@ -750,6 +770,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminRevenueRoute: AdminRevenueRoute,
+  AdminRopRoute: AdminRopRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
