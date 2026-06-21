@@ -14,9 +14,7 @@ export const Route = createFileRoute("/api/public/rop/pull-broadcasts")({
 
         const { data, error } = await supabaseAdmin
           .from("hub_suggestions")
-          .select(
-            "id, source, category, title, rationale, evidence, target_key, current_value, suggested_value, updated_at, app_id",
-          )
+          .select("id, source, title, rationale, evidence, target_scope, proposed_change, updated_at, app_id")
           .eq("broadcast", true)
           .or(`app_id.is.null,app_id.eq.${verified.app.id}`)
           .gt("updated_at", since)
@@ -31,13 +29,11 @@ export const Route = createFileRoute("/api/public/rop/pull-broadcasts")({
         const broadcasts = (data ?? []).map((r) => ({
           hub_id: r.id,
           source: r.source,
-          category: r.category,
           title: r.title,
           rationale: r.rationale,
           evidence: r.evidence,
-          target_key: r.target_key,
-          current_value: r.current_value,
-          suggested_value: r.suggested_value,
+          target_scope: r.target_scope,
+          proposed_change: r.proposed_change,
           updated_at: r.updated_at,
         }));
 

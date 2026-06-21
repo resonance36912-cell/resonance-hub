@@ -10,9 +10,11 @@ const AppliedSchema = z.object({
   target_key: z.string().min(1).max(160),
   value_now: z.unknown().optional(),
   value_prior: z.unknown().optional(),
-  actor_user_id: z.string().max(160).optional(),
+  metric: z.string().max(80).optional(),
   occurred_at: z.string().min(10).optional(),
 });
+
+const OUTCOME_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export const Route = createFileRoute("/api/public/rop/ingest-applied")({
   server: {
@@ -28,60 +30,63 @@ export const Route = createFileRoute("/api/public/rop/ingest-applied")({
           return jsonResponse({ ok: false, error: `Invalid payload: ${(e as Error).message}` }, 400);
         }
 
-        // Look up hub suggestion id (either provided, or via app_id+local_id)
+        // Resolve hub_suggestion_id
         let hubSuggestionId = p.hub_suggestion_id ?? null;
         if (!hubSuggestionId) {
           const { data } = await supabaseAdmin
             .from("hub_suggestions")
             .select("id")
             .eq("app_id", verified.app.id)
-            .eq("local_id", p.local_id)
+            .eq("evidence->>local_id", p.local_id)
             .maybeSingle();
           hubSuggestionId = data?.id ?? null;
         }
 
-        // Update tunables row
+        // Upsert tunable (app_id, key)
         const { error: tunErr } = await supabaseAdmin
           .from("hub_tunables")
           .upsert(
             {
               app_id: verified.app.id,
-              target_key: p.target_key,
-              value_now: (p.value_now ?? null) as never,
-              value_prior: (p.value_prior ?? null) as never,
-              actor_user_id: p.actor_user_id ?? null,
-              updated_at: new Date().toISOString(),
+              key: p.target_key,
+              value: (p.value_now ?? null) as never,
+              applied_from: hubSuggestionId,
+              applied_at: p.occurred_at ?? new Date().toISOString(),
             },
-            { onConflict: "app_id,target_key" },
+            { onConflict: "app_id,key" },
           );
         if (tunErr) console.error("[rop] tunable upsert failed", tunErr);
 
-        // Update suggestion status
+        // Update suggestion status — requires admin_note per lifecycle guard.
         if (hubSuggestionId) {
-          await supabaseAdmin
+          const note = p.action === "applied"
+            ? `Spoke app applied ${p.target_key}`
+            : `Spoke app reverted ${p.target_key}`;
+          const { error: sugErr } = await supabaseAdmin
             .from("hub_suggestions")
-            .update({ status: p.action === "applied" ? "applied" : "reverted" })
+            .update({ status: p.action, admin_note: note })
             .eq("id", hubSuggestionId);
+          if (sugErr) console.error("[rop] suggestion status update failed", sugErr);
         }
 
-        // Record outcome baseline when applied
+        // Outcome row on apply
         if (p.action === "applied" && hubSuggestionId) {
+          const start = p.occurred_at ?? new Date().toISOString();
+          const end = new Date(new Date(start).getTime() + OUTCOME_WINDOW_MS).toISOString();
           const { data: existing } = await supabaseAdmin
             .from("hub_outcomes")
             .select("id")
-            .eq("hub_suggestion_id", hubSuggestionId)
-            .is("measured_at", null)
+            .eq("suggestion_id", hubSuggestionId)
+            .eq("verdict", "inconclusive")
             .maybeSingle();
           if (!existing) {
             await supabaseAdmin.from("hub_outcomes").insert({
-              hub_suggestion_id: hubSuggestionId,
+              suggestion_id: hubSuggestionId,
               app_id: verified.app.id,
-              baseline: {
-                target_key: p.target_key,
-                value_prior: p.value_prior ?? null,
-                value_now: p.value_now ?? null,
-                captured_at: new Date().toISOString(),
-              } as never,
+              metric: p.metric ?? "duration_ms",
+              window_start: start,
+              window_end: end,
+              notes: `prior=${JSON.stringify(p.value_prior ?? null)} now=${JSON.stringify(p.value_now ?? null)}`,
             });
           }
         }

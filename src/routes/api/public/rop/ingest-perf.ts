@@ -14,9 +14,7 @@ const EventSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
-const PayloadSchema = z.object({
-  events: z.array(EventSchema).min(1).max(500),
-});
+const PayloadSchema = z.object({ events: z.array(EventSchema).min(1).max(500) });
 
 export const Route = createFileRoute("/api/public/rop/ingest-perf")({
   server: {
@@ -34,14 +32,19 @@ export const Route = createFileRoute("/api/public/rop/ingest-perf")({
 
         const rows = parsed.events.map((ev) => ({
           app_id: verified.app.id,
-          step: ev.step,
-          action: ev.action,
-          provider: ev.provider ?? null,
-          duration_ms: ev.duration_ms ?? null,
-          status: ev.status ?? null,
-          error_code: ev.error_code ?? null,
-          occurred_at: ev.occurred_at,
-          metadata: (ev.metadata ?? {}) as any,
+          event_type: `${ev.step}.${ev.action}`,
+          scope: ev.step,
+          metric: ev.duration_ms != null ? "duration_ms" : null,
+          value_num: ev.duration_ms ?? null,
+          value_text: ev.status ?? null,
+          tags: {
+            action: ev.action,
+            provider: ev.provider ?? null,
+            status: ev.status ?? null,
+            error_code: ev.error_code ?? null,
+            ...(ev.metadata ?? {}),
+          } as never,
+          client_ts: ev.occurred_at,
         }));
 
         const { error } = await supabaseAdmin.from("hub_perf_events").insert(rows);
