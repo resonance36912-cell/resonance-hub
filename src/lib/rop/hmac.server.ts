@@ -72,7 +72,7 @@ export async function verifyRopRequest(request: Request): Promise<RopVerifyResul
   const rawBody = await request.text();
 
   const { data: app, error } = await supabaseAdmin
-    .from("hub_apps" as never)
+    .from("hub_apps" as any)
     .select("id, slug, name, status, signing_key_hash")
     .eq("id", appId)
     .maybeSingle();
@@ -102,7 +102,7 @@ export async function verifyRopRequest(request: Request): Promise<RopVerifyResul
 
   // best-effort last_seen update
   await supabaseAdmin
-    .from("hub_apps" as never)
+    .from("hub_apps" as any)
     .update({ last_seen_at: new Date().toISOString() })
     .eq("id", row.id);
 
@@ -116,7 +116,7 @@ export async function logAudit(
   actorUserId: string | null = null,
 ) {
   try {
-    await supabaseAdmin.from("hub_audit_events" as never).insert({
+    await supabaseAdmin.from("hub_audit_events" as any).insert({
       app_id: appId,
       kind,
       payload,
