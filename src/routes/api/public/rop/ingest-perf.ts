@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/public/rop/ingest-perf")({
           status: ev.status ?? null,
           error_code: ev.error_code ?? null,
           occurred_at: ev.occurred_at,
-          metadata: (ev.metadata ?? {}) as Record<string, unknown>,
+          metadata: (ev.metadata ?? {}) as any,
         }));
 
         const { error } = await supabaseAdmin.from("hub_perf_events").insert(rows);

@@ -34,6 +34,10 @@ import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/en
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicRopPullBroadcastsRouteImport } from './routes/api/public/rop/pull-broadcasts'
+import { Route as ApiPublicRopIngestSuggestionRouteImport } from './routes/api/public/rop/ingest-suggestion'
+import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/rop/ingest-perf'
+import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
@@ -167,6 +171,29 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicRopPullBroadcastsRoute =
+  ApiPublicRopPullBroadcastsRouteImport.update({
+    id: '/api/public/rop/pull-broadcasts',
+    path: '/api/public/rop/pull-broadcasts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopIngestSuggestionRoute =
+  ApiPublicRopIngestSuggestionRouteImport.update({
+    id: '/api/public/rop/ingest-suggestion',
+    path: '/api/public/rop/ingest-suggestion',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopIngestPerfRoute = ApiPublicRopIngestPerfRouteImport.update({
+  id: '/api/public/rop/ingest-perf',
+  path: '/api/public/rop/ingest-perf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRopIngestAppliedRoute =
+  ApiPublicRopIngestAppliedRouteImport.update({
+    id: '/api/public/rop/ingest-applied',
+    path: '/api/public/rop/ingest-applied',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   id: '/api/public/payfast/itn',
   path: '/api/public/payfast/itn',
@@ -210,6 +237,10 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -240,6 +271,10 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -271,6 +306,10 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -303,6 +342,10 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -333,6 +376,10 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -363,6 +410,10 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -392,6 +443,10 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
+  ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
+  ApiPublicRopIngestPerfRoute: typeof ApiPublicRopIngestPerfRoute
+  ApiPublicRopIngestSuggestionRoute: typeof ApiPublicRopIngestSuggestionRoute
+  ApiPublicRopPullBroadcastsRoute: typeof ApiPublicRopPullBroadcastsRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -575,6 +630,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/rop/pull-broadcasts': {
+      id: '/api/public/rop/pull-broadcasts'
+      path: '/api/public/rop/pull-broadcasts'
+      fullPath: '/api/public/rop/pull-broadcasts'
+      preLoaderRoute: typeof ApiPublicRopPullBroadcastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-suggestion': {
+      id: '/api/public/rop/ingest-suggestion'
+      path: '/api/public/rop/ingest-suggestion'
+      fullPath: '/api/public/rop/ingest-suggestion'
+      preLoaderRoute: typeof ApiPublicRopIngestSuggestionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-perf': {
+      id: '/api/public/rop/ingest-perf'
+      path: '/api/public/rop/ingest-perf'
+      fullPath: '/api/public/rop/ingest-perf'
+      preLoaderRoute: typeof ApiPublicRopIngestPerfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-applied': {
+      id: '/api/public/rop/ingest-applied'
+      path: '/api/public/rop/ingest-applied'
+      fullPath: '/api/public/rop/ingest-applied'
+      preLoaderRoute: typeof ApiPublicRopIngestAppliedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payfast/itn': {
       id: '/api/public/payfast/itn'
       path: '/api/public/payfast/itn'
@@ -637,6 +720,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
+  ApiPublicRopIngestAppliedRoute: ApiPublicRopIngestAppliedRoute,
+  ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,
+  ApiPublicRopIngestSuggestionRoute: ApiPublicRopIngestSuggestionRoute,
+  ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

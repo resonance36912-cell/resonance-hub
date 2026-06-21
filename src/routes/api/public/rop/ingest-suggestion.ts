@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/public/rop/ingest-suggestion")({
               category: p.category ?? null,
               title: p.title,
               rationale: p.rationale ?? null,
-              evidence: (p.evidence ?? {}) as Record<string, unknown>,
+              evidence: (p.evidence ?? {}) as any,
               target_key: p.target_key ?? null,
               current_value: (p.current_value ?? null) as never,
               suggested_value: (p.suggested_value ?? null) as never,

@@ -119,7 +119,7 @@ export async function logAudit(
     await supabaseAdmin.from("hub_audit_events").insert({
       app_id: appId,
       kind,
-      payload,
+      payload: payload as any,
       actor_user_id: actorUserId,
     });
   } catch (e) {
