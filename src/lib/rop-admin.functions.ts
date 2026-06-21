@@ -142,7 +142,7 @@ export const updateHubSuggestion = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.broadcast !== undefined) patch.broadcast = data.broadcast;
-    const { error } = await supabaseAdmin.from("hub_suggestions").update(patch).eq("id", data.id);
+    const { error } = await supabaseAdmin.from("hub_suggestions").update(patch as any).eq("id", data.id);
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("hub_audit_events").insert({
       kind: "suggestion.admin_update",

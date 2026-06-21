@@ -40,6 +40,8 @@ import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
+import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
 import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -205,6 +207,18 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicRopCronMeasureOutcomesRoute =
+  ApiPublicRopCronMeasureOutcomesRouteImport.update({
+    id: '/api/public/rop/cron/measure-outcomes',
+    path: '/api/public/rop/cron/measure-outcomes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopCronCrossAppScanRoute =
+  ApiPublicRopCronCrossAppScanRouteImport.update({
+    id: '/api/public/rop/cron/cross-app-scan',
+    path: '/api/public/rop/cron/cross-app-scan',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicGenerateCreativeStudioPosterRoute =
   ApiPublicGenerateCreativeStudioPosterRouteImport.update({
     id: '/api/public/generate/creative-studio/poster',
@@ -245,6 +259,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -279,6 +295,8 @@ export interface FileRoutesByTo {
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -314,6 +332,8 @@ export interface FileRoutesById {
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -350,6 +370,8 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
     | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -384,6 +406,8 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
     | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
   id:
     | '__root__'
     | '/'
@@ -418,6 +442,8 @@ export interface FileRouteTypes {
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
     | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -451,6 +477,8 @@ export interface RootRouteChildren {
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicGenerateCreativeStudioPosterRoute: typeof ApiPublicGenerateCreativeStudioPosterRoute
+  ApiPublicRopCronCrossAppScanRoute: typeof ApiPublicRopCronCrossAppScanRoute
+  ApiPublicRopCronMeasureOutcomesRoute: typeof ApiPublicRopCronMeasureOutcomesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -672,6 +700,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/rop/cron/measure-outcomes': {
+      id: '/api/public/rop/cron/measure-outcomes'
+      path: '/api/public/rop/cron/measure-outcomes'
+      fullPath: '/api/public/rop/cron/measure-outcomes'
+      preLoaderRoute: typeof ApiPublicRopCronMeasureOutcomesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/cron/cross-app-scan': {
+      id: '/api/public/rop/cron/cross-app-scan'
+      path: '/api/public/rop/cron/cross-app-scan'
+      fullPath: '/api/public/rop/cron/cross-app-scan'
+      preLoaderRoute: typeof ApiPublicRopCronCrossAppScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/generate/creative-studio/poster': {
       id: '/api/public/generate/creative-studio/poster'
       path: '/api/public/generate/creative-studio/poster'
@@ -729,6 +771,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiPublicGenerateCreativeStudioPosterRoute:
     ApiPublicGenerateCreativeStudioPosterRoute,
+  ApiPublicRopCronCrossAppScanRoute: ApiPublicRopCronCrossAppScanRoute,
+  ApiPublicRopCronMeasureOutcomesRoute: ApiPublicRopCronMeasureOutcomesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
