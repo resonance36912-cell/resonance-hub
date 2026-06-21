@@ -18,17 +18,17 @@ export const listHubApps = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("hub_apps")
-      .select("id, slug, name, public_url, status, signing_key_prefix, last_seen_at, created_at")
+      .select("id, slug, name, origin_url, status, signing_key_prefix, created_at, updated_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return { apps: data ?? [] };
   });
 
-// ─── Register app (mints raw signing key, returned ONCE) ──────────────────────
+// ─── Register app ─────────────────────────────────────────────────────────────
 const RegisterInput = z.object({
   slug: z.string().min(2).max(60).regex(/^[a-z0-9_-]+$/),
   name: z.string().min(1).max(120),
-  public_url: z.string().url().optional().or(z.literal("")),
+  origin_url: z.string().url().optional().or(z.literal("")),
 });
 
 export const registerHubApp = createServerFn({ method: "POST" })
@@ -44,22 +44,21 @@ export const registerHubApp = createServerFn({ method: "POST" })
       .insert({
         slug: data.slug,
         name: data.name,
-        public_url: data.public_url || null,
+        origin_url: data.origin_url || null,
         signing_key_hash: minted.hash,
         signing_key_prefix: minted.prefix,
         created_by: context.userId,
       })
-      .select("id, slug, name, public_url, status, signing_key_prefix, created_at")
+      .select("id, slug, name, origin_url, status, signing_key_prefix, created_at")
       .single();
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("hub_audit_events").insert({
       app_id: row.id,
-      kind: "app.registered",
-      payload: { slug: data.slug } as any,
+      actor_kind: "hub_admin",
+      event_type: "app.registered",
+      payload: { slug: data.slug } as never,
       actor_user_id: context.userId,
     });
-    // We hand back the raw key AND its sha256 hash. The app uses the sha256
-    // hex as the HMAC secret (see hmac.server.ts for the rationale).
     return {
       app: row,
       raw_signing_key: minted.raw,
@@ -85,8 +84,9 @@ export const rotateHubAppKey = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("hub_audit_events").insert({
       app_id: data.id,
-      kind: "app.key_rotated",
-      payload: {} as any,
+      actor_kind: "hub_admin",
+      event_type: "app.key_rotated",
+      payload: {} as never,
       actor_user_id: context.userId,
     });
     return { raw_signing_key: minted.raw, hmac_secret: hashSigningKey(minted.raw) };
@@ -112,7 +112,7 @@ export const setHubAppStatus = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ─── Suggestions list / approve / broadcast ───────────────────────────────────
+// ─── Suggestions ──────────────────────────────────────────────────────────────
 export const listHubSuggestions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -131,6 +131,7 @@ const SuggestionPatch = z.object({
   id: z.string().uuid(),
   status: z.enum(["pending", "approved", "applied", "reverted", "rejected"]).optional(),
   broadcast: z.boolean().optional(),
+  admin_note: z.string().max(2000).optional(),
 });
 
 export const updateHubSuggestion = createServerFn({ method: "POST" })
@@ -142,11 +143,23 @@ export const updateHubSuggestion = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.broadcast !== undefined) patch.broadcast = data.broadcast;
-    const { error } = await supabaseAdmin.from("hub_suggestions").update(patch as any).eq("id", data.id);
+    if (data.admin_note !== undefined) patch.admin_note = data.admin_note;
+    // Lifecycle guard requires admin_note for terminal transitions.
+    if (
+      data.status &&
+      ["applied", "reverted", "rejected"].includes(data.status) &&
+      !patch.admin_note
+    ) {
+      patch.admin_note = `Hub admin set status=${data.status}`;
+    }
+    const { error } = await supabaseAdmin.from("hub_suggestions").update(patch as never).eq("id", data.id);
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("hub_audit_events").insert({
-      kind: "suggestion.admin_update",
-      payload: { id: data.id, patch } as any,
+      actor_kind: "hub_admin",
+      event_type: "suggestion.admin_update",
+      entity_type: "hub_suggestion",
+      entity_id: data.id,
+      payload: { patch } as never,
       actor_user_id: context.userId,
     });
     return { ok: true };
@@ -161,9 +174,9 @@ export const getHubPerfSummary = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data, error } = await supabaseAdmin
       .from("hub_perf_events")
-      .select("app_id, step, duration_ms, status, occurred_at")
-      .gt("occurred_at", since)
-      .order("occurred_at", { ascending: false })
+      .select("app_id, event_type, value_num, value_text, client_ts")
+      .gt("client_ts", since)
+      .order("client_ts", { ascending: false })
       .limit(2000);
     if (error) throw new Error(error.message);
     return { events: data ?? [] };

@@ -1,20 +1,18 @@
-// Cron: scan recent perf telemetry across apps, ask Lovable AI to author
-// cross-app suggestions, and persist them as source='cross_app'.
-// External callers: pg_cron / scheduler hitting /api/public/rop/cron/cross-app-scan
+// Cron: scan recent perf telemetry across apps, ask Lovable AI for cross-app suggestions.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type PerfRow = {
   app_id: string;
-  step: string;
-  duration_ms: number | null;
-  status: string | null;
-  error_code: string | null;
+  event_type: string;
+  value_num: number | null;
+  value_text: string | null;
+  tags: Record<string, unknown> | null;
 };
 
 type Bucket = {
   app_id: string;
-  step: string;
+  event_type: string;
   n: number;
   p95: number;
   errorRate: number;
@@ -23,28 +21,28 @@ type Bucket = {
 function p95(values: number[]): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((a, b) => a - b);
-  const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95));
-  return sorted[idx];
+  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
 }
 
 function summarise(rows: PerfRow[]): Bucket[] {
-  const map = new Map<string, { app_id: string; step: string; durs: number[]; errs: number; n: number }>();
+  const map = new Map<string, { app_id: string; event_type: string; durs: number[]; errs: number; n: number }>();
   for (const r of rows) {
-    const key = `${r.app_id}::${r.step}`;
+    const key = `${r.app_id}::${r.event_type}`;
     let b = map.get(key);
     if (!b) {
-      b = { app_id: r.app_id, step: r.step, durs: [], errs: 0, n: 0 };
+      b = { app_id: r.app_id, event_type: r.event_type, durs: [], errs: 0, n: 0 };
       map.set(key, b);
     }
     b.n += 1;
-    if (typeof r.duration_ms === "number") b.durs.push(r.duration_ms);
-    if (r.status && r.status !== "ok") b.errs += 1;
+    if (typeof r.value_num === "number") b.durs.push(r.value_num);
+    const status = (r.tags?.status as string | undefined) ?? r.value_text;
+    if (status && status !== "ok") b.errs += 1;
   }
   return Array.from(map.values())
     .filter((b) => b.n >= 5)
     .map((b) => ({
       app_id: b.app_id,
-      step: b.step,
+      event_type: b.event_type,
       n: b.n,
       p95: p95(b.durs),
       errorRate: b.n > 0 ? b.errs / b.n : 0,
@@ -53,38 +51,39 @@ function summarise(rows: PerfRow[]): Bucket[] {
     .slice(0, 12);
 }
 
-async function authorSuggestionsWithAI(buckets: Bucket[], apps: { id: string; slug: string; name: string }[]) {
+async function authorSuggestionsWithAI(
+  buckets: Bucket[],
+  apps: { id: string; slug: string; name: string }[],
+) {
   const key = process.env.LOVABLE_API_KEY;
   if (!key || buckets.length === 0) return [];
 
   const slugMap = new Map(apps.map((a) => [a.id, a.slug] as const));
   const compact = buckets.map((b) => ({
     app: slugMap.get(b.app_id) ?? b.app_id,
-    step: b.step,
+    event_type: b.event_type,
     samples: b.n,
     p95_ms: b.p95,
     error_rate: Number(b.errorRate.toFixed(3)),
   }));
 
   const systemPrompt = `You are the Resonance Optimization Protocol cross-app analyst.
-You receive aggregated 24h perf buckets (step, p95_ms, error_rate) across multiple Resonance apps.
-Return JSON: {"suggestions":[{"app":"<slug-or-null>","category":"latency|errors|concurrency|cost","title":"...","rationale":"...","target_key":"...","current_value":...,"suggested_value":...}]}.
+You receive aggregated 24h perf buckets across multiple Resonance apps.
+Return JSON: {"suggestions":[{"app":"<slug-or-null>","title":"...","rationale":"...","target_scope":"...","current_value":...,"suggested_value":...}]}.
 Rules:
-- Only propose changes when p95 > 8000 ms or error_rate > 0.05.
-- If a slow step appears in MULTIPLE apps, set "app": null (broadcast candidate).
-- Use short imperative titles. Keep rationale under 300 chars.
-- target_key is a dot-path (e.g. "video.max_concurrent_jobs"). Omit if unsure.
+- Only propose changes when p95_ms > 8000 or error_rate > 0.05.
+- If a problem appears in MULTIPLE apps, set "app": null (broadcast candidate).
+- target_scope is a dot-path (e.g. "video.max_concurrent_jobs").
 - Max 5 suggestions. Return only valid JSON, no prose.`;
 
   const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Lovable-API-Key": key,
-      "X-Lovable-AIG-SDK": "raw",
+      Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
+      model: "google/gemini-2.5-flash",
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
@@ -103,10 +102,9 @@ Rules:
     const parsed = JSON.parse(text) as {
       suggestions?: Array<{
         app: string | null;
-        category?: string;
         title: string;
         rationale?: string;
-        target_key?: string;
+        target_scope?: string;
         current_value?: unknown;
         suggested_value?: unknown;
       }>;
@@ -125,8 +123,8 @@ export const Route = createFileRoute("/api/public/rop/cron/cross-app-scan")({
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: perf, error: perfErr } = await supabaseAdmin
           .from("hub_perf_events")
-          .select("app_id, step, duration_ms, status, error_code")
-          .gt("occurred_at", since)
+          .select("app_id, event_type, value_num, value_text, tags")
+          .gt("client_ts", since)
           .limit(20000);
         if (perfErr) {
           console.error("[rop] perf read failed", perfErr);
@@ -138,37 +136,42 @@ export const Route = createFileRoute("/api/public/rop/cron/cross-app-scan")({
           .select("id, slug, name")
           .eq("status", "active");
 
-        const buckets = summarise(perf ?? []);
+        const buckets = summarise((perf ?? []) as PerfRow[]);
         const slugToId = new Map((apps ?? []).map((a) => [a.slug, a.id] as const));
         const suggestions = await authorSuggestionsWithAI(buckets, apps ?? []);
 
+        const today = new Date().toISOString().slice(0, 10);
         let inserted = 0;
         for (const s of suggestions) {
           const appId = s.app ? slugToId.get(s.app) ?? null : null;
-          const localId = `cross_app:${s.target_key ?? s.title}:${new Date().toISOString().slice(0, 10)}`;
-          const { error } = await supabaseAdmin
+          const localId = `cross_app:${s.target_scope ?? s.title}:${today}`;
+          // dedupe via evidence->>local_id
+          const { data: existing } = await supabaseAdmin
             .from("hub_suggestions")
-            .upsert(
-              {
-                app_id: appId,
-                local_id: localId,
-                source: "cross_app",
-                category: s.category ?? null,
-                title: s.title,
-                rationale: s.rationale ?? null,
-                evidence: { buckets } as any,
-                target_key: s.target_key ?? null,
-                current_value: (s.current_value ?? null) as any,
-                suggested_value: (s.suggested_value ?? null) as any,
-              },
-              { onConflict: "app_id,local_id" },
-            );
+            .select("id")
+            .eq("evidence->>local_id", localId)
+            .maybeSingle();
+          if (existing) continue;
+          const { error } = await supabaseAdmin.from("hub_suggestions").insert({
+            app_id: appId,
+            source: "cross_app",
+            title: s.title,
+            rationale: s.rationale ?? "",
+            target_scope: s.target_scope ?? "unspecified",
+            proposed_change: {
+              current_value: s.current_value ?? null,
+              suggested_value: s.suggested_value ?? null,
+            } as never,
+            evidence: { local_id: localId, buckets } as never,
+            broadcast: appId === null,
+          });
           if (!error) inserted += 1;
         }
 
         await supabaseAdmin.from("hub_audit_events").insert({
-          kind: "cron.cross_app_scan",
-          payload: { bucket_count: buckets.length, suggestions: inserted } as any,
+          actor_kind: "system",
+          event_type: "cron.cross_app_scan",
+          payload: { bucket_count: buckets.length, suggestions: inserted } as never,
         });
 
         return new Response(

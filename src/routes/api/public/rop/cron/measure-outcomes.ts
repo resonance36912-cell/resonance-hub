@@ -1,25 +1,23 @@
-// Cron: for each outcome row whose baseline is ≥ 24h old and not yet measured,
-// compare post-apply perf to the baseline and write a verdict.
+// Cron: measure outcomes whose window has closed.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 function p95(values: number[]): number | null {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
-  const idx = Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95));
-  return sorted[idx];
+  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
 }
 
 export const Route = createFileRoute("/api/public/rop/cron/measure-outcomes")({
   server: {
     handlers: {
       POST: async () => {
-        const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const nowIso = new Date().toISOString();
         const { data: pending, error } = await supabaseAdmin
           .from("hub_outcomes")
-          .select("id, hub_suggestion_id, app_id, baseline, baseline_at")
-          .is("measured_at", null)
-          .lt("baseline_at", cutoff)
+          .select("id, suggestion_id, app_id, metric, window_start, window_end")
+          .eq("verdict", "inconclusive")
+          .lt("window_end", nowIso)
           .limit(50);
         if (error) {
           console.error("[rop] outcome read failed", error);
@@ -28,13 +26,12 @@ export const Route = createFileRoute("/api/public/rop/cron/measure-outcomes")({
 
         let measured = 0;
         for (const o of pending ?? []) {
-          const baseline = (o.baseline ?? {}) as { target_key?: string };
-          // perf window = since baseline_at
           const { data: perf } = await supabaseAdmin
             .from("hub_perf_events")
-            .select("duration_ms, status")
+            .select("value_num, value_text, tags")
             .eq("app_id", o.app_id)
-            .gt("occurred_at", o.baseline_at)
+            .gt("client_ts", o.window_start)
+            .lt("client_ts", o.window_end)
             .limit(5000);
 
           const durs: number[] = [];
@@ -42,40 +39,37 @@ export const Route = createFileRoute("/api/public/rop/cron/measure-outcomes")({
           let n = 0;
           for (const r of perf ?? []) {
             n += 1;
-            if (typeof r.duration_ms === "number") durs.push(r.duration_ms);
-            if (r.status && r.status !== "ok") errs += 1;
+            if (typeof r.value_num === "number") durs.push(r.value_num);
+            const tags = (r.tags ?? {}) as Record<string, unknown>;
+            const status = (tags.status as string | undefined) ?? r.value_text;
+            if (status && status !== "ok") errs += 1;
           }
-          const p95After = p95(durs);
+          const observed = p95(durs);
           const errorRate = n > 0 ? errs / n : 0;
-          const measuredJson = {
-            target_key: baseline.target_key ?? null,
-            samples: n,
-            p95_ms: p95After,
-            error_rate: Number(errorRate.toFixed(3)),
-            captured_at: new Date().toISOString(),
-          };
-          // Verdict heuristics — proper baseline would need pre-apply window;
-          // for now: success if samples ≥ 20 and error_rate < 0.05, else neutral.
-          let verdict: "success" | "regression" | "neutral" = "neutral";
+
+          let verdict: "improved" | "neutral" | "regressed" | "inconclusive" = "inconclusive";
           if (n >= 20) {
-            if (errorRate >= 0.1) verdict = "regression";
-            else if (errorRate < 0.05) verdict = "success";
+            if (errorRate >= 0.1) verdict = "regressed";
+            else if (errorRate < 0.05) verdict = "improved";
+            else verdict = "neutral";
           }
 
           await supabaseAdmin
             .from("hub_outcomes")
             .update({
-              measured: measuredJson as any,
+              observed_value: observed,
+              sample_size: n,
               verdict,
-              measured_at: new Date().toISOString(),
+              notes: `error_rate=${errorRate.toFixed(3)}`,
             })
             .eq("id", o.id);
           measured += 1;
         }
 
         await supabaseAdmin.from("hub_audit_events").insert({
-          kind: "cron.measure_outcomes",
-          payload: { measured } as any,
+          actor_kind: "system",
+          event_type: "cron.measure_outcomes",
+          payload: { measured } as never,
         });
 
         return new Response(JSON.stringify({ ok: true, measured }), {
