@@ -54,7 +54,7 @@ function RopAdmin() {
   const [minted, setMinted] = useState<{ slug: string; raw: string; hmac: string } | null>(null);
 
   const registerMut = useMutation({
-    mutationFn: (vars: { slug: string; name: string; public_url: string }) =>
+    mutationFn: (vars: { slug: string; name: string; origin_url: string }) =>
       register({ data: vars }),
     onSuccess: (res) => {
       setMinted({ slug: res.app.slug, raw: res.raw_signing_key, hmac: res.hmac_secret });
@@ -126,7 +126,7 @@ function RopAdmin() {
             className="mt-4 grid sm:grid-cols-4 gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              registerMut.mutate({ slug, name, public_url: publicUrl });
+              registerMut.mutate({ slug, name, origin_url: publicUrl });
             }}
           >
             <input
@@ -141,7 +141,7 @@ function RopAdmin() {
             />
             <input
               value={publicUrl} onChange={(e) => setPublicUrl(e.target.value)}
-              placeholder="public url (optional)"
+              placeholder="origin url (optional)"
               className="rounded border border-border bg-background px-3 py-2 text-sm"
             />
             <button
@@ -172,7 +172,7 @@ function RopAdmin() {
                     <th className="px-4 py-3">App ID</th>
                     <th className="px-4 py-3">Key prefix</th>
                     <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Last seen</th>
+                    <th className="px-4 py-3">Updated</th>
                     <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
@@ -197,7 +197,7 @@ function RopAdmin() {
                         </select>
                       </td>
                       <td className="px-4 py-3 text-xs">
-                        {a.last_seen_at ? new Date(a.last_seen_at).toLocaleString() : "—"}
+                        {a.updated_at ? new Date(a.updated_at).toLocaleString() : "—"}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button
@@ -254,7 +254,7 @@ function RopAdmin() {
                           <div className="text-muted-foreground line-clamp-2">{s.rationale}</div>
                         )}
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs">{s.target_key ?? "—"}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{s.target_scope ?? "—"}</td>
                       <td className="px-3 py-2">
                         <select
                           value={s.status}
@@ -308,9 +308,12 @@ function RopAdmin() {
                   <tr>
                     <th className="px-3 py-2">When</th>
                     <th className="px-3 py-2">App</th>
+                    <th className="px-3 py-2">Metric</th>
                     <th className="px-3 py-2">Verdict</th>
                     <th className="px-3 py-2">Baseline</th>
-                    <th className="px-3 py-2">Measured</th>
+                    <th className="px-3 py-2">Observed</th>
+                    <th className="px-3 py-2">Δ%</th>
+                    <th className="px-3 py-2">n</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -320,13 +323,14 @@ function RopAdmin() {
                         {new Date(o.created_at).toLocaleString()}
                       </td>
                       <td className="px-3 py-2 font-mono text-xs">{o.app_id.slice(0, 8)}</td>
-                      <td className="px-3 py-2 text-xs">{o.verdict ?? "pending"}</td>
-                      <td className="px-3 py-2 font-mono text-[10px] max-w-xs whitespace-pre-wrap">
-                        {JSON.stringify(o.baseline, null, 2)}
+                      <td className="px-3 py-2 text-xs">{o.metric}</td>
+                      <td className="px-3 py-2 text-xs">{o.verdict}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{o.baseline_value ?? "—"}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{o.observed_value ?? "—"}</td>
+                      <td className="px-3 py-2 font-mono text-xs">
+                        {o.delta_pct != null ? `${o.delta_pct.toFixed(1)}%` : "—"}
                       </td>
-                      <td className="px-3 py-2 font-mono text-[10px] max-w-xs whitespace-pre-wrap">
-                        {o.measured ? JSON.stringify(o.measured, null, 2) : "—"}
-                      </td>
+                      <td className="px-3 py-2 font-mono text-xs">{o.sample_size ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
