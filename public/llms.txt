@@ -6,6 +6,7 @@
 
 - [Home](/): Overview of the Resonance ecosystem, the apps, philosophy and how to join.
 - [Pricing](/pricing): Transparent ZAR pricing for every app and the All-Access bundle, billed via PayFast.
+- [Governance](/governance): The Resonance Constitutional Governance Framework (RCGF) v1.0 — the universal constitution for human–AI collaboration across the ecosystem.
 
 ## Apps
 
