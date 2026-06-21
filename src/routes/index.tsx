@@ -1191,7 +1191,10 @@ function Index() {
               © {new Date().getFullYear()} The Resonance · Ecosystem Hub
             </div>
           </div>
-          <div className="flex gap-8 text-[10px] font-mono uppercase tracking-widest text-white/50">
+          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/50">
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Governance
+            </Link>
             <a href="https://www.resonance-podcast.com" className="hover:text-white transition-colors">
               Podcast
             </a>
