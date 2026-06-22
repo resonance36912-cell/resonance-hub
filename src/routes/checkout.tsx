@@ -106,10 +106,16 @@ function CheckoutPage() {
         />
       )}
 
-      <p className="mt-8 text-[11px] text-white/45">
+      <p className="mt-8 text-[11px] text-white/65">
         You&apos;ll be redirected to PayFast to complete payment securely. Cancel anytime from
         your account.
       </p>
+      <p className="mt-3 text-[11px] text-white/55 leading-relaxed">
+        One Hub billing account today — your Resonance subscriptions and invoices live in one
+        place. Unified app login is on the roadmap, so some apps may still require their own
+        login during the transition.
+      </p>
+
       <div className="mt-6">
         <button
           onClick={() => navigate({ to: "/pricing" })}

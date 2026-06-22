@@ -313,6 +313,8 @@ function BrandOrb({ className = "" }: { className?: string }) {
         alt=""
         width={1024}
         height={1024}
+        loading="lazy"
+        decoding="async"
         className="relative w-full h-full object-contain drop-shadow-[0_0_20px_hsl(295_90%_60%/0.5)]"
       />
     </div>
@@ -328,16 +330,24 @@ const accentHsl: Record<App["accent"], string> = {
   gold: "45 85% 60%",
 };
 
-function HeroCarousel({ items }: { items: App[] }) {
-  const [i, setI] = useState(0);
+function HeroCarousel({
+  items,
+  activeIndex,
+  onChange,
+}: {
+  items: App[];
+  activeIndex: number;
+  onChange: (i: number) => void;
+}) {
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(() => setI((p) => (p + 1) % items.length), 4200);
+    const t = setInterval(() => onChange((activeIndex + 1) % items.length), 4200);
     return () => clearInterval(t);
-  }, [paused, items.length]);
+  }, [paused, items.length, activeIndex, onChange]);
 
+  const i = activeIndex;
   const active = items[i];
   const c = accentHsl[active.accent];
 
@@ -402,34 +412,38 @@ function HeroCarousel({ items }: { items: App[] }) {
           <a
             href={active.href}
             target="_blank"
-            rel="noreferrer"
-            className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+            rel="noopener noreferrer"
+            className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
           >
             Open →
           </a>
         </div>
       </div>
 
-      {/* Dots */}
-      <div className="absolute -bottom-12 left-0 right-0 flex justify-center gap-2">
+      {/* Dots — visual stays small, tap target is 32×32 for mobile */}
+      <div className="absolute -bottom-14 left-0 right-0 flex justify-center gap-1">
         {items.map((it, idx) => (
           <button
             key={it.name}
             type="button"
             aria-label={`Show ${it.name}`}
             aria-current={idx === i}
-            onClick={() => setI(idx)}
-            className="h-1.5 rounded-full transition-all"
-            style={{
-              width: idx === i ? 22 : 6,
-              background:
-                idx === i
-                  ? `hsl(${accentHsl[it.accent]})`
-                  : "hsl(0 0% 100% / 0.18)",
-              boxShadow:
-                idx === i ? `0 0 12px hsl(${accentHsl[it.accent]} / 0.7)` : "none",
-            }}
-          />
+            onClick={() => onChange(idx)}
+            className="grid place-items-center h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)] rounded-full"
+          >
+            <span
+              className="block h-1.5 rounded-full transition-all"
+              style={{
+                width: idx === i ? 22 : 6,
+                background:
+                  idx === i
+                    ? `hsl(${accentHsl[it.accent]})`
+                    : "hsl(0 0% 100% / 0.35)",
+                boxShadow:
+                  idx === i ? `0 0 12px hsl(${accentHsl[it.accent]} / 0.7)` : "none",
+              }}
+            />
+          </button>
         ))}
       </div>
     </div>
@@ -493,6 +507,18 @@ function Index() {
   const [joinEmail, setJoinEmail] = useState("");
   const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const featuredApp = apps[carouselIndex];
+  // Map app to internal subscribe target; for free apps fall back to their site.
+  const featuredCtaHref = featuredApp.subscribeHref.startsWith("/")
+    ? featuredApp.subscribeHref
+    : featuredApp.href;
+  const featuredCtaIsExternal = featuredCtaHref.startsWith("http");
+  const featuredCtaLabel =
+    featuredApp.status === "free"
+      ? `Open ${featuredApp.name} →`
+      : `Start with ${featuredApp.name} →`;
 
   async function onJoinSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -512,43 +538,85 @@ function Index() {
 
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 flex justify-between items-center backdrop-blur-xl bg-background/70 border-b border-white/5">
-        <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
-          <img
-            src={resonanceLockup}
-            alt="The Resonance"
-            width={1536}
-            height={512}
-            className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
-          />
-        </a>
-        <div className="hidden md:flex gap-7 text-[11px] font-semibold tracking-[0.2em] uppercase">
-          {NAV_LINKS.map((l) => {
-            const isActive = active === l.id;
-            return (
+      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
+        <div className="flex justify-between items-center gap-3">
+          <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
+            <img
+              src={resonanceLockup}
+              alt="The Resonance"
+              width={1536}
+              height={512}
+              loading="eager"
+              decoding="async"
+              className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
+            />
+          </a>
+          <div className="hidden md:flex gap-7 text-[11px] font-semibold tracking-[0.2em] uppercase">
+            {NAV_LINKS.map((l) => {
+              const isActive = active === l.id;
+              return (
+                <a
+                  key={l.id}
+                  href={`#${l.id}`}
+                  className={`relative transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)] rounded ${
+                    isActive ? "text-white" : "text-white/65 hover:text-white"
+                  }`}
+                >
+                  {l.label}
+                  <span
+                    className={`absolute -bottom-1.5 left-0 h-px bg-gradient-brand transition-all duration-500 ${
+                      isActive ? "w-full opacity-100" : "w-0 opacity-0"
+                    }`}
+                  />
+                </a>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://www.resonanceonline.life"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex text-[10px] sm:text-[11px] font-bold tracking-[0.15em] uppercase px-3 sm:px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Launch
+            </a>
+            <button
+              type="button"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-panel"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="md:hidden grid place-items-center h-10 w-10 rounded-full border border-white/15 hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
+            >
+              <span aria-hidden className="text-lg leading-none">{mobileMenuOpen ? "✕" : "☰"}</span>
+            </button>
+          </div>
+        </div>
+        {mobileMenuOpen && (
+          <div
+            id="mobile-nav-panel"
+            className="md:hidden mt-3 grid gap-1 text-[12px] font-semibold tracking-[0.18em] uppercase border-t border-white/10 pt-3"
+          >
+            {NAV_LINKS.map((l) => (
               <a
                 key={l.id}
                 href={`#${l.id}`}
-                className={`relative transition-colors ${
-                  isActive ? "text-white" : "text-white/55 hover:text-white"
-                }`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
                 {l.label}
-                <span
-                  className={`absolute -bottom-1.5 left-0 h-px bg-gradient-brand transition-all duration-500 ${
-                    isActive ? "w-full opacity-100" : "w-0 opacity-0"
-                  }`}
-                />
               </a>
-            );
-          })}
-        </div>
-        <a
-          href="https://www.resonanceonline.life"
-          className="hidden md:inline-flex text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
-        >
-          Launch
-        </a>
+            ))}
+            <Link
+              to="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white"
+            >
+              Pricing
+            </Link>
+          </div>
+        )}
       </nav>
 
 
@@ -556,43 +624,57 @@ function Index() {
         {/* HERO */}
         <section className="pt-12 pb-16 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
           <div>
-            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-5">
+            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              Tools in tune with you
+              The Resonance AI Ecosystem
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
-              AI tools for creators, learners, and businesses —{" "}
-              <span className="text-gradient-brand">all in one Resonance ecosystem.</span>
+              The Resonance{" "}
+              <span className="text-gradient-brand">AI Ecosystem</span>
             </h1>
-            <p className="text-base md:text-lg text-white/70 leading-[1.65] text-pretty max-w-[58ch] mb-6">
-              Create books, visuals, music-video concepts, career reports, podcast content, and growth strategies from one connected Resonance Hub.
+            <p className="text-base md:text-lg text-white/75 leading-[1.65] text-pretty max-w-[58ch] mb-6">
+              AI tools for creators, learners, and businesses — books, visuals,
+              music-video concepts, career reports, podcast content, and growth
+              strategies from one connected Resonance Hub.
             </p>
-            <p className="text-sm text-white/55 leading-relaxed max-w-[58ch] mb-10">
+            <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-10">
               Free and paid plans in South African Rand. PayFast supported. Cancel anytime.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a
-                href="https://www.resonanceonline.life"
-                className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
-              >
-                Start with ePublisher →
-              </a>
+              {featuredCtaIsExternal ? (
+                <a
+                  href={featuredCtaHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {featuredCtaLabel}
+                </a>
+              ) : (
+                <Link
+                  to={featuredCtaHref}
+                  className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {featuredCtaLabel}
+                </Link>
+              )}
               <a
                 href="#ecosystem"
-                className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
+                className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
                 Explore all tools
               </a>
             </div>
           </div>
           <div className="md:pl-4">
-            <HeroCarousel items={apps} />
+            <HeroCarousel items={apps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
           </div>
         </section>
 
         {/* TRUST STRIP */}
         <section aria-label="Trust" className="mb-20 -mt-4">
-          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/55">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/65">
+
             {[
               "🇿🇦 Built in South Africa",
               "ZAR pricing",
@@ -634,7 +716,7 @@ function Index() {
                 <a
                   href="https://www.medi-tech.co.za"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(150_80%_55%/0.4)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(150_80%_55%/0.15)] border border-[hsl(150_80%_55%/0.3)] text-base">
@@ -648,12 +730,12 @@ function Index() {
                       medi-tech.co.za
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
                   href="https://www.resonance-podcast.com"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(190_90%_60%/0.4)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(190_90%_60%/0.15)] border border-[hsl(190_90%_60%/0.3)] text-base">
@@ -667,12 +749,12 @@ function Index() {
                       resonance-podcast.com
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
                   href="https://www.youtube.com/@resonance36912"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(0_84%_60%/0.45)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(0_84%_60%/0.15)] border border-[hsl(0_84%_60%/0.35)]">
@@ -688,12 +770,12 @@ function Index() {
                       @resonance36912
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
                   href="https://www.youtube.com/@theresonancefrequencies"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(0_84%_60%/0.45)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(0_84%_60%/0.15)] border border-[hsl(0_84%_60%/0.35)]">
@@ -709,7 +791,7 @@ function Index() {
                       @theresonancefrequencies
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
               </div>
             </div>
@@ -719,7 +801,7 @@ function Index() {
         {/* WHO IT'S FOR */}
         <section id="who" data-reveal className="mb-32">
           <div className="text-center mb-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               00 / Who it's for
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
@@ -765,7 +847,7 @@ function Index() {
                 <a
                   href={p.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="text-[11px] font-bold uppercase tracking-widest text-white/80 hover:text-white border-t border-white/10 pt-4"
                 >
                   {p.cta} →
@@ -780,7 +862,7 @@ function Index() {
         <section id="ecosystem" data-reveal className="mb-32">
           <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
             <div>
-              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
                 01 / The Apps
               </div>
               <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">The Ecosystem</h2>
@@ -840,13 +922,13 @@ function Index() {
                     <div className="flex items-baseline justify-between mb-4">
                       <span className="text-lg font-bold">{app.priceLabel}</span>
                     </div>
-                    <p className="text-[11px] text-white/45 mb-5 leading-relaxed">
+                    <p className="text-[11px] text-white/65 mb-5 leading-relaxed">
                       {app.priceNote}
                     </p>
                     {disabled ? (
                       <button
                         disabled
-                        className="w-full px-4 py-2.5 rounded-full border border-dashed border-white/15 text-xs font-bold uppercase tracking-widest text-white/40 cursor-not-allowed"
+                        className="w-full px-4 py-2.5 rounded-full border border-dashed border-white/15 text-xs font-bold uppercase tracking-widest text-white/65 cursor-not-allowed"
                       >
                         Coming soon
                       </button>
@@ -855,7 +937,7 @@ function Index() {
                         <a
                           href={app.href}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="px-3 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest text-center transition-colors"
                         >
                           Visit
@@ -880,7 +962,7 @@ function Index() {
         {/* PRICING TABLE */}
         <section id="pricing" data-reveal className="mb-32">
           <div className="text-center mb-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               02 / Costings
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
@@ -892,16 +974,17 @@ function Index() {
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
             <table className="w-full text-sm">
               <thead className="bg-white/[0.03] border-b border-white/10">
                 <tr className="text-left">
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">App</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Free</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Starter</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Creator</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Pro</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Business</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">App</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Free</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Starter</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Creator</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Pro</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Business</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -918,7 +1001,7 @@ function Index() {
                     {row.slice(1).map((cell, j) => (
                       <td
                         key={j}
-                        className={`px-6 py-4 font-mono text-white/75 ${
+                        className={`px-6 py-4 font-mono text-white/80 ${
                           cell.startsWith("R") ? "text-white" : ""
                         }`}
                       >
@@ -930,10 +1013,38 @@ function Index() {
               </tbody>
             </table>
           </div>
-          <p className="text-center text-xs text-white/40 mt-6">
+
+          {/* Mobile stacked cards */}
+          <div className="md:hidden grid gap-3">
+            {[
+              { app: "Resonance ePublisher", tiers: [["Free", "✓"], ["Starter", "R99"], ["Creator", "R199"], ["Pro", "R449"], ["Business", "R999"]] },
+              { app: "Creative Studio", tiers: [["Creator", "R149"], ["Pro", "R299"], ["Business", "R699"]] },
+              { app: "Sync Vision", tiers: [["Creator", "R549"], ["Pro", "R1,399"], ["Business", "R2,799"]] },
+              { app: "YouTube Optimizer", tiers: [["Starter", "R149"], ["Pro", "R599"], ["Business", "R2,999"]] },
+              { app: "The Resonance Podcast", tiers: [["Free", "Always free"]] },
+              { app: "Career Compass", tiers: [["Pilot", "Free for first 50 students"]] },
+            ].map((card) => (
+              <article
+                key={card.app}
+                className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-4"
+              >
+                <h3 className="text-sm font-bold tracking-tight mb-3">{card.app}</h3>
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                  {card.tiers.map(([tier, price]) => (
+                    <div key={tier} className="contents">
+                      <dt className="text-white/65 font-mono uppercase tracking-wider text-[10px] self-center">{tier}</dt>
+                      <dd className="text-white font-semibold text-right">{price}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ))}
+          </div>
+          <p className="text-center text-xs text-white/60 mt-6">
             Prices in South African Rand (ZAR). Secure card &amp; EFT via PayFast. Cancel any
             subscription anytime.
           </p>
+
           <div className="text-center mt-6">
             <Link
               to="/pricing"
@@ -947,7 +1058,7 @@ function Index() {
           {/* BUNDLES */}
           <div className="mt-16">
             <div className="text-center mb-10">
-              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
                 Ecosystem bundles
               </div>
               <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
@@ -1014,7 +1125,7 @@ function Index() {
                   <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
                   <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-3xl font-extrabold">{b.price}</span>
-                    {b.available && <span className="text-xs text-white/50">/ month</span>}
+                    {b.available && <span className="text-xs text-white/65">/ month</span>}
                   </div>
                   <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
                   <a
@@ -1031,7 +1142,7 @@ function Index() {
                 </article>
               ))}
             </div>
-            <p className="text-center text-xs text-white/40 mt-6">
+            <p className="text-center text-xs text-white/65 mt-6">
               Only All-Access is purchasable directly. Other bundles are custom quotes — billed
               monthly via PayFast once activated. Cancel anytime.
             </p>
@@ -1048,7 +1159,7 @@ function Index() {
             <BrandOrb className="w-full" />
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               03 / Philosophy
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
@@ -1071,7 +1182,7 @@ function Index() {
         {/* FAQ */}
         <section id="faq" data-reveal className="mb-32">
           <div className="text-center mb-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               04 / Questions
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
@@ -1116,7 +1227,7 @@ function Index() {
               <details key={item.q} className="group p-6">
                 <summary className="flex items-center justify-between cursor-pointer list-none font-semibold text-base">
                   <span>{item.q}</span>
-                  <span className="ml-4 text-white/40 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+                  <span className="ml-4 text-white/65 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
                 </summary>
                 <p className="mt-3 text-sm text-white/65 leading-relaxed">{item.a}</p>
               </details>
@@ -1146,33 +1257,44 @@ function Index() {
               </label>
               <input
                 id="join-email"
+                name="email"
                 type="email"
                 required
+                autoComplete="email"
                 aria-label="Email address"
                 placeholder="email@domain.com"
                 value={joinEmail}
                 onChange={(e) => setJoinEmail(e.target.value)}
                 disabled={joinStatus === "loading"}
-                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors disabled:opacity-60"
+                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)] focus:border-[hsl(295_90%_60%)] transition-colors disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={joinStatus === "loading" || joinStatus === "ok"}
-                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60"
+                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 {joinStatus === "loading" ? "Subscribing…" : joinStatus === "ok" ? "Subscribed ✓" : "Subscribe"}
               </button>
             </form>
+            <p className="mt-4 text-[11px] text-white/65 max-w-md mx-auto">
+              We store your email to send occasional updates about new Resonance apps and pilots. No
+              spam, unsubscribe anytime. See our{" "}
+              <Link to="/governance" className="underline hover:text-white">
+                governance policy
+              </Link>{" "}
+              for how we handle data (POPIA-conscious).
+            </p>
             {joinMsg && (
               <p
                 role="status"
-                className={`mt-4 text-sm ${
+                className={`mt-3 text-sm ${
                   joinStatus === "ok" ? "text-emerald-300" : "text-red-300"
                 }`}
               >
                 {joinMsg}
               </p>
             )}
+
           </div>
         </section>
       </main>
@@ -1187,30 +1309,40 @@ function Index() {
               height={512}
               className="h-6 w-auto opacity-60 brightness-0 invert"
             />
-            <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-white/65">
               © {new Date().getFullYear()} The Resonance · Ecosystem Hub
             </div>
           </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/50">
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
             <Link to="/governance" className="hover:text-white transition-colors">
               Governance
             </Link>
-            <a href="https://www.resonance-podcast.com" className="hover:text-white transition-colors">
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Privacy & POPIA
+            </Link>
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Refunds
+            </Link>
+            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">
+              Support
+            </a>
+            <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
-            <a href="https://www.resonanceonline.life" className="hover:text-white transition-colors">
+            <a href="https://www.resonanceonline.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               ePublisher
             </a>
-            <a href="https://www.creativestudio.life" className="hover:text-white transition-colors">
+            <a href="https://www.creativestudio.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Studio
             </a>
-            <a href="https://www.syncvision.life" className="hover:text-white transition-colors">
+            <a href="https://www.syncvision.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               SyncVision
             </a>
-            <a href="https://www.career-compass.org" className="hover:text-white transition-colors">
-              Career Compass
-            </a>
           </div>
+
         </div>
       </footer>
     </div>
