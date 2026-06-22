@@ -972,16 +972,17 @@ function Index() {
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
             <table className="w-full text-sm">
               <thead className="bg-white/[0.03] border-b border-white/10">
                 <tr className="text-left">
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">App</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Free</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Starter</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Creator</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Pro</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/60">Business</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">App</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Free</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Starter</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Creator</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Pro</th>
+                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Business</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -998,7 +999,7 @@ function Index() {
                     {row.slice(1).map((cell, j) => (
                       <td
                         key={j}
-                        className={`px-6 py-4 font-mono text-white/75 ${
+                        className={`px-6 py-4 font-mono text-white/80 ${
                           cell.startsWith("R") ? "text-white" : ""
                         }`}
                       >
@@ -1010,10 +1011,38 @@ function Index() {
               </tbody>
             </table>
           </div>
-          <p className="text-center text-xs text-white/40 mt-6">
+
+          {/* Mobile stacked cards */}
+          <div className="md:hidden grid gap-3">
+            {[
+              { app: "Resonance ePublisher", tiers: [["Free", "✓"], ["Starter", "R99"], ["Creator", "R199"], ["Pro", "R449"], ["Business", "R999"]] },
+              { app: "Creative Studio", tiers: [["Creator", "R149"], ["Pro", "R299"], ["Business", "R699"]] },
+              { app: "Sync Vision", tiers: [["Creator", "R549"], ["Pro", "R1,399"], ["Business", "R2,799"]] },
+              { app: "YouTube Optimizer", tiers: [["Starter", "R149"], ["Pro", "R599"], ["Business", "R2,999"]] },
+              { app: "The Resonance Podcast", tiers: [["Free", "Always free"]] },
+              { app: "Career Compass", tiers: [["Pilot", "Free for first 50 students"]] },
+            ].map((card) => (
+              <article
+                key={card.app}
+                className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-4"
+              >
+                <h3 className="text-sm font-bold tracking-tight mb-3">{card.app}</h3>
+                <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                  {card.tiers.map(([tier, price]) => (
+                    <div key={tier} className="contents">
+                      <dt className="text-white/65 font-mono uppercase tracking-wider text-[10px] self-center">{tier}</dt>
+                      <dd className="text-white font-semibold text-right">{price}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            ))}
+          </div>
+          <p className="text-center text-xs text-white/60 mt-6">
             Prices in South African Rand (ZAR). Secure card &amp; EFT via PayFast. Cancel any
             subscription anytime.
           </p>
+
           <div className="text-center mt-6">
             <Link
               to="/pricing"
