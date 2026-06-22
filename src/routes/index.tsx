@@ -328,16 +328,24 @@ const accentHsl: Record<App["accent"], string> = {
   gold: "45 85% 60%",
 };
 
-function HeroCarousel({ items }: { items: App[] }) {
-  const [i, setI] = useState(0);
+function HeroCarousel({
+  items,
+  activeIndex,
+  onChange,
+}: {
+  items: App[];
+  activeIndex: number;
+  onChange: (i: number) => void;
+}) {
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(() => setI((p) => (p + 1) % items.length), 4200);
+    const t = setInterval(() => onChange((activeIndex + 1) % items.length), 4200);
     return () => clearInterval(t);
-  }, [paused, items.length]);
+  }, [paused, items.length, activeIndex, onChange]);
 
+  const i = activeIndex;
   const active = items[i];
   const c = accentHsl[active.accent];
 
@@ -402,34 +410,38 @@ function HeroCarousel({ items }: { items: App[] }) {
           <a
             href={active.href}
             target="_blank"
-            rel="noreferrer"
-            className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
+            rel="noopener noreferrer"
+            className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
           >
             Open →
           </a>
         </div>
       </div>
 
-      {/* Dots */}
-      <div className="absolute -bottom-12 left-0 right-0 flex justify-center gap-2">
+      {/* Dots — visual stays small, tap target is 32×32 for mobile */}
+      <div className="absolute -bottom-14 left-0 right-0 flex justify-center gap-1">
         {items.map((it, idx) => (
           <button
             key={it.name}
             type="button"
             aria-label={`Show ${it.name}`}
             aria-current={idx === i}
-            onClick={() => setI(idx)}
-            className="h-1.5 rounded-full transition-all"
-            style={{
-              width: idx === i ? 22 : 6,
-              background:
-                idx === i
-                  ? `hsl(${accentHsl[it.accent]})`
-                  : "hsl(0 0% 100% / 0.18)",
-              boxShadow:
-                idx === i ? `0 0 12px hsl(${accentHsl[it.accent]} / 0.7)` : "none",
-            }}
-          />
+            onClick={() => onChange(idx)}
+            className="grid place-items-center h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)] rounded-full"
+          >
+            <span
+              className="block h-1.5 rounded-full transition-all"
+              style={{
+                width: idx === i ? 22 : 6,
+                background:
+                  idx === i
+                    ? `hsl(${accentHsl[it.accent]})`
+                    : "hsl(0 0% 100% / 0.35)",
+                boxShadow:
+                  idx === i ? `0 0 12px hsl(${accentHsl[it.accent]} / 0.7)` : "none",
+              }}
+            />
+          </button>
         ))}
       </div>
     </div>
