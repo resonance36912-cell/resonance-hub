@@ -714,7 +714,7 @@ function Index() {
                 <a
                   href="https://www.medi-tech.co.za"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(150_80%_55%/0.4)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(150_80%_55%/0.15)] border border-[hsl(150_80%_55%/0.3)] text-base">
@@ -728,12 +728,12 @@ function Index() {
                       medi-tech.co.za
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
                   href="https://www.resonance-podcast.com"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(190_90%_60%/0.4)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(190_90%_60%/0.15)] border border-[hsl(190_90%_60%/0.3)] text-base">
@@ -747,12 +747,12 @@ function Index() {
                       resonance-podcast.com
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
                   href="https://www.youtube.com/@resonance36912"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(0_84%_60%/0.45)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(0_84%_60%/0.15)] border border-[hsl(0_84%_60%/0.35)]">
@@ -768,12 +768,12 @@ function Index() {
                       @resonance36912
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
                   href="https://www.youtube.com/@theresonancefrequencies"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(0_84%_60%/0.45)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(0_84%_60%/0.15)] border border-[hsl(0_84%_60%/0.35)]">
@@ -789,7 +789,7 @@ function Index() {
                       @theresonancefrequencies
                     </span>
                   </span>
-                  <span className="text-white/40 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
               </div>
             </div>
@@ -799,7 +799,7 @@ function Index() {
         {/* WHO IT'S FOR */}
         <section id="who" data-reveal className="mb-32">
           <div className="text-center mb-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               00 / Who it's for
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
@@ -845,7 +845,7 @@ function Index() {
                 <a
                   href={p.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="text-[11px] font-bold uppercase tracking-widest text-white/80 hover:text-white border-t border-white/10 pt-4"
                 >
                   {p.cta} →
@@ -860,7 +860,7 @@ function Index() {
         <section id="ecosystem" data-reveal className="mb-32">
           <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
             <div>
-              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
                 01 / The Apps
               </div>
               <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">The Ecosystem</h2>
@@ -920,13 +920,13 @@ function Index() {
                     <div className="flex items-baseline justify-between mb-4">
                       <span className="text-lg font-bold">{app.priceLabel}</span>
                     </div>
-                    <p className="text-[11px] text-white/45 mb-5 leading-relaxed">
+                    <p className="text-[11px] text-white/65 mb-5 leading-relaxed">
                       {app.priceNote}
                     </p>
                     {disabled ? (
                       <button
                         disabled
-                        className="w-full px-4 py-2.5 rounded-full border border-dashed border-white/15 text-xs font-bold uppercase tracking-widest text-white/40 cursor-not-allowed"
+                        className="w-full px-4 py-2.5 rounded-full border border-dashed border-white/15 text-xs font-bold uppercase tracking-widest text-white/65 cursor-not-allowed"
                       >
                         Coming soon
                       </button>
@@ -935,7 +935,7 @@ function Index() {
                         <a
                           href={app.href}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="px-3 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest text-center transition-colors"
                         >
                           Visit
@@ -960,7 +960,7 @@ function Index() {
         {/* PRICING TABLE */}
         <section id="pricing" data-reveal className="mb-32">
           <div className="text-center mb-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               02 / Costings
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
@@ -1056,7 +1056,7 @@ function Index() {
           {/* BUNDLES */}
           <div className="mt-16">
             <div className="text-center mb-10">
-              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
                 Ecosystem bundles
               </div>
               <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
@@ -1123,7 +1123,7 @@ function Index() {
                   <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
                   <div className="flex items-baseline gap-1 mb-4">
                     <span className="text-3xl font-extrabold">{b.price}</span>
-                    {b.available && <span className="text-xs text-white/50">/ month</span>}
+                    {b.available && <span className="text-xs text-white/65">/ month</span>}
                   </div>
                   <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
                   <a
@@ -1140,7 +1140,7 @@ function Index() {
                 </article>
               ))}
             </div>
-            <p className="text-center text-xs text-white/40 mt-6">
+            <p className="text-center text-xs text-white/65 mt-6">
               Only All-Access is purchasable directly. Other bundles are custom quotes — billed
               monthly via PayFast once activated. Cancel anytime.
             </p>
@@ -1157,7 +1157,7 @@ function Index() {
             <BrandOrb className="w-full" />
           </div>
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               03 / Philosophy
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 tracking-tight">
@@ -1180,7 +1180,7 @@ function Index() {
         {/* FAQ */}
         <section id="faq" data-reveal className="mb-32">
           <div className="text-center mb-12">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-3">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
               04 / Questions
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
@@ -1225,7 +1225,7 @@ function Index() {
               <details key={item.q} className="group p-6">
                 <summary className="flex items-center justify-between cursor-pointer list-none font-semibold text-base">
                   <span>{item.q}</span>
-                  <span className="ml-4 text-white/40 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+                  <span className="ml-4 text-white/65 group-open:rotate-45 transition-transform text-xl leading-none">+</span>
                 </summary>
                 <p className="mt-3 text-sm text-white/65 leading-relaxed">{item.a}</p>
               </details>
@@ -1296,11 +1296,11 @@ function Index() {
               height={512}
               className="h-6 w-auto opacity-60 brightness-0 invert"
             />
-            <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-white/65">
               © {new Date().getFullYear()} The Resonance · Ecosystem Hub
             </div>
           </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/50">
+          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/65">
             <Link to="/governance" className="hover:text-white transition-colors">
               Governance
             </Link>
