@@ -1257,33 +1257,44 @@ function Index() {
               </label>
               <input
                 id="join-email"
+                name="email"
                 type="email"
                 required
+                autoComplete="email"
                 aria-label="Email address"
                 placeholder="email@domain.com"
                 value={joinEmail}
                 onChange={(e) => setJoinEmail(e.target.value)}
                 disabled={joinStatus === "loading"}
-                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus:border-[hsl(295_90%_60%)] transition-colors disabled:opacity-60"
+                className="flex-1 bg-white/5 border border-white/10 rounded-full px-6 py-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)] focus:border-[hsl(295_90%_60%)] transition-colors disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={joinStatus === "loading" || joinStatus === "ok"}
-                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60"
+                className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
                 {joinStatus === "loading" ? "Subscribing…" : joinStatus === "ok" ? "Subscribed ✓" : "Subscribe"}
               </button>
             </form>
+            <p className="mt-4 text-[11px] text-white/65 max-w-md mx-auto">
+              We store your email to send occasional updates about new Resonance apps and pilots. No
+              spam, unsubscribe anytime. See our{" "}
+              <Link to="/governance" className="underline hover:text-white">
+                governance policy
+              </Link>{" "}
+              for how we handle data (POPIA-conscious).
+            </p>
             {joinMsg && (
               <p
                 role="status"
-                className={`mt-4 text-sm ${
+                className={`mt-3 text-sm ${
                   joinStatus === "ok" ? "text-emerald-300" : "text-red-300"
                 }`}
               >
                 {joinMsg}
               </p>
             )}
+
           </div>
         </section>
       </main>
