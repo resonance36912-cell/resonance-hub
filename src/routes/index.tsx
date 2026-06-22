@@ -313,6 +313,8 @@ function BrandOrb({ className = "" }: { className?: string }) {
         alt=""
         width={1024}
         height={1024}
+        loading="lazy"
+        decoding="async"
         className="relative w-full h-full object-contain drop-shadow-[0_0_20px_hsl(295_90%_60%/0.5)]"
       />
     </div>
