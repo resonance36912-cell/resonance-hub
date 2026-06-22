@@ -518,49 +518,123 @@ function Index() {
       setJoinEmail("");
     } catch (err) {
       setJoinStatus("error");
+function Index() {
+  const active = useActiveSection(NAV_LINKS.map((l) => l.id));
+  useScrollReveal();
+  const subscribe = useServerFn(subscribeNewsletter);
+  const [joinEmail, setJoinEmail] = useState("");
+  const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [joinMsg, setJoinMsg] = useState<string | null>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const featuredApp = apps[carouselIndex];
+  // Map app to internal subscribe target; for free apps fall back to their site.
+  const featuredCtaHref = featuredApp.subscribeHref.startsWith("/")
+    ? featuredApp.subscribeHref
+    : featuredApp.href;
+  const featuredCtaIsExternal = featuredCtaHref.startsWith("http");
+  const featuredCtaLabel =
+    featuredApp.status === "free"
+      ? `Open ${featuredApp.name} →`
+      : `Start with ${featuredApp.name} →`;
+
+  async function onJoinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!joinEmail) return;
+    setJoinStatus("loading");
+    setJoinMsg(null);
+    try {
+      await subscribe({ data: { email: joinEmail, source: "home_join" } });
+      setJoinStatus("ok");
+      setJoinMsg("You're on the list. Welcome to the frequency.");
+      setJoinEmail("");
+    } catch (err) {
+      setJoinStatus("error");
       setJoinMsg((err as Error).message || "Something went wrong. Try again.");
     }
   }
 
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 flex justify-between items-center backdrop-blur-xl bg-background/70 border-b border-white/5">
-        <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
-          <img
-            src={resonanceLockup}
-            alt="The Resonance"
-            width={1536}
-            height={512}
-            className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
-          />
-        </a>
-        <div className="hidden md:flex gap-7 text-[11px] font-semibold tracking-[0.2em] uppercase">
-          {NAV_LINKS.map((l) => {
-            const isActive = active === l.id;
-            return (
+      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
+        <div className="flex justify-between items-center gap-3">
+          <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
+            <img
+              src={resonanceLockup}
+              alt="The Resonance"
+              width={1536}
+              height={512}
+              loading="eager"
+              decoding="async"
+              className="h-6 sm:h-7 w-auto max-w-[140px] sm:max-w-none brightness-0 invert"
+            />
+          </a>
+          <div className="hidden md:flex gap-7 text-[11px] font-semibold tracking-[0.2em] uppercase">
+            {NAV_LINKS.map((l) => {
+              const isActive = active === l.id;
+              return (
+                <a
+                  key={l.id}
+                  href={`#${l.id}`}
+                  className={`relative transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)] rounded ${
+                    isActive ? "text-white" : "text-white/65 hover:text-white"
+                  }`}
+                >
+                  {l.label}
+                  <span
+                    className={`absolute -bottom-1.5 left-0 h-px bg-gradient-brand transition-all duration-500 ${
+                      isActive ? "w-full opacity-100" : "w-0 opacity-0"
+                    }`}
+                  />
+                </a>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://www.resonanceonline.life"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex text-[10px] sm:text-[11px] font-bold tracking-[0.15em] uppercase px-3 sm:px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              Launch
+            </a>
+            <button
+              type="button"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-panel"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="md:hidden grid place-items-center h-10 w-10 rounded-full border border-white/15 hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
+            >
+              <span aria-hidden className="text-lg leading-none">{mobileMenuOpen ? "✕" : "☰"}</span>
+            </button>
+          </div>
+        </div>
+        {mobileMenuOpen && (
+          <div
+            id="mobile-nav-panel"
+            className="md:hidden mt-3 grid gap-1 text-[12px] font-semibold tracking-[0.18em] uppercase border-t border-white/10 pt-3"
+          >
+            {NAV_LINKS.map((l) => (
               <a
                 key={l.id}
                 href={`#${l.id}`}
-                className={`relative transition-colors ${
-                  isActive ? "text-white" : "text-white/55 hover:text-white"
-                }`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
                 {l.label}
-                <span
-                  className={`absolute -bottom-1.5 left-0 h-px bg-gradient-brand transition-all duration-500 ${
-                    isActive ? "w-full opacity-100" : "w-0 opacity-0"
-                  }`}
-                />
               </a>
-            );
-          })}
-        </div>
-        <a
-          href="https://www.resonanceonline.life"
-          className="hidden md:inline-flex text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
-        >
-          Launch
-        </a>
+            ))}
+            <Link
+              to="/pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white"
+            >
+              Pricing
+            </Link>
+          </div>
+        )}
       </nav>
 
 
@@ -568,43 +642,57 @@ function Index() {
         {/* HERO */}
         <section className="pt-12 pb-16 grid md:grid-cols-[1.4fr_1fr] gap-12 items-center animate-reveal">
           <div>
-            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-5">
+            <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              Tools in tune with you
+              The Resonance AI Ecosystem
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
-              AI tools for creators, learners, and businesses —{" "}
-              <span className="text-gradient-brand">all in one Resonance ecosystem.</span>
+              The Resonance{" "}
+              <span className="text-gradient-brand">AI Ecosystem</span>
             </h1>
-            <p className="text-base md:text-lg text-white/70 leading-[1.65] text-pretty max-w-[58ch] mb-6">
-              Create books, visuals, music-video concepts, career reports, podcast content, and growth strategies from one connected Resonance Hub.
+            <p className="text-base md:text-lg text-white/75 leading-[1.65] text-pretty max-w-[58ch] mb-6">
+              AI tools for creators, learners, and businesses — books, visuals,
+              music-video concepts, career reports, podcast content, and growth
+              strategies from one connected Resonance Hub.
             </p>
-            <p className="text-sm text-white/55 leading-relaxed max-w-[58ch] mb-10">
+            <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-10">
               Free and paid plans in South African Rand. PayFast supported. Cancel anytime.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a
-                href="https://www.resonanceonline.life"
-                className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform"
-              >
-                Start with ePublisher →
-              </a>
+              {featuredCtaIsExternal ? (
+                <a
+                  href={featuredCtaHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {featuredCtaLabel}
+                </a>
+              ) : (
+                <Link
+                  to={featuredCtaHref}
+                  className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {featuredCtaLabel}
+                </Link>
+              )}
               <a
                 href="#ecosystem"
-                className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors"
+                className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
                 Explore all tools
               </a>
             </div>
           </div>
           <div className="md:pl-4">
-            <HeroCarousel items={apps} />
+            <HeroCarousel items={apps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
           </div>
         </section>
 
         {/* TRUST STRIP */}
         <section aria-label="Trust" className="mb-20 -mt-4">
-          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/55">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/65">
+
             {[
               "🇿🇦 Built in South Africa",
               "ZAR pricing",
