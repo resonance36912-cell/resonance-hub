@@ -1313,26 +1313,36 @@ function Index() {
               © {new Date().getFullYear()} The Resonance · Ecosystem Hub
             </div>
           </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/65">
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
             <Link to="/governance" className="hover:text-white transition-colors">
               Governance
             </Link>
-            <a href="https://www.resonance-podcast.com" className="hover:text-white transition-colors">
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Privacy & POPIA
+            </Link>
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link to="/governance" className="hover:text-white transition-colors">
+              Refunds
+            </Link>
+            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">
+              Support
+            </a>
+            <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
-            <a href="https://www.resonanceonline.life" className="hover:text-white transition-colors">
+            <a href="https://www.resonanceonline.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               ePublisher
             </a>
-            <a href="https://www.creativestudio.life" className="hover:text-white transition-colors">
+            <a href="https://www.creativestudio.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Studio
             </a>
-            <a href="https://www.syncvision.life" className="hover:text-white transition-colors">
+            <a href="https://www.syncvision.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               SyncVision
             </a>
-            <a href="https://www.career-compass.org" className="hover:text-white transition-colors">
-              Career Compass
-            </a>
           </div>
+
         </div>
       </footer>
     </div>
