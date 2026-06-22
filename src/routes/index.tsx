@@ -505,26 +505,6 @@ function Index() {
   const [joinEmail, setJoinEmail] = useState("");
   const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
-
-  async function onJoinSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!joinEmail) return;
-    setJoinStatus("loading");
-    setJoinMsg(null);
-    try {
-      await subscribe({ data: { email: joinEmail, source: "home_join" } });
-      setJoinStatus("ok");
-      setJoinMsg("You're on the list. Welcome to the frequency.");
-      setJoinEmail("");
-    } catch (err) {
-      setJoinStatus("error");
-function Index() {
-  const active = useActiveSection(NAV_LINKS.map((l) => l.id));
-  useScrollReveal();
-  const subscribe = useServerFn(subscribeNewsletter);
-  const [joinEmail, setJoinEmail] = useState("");
-  const [joinStatus, setJoinStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
-  const [joinMsg, setJoinMsg] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const featuredApp = apps[carouselIndex];
