@@ -1,3 +1,4 @@
+// @no-back-to-hub internal noindex debug page for auth-gate diagnostics
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
