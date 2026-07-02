@@ -1,7 +1,7 @@
 // Cron: measure outcomes whose window has closed.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { assertCronAuthorized } from "@/lib/rop/cron-auth";
+import { assertCronAuthorized } from "@/lib/rop/cron-auth.server";
 
 function p95(values: number[]): number | null {
   if (values.length === 0) return null;
