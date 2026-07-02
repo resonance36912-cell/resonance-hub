@@ -12,7 +12,9 @@ function p95(values: number[]): number | null {
 export const Route = createFileRoute("/api/public/rop/cron/measure-outcomes")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = assertCronAuthorized(request);
+        if (unauthorized) return unauthorized;
         const nowIso = new Date().toISOString();
         const { data: pending, error } = await supabaseAdmin
           .from("hub_outcomes")
