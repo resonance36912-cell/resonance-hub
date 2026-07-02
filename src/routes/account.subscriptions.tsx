@@ -140,7 +140,7 @@ function SubscriptionsGate() {
 
   useEffect(() => {
     let cancelled = false;
-    const mountedAt = performance.now();
+    const mountedAt = diagnostics.mountedAt;
     log("gate_mounted");
 
     // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
