@@ -10,6 +10,7 @@ import {
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
+import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
@@ -132,11 +133,14 @@ function SubscriptionsGate() {
     userProbe: { state: "pending" } as ProbeState,
     lastAuthEvent: null as { event: string; hasSession: boolean; elapsedMs: number } | null,
     authEventCount: 0,
+    userId: null as string | null,
+    mountedAt: typeof performance !== "undefined" ? performance.now() : Date.now(),
+    analyticsEmitted: false,
   }))[0];
 
   useEffect(() => {
     let cancelled = false;
-    const mountedAt = performance.now();
+    const mountedAt = diagnostics.mountedAt;
     log("gate_mounted");
 
     // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
@@ -145,6 +149,7 @@ function SubscriptionsGate() {
       const elapsedMs = Math.round(performance.now() - mountedAt);
       diagnostics.lastAuthEvent = { event, hasSession: !!session, elapsedMs };
       diagnostics.authEventCount += 1;
+      if (session?.user?.id) diagnostics.userId = session.user.id;
       log("auth_state_change", {
         event,
         hasSession: !!session,
@@ -265,9 +270,48 @@ function SubscriptionsGate() {
 
       log("redirect_root_cause", { rootCause, level, ...details });
       log("redirecting_home_anon", { rootCause });
+
+      // Structured analytics: fire-and-forget beacon so the event survives
+      // the same-tick navigation. Guarded so React strict-mode / status
+      // ping-pong can't double-emit.
+      if (!diagnostics.analyticsEmitted) {
+        diagnostics.analyticsEmitted = true;
+        const elapsedMs = Math.round(
+          (typeof performance !== "undefined" ? performance.now() : Date.now()) - diagnostics.mountedAt,
+        );
+        emitAuthGateAnalytics({
+          decision: "redirect",
+          rootCause,
+          status,
+          elapsedMs,
+          probes: { session: sessionProbe, user: userProbe },
+          lastAuthEvent,
+          authEventCount,
+          userId: diagnostics.userId,
+        });
+      }
       navigate({ to: "/", replace: true });
     } else if (status === "authed") {
       log("gate_authed_render");
+      if (!diagnostics.analyticsEmitted) {
+        diagnostics.analyticsEmitted = true;
+        const elapsedMs = Math.round(
+          (typeof performance !== "undefined" ? performance.now() : Date.now()) - diagnostics.mountedAt,
+        );
+        emitAuthGateAnalytics({
+          decision: "render",
+          rootCause: "authenticated",
+          status,
+          elapsedMs,
+          probes: {
+            session: diagnostics.sessionProbe,
+            user: diagnostics.userProbe,
+          },
+          lastAuthEvent: diagnostics.lastAuthEvent,
+          authEventCount: diagnostics.authEventCount,
+          userId: diagnostics.userId,
+        });
+      }
     }
   }, [status, navigate, diagnostics]);
 
