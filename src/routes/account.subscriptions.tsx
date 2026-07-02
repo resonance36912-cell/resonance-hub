@@ -408,10 +408,14 @@ function SubscriptionsPage() {
                   View pricing
                 </Link>
               </div>
-            )}
           </>
         )}
+
+        <footer className="mt-16 flex justify-end">
+          <DebugToggle />
+        </footer>
       </div>
     </div>
   );
 }
+
