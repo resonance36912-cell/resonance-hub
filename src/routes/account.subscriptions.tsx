@@ -10,6 +10,7 @@ import {
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
+import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
