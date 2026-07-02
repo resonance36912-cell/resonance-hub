@@ -31,6 +31,7 @@ import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
+import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -157,6 +158,11 @@ const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   path: '/account/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountDebugRoute = AccountDebugRouteImport.update({
+  id: '/account/debug',
+  path: '/account/debug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -244,6 +250,7 @@ export interface FileRoutesByFullPath {
   '/governance': typeof GovernanceRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByTo {
   '/governance': typeof GovernanceRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/governance': typeof GovernanceRoute
   '/pricing': typeof PricingRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/governance'
     | '/pricing'
     | '/sitemap.xml'
+    | '/account/debug'
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/governance'
     | '/pricing'
     | '/sitemap.xml'
+    | '/account/debug'
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -437,6 +448,7 @@ export interface FileRouteTypes {
     | '/governance'
     | '/pricing'
     | '/sitemap.xml'
+    | '/account/debug'
     | '/account/subscriptions'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -476,6 +488,7 @@ export interface RootRouteChildren {
   GovernanceRoute: typeof GovernanceRoute
   PricingRoute: typeof PricingRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AccountDebugRoute: typeof AccountDebugRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -663,6 +676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/debug': {
+      id: '/account/debug'
+      path: '/account/debug'
+      fullPath: '/account/debug'
+      preLoaderRoute: typeof AccountDebugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -784,6 +804,7 @@ const rootRouteChildren: RootRouteChildren = {
   GovernanceRoute: GovernanceRoute,
   PricingRoute: PricingRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AccountDebugRoute: AccountDebugRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,

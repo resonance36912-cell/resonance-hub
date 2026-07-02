@@ -9,6 +9,7 @@ import {
   type AppKey,
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
+import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
@@ -68,6 +69,9 @@ function useDebugEnabled(): [boolean, (next: boolean) => void] {
 function log(event: string, detail: Record<string, unknown> = {}) {
   // Always log warn/error class events; gate info-level behind the flag.
   const level = detail.level === "warn" ? "warn" : detail.level === "error" ? "error" : "info";
+  // Record every event (regardless of debug flag) so the /account/debug
+  // route can show the last-known auth gate results for support triage.
+  recordAuthGateEvent(event, level, detail);
   if (level === "info" && !debugEnabled()) return;
   // eslint-disable-next-line no-console
   console[level](`[account/subscriptions] ${event}`, {
