@@ -25,22 +25,59 @@ export const Route = createFileRoute("/account/subscriptions")({
 
 type AuthState = "checking" | "authed" | "anon";
 
+// Toggle with localStorage.setItem('debug:account-auth','1') in the browser
+// console to opt into verbose gate logging without redeploying.
+const DEBUG_KEY = "debug:account-auth";
+function debugEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  try { return window.localStorage.getItem(DEBUG_KEY) === "1"; } catch { return false; }
+}
+function log(event: string, detail: Record<string, unknown> = {}) {
+  // Always log warn/error class events; gate info-level behind the flag.
+  const level = detail.level === "warn" ? "warn" : detail.level === "error" ? "error" : "info";
+  if (level === "info" && !debugEnabled()) return;
+  // eslint-disable-next-line no-console
+  console[level](`[account/subscriptions] ${event}`, {
+    ts: new Date().toISOString(),
+    env: typeof window === "undefined" ? "ssr" : "browser",
+    ...detail,
+  });
+}
+
 /**
  * Client-side auth gate. Waits for Supabase to hydrate the session from
  * localStorage before deciding whether to redirect. This prevents the
  * "signed in but bounced to /" flash that happens when we assume the
  * absence of a session on first paint means the user is signed out.
+ *
+ * Instrumented so future session regressions (e.g. missing bearer, expired
+ * refresh token, SSR leakage) surface in the browser console with clear
+ * timing information.
  */
 function SubscriptionsGate() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<AuthState>("checking");
 
+  // SSR sanity check — this component is client-only (ssr: false on the
+  // Route). If we ever see this warn in worker logs, ssr:false was dropped.
+  if (typeof window === "undefined") {
+    log("gate_rendered_on_server", { level: "warn" });
+  }
+
   useEffect(() => {
     let cancelled = false;
+    const mountedAt = performance.now();
+    log("gate_mounted");
 
     // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (cancelled) return;
+      log("auth_state_change", {
+        event,
+        hasSession: !!session,
+        userId: session?.user?.id ?? null,
+        elapsedMs: Math.round(performance.now() - mountedAt),
+      });
       if (session?.user) {
         setStatus("authed");
       } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
@@ -48,22 +85,57 @@ function SubscriptionsGate() {
       }
     });
 
-    // 2. Also probe current session synchronously in case the listener
-    //    doesn't fire an INITIAL_SESSION (e.g. session already cached).
-    supabase.auth.getSession().then(({ data }) => {
+    // 2. Probe current session (local, sync-ish).
+    supabase.auth.getSession().then(({ data, error }) => {
       if (cancelled) return;
+      log("get_session_result", {
+        hasSession: !!data.session,
+        userId: data.session?.user?.id ?? null,
+        error: error?.message ?? null,
+        elapsedMs: Math.round(performance.now() - mountedAt),
+      });
       if (data.session?.user) setStatus("authed");
     });
 
+    // 3. Verify with the Auth server so we log the *validated* identity —
+    //    this is the closest analogue to the old beforeLoad getUser() call
+    //    and gives us a definitive signal if a stale local session ever
+    //    lies about being signed in.
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (cancelled) return;
+      log("get_user_result", {
+        hasUser: !!data.user,
+        userId: data.user?.id ?? null,
+        error: error?.message ?? null,
+        elapsedMs: Math.round(performance.now() - mountedAt),
+        level: error && error.message !== "Auth session missing!" ? "warn" : undefined,
+      });
+    });
+
+    // 4. Safety net — if nothing has resolved after 5s, that's a regression.
+    const stuckTimer = window.setTimeout(() => {
+      if (cancelled) return;
+      setStatus((s) => {
+        if (s === "checking") {
+          log("gate_stuck_checking_5s", { level: "warn" });
+        }
+        return s;
+      });
+    }, 5000);
+
     return () => {
       cancelled = true;
+      window.clearTimeout(stuckTimer);
       sub.subscription.unsubscribe();
     };
   }, []);
 
   useEffect(() => {
     if (status === "anon") {
+      log("redirecting_home_anon");
       navigate({ to: "/", replace: true });
+    } else if (status === "authed") {
+      log("gate_authed_render");
     }
   }, [status, navigate]);
 
@@ -77,6 +149,7 @@ function SubscriptionsGate() {
   if (status === "anon") return null;
   return <SubscriptionsPage />;
 }
+
 
 const ALL_APPS: AppKey[] = ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"];
 
