@@ -9,6 +9,7 @@ import {
   type AppKey,
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
+import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
