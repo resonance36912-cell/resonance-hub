@@ -1,6 +1,7 @@
 // Cron: measure outcomes whose window has closed.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertCronAuthorized } from "@/lib/rop/cron-auth.server";
 
 function p95(values: number[]): number | null {
   if (values.length === 0) return null;
@@ -11,7 +12,9 @@ function p95(values: number[]): number | null {
 export const Route = createFileRoute("/api/public/rop/cron/measure-outcomes")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = assertCronAuthorized(request);
+        if (unauthorized) return unauthorized;
         const nowIso = new Date().toISOString();
         const { data: pending, error } = await supabaseAdmin
           .from("hub_outcomes")

@@ -1,6 +1,7 @@
 // Cron: scan recent perf telemetry across apps, ask Lovable AI for cross-app suggestions.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { assertCronAuthorized } from "@/lib/rop/cron-auth.server";
 import { RCGF_PRINCIPLES_FOR_AI, RCGF_VERSION } from "@/lib/rcgf";
 
 type PerfRow = {
@@ -124,7 +125,9 @@ Rules:
 export const Route = createFileRoute("/api/public/rop/cron/cross-app-scan")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = assertCronAuthorized(request);
+        if (unauthorized) return unauthorized;
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
         const { data: perf, error: perfErr } = await supabaseAdmin
           .from("hub_perf_events")
