@@ -1,4 +1,5 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,14 +18,65 @@ export const Route = createFileRoute("/account/subscriptions")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
+  // Client-only render — Supabase session lives in localStorage.
   ssr: false,
-  beforeLoad: async () => {
-    if (typeof window === "undefined") return;
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/" });
-  },
-  component: SubscriptionsPage,
+  component: SubscriptionsGate,
 });
+
+type AuthState = "checking" | "authed" | "anon";
+
+/**
+ * Client-side auth gate. Waits for Supabase to hydrate the session from
+ * localStorage before deciding whether to redirect. This prevents the
+ * "signed in but bounced to /" flash that happens when we assume the
+ * absence of a session on first paint means the user is signed out.
+ */
+function SubscriptionsGate() {
+  const navigate = useNavigate();
+  const [status, setStatus] = useState<AuthState>("checking");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if (session?.user) {
+        setStatus("authed");
+      } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
+        setStatus("anon");
+      }
+    });
+
+    // 2. Also probe current session synchronously in case the listener
+    //    doesn't fire an INITIAL_SESSION (e.g. session already cached).
+    supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
+      if (data.session?.user) setStatus("authed");
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (status === "anon") {
+      navigate({ to: "/", replace: true });
+    }
+  }, [status, navigate]);
+
+  if (status === "checking") {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading your account…</p>
+      </div>
+    );
+  }
+  if (status === "anon") return null;
+  return <SubscriptionsPage />;
+}
 
 const ALL_APPS: AppKey[] = ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"];
 
