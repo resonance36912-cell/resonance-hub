@@ -25,13 +25,46 @@ export const Route = createFileRoute("/account/subscriptions")({
 
 type AuthState = "checking" | "authed" | "anon";
 
-// Toggle with localStorage.setItem('debug:account-auth','1') in the browser
-// console to opt into verbose gate logging without redeploying.
-const DEBUG_KEY = "debug:account-auth";
-function debugEnabled(): boolean {
-  if (typeof window === "undefined") return false;
-  try { return window.localStorage.getItem(DEBUG_KEY) === "1"; } catch { return false; }
+// -----------------------------------------------------------------------------
+// In-app debug flag (no localStorage required)
+// -----------------------------------------------------------------------------
+// Sources, in priority order:
+//   1. In-memory flag toggled by the on-page button (this session, this tab).
+//   2. URL query param `?debug=auth` or `?debug=1` (shareable, survives refresh
+//      as long as the param is in the URL).
+// Kept intentionally free of localStorage / cookies so it never persists past
+// the current tab / URL — nothing to clean up later.
+let debugFlag = false;
+const debugSubscribers = new Set<() => void>();
+function notifyDebugSubscribers() {
+  debugSubscribers.forEach((fn) => fn());
 }
+function readUrlDebug(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const p = new URLSearchParams(window.location.search).get("debug");
+    return p === "auth" || p === "1";
+  } catch {
+    return false;
+  }
+}
+function debugEnabled(): boolean {
+  return debugFlag || readUrlDebug();
+}
+function setDebugEnabled(next: boolean) {
+  debugFlag = next;
+  notifyDebugSubscribers();
+}
+function useDebugEnabled(): [boolean, (next: boolean) => void] {
+  const [enabled, setEnabled] = useState<boolean>(() => debugEnabled());
+  useEffect(() => {
+    const fn = () => setEnabled(debugEnabled());
+    debugSubscribers.add(fn);
+    return () => { debugSubscribers.delete(fn); };
+  }, []);
+  return [enabled, setDebugEnabled];
+}
+
 function log(event: string, detail: Record<string, unknown> = {}) {
   // Always log warn/error class events; gate info-level behind the flag.
   const level = detail.level === "warn" ? "warn" : detail.level === "error" ? "error" : "info";
@@ -43,6 +76,26 @@ function log(event: string, detail: Record<string, unknown> = {}) {
     ...detail,
   });
 }
+
+function DebugToggle() {
+  const [enabled, setEnabled] = useDebugEnabled();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        const next = !enabled;
+        setEnabled(next);
+        log("debug_toggle_clicked", { enabled: next, level: "warn" });
+      }}
+      className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors border border-border rounded-full px-3 py-1"
+      aria-pressed={enabled}
+      title="Toggle verbose auth-gate logging in this tab"
+    >
+      Debug auth: <span className={enabled ? "text-emerald-400" : ""}>{enabled ? "on" : "off"}</span>
+    </button>
+  );
+}
+
 
 /**
  * Client-side auth gate. Waits for Supabase to hydrate the session from
