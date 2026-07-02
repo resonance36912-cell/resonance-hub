@@ -121,6 +121,19 @@ function SubscriptionsGate() {
     log("gate_rendered_on_server", { level: "warn" });
   }
 
+  // Root-cause diagnostics for the eventual redirect decision. Captured in
+  // refs so the final "redirect_root_cause" event has the full picture even
+  // if any probe resolved after status flipped.
+  type ProbeState =
+    | { state: "pending" }
+    | { state: "resolved"; hasSubject: boolean; error: string | null; elapsedMs: number };
+  const diagnostics = useState(() => ({
+    sessionProbe: { state: "pending" } as ProbeState,
+    userProbe: { state: "pending" } as ProbeState,
+    lastAuthEvent: null as { event: string; hasSession: boolean; elapsedMs: number } | null,
+    authEventCount: 0,
+  }))[0];
+
   useEffect(() => {
     let cancelled = false;
     const mountedAt = performance.now();
@@ -129,11 +142,14 @@ function SubscriptionsGate() {
     // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (cancelled) return;
+      const elapsedMs = Math.round(performance.now() - mountedAt);
+      diagnostics.lastAuthEvent = { event, hasSession: !!session, elapsedMs };
+      diagnostics.authEventCount += 1;
       log("auth_state_change", {
         event,
         hasSession: !!session,
         userId: session?.user?.id ?? null,
-        elapsedMs: Math.round(performance.now() - mountedAt),
+        elapsedMs,
       });
       if (session?.user) {
         setStatus("authed");
@@ -145,11 +161,18 @@ function SubscriptionsGate() {
     // 2. Probe current session (local, sync-ish).
     supabase.auth.getSession().then(({ data, error }) => {
       if (cancelled) return;
+      const elapsedMs = Math.round(performance.now() - mountedAt);
+      diagnostics.sessionProbe = {
+        state: "resolved",
+        hasSubject: !!data.session,
+        error: error?.message ?? null,
+        elapsedMs,
+      };
       log("get_session_result", {
         hasSession: !!data.session,
         userId: data.session?.user?.id ?? null,
         error: error?.message ?? null,
-        elapsedMs: Math.round(performance.now() - mountedAt),
+        elapsedMs,
       });
       if (data.session?.user) setStatus("authed");
     });
@@ -160,12 +183,21 @@ function SubscriptionsGate() {
     //    lies about being signed in.
     supabase.auth.getUser().then(({ data, error }) => {
       if (cancelled) return;
+      const elapsedMs = Math.round(performance.now() - mountedAt);
+      const isSessionMissing = error?.message === "Auth session missing!";
+      diagnostics.userProbe = {
+        state: "resolved",
+        hasSubject: !!data.user,
+        // Treat "session missing" as expected-anon, not a diagnostic error.
+        error: error && !isSessionMissing ? error.message : null,
+        elapsedMs,
+      };
       log("get_user_result", {
         hasUser: !!data.user,
         userId: data.user?.id ?? null,
         error: error?.message ?? null,
-        elapsedMs: Math.round(performance.now() - mountedAt),
-        level: error && error.message !== "Auth session missing!" ? "warn" : undefined,
+        elapsedMs,
+        level: error && !isSessionMissing ? "warn" : undefined,
       });
     });
 
@@ -185,16 +217,60 @@ function SubscriptionsGate() {
       window.clearTimeout(stuckTimer);
       sub.subscription.unsubscribe();
     };
-  }, []);
+  }, [diagnostics]);
 
   useEffect(() => {
     if (status === "anon") {
-      log("redirecting_home_anon");
+      // Compute the single root cause for the redirect. Priority order:
+      //   1. Unexpected error from getUser() (real failure — surface as warn)
+      //   2. getSession() returned an error (local storage / decode failure)
+      //   3. Neither probe has resolved yet (unlikely but possible if the
+      //      auth listener fired SIGNED_OUT before probes settled)
+      //   4. Both probes resolved with no subject → truly signed out
+      //   5. Fallback (shouldn't happen) — status flipped for an unknown reason
+      const { sessionProbe, userProbe, lastAuthEvent, authEventCount } = diagnostics;
+
+      let rootCause:
+        | "user_probe_error"
+        | "session_probe_error"
+        | "auth_state_not_ready"
+        | "session_null"
+        | "unknown";
+      let level: "info" | "warn" = "info";
+      const details: Record<string, unknown> = {
+        sessionProbe,
+        userProbe,
+        lastAuthEvent,
+        authEventCount,
+      };
+
+      if (userProbe.state === "resolved" && userProbe.error) {
+        rootCause = "user_probe_error";
+        level = "warn";
+      } else if (sessionProbe.state === "resolved" && sessionProbe.error) {
+        rootCause = "session_probe_error";
+        level = "warn";
+      } else if (sessionProbe.state === "pending" && userProbe.state === "pending") {
+        rootCause = "auth_state_not_ready";
+        level = "warn";
+      } else if (
+        (sessionProbe.state === "resolved" && !sessionProbe.hasSubject) ||
+        (userProbe.state === "resolved" && !userProbe.hasSubject)
+      ) {
+        rootCause = "session_null";
+      } else {
+        rootCause = "unknown";
+        level = "warn";
+      }
+
+      log("redirect_root_cause", { rootCause, level, ...details });
+      log("redirecting_home_anon", { rootCause });
       navigate({ to: "/", replace: true });
     } else if (status === "authed") {
       log("gate_authed_render");
     }
-  }, [status, navigate]);
+  }, [status, navigate, diagnostics]);
+
 
   if (status === "checking") {
     return (
