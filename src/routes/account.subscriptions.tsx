@@ -149,6 +149,7 @@ function SubscriptionsGate() {
       const elapsedMs = Math.round(performance.now() - mountedAt);
       diagnostics.lastAuthEvent = { event, hasSession: !!session, elapsedMs };
       diagnostics.authEventCount += 1;
+      if (session?.user?.id) diagnostics.userId = session.user.id;
       log("auth_state_change", {
         event,
         hasSession: !!session,
