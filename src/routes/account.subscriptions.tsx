@@ -133,6 +133,9 @@ function SubscriptionsGate() {
     userProbe: { state: "pending" } as ProbeState,
     lastAuthEvent: null as { event: string; hasSession: boolean; elapsedMs: number } | null,
     authEventCount: 0,
+    userId: null as string | null,
+    mountedAt: typeof performance !== "undefined" ? performance.now() : Date.now(),
+    analyticsEmitted: false,
   }))[0];
 
   useEffect(() => {
