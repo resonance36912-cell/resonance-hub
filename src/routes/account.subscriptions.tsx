@@ -270,9 +270,48 @@ function SubscriptionsGate() {
 
       log("redirect_root_cause", { rootCause, level, ...details });
       log("redirecting_home_anon", { rootCause });
+
+      // Structured analytics: fire-and-forget beacon so the event survives
+      // the same-tick navigation. Guarded so React strict-mode / status
+      // ping-pong can't double-emit.
+      if (!diagnostics.analyticsEmitted) {
+        diagnostics.analyticsEmitted = true;
+        const elapsedMs = Math.round(
+          (typeof performance !== "undefined" ? performance.now() : Date.now()) - diagnostics.mountedAt,
+        );
+        emitAuthGateAnalytics({
+          decision: "redirect",
+          rootCause,
+          status,
+          elapsedMs,
+          probes: { session: sessionProbe, user: userProbe },
+          lastAuthEvent,
+          authEventCount,
+          userId: diagnostics.userId,
+        });
+      }
       navigate({ to: "/", replace: true });
     } else if (status === "authed") {
       log("gate_authed_render");
+      if (!diagnostics.analyticsEmitted) {
+        diagnostics.analyticsEmitted = true;
+        const elapsedMs = Math.round(
+          (typeof performance !== "undefined" ? performance.now() : Date.now()) - diagnostics.mountedAt,
+        );
+        emitAuthGateAnalytics({
+          decision: "render",
+          rootCause: "authenticated",
+          status,
+          elapsedMs,
+          probes: {
+            session: diagnostics.sessionProbe,
+            user: diagnostics.userProbe,
+          },
+          lastAuthEvent: diagnostics.lastAuthEvent,
+          authEventCount: diagnostics.authEventCount,
+          userId: diagnostics.userId,
+        });
+      }
     }
   }, [status, navigate, diagnostics]);
 
