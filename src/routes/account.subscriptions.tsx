@@ -17,7 +17,9 @@ export const Route = createFileRoute("/account/subscriptions")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
+  ssr: false,
   beforeLoad: async () => {
+    if (typeof window === "undefined") return;
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/" });
   },
