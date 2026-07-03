@@ -54,23 +54,19 @@ function run(cmd: string, args: string[]): void {
 
 function unifiedDiff(label: string, before: string, after: string): string | null {
   if (before === after) return null;
-  // Prefer system `diff -u` for readable output; fall back to a stub.
-  const res = spawnSync("diff", ["-u", "--label", `a/${label}`, "--label", `b/${label}`, "-", "-"], {
-    input: "",
-    encoding: "utf8",
-  });
-  if (res.error) {
-    return `--- a/${label}\n+++ b/${label}\n(diff binary unavailable — see uploaded before/after files)`;
-  }
-  // spawnSync with two "-" inputs won't work; write temp files instead.
   const tmpBefore = join(process.cwd(), `.tmp.${label}.before`);
   const tmpAfter = join(process.cwd(), `.tmp.${label}.after`);
   writeFileSync(tmpBefore, before);
   writeFileSync(tmpAfter, after);
   try {
-    const d = spawnSync("diff", ["-u", "--label", `a/${label}`, "--label", `b/${label}`, tmpBefore, tmpAfter], {
-      encoding: "utf8",
-    });
+    const d = spawnSync(
+      "diff",
+      ["-u", "--label", `a/${label}`, "--label", `b/${label}`, tmpBefore, tmpAfter],
+      { encoding: "utf8" },
+    );
+    if (d.error) {
+      return `(diff binary unavailable — see uploaded before/after files; sizes ${before.length} vs ${after.length})`;
+    }
     return d.stdout || `(diff produced no output but files differ; sizes ${before.length} vs ${after.length})`;
   } finally {
     rmSync(tmpBefore, { force: true });
