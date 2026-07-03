@@ -78,13 +78,41 @@ async function loadUpdates(origin: string): Promise<UpdateItem[]> {
   return data.filter(isValid);
 }
 
-function buildAtom(updates: UpdateItem[], origin: string): string {
-  const feedUrl = `${origin}/api/public/updates/atom`;
+const ALLOWED_STATUSES = ["Live", "Updating", "New", "Free Pilot"] as const;
+
+function parseStatusFilter(raw: string | null): string[] {
+  if (!raw) return [];
+  const wanted = raw
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const allowed = new Set(ALLOWED_STATUSES.map((s) => s.toLowerCase()));
+  return wanted.filter((s) => allowed.has(s));
+}
+
+function applyStatusFilter(updates: UpdateItem[], statuses: string[]): UpdateItem[] {
+  if (statuses.length === 0) return updates;
+  const set = new Set(statuses);
+  return updates.filter((u) => set.has(u.status.toLowerCase()));
+}
+
+function buildAtom(
+  updates: UpdateItem[],
+  origin: string,
+  statusFilter: string[],
+): string {
+  const qs = statusFilter.length > 0 ? `?status=${encodeURIComponent(statusFilter.join(","))}` : "";
+  const feedUrl = `${origin}/api/public/updates/atom${qs}`;
   const siteUrl = `${origin}/`;
+  const titleSuffix =
+    statusFilter.length > 0
+      ? ` (${statusFilter.map((s) => s.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")})`
+      : "";
   const sorted = [...updates].sort(
     (a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime(),
   );
   const updatedIso = (sorted[0] ? parseDate(sorted[0].date) : new Date()).toISOString();
+
 
   const entries = sorted
     .map((u) => {
@@ -123,7 +151,7 @@ function buildAtom(updates: UpdateItem[], origin: string): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<feed xmlns="http://www.w3.org/2005/Atom">',
-    "  <title>Resonance — Latest Updates</title>",
+    `  <title>${escapeXml(`Resonance — Latest Updates${titleSuffix}`)}</title>`,
     "  <subtitle>Release notes and status changes across the Resonance ecosystem: Hub, ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, Career Compass, and the Resonance Podcast.</subtitle>",
     `  <link rel="self" type="application/atom+xml" href="${escapeXml(feedUrl)}" />`,
     `  <link rel="alternate" type="text/html" href="${escapeXml(siteUrl)}" />`,
@@ -138,13 +166,17 @@ function buildAtom(updates: UpdateItem[], origin: string): string {
 export const Route = createFileRoute("/api/public/updates/atom")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const host = getRequestHost();
         const proto = getRequestUrl().protocol.replace(":", "") || "https";
         const origin = `${proto}://${host}`;
+        const url = new URL(request.url);
+        const statusFilter = parseStatusFilter(url.searchParams.get("status"));
         try {
-          const updates = await loadUpdates(origin);
-          const xml = buildAtom(updates, origin);
+          const all = await loadUpdates(origin);
+          const filtered = applyStatusFilter(all, statusFilter);
+          const xml = buildAtom(filtered, origin, statusFilter);
+
           return new Response(xml, {
             status: 200,
             headers: {
