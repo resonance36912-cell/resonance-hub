@@ -187,13 +187,12 @@ jobs:
         if: always()
         uses: actions/github-script@v7
         env:
-          DRIFT_LOCK_INSTALL: ${{ steps.drift_lock_install.outcome }}
-          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_lock_install.outputs.snippet }}
-          DRIFT_OVERRIDES_SYNC: ${{ steps.overrides_sync.outcome }}
-          DRIFT_PACKAGE_JSON: ${{ steps.drift_package_json.outcome }}
-          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_package_json.outputs.snippet }}
-          DRIFT_LOCK_REINSTALL: ${{ steps.drift_lock_reinstall.outcome }}
-          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_lock_reinstall.outputs.snippet }}
+          DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun-lock-after-install_status }}
+          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun-lock-after-install_snippet }}
+          DRIFT_PACKAGE_JSON: ${{ steps.drift_summary.outputs.package-json-after-overrides-sync_status }}
+          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_summary.outputs.package-json-after-overrides-sync_snippet }}
+          DRIFT_LOCK_REINSTALL: ${{ steps.drift_summary.outputs.bun-lock-after-reinstall_status }}
+          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun-lock-after-reinstall_snippet }}
           ARTIFACT_URL: ${{ steps.upload_drift.outputs.artifact-url }}
           PINS_STATUS: ${{ steps.verify_pins.outcome }}
           PINS_OUTPUT: ${{ steps.verify_pins.outputs.output }}
@@ -213,10 +212,10 @@ jobs:
 
             const driftRows = [
               ['bun install → bun.lock drift', process.env.DRIFT_LOCK_INSTALL, process.env.DRIFT_LOCK_INSTALL_SNIPPET],
-              ['sync-overrides-from-lock.ts', process.env.DRIFT_OVERRIDES_SYNC, ''],
               ['overrides sync → package.json drift', process.env.DRIFT_PACKAGE_JSON, process.env.DRIFT_PACKAGE_JSON_SNIPPET],
               ['re-install → bun.lock drift', process.env.DRIFT_LOCK_REINSTALL, process.env.DRIFT_LOCK_REINSTALL_SNIPPET],
             ];
+
             const anyDrift = driftRows.some(([, s]) => s === 'failure');
             const artifactUrl = process.env.ARTIFACT_URL || '';
             const runUrl = process.env.RUN_URL;
