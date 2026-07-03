@@ -1,0 +1,65 @@
+name: Dependabot lockfile sync
+
+# Runs on every Dependabot PR. Purpose:
+#   1. If Dependabot ever opens a PR that touches package.json but leaves
+#      bun.lock stale, regenerate the lockfile and commit it back to the PR
+#      branch so `verify-pinned-deps.ts` passes.
+#   2. Re-run the pinned-deps guard + `bun audit` on the final state.
+#
+# Only Dependabot PRs trigger this job (checked via actor + PR head ref).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "bun.lock"
+      - ".github/dependabot.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync-lockfile:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Check out the PR head so we can push a follow-up commit if needed.
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Regenerate lockfile from package.json
+        # `bun install` (no --frozen-lockfile) updates bun.lock to match
+        # whatever Dependabot wrote into package.json.
+        run: bun install
+
+      - name: Commit lockfile if it changed
+        run: |
+          if ! git diff --quiet -- bun.lock; then
+            git config user.name "dependabot[bot]"
+            git config user.email "49699333+dependabot[bot]@users.noreply.github.com"
+            git add bun.lock
+            git commit -m "chore(deps): sync bun.lock after Dependabot bump"
+            git push
+          else
+            echo "bun.lock already in sync."
+          fi
+
+      - name: Verify pinned dependency versions
+        run: bun run scripts/verify-pinned-deps.ts
+
+      - name: bun audit (high+)
+        run: bun audit --audit-level=high
