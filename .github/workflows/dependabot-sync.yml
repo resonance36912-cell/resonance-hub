@@ -248,11 +248,23 @@ jobs:
             const artifactUrl = process.env.ARTIFACT_URL || '';
             const runUrl = process.env.RUN_URL;
 
+            // Deep link to the exact required check that blocked the merge.
+            // `check_name` filters the PR Checks tab; the name must match the
+            // status context registered in branch protection.
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const driftGateCheckName = 'Dependabot lockfile sync / drift-gate';
+            const driftGateCheckUrl =
+              `${context.serverUrl}/${owner}/${repo}/pull/${issue_number}/checks` +
+              `?check_name=${encodeURIComponent(driftGateCheckName)}`;
+
             const lines = [
               marker,
               '### Dependabot sync summary',
               '',
               `**Drift checks:** ${anyDrift ? '❌ drift detected — do NOT merge until fixed' : '✅ no drift'}`,
+              '',
+              `**Blocking check:** [\`${driftGateCheckName}\`](${driftGateCheckUrl})${anyDrift ? ' — currently ❌ failing' : ''}`,
               '',
               '| Step | Result |',
               '| --- | --- |',
@@ -263,6 +275,7 @@ jobs:
               lines.push('', '**Diff artifact:** ' + (artifactUrl
                 ? `[\`dependabot-sync-drift\`](${artifactUrl}) (14-day retention)`
                 : `see the [workflow run](${runUrl}) → Artifacts → \`dependabot-sync-drift\``));
+
               for (const [label, status, snippet] of driftRows) {
                 if (status === 'failure' && snippet) {
                   lines.push(
