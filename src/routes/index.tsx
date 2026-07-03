@@ -1309,14 +1309,17 @@ type UpdateTone = "live" | "updating" | "new" | "pilot";
 type UpdateItem = {
   app: string;
   status: string;
-  tone: UpdateTone;
+  tone: UpdateTone | string;
   change: string;
   date: string;
   href: string;
   cta: string;
 };
 
-const UPDATES: UpdateItem[] = [
+// Fallback in case /content/updates.json can't be fetched (offline, 404).
+// Source of truth for editing lives in public/content/updates.json — no code
+// changes required to add / edit / reorder cards.
+const FALLBACK_UPDATES: UpdateItem[] = [
   { app: "Reson8 Hub", status: "Live", tone: "live", change: "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.", date: "Jun 2026", href: "/pricing#passes", cta: "See passes" },
   { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.", date: "May 2026", href: "/pricing#epublisher", cta: "View packs" },
   { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.", date: "Apr 2026", href: "/pricing#creative-studio", cta: "View packs" },
@@ -1327,14 +1330,15 @@ const UPDATES: UpdateItem[] = [
   { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
 ];
 
-const TONE_BADGE: Record<UpdateTone, string> = {
+const TONE_BADGE: Record<string, string> = {
   live: "border-[hsl(150_80%_60%/0.3)] bg-[hsl(150_80%_60%/0.12)] text-[hsl(150_80%_80%)]",
   pilot: "border-[hsl(200_80%_60%/0.3)] bg-[hsl(200_80%_60%/0.12)] text-[hsl(200_80%_80%)]",
   updating: "border-[hsl(45_90%_60%/0.3)] bg-[hsl(45_90%_60%/0.12)] text-[hsl(45_90%_80%)]",
   new: "border-[hsl(295_90%_70%/0.35)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_85%)]",
 };
+const NEUTRAL_BADGE = "border-white/15 bg-white/[0.04] text-white/70";
 
-const FILTERS: { key: "all" | UpdateTone; label: string }[] = [
+const FILTERS: { key: string; label: string }[] = [
   { key: "all", label: "All" },
   { key: "live", label: "Live" },
   { key: "updating", label: "Updating" },
@@ -1342,10 +1346,45 @@ const FILTERS: { key: "all" | UpdateTone; label: string }[] = [
   { key: "pilot", label: "Free Pilot" },
 ];
 
+function isValidUpdate(u: unknown): u is UpdateItem {
+  if (!u || typeof u !== "object") return false;
+  const o = u as Record<string, unknown>;
+  return (
+    typeof o.app === "string" &&
+    typeof o.status === "string" &&
+    typeof o.tone === "string" &&
+    typeof o.change === "string" &&
+    typeof o.date === "string" &&
+    typeof o.href === "string" &&
+    typeof o.cta === "string"
+  );
+}
+
 function UpdatesGrid() {
-  const [filter, setFilter] = useState<"all" | UpdateTone>("all");
-  const visible = filter === "all" ? UPDATES : UPDATES.filter((u) => u.tone === filter);
-  const counts = UPDATES.reduce<Record<string, number>>((acc, u) => {
+  const [updates, setUpdates] = useState<UpdateItem[]>(FALLBACK_UPDATES);
+  const [filter, setFilter] = useState<string>("all");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/content/updates.json", { headers: { accept: "application/json" } })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data)) {
+          const valid = data.filter(isValidUpdate);
+          if (valid.length > 0) setUpdates(valid);
+        }
+      })
+      .catch(() => {
+        /* keep fallback */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const visible = filter === "all" ? updates : updates.filter((u) => u.tone === filter);
+  const counts = updates.reduce<Record<string, number>>((acc, u) => {
     acc[u.tone] = (acc[u.tone] ?? 0) + 1;
     return acc;
   }, {});
@@ -1359,7 +1398,7 @@ function UpdatesGrid() {
       >
         {FILTERS.map((f) => {
           const active = filter === f.key;
-          const count = f.key === "all" ? UPDATES.length : counts[f.key] ?? 0;
+          const count = f.key === "all" ? updates.length : counts[f.key] ?? 0;
           return (
             <button
               key={f.key}
@@ -1383,10 +1422,11 @@ function UpdatesGrid() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {visible.map((u) => {
             const external = u.href.startsWith("http");
+            const badgeCls = TONE_BADGE[u.tone] ?? NEUTRAL_BADGE;
             return (
               <article key={u.app} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5 flex flex-col">
                 <div className="flex items-center justify-between mb-3">
-                  <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${TONE_BADGE[u.tone]}`}>{u.status}</span>
+                  <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${badgeCls}`}>{u.status}</span>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">{u.date}</span>
                 </div>
                 <h3 className="text-sm font-bold tracking-tight mb-2">{u.app}</h3>
@@ -1404,4 +1444,5 @@ function UpdatesGrid() {
     </>
   );
 }
+
 
