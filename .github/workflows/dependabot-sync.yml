@@ -335,4 +335,34 @@ jobs:
           done
           exit $fail
 
+  # Stable required-check target for branch protection.
+  #
+  # Runs on every PR (no `if:` gate) so GitHub always reports a status with
+  # this exact name. On non-Dependabot PRs `sync-lockfile` is skipped and this
+  # job passes. On Dependabot PRs it mirrors `sync-lockfile`'s result, so
+  # branch protection blocks the merge whenever drift is detected.
+  drift-gate:
+    name: drift-gate
+    needs: [sync-lockfile]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Gate on sync-lockfile result
+        env:
+          RESULT: ${{ needs.sync-lockfile.result }}
+        run: |
+          echo "sync-lockfile result: $RESULT"
+          case "$RESULT" in
+            success|skipped)
+              echo "✅ drift-gate: passing (sync-lockfile=$RESULT)"
+              exit 0
+              ;;
+            failure|cancelled|*)
+              echo "::error::drift-gate: sync-lockfile reported '$RESULT' — Dependabot PR has lockfile/overrides drift. See the sync-lockfile job for details and the dependabot-sync-drift artifact."
+              exit 1
+              ;;
+          esac
+
+
 
