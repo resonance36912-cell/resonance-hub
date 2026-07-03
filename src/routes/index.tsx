@@ -860,117 +860,7 @@ function Index() {
               The Hub is the source of truth for every product change, status update, and rollout.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              {
-                app: "Reson8 Hub",
-                status: "Live",
-                tone: "live",
-                change:
-                  "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.",
-                date: "Jun 2026",
-                href: "/pricing#passes",
-                cta: "See passes",
-              },
-              {
-                app: "Resonance ePublisher",
-                status: "Live",
-                tone: "live",
-                change:
-                  "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.",
-                date: "May 2026",
-                href: "/pricing#epublisher",
-                cta: "View packs",
-              },
-              {
-                app: "Creative Studio",
-                status: "Live",
-                tone: "live",
-                change:
-                  "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.",
-                date: "Apr 2026",
-                href: "/pricing#creative-studio",
-                cta: "View packs",
-              },
-              {
-                app: "Sync Vision",
-                status: "Live",
-                tone: "live",
-                change:
-                  "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.",
-                date: "Mar 2026",
-                href: "/pricing#sync-vision",
-                cta: "View packs",
-              },
-              {
-                app: "YouTube Optimizer",
-                status: "Updating",
-                tone: "updating",
-                change:
-                  "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.",
-                date: "Jun 2026",
-                href: "/pricing#youtube-optimizer",
-                cta: "View packs",
-              },
-              {
-                app: "Career Compass",
-                status: "Free Pilot",
-                tone: "pilot",
-                change:
-                  "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.",
-                date: "Feb 2026",
-                href: "https://www.career-compass.org/#how",
-                cta: "Join pilot",
-              },
-              {
-                app: "The Resonance Podcast",
-                status: "Live",
-                tone: "live",
-                change:
-                  "New season live — free episodes, media kits, and shop. Never a subscription.",
-                date: "Jun 2026",
-                href: "https://www.resonance-podcast.com",
-                cta: "Listen",
-              },
-              {
-                app: "Reson8 Governance",
-                status: "New",
-                tone: "new",
-                change:
-                  "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.",
-                date: "May 2026",
-                href: "/governance",
-                cta: "Read RCGF",
-              },
-            ].map((u) => {
-              const badgeCls =
-                u.tone === "live"
-                  ? "border-[hsl(150_80%_60%/0.3)] bg-[hsl(150_80%_60%/0.12)] text-[hsl(150_80%_80%)]"
-                  : u.tone === "pilot"
-                  ? "border-[hsl(200_80%_60%/0.3)] bg-[hsl(200_80%_60%/0.12)] text-[hsl(200_80%_80%)]"
-                  : u.tone === "updating"
-                  ? "border-[hsl(45_90%_60%/0.3)] bg-[hsl(45_90%_60%/0.12)] text-[hsl(45_90%_80%)]"
-                  : u.tone === "new"
-                  ? "border-[hsl(295_90%_70%/0.35)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_85%)]"
-                  : "border-white/15 bg-white/[0.04] text-white/65";
-              const external = u.href.startsWith("http");
-              return (
-                <article key={u.app} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5 flex flex-col">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${badgeCls}`}>{u.status}</span>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">{u.date}</span>
-                  </div>
-                  <h3 className="text-sm font-bold tracking-tight mb-2">{u.app}</h3>
-                  <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1">{u.change}</p>
-                  {external ? (
-                    <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
-                  ) : (
-                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
-                  )}
-                </article>
-              );
-            })}
-          </div>
+          <UpdatesGrid />
         </section>
 
         {/* APPS */}
@@ -1414,3 +1304,104 @@ function Index() {
     </div>
   );
 }
+
+type UpdateTone = "live" | "updating" | "new" | "pilot";
+type UpdateItem = {
+  app: string;
+  status: string;
+  tone: UpdateTone;
+  change: string;
+  date: string;
+  href: string;
+  cta: string;
+};
+
+const UPDATES: UpdateItem[] = [
+  { app: "Reson8 Hub", status: "Live", tone: "live", change: "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.", date: "Jun 2026", href: "/pricing#passes", cta: "See passes" },
+  { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.", date: "May 2026", href: "/pricing#epublisher", cta: "View packs" },
+  { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.", date: "Apr 2026", href: "/pricing#creative-studio", cta: "View packs" },
+  { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.", date: "Mar 2026", href: "/pricing#sync-vision", cta: "View packs" },
+  { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.", date: "Jun 2026", href: "/pricing#youtube-optimizer", cta: "View packs" },
+  { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
+  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live — free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com", cta: "Listen" },
+  { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
+];
+
+const TONE_BADGE: Record<UpdateTone, string> = {
+  live: "border-[hsl(150_80%_60%/0.3)] bg-[hsl(150_80%_60%/0.12)] text-[hsl(150_80%_80%)]",
+  pilot: "border-[hsl(200_80%_60%/0.3)] bg-[hsl(200_80%_60%/0.12)] text-[hsl(200_80%_80%)]",
+  updating: "border-[hsl(45_90%_60%/0.3)] bg-[hsl(45_90%_60%/0.12)] text-[hsl(45_90%_80%)]",
+  new: "border-[hsl(295_90%_70%/0.35)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_85%)]",
+};
+
+const FILTERS: { key: "all" | UpdateTone; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "live", label: "Live" },
+  { key: "updating", label: "Updating" },
+  { key: "new", label: "New" },
+  { key: "pilot", label: "Free Pilot" },
+];
+
+function UpdatesGrid() {
+  const [filter, setFilter] = useState<"all" | UpdateTone>("all");
+  const visible = filter === "all" ? UPDATES : UPDATES.filter((u) => u.tone === filter);
+  const counts = UPDATES.reduce<Record<string, number>>((acc, u) => {
+    acc[u.tone] = (acc[u.tone] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return (
+    <>
+      <div
+        role="tablist"
+        aria-label="Filter updates by status"
+        className="flex flex-wrap gap-2 mb-6"
+      >
+        {FILTERS.map((f) => {
+          const active = filter === f.key;
+          const count = f.key === "all" ? UPDATES.length : counts[f.key] ?? 0;
+          return (
+            <button
+              key={f.key}
+              role="tab"
+              aria-selected={active}
+              onClick={() => setFilter(f.key)}
+              className={`text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border transition-colors ${
+                active
+                  ? "border-white/40 bg-white/[0.08] text-white"
+                  : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white hover:border-white/25"
+              }`}
+            >
+              {f.label} <span className="opacity-60">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+      {visible.length === 0 ? (
+        <p className="text-sm text-white/60">No updates in this category yet.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {visible.map((u) => {
+            const external = u.href.startsWith("http");
+            return (
+              <article key={u.app} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5 flex flex-col">
+                <div className="flex items-center justify-between mb-3">
+                  <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${TONE_BADGE[u.tone]}`}>{u.status}</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">{u.date}</span>
+                </div>
+                <h3 className="text-sm font-bold tracking-tight mb-2">{u.app}</h3>
+                <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1">{u.change}</p>
+                {external ? (
+                  <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
+                ) : (
+                  <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
