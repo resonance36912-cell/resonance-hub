@@ -91,13 +91,9 @@ jobs:
 
       - name: Verify pinned dependency versions
         id: verify_pins
-        # Skip when a drift step already failed — pins are meaningless on a
+        # Skip when the shared drift check failed — pins are meaningless on a
         # drifted tree, and we want the comment to render before we fail.
-        if: >-
-          steps.drift_lock_install.outcome == 'success' &&
-          steps.overrides_sync.outcome == 'success' &&
-          steps.drift_package_json.outcome == 'success' &&
-          steps.drift_lock_reinstall.outcome == 'success'
+        if: steps.lockfile_consistency.outcome == 'success'
         run: |
           set +e
           out=$(bun run scripts/verify-pinned-deps.ts 2>&1)
@@ -119,6 +115,7 @@ jobs:
         id: bun_audit
         if: steps.verify_pins.outcome == 'success'
         continue-on-error: true
+
         # Threshold config via repo/org variables (Settings → Secrets and variables → Actions → Variables):
         #   BUN_AUDIT_LEVEL      — severity floor: low | moderate | high | critical (default: high)
         #   BUN_AUDIT_MAX_VULNS  — max advisories at/above LEVEL before failing (default: 0)
