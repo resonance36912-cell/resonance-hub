@@ -401,13 +401,13 @@ function SubscriptionsPage() {
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {bundleActive ? "Active Bundle" : "Save with the bundle"}
+                    {bundleActive ? "Active ecosystem pass" : "Optional ecosystem pass"}
                   </p>
-                  <h2 className="mt-1 text-2xl font-semibold">All-Access</h2>
+                  <h2 className="mt-1 text-2xl font-semibold">Studio Pass</h2>
                   <p className="mt-1 text-sm text-muted-foreground max-w-md">
                     {bundleActive
-                      ? `Unlocks Pro tier across every Resonance app. Renews ${formatDate(bundle?.current_period_end ?? null)}.`
-                      : "One subscription unlocks Pro tier across all current and upcoming Resonance apps for R1,499/month."}
+                      ? `Ecosystem pass — Pro-level access across every Resonance app. Renews ${formatDate(bundle?.current_period_end ?? null)}.`
+                      : "Optional ecosystem pass — Pro-level access across current and upcoming Resonance apps for R1,499/month. Individual apps stay available as once-off packs."}
                   </p>
                 </div>
                 <div className="text-right">

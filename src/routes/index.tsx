@@ -987,7 +987,11 @@ function Index() {
                           {...(app.subscribeHref.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
                           className="px-3 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest text-center shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)] hover:shadow-[0_0_35px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
                         >
-                          {app.status === "free" ? "Open" : "Subscribe"}
+                          {app.status === "free"
+                            ? "Open"
+                            : app.subscribeHref.startsWith("/pricing")
+                              ? "View packs"
+                              : "Learn more"}
                         </a>
 
                       </div>
@@ -1102,8 +1106,8 @@ function Index() {
             ))}
           </div>
           <p className="text-center text-xs text-white/60 mt-6">
-            Ecosystem passes are optional. Individual apps remain available as once-off credit and
-            project packs. Billed monthly via PayFast. Cancel anytime.
+            Ecosystem passes are optional and billed monthly via PayFast — cancel anytime. Individual
+            apps remain available as once-off credit and project packs with no recurring app fees.
           </p>
         </section>
 

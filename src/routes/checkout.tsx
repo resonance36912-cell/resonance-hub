@@ -147,7 +147,7 @@ function CheckoutPage() {
   }
 
   const isLegacy = def.kind === "legacy_monthly";
-  const purchaseType = def.kind === "pass" ? "Monthly ecosystem pass" : "Monthly subscription";
+  const purchaseType = def.kind === "pass" ? "Monthly ecosystem pass" : "Legacy monthly plan";
 
   return (
     <Shell>
