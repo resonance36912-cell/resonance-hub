@@ -61,6 +61,15 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - name: Verify pinned dependency versions
+        # Fails if package.json uses range specifiers (^, ~, >=) or if
+        # bun.lock resolved a different version than package.json declares.
+        # Keeps fresh installs deterministic so security scans stay green.
+        run: bun run scripts/verify-pinned-deps.ts
+      - name: Install with frozen lockfile
+        # --frozen-lockfile ensures CI installs exactly what's committed;
+        # any drift between package.json and bun.lock fails the job.
+        run: bun install --frozen-lockfile
       - name: bun audit (high+)
         # `bun audit` queries the npm advisory DB. Fail only on high/critical
         # so transient low-severity noise doesn't block PRs.
