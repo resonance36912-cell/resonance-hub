@@ -1,17 +1,25 @@
-# The Resonance
+# The Resonance Hub
 
-> The Resonance is an ecosystem of conscious creative tools — ePublisher, Creative Studio, Sync Vision, the Resonance Podcast, Career Compass and the upcoming YouTube Optimizer — sharing one brand, one PayFast checkout and one account ethos.
+> Reson8.life is the source of truth for the full Resonance ecosystem — every app, update, pricing plan, checkout, and ecosystem package. Individual apps use once-off credits and project packs. Optional monthly ecosystem passes (Creator Pass, Studio Pass, Business Pass) are available from the Hub for creators and teams using multiple tools.
+
+## Purchase model
+
+- **Individual apps: once-off only.** ePublisher, Creative Studio, Sync Vision, and YouTube Optimizer sell once-off credit / project / audit packs. There are no per-app monthly subscriptions.
+- **Hub-only ecosystem passes.** Only reson8.life sells recurring subscriptions, and only when they bundle multiple apps: Creator Pass (R499/mo), Studio Pass (R1,499/mo), Business Pass (custom).
+- **Free.** The Resonance Podcast is always free. Career Compass is in free pilot; per-report and school packages will follow.
+- **Checkout.** All purchases run through the Hub via PayFast in ZAR.
 
 ## Pages
 
-- [Home](/): Overview of the Resonance ecosystem, the apps, philosophy and how to join.
-- [Pricing](/pricing): Transparent ZAR pricing for every app and the All-Access bundle, billed via PayFast.
-- [Governance](/governance): The Resonance Constitutional Governance Framework (RCGF) v1.0 — the universal constitution for human–AI collaboration across the ecosystem.
+- [Home](/): The Resonance Hub — apps, updates, pricing, bundles, roadmap, governance.
+- [Pricing](/pricing): Once-off app packs and optional ecosystem passes.
+- [Governance](/governance): The Resonance Constitutional Governance Framework (RCGF) v1.0.
 
 ## Apps
 
-- [Resonance ePublisher](https://www.resonanceonline.life): Turn any source into a polished book — outlines, chapters, narration, ePub and AV exports.
-- [Creative Studio](https://www.creativestudio.life): AI-generated posters, brochures, ads and marketing videos.
-- [Sync Vision](https://www.syncvision.life): AI-ready music video storyboards and character performances.
-- [The Resonance Podcast](https://www.resonance-podcast.com): Episodes, clips, reviews and the Resonance shop.
-- [Career Compass](https://www.career-compass.org): Personality, skills and aptitude assessments matched to SA careers.
+- [Resonance ePublisher](https://www.resonanceonline.life): Turn topics, manuscripts, PDFs, and research into audiovisual eBooks. Once-off packs from R99.
+- [Creative Studio](https://www.creativestudio.life): AI-generated posters, brochures, ads and marketing videos. Once-off packs from R149.
+- [Sync Vision](https://www.syncvision.life): AI-ready music video storyboards and character performances. Once-off packs from R349.
+- [YouTube Optimizer](https://www.youtubeoptimizer.life): Channel audits, thumbnails, and growth strategy. Once-off packs from R149.
+- [Career Compass](https://www.career-compass.org): Career and aptitude discovery for learners and schools. Free pilot.
+- [The Resonance Podcast](https://www.resonance-podcast.com): Free ecosystem media and conversations.

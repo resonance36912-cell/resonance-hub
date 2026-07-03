@@ -14,6 +14,11 @@ const SKU_CATALOG: Record<
   string,
   { app: string; tier: string; amountCents: number; cycle: "monthly" }
 > = {
+  // Active ecosystem passes (Hub only).
+  "all_access:creator_pass:monthly": { app: "all_access", tier: "creator_pass", amountCents: 49900,  cycle: "monthly" },
+  "all_access:studio_pass:monthly":  { app: "all_access", tier: "studio_pass",  amountCents: 149900, cycle: "monthly" },
+  // Legacy per-app monthly SKUs — retired from UI but kept live so existing
+  // PayFast subscriptions keep renewing.
   "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly" },
   "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly" },
   "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly" },

@@ -16,7 +16,8 @@ const src = readFileSync("src/routes/pricing.tsx", "utf8");
 // Match each plan object that has a /checkout?app=&plan= href, then capture
 // the surrounding zar="…" value.
 const planRegex =
-  /\{\s*name:[^}]*?zar:\s*"(R[\d,]+)"[^}]*?href:\s*"\/checkout\?app=([a-z_]+)&plan=([a-z_]+)"[^}]*?\}/g;
+  /\{[^{}]*?zar:\s*"(R[\d,]+)"[^{}]*?href:\s*"\/checkout\?app=([a-z_]+)&plan=([a-z_]+)"[^{}]*?\}/g;
+
 
 const failures: string[] = [];
 let count = 0;

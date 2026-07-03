@@ -110,18 +110,19 @@ export const Route = createFileRoute("/")({
                 name: "YouTube Optimizer",
                 applicationCategory: "BusinessApplication",
                 operatingSystem: "Web",
-                url: "https://resonanceoptimizer.lovable.app",
+                url: "https://www.youtubeoptimizer.life",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
               {
                 "@type": "FAQPage",
                 mainEntity: [
-                  ["Can I use Resonance tools for free?", "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students."],
-                  ["Is there a single login across every app?", "One Hub billing account today — manage subscriptions across every Resonance app from one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition."],
-                  ["Can I cancel anytime?", "Yes. Every subscription is cancel-anytime via PayFast."],
-                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT). Monthly billing only."],
-                  ["Can schools use Career Compass?", "Yes — schools can join the rewards-based pilot."],
-                  ["Can publishers test ePublisher with one title first?", "Yes. Start with a single title on the free or Starter tier."],
+                  ["Do individual apps have monthly subscriptions?", "No. Individual Resonance apps use once-off credits and project packs. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps."],
+                  ["Can I use Resonance tools for free?", "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits."],
+                  ["Is there a single login across every app?", "One Hub billing account today — packs and ecosystem passes live in one place. Unified app login is on the roadmap."],
+                  ["Can I cancel an ecosystem pass anytime?", "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases."],
+                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT)."],
+                  ["Can schools use Career Compass?", "Yes — schools can join the free pilot."],
+
                   ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
                   ["Can Creative Studio create ads and product visuals?", "Yes — posters, brochures, social ads, product mockups, and short marketing videos."],
                 ].map(([q, a]) => ({
@@ -157,113 +158,114 @@ const apps: App[] = [
   {
     name: "Resonance ePublisher",
     tagline:
-      "Turn written stories into immersive, high-fidelity audiovisual books.",
+      "Turn topics, manuscripts, PDFs, and research into polished audiovisual eBooks.",
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
-    subscribeHref: "/epublisher/pricing",
-    priceLabel: "from R99 / month",
-    priceNote: "Free · Starter R99 · Creator R199 · Pro R449 · Business R999",
+    subscribeHref: "/pricing#epublisher",
+    priceLabel: "from R99 once-off",
+    priceNote: "Once-off credit / project packs · no recurring app fees",
 
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
     attribute: {
       icon: "🧠",
-      label: "Intelligence (IQ)",
+      label: "Authors, educators & publishers",
       body: "Structuring knowledge, automated publishing workflows, and literary preservation.",
     },
   },
   {
     name: "Creative Studio",
     tagline:
-      "Design stunning visuals, cinematic promotional assets, and marketing media instantly.",
+      "Design posters, ads, product visuals, brochures, and campaign media instantly.",
     domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
-    subscribeHref: "/creative-studio/pricing",
-    priceLabel: "from R149 / month",
-    priceNote: "Creator R149 · Pro R299 · Business R699",
+    subscribeHref: "/pricing#creative-studio",
+    priceLabel: "from R149 once-off",
+    priceNote: "Once-off creative credit packs · no recurring app fees",
     logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
     attribute: {
       icon: "❤",
-      label: "Soul & Expression (EQ)",
+      label: "Small businesses, creators & agencies",
       body: "Visual storytelling, emotional design, and brand identity mapping.",
     },
   },
   {
     name: "Sync Vision",
     tagline:
-      "Plan music videos, synchronize lyrics, and visualize stories via AI-driven cinematic workflows.",
+      "Turn songs into cinematic storyboards, character concepts, captions, and video-generation prompts.",
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
-    subscribeHref: "/sync-vision/pricing",
-    priceLabel: "from R549 / month",
-    priceNote: "Creator R549 · Pro R1,399 · Business R2,799",
+    subscribeHref: "/pricing#sync-vision",
+    priceLabel: "from R349 once-off",
+    priceNote: "Once-off music-video packs · no recurring app fees",
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
     attribute: {
       icon: "🏃",
-      label: "Physical Execution (PQ)",
+      label: "Musicians, labels & video creators",
       body: "High-fidelity video generation, precise character consistency, and frame-by-frame production.",
     },
   },
   {
     name: "The Resonance Podcast",
     tagline:
-      "Listen, learn, and get inspired by deep concepts, holistic development, and the future of AI.",
+      "Free ecosystem media, thought leadership, conversations, and community content.",
     domain: "resonance-podcast.com",
     href: "https://www.resonance-podcast.com",
     subscribeHref: "https://www.resonance-podcast.com",
     priceLabel: "Free",
-    priceNote: "Listen, watch and shop — no subscription required",
+    priceNote: "Listen and watch — not a SaaS subscription",
     logo: logoPodcast,
     accent: "cyan",
     status: "free",
     attribute: {
       icon: "∞",
-      label: "Tri-Fold Integration (3-6-9)",
+      label: "Listeners & ecosystem followers",
       body: "Conversational exploration of Mind, Body, and Soul.",
     },
   },
   {
     name: "Career Compass",
     tagline:
-      "Discover your true path, optimize your professional trajectory, and shape your future.",
+      "Help learners and schools discover career paths, skills, bursaries, and role-fit insights.",
     domain: "career-compass.org",
     href: "https://www.career-compass.org",
     subscribeHref: "https://www.career-compass.org/#how",
     priceLabel: "Free pilot",
-    priceNote: "First 50 students — rewards-based pilot. Paid tiers post-pilot.",
+    priceNote: "Free pilot now · per-report and school packages later",
     logo: logoCareerCompass,
     accent: "emerald",
     status: "free",
     attribute: {
       icon: "🎯",
-      label: "Direction & Purpose",
+      label: "Students, schools & parents",
       body: "Aligning vocational execution with universal growth principles.",
     },
   },
   {
     name: "YouTube Optimizer",
     tagline:
-      "Optimize metrics, scale your audience, and thrive sustainably on YouTube.",
-    domain: "resonanceoptimizer.lovable.app",
-    href: "https://resonanceoptimizer.lovable.app",
-    subscribeHref: "/youtube-optimizer/pricing",
-    priceLabel: "from R149 / month",
-    priceNote: "Free · Starter R149 · Pro R599 · Business R2,999",
+      "Audit channels, improve thumbnails, titles, content strategy, and growth planning.",
+    domain: "youtubeoptimizer.life",
+    href: "https://www.youtubeoptimizer.life",
+    subscribeHref: "/pricing#youtube-optimizer",
+    priceLabel: "from R149 once-off",
+    priceNote: "Once-off audit and growth packs · no recurring app fees",
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "live",
     attribute: {
       icon: "🚀",
-      label: "Velocity & Growth",
+      label: "YouTubers, creators & agencies",
       body: "Algorithmic mastery met with content authenticity.",
     },
   },
 ];
+
 
 const accentMap: Record<App["accent"], { ring: string; dot: string; text: string; chip: string }> = {
   violet: {
@@ -451,12 +453,13 @@ function HeroCarousel({
 }
 
 const NAV_LINKS = [
-  { id: "who", label: "Who it's for" },
-  { id: "ecosystem", label: "Ecosystem" },
-  { id: "pricing", label: "Pricing" },
-  { id: "philosophy", label: "Philosophy" },
+  { id: "updates", label: "Updates" },
+  { id: "apps", label: "Apps" },
+  { id: "bundles", label: "Bundles" },
+  { id: "roadmap", label: "Roadmap" },
   { id: "faq", label: "FAQ" },
 ] as const;
+
 
 function useActiveSection(ids: readonly string[]) {
   const [active, setActive] = useState<string>(ids[0]);
@@ -509,16 +512,8 @@ function Index() {
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const featuredApp = apps[carouselIndex];
-  // Map app to internal subscribe target; for free apps fall back to their site.
-  const featuredCtaHref = featuredApp.subscribeHref.startsWith("/")
-    ? featuredApp.subscribeHref
-    : featuredApp.href;
-  const featuredCtaIsExternal = featuredCtaHref.startsWith("http");
-  const featuredCtaLabel =
-    featuredApp.status === "free"
-      ? `Open ${featuredApp.name} →`
-      : `Start with ${featuredApp.name} →`;
+  void apps[carouselIndex];
+
 
   async function onJoinSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -626,50 +621,44 @@ function Index() {
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              The Resonance AI Ecosystem
+              Reson8.life · Source of truth
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
               The Resonance{" "}
-              <span className="text-gradient-brand">AI Ecosystem</span>
+              <span className="text-gradient-brand">Hub</span>
             </h1>
             <p className="text-base md:text-lg text-white/75 leading-[1.65] text-pretty max-w-[58ch] mb-6">
-              AI tools for creators, learners, and businesses — books, visuals,
-              music-video concepts, career reports, podcast content, and growth
-              strategies from one connected Resonance Hub.
+              The source of truth for every Resonance app, update, pricing plan, checkout, and
+              ecosystem package.
             </p>
-            <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-10">
-              Free and paid plans in South African Rand. PayFast supported. Cancel anytime.
+            <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-4">
+              Buy once-off app credits, discover new tools, follow product updates, and manage
+              ecosystem bundles from one South African-built AI hub.
+            </p>
+            <p className="text-[13px] text-white/60 leading-relaxed max-w-[58ch] mb-10">
+              Individual apps use once-off credits and project packs. Optional ecosystem passes
+              are available for creators and teams using multiple tools every month.
             </p>
             <div className="flex flex-wrap gap-3">
-              {featuredCtaIsExternal ? (
-                <a
-                  href={featuredCtaHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  {featuredCtaLabel}
-                </a>
-              ) : (
-                <Link
-                  to={featuredCtaHref}
-                  className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                >
-                  {featuredCtaLabel}
-                </Link>
-              )}
               <a
-                href="#ecosystem"
+                href="#apps"
+                className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Explore apps
+              </a>
+              <Link
+                to="/pricing"
                 className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
-                Explore all tools
-              </a>
+                View pricing
+              </Link>
             </div>
           </div>
           <div className="md:pl-4">
             <HeroCarousel items={apps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
           </div>
         </section>
+
 
         {/* TRUST STRIP */}
         <section aria-label="Trust" className="mb-20 -mt-4">
@@ -858,8 +847,58 @@ function Index() {
         </section>
 
 
-        {/* ECOSYSTEM */}
-        <section id="ecosystem" data-reveal className="mb-32">
+        {/* LATEST UPDATES */}
+        <section id="updates" data-reveal className="mb-24">
+          <div className="flex items-end justify-between mb-8 gap-6 flex-wrap">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
+                Latest updates
+              </div>
+              <h2 className="font-display text-2xl md:text-4xl font-bold tracking-[-0.025em]">What&apos;s new across the ecosystem</h2>
+            </div>
+            <p className="text-white/60 max-w-md text-sm leading-relaxed">
+              The Hub is the source of truth for every product change, status update, and rollout.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs now available on the Hub.", date: "Nov 2025", href: "/pricing#epublisher", cta: "View packs" },
+              { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs replace monthly subscriptions.", date: "Nov 2025", href: "/pricing#creative-studio", cta: "View packs" },
+              { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs launched with new storyboarding flow.", date: "Nov 2025", href: "/pricing#sync-vision", cta: "View packs" },
+              { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Moving to youtubeoptimizer.life with new audit and growth packs.", date: "Nov 2025", href: "/pricing#youtube-optimizer", cta: "View packs" },
+              { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Pilot open to first schools and learners — paid packages later.", date: "Nov 2025", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
+              { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New episodes and free media, no subscription required.", date: "Nov 2025", href: "https://www.resonance-podcast.com", cta: "Listen" },
+            ].map((u) => {
+              const badgeCls =
+                u.tone === "live"
+                  ? "border-[hsl(150_80%_60%/0.3)] bg-[hsl(150_80%_60%/0.12)] text-[hsl(150_80%_80%)]"
+                  : u.tone === "pilot"
+                  ? "border-[hsl(200_80%_60%/0.3)] bg-[hsl(200_80%_60%/0.12)] text-[hsl(200_80%_80%)]"
+                  : u.tone === "updating"
+                  ? "border-[hsl(45_90%_60%/0.3)] bg-[hsl(45_90%_60%/0.12)] text-[hsl(45_90%_80%)]"
+                  : "border-white/15 bg-white/[0.04] text-white/65";
+              const external = u.href.startsWith("http");
+              return (
+                <article key={u.app} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5 flex flex-col">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${badgeCls}`}>{u.status}</span>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">{u.date}</span>
+                  </div>
+                  <h3 className="text-sm font-bold tracking-tight mb-2">{u.app}</h3>
+                  <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1">{u.change}</p>
+                  {external ? (
+                    <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
+                  ) : (
+                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* APPS */}
+        <section id="apps" data-reveal className="mb-32">
           <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
             <div>
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
@@ -868,10 +907,11 @@ function Index() {
               <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">The Ecosystem</h2>
             </div>
             <p className="text-white/60 max-w-md text-sm leading-relaxed">
-              Each app is independently deployed and self-serviced — but all share the same brand,
-              the same PayFast checkout, and the same Resonance account ethos.
+              Each app is independently deployed. Individual apps use once-off credits and project
+              packs — optional ecosystem passes live on the Hub for teams using multiple tools every month.
             </p>
           </div>
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {apps.map((app, i) => {
@@ -960,194 +1000,138 @@ function Index() {
         </section>
 
         {/* PRICING TABLE */}
-        <section id="pricing" data-reveal className="mb-32">
-          <div className="text-center mb-12">
+        {/* PRICING CALLOUT */}
+        <section id="pricing" data-reveal className="mb-24">
+          <div className="rounded-3xl border border-white/10 bg-card/50 backdrop-blur-xl p-8 md:p-12 text-center">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              02 / Costings
+              02 / Pricing
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
-              Transparent ZAR pricing
+              Once-off packs. Optional passes.
             </h2>
+            <p className="text-white/70 max-w-2xl mx-auto text-sm leading-relaxed mb-8">
+              Individual apps use once-off credits and project packs — no recurring app fees. The Hub
+              offers optional monthly ecosystem passes for creators and teams using multiple Resonance
+              tools every month.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Link
+                to="/pricing"
+                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-xs uppercase tracking-widest shadow-[0_0_40px_-10px_hsl(295_90%_60%/0.8)]"
+              >
+                View full pricing →
+              </Link>
+              <a href="#bundles" className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest">
+                See ecosystem passes
+              </a>
+            </div>
+          </div>
+        </section>
+
+        {/* BUNDLES / ECOSYSTEM PASSES */}
+        <section id="bundles" data-reveal className="mb-32">
+          <div className="text-center mb-10">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
+              Optional ecosystem passes
+            </div>
+            <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
+              For creators and teams using multiple tools every month
+            </h3>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-              Pay at the app of your choice through the shared PayFast checkout. One Hub billing
-              account today; unified app login is on the roadmap.
+              Passes are optional. If you only need one app, just buy the once-off pack.
             </p>
           </div>
-
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
-            <table className="w-full text-sm">
-              <thead className="bg-white/[0.03] border-b border-white/10">
-                <tr className="text-left">
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">App</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Free</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Starter</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Creator</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Pro</th>
-                  <th className="px-6 py-4 font-bold text-xs uppercase tracking-widest text-white/70">Business</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {[
-                  ["Resonance ePublisher", "✓", "R99", "R199", "R449", "R999"],
-                  ["Creative Studio", "—", "—", "R149", "R299", "R699"],
-                  ["Sync Vision", "—", "—", "R549", "R1,399", "R2,799"],
-                  ["The Resonance Podcast", "Free", "—", "—", "—", "—"],
-                  ["Career Compass", "Pilot", "—", "—", "—", "—"],
-                  ["YouTube Optimizer", "—", "R149", "—", "R599", "R2,999"],
-                ].map((row) => (
-                  <tr key={row[0]} className="hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4 font-semibold">{row[0]}</td>
-                    {row.slice(1).map((cell, j) => (
-                      <td
-                        key={j}
-                        className={`px-6 py-4 font-mono text-white/80 ${
-                          cell.startsWith("R") ? "text-white" : ""
-                        }`}
-                      >
-                        {cell}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile stacked cards */}
-          <div className="md:hidden grid gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { app: "Resonance ePublisher", tiers: [["Free", "✓"], ["Starter", "R99"], ["Creator", "R199"], ["Pro", "R449"], ["Business", "R999"]] },
-              { app: "Creative Studio", tiers: [["Creator", "R149"], ["Pro", "R299"], ["Business", "R699"]] },
-              { app: "Sync Vision", tiers: [["Creator", "R549"], ["Pro", "R1,399"], ["Business", "R2,799"]] },
-              { app: "YouTube Optimizer", tiers: [["Starter", "R149"], ["Pro", "R599"], ["Business", "R2,999"]] },
-              { app: "The Resonance Podcast", tiers: [["Free", "Always free"]] },
-              { app: "Career Compass", tiers: [["Pilot", "Free for first 50 students"]] },
-            ].map((card) => (
+              {
+                name: "Creator Pass",
+                price: "R499",
+                period: "/ month",
+                body: "Monthly allowance across ePublisher, Creative Studio, and YouTube Optimizer. Best for solo creators publishing and promoting regularly.",
+                href: "/checkout?app=all_access&plan=creator_pass",
+                cta: "Subscribe",
+                featured: false,
+              },
+              {
+                name: "Studio Pass",
+                price: "R1,499",
+                period: "/ month",
+                body: "Monthly allowance across ePublisher, Creative Studio, Sync Vision, and YouTube Optimizer. Best for musicians, media teams, and high-output creators.",
+                href: "/checkout?app=all_access&plan=studio_pass",
+                cta: "Subscribe",
+                featured: true,
+              },
+              {
+                name: "Business Pass",
+                price: "Custom",
+                period: "/ month",
+                body: "Multi-seat access, onboarding, priority support, invoice support, and custom app allowances. Best for agencies, schools, publishers, and businesses.",
+                href: "mailto:hello@reson8.life?subject=Business%20Pass%20enquiry",
+                cta: "Request quote",
+                featured: false,
+              },
+            ].map((b) => (
               <article
-                key={card.app}
-                className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-4"
+                key={b.name}
+                className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
+                  b.featured
+                    ? "border-[hsl(295_90%_60%/0.4)] bg-card/80 shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]"
+                    : "border-white/10 bg-card/50"
+                }`}
               >
-                <h3 className="text-sm font-bold tracking-tight mb-3">{card.app}</h3>
-                <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                  {card.tiers.map(([tier, price]) => (
-                    <div key={tier} className="contents">
-                      <dt className="text-white/65 font-mono uppercase tracking-wider text-[10px] self-center">{tier}</dt>
-                      <dd className="text-white font-semibold text-right">{price}</dd>
-                    </div>
-                  ))}
-                </dl>
+                <span className={`self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${b.featured ? "border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]" : "border-white/15 bg-white/[0.04] text-white/60"}`}>
+                  {b.featured ? "Most popular" : "Optional pass"}
+                </span>
+                <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-3xl font-extrabold">{b.price}</span>
+                  <span className="text-xs text-white/65">{b.period}</span>
+                </div>
+                <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
+                <a
+                  href={b.href}
+                  className={`inline-block w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
+                    b.featured
+                      ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
+                      : "border border-white/15 hover:border-white/40"
+                  }`}
+                >
+                  {b.cta}
+                </a>
               </article>
             ))}
           </div>
           <p className="text-center text-xs text-white/60 mt-6">
-            Prices in South African Rand (ZAR). Secure card &amp; EFT via PayFast. Cancel any
-            subscription anytime.
+            Ecosystem passes are optional. Individual apps remain available as once-off credit and
+            project packs. Billed monthly via PayFast. Cancel anytime.
           </p>
+        </section>
 
-          <div className="text-center mt-6">
-            <Link
-              to="/pricing"
-              className="inline-block px-6 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest transition-colors"
-            >
-              See full pricing →
-            </Link>
+        {/* ROADMAP */}
+        <section id="roadmap" data-reveal className="mb-24">
+          <div className="text-center mb-8">
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
+              Roadmap
+            </div>
+            <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
+              What&apos;s coming next
+            </h3>
           </div>
-
-
-          {/* BUNDLES */}
-          <div className="mt-16">
-            <div className="text-center mb-10">
-              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-                Ecosystem bundles
-              </div>
-              <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
-                Buy the ecosystem, not just an app
-              </h3>
-              <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-                One subscription, multiple Resonance tools. Pick the bundle that matches how you create.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                {
-                  name: "Resonance All-Access",
-                  price: "R1,499",
-                  body: "Pro tier across ePublisher, Creative Studio, Sync Vision — plus early access to YouTube Optimizer. Billed monthly via PayFast.",
-                  featured: true,
-                  href: "/checkout?app=all_access&plan=all_access",
-                  cta: "Subscribe",
-                  available: true,
-                },
-                {
-                  name: "Starter Bundle",
-                  price: "Custom",
-                  body: "ePublisher Starter + basic Creative Studio credits. Request a quote — not yet on PayFast.",
-                  href: "mailto:hello@reson8.life?subject=Starter%20Bundle%20interest",
-                  cta: "Request bundle",
-                  available: false,
-                },
-                {
-                  name: "Creator Bundle",
-                  price: "Custom",
-                  body: "ePublisher Creator + Creative Studio Creator + YouTube Optimizer Starter. Request a quote — not yet on PayFast.",
-                  href: "mailto:hello@reson8.life?subject=Creator%20Bundle%20interest",
-                  cta: "Request bundle",
-                  available: false,
-                },
-                {
-                  name: "Business Bundle",
-                  price: "Custom",
-                  body: "All Business tools + priority support + onboarding call. Request a quote — not yet on PayFast.",
-                  href: "mailto:hello@reson8.life?subject=Business%20Bundle%20interest",
-                  cta: "Request bundle",
-                  available: false,
-                },
-              ].map((b) => (
-
-                <article
-                  key={b.name}
-                  className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
-                    b.featured
-                      ? "border-[hsl(295_90%_60%/0.4)] bg-card/80 shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]"
-                      : "border-white/10 bg-card/50"
-                  }`}
-                >
-                  {b.featured ? (
-                    <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]">
-                      Available now
-                    </span>
-                  ) : (
-                    <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-white/15 bg-white/[0.04] text-white/60">
-                      Custom quote
-                    </span>
-                  )}
-                  <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
-                  <div className="flex items-baseline gap-1 mb-4">
-                    <span className="text-3xl font-extrabold">{b.price}</span>
-                    {b.available && <span className="text-xs text-white/65">/ month</span>}
-                  </div>
-                  <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
-                  <a
-                    href={b.href}
-                    className={`inline-block w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
-                      b.featured
-                        ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
-                        : "border border-white/15 hover:border-white/40"
-                    }`}
-                  >
-                    {b.cta}
-                  </a>
-
-                </article>
-              ))}
-            </div>
-            <p className="text-center text-xs text-white/65 mt-6">
-              Only All-Access is purchasable directly. Other bundles are custom quotes — billed
-              monthly via PayFast once activated. Cancel anytime.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { title: "Unified Hub login", body: "Single sign-on across every Resonance app.", eta: "Q1 2026" },
+              { title: "Pack redemption", body: "Once-off packs redeemable inside each app dashboard.", eta: "Q1 2026" },
+              { title: "Career Compass paid tiers", body: "Per-report, school, and district packages.", eta: "2026" },
+            ].map((r) => (
+              <article key={r.title} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-2">{r.eta}</div>
+                <h4 className="text-sm font-bold tracking-tight mb-2">{r.title}</h4>
+                <p className="text-xs text-white/65 leading-relaxed">{r.body}</p>
+              </article>
+            ))}
           </div>
         </section>
+
 
         {/* PHILOSOPHY */}
         <section
@@ -1192,21 +1176,26 @@ function Index() {
           <div className="max-w-3xl mx-auto divide-y divide-white/10 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
             {[
               {
+                q: "Do individual apps have monthly subscriptions?",
+                a: "No. Individual Resonance apps use once-off credits and project packs — no recurring app fees. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps.",
+              },
+              {
                 q: "Can I use Resonance tools for free?",
-                a: "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students. Creative Studio and Sync Vision offer trial credits.",
+                a: "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits before you buy a pack.",
               },
               {
                 q: "Is there a single login across every app?",
-                a: "One Hub billing account today — your subscriptions and invoices live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
+                a: "One Hub billing account today — packs and passes live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
               },
               {
-                q: "Can I cancel anytime?",
-                a: "Yes. Every subscription is cancel-anytime via PayFast. No long-term contracts.",
+                q: "Can I cancel an ecosystem pass anytime?",
+                a: "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases with no recurring billing.",
               },
               {
                 q: "Are prices in South African Rand?",
-                a: "All prices are in ZAR and processed locally through PayFast (card and EFT). Monthly billing only.",
+                a: "All prices are in ZAR and processed locally through PayFast (card and EFT).",
               },
+
               {
                 q: "Can schools use Career Compass?",
                 a: "Yes — schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
@@ -1314,21 +1303,18 @@ function Index() {
             </div>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Governance
-            </Link>
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Privacy & POPIA
-            </Link>
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Terms
-            </Link>
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Refunds
-            </Link>
-            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">
-              Support
-            </a>
+            <a href="/#apps" className="hover:text-white transition-colors">Apps</a>
+            <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <a href="/#updates" className="hover:text-white transition-colors">Updates</a>
+            <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
+            <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
+            <Link to="/governance" className="hover:text-white transition-colors">Governance</Link>
+            <Link to="/governance" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
+            <Link to="/governance" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/governance" className="hover:text-white transition-colors">Refunds</Link>
+            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Support</a>
+            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Contact</a>
+
             <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
