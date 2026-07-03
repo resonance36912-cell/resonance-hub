@@ -49,6 +49,7 @@ function escapeXml(s: string): string {
 }
 
 function absolutize(href: string, origin: string): string {
+  // nosemgrep: ajinabraham.njsscan.dos.regex_dos.regex_dos -- anchored, no backtracking, linear time.
   if (/^https?:\/\//i.test(href)) return href;
   if (href.startsWith("/")) return `${origin}${href}`;
   return `${origin}/${href}`;
