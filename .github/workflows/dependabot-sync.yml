@@ -60,7 +60,7 @@ jobs:
           summary=drift-artifacts/summary.json
           if [ ! -f "$summary" ]; then
             echo "any_drift=false" >> "$GITHUB_OUTPUT"
-            for id in bun-lock-after-install package-json-after-overrides-sync bun-lock-after-reinstall; do
+            for id in bun_lock_after_install package_json_after_overrides_sync bun_lock_after_reinstall; do
               echo "${id}_status=success" >> "$GITHUB_OUTPUT"
             done
             exit 0
@@ -187,12 +187,12 @@ jobs:
         if: always()
         uses: actions/github-script@v7
         env:
-          DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun-lock-after-install_status }}
-          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun-lock-after-install_snippet }}
-          DRIFT_PACKAGE_JSON: ${{ steps.drift_summary.outputs.package-json-after-overrides-sync_status }}
-          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_summary.outputs.package-json-after-overrides-sync_snippet }}
-          DRIFT_LOCK_REINSTALL: ${{ steps.drift_summary.outputs.bun-lock-after-reinstall_status }}
-          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun-lock-after-reinstall_snippet }}
+          DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
+          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_install_snippet }}
+          DRIFT_PACKAGE_JSON: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_status }}
+          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_snippet }}
+          DRIFT_LOCK_REINSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_status }}
+          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
           ARTIFACT_URL: ${{ steps.upload_drift.outputs.artifact-url }}
           PINS_STATUS: ${{ steps.verify_pins.outcome }}
           PINS_OUTPUT: ${{ steps.verify_pins.outputs.output }}
