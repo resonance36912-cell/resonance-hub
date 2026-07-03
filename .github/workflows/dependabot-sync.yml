@@ -173,21 +173,73 @@ jobs:
         if: steps.verify_pins.outcome == 'success'
         run: bun run scripts/sync-overrides-from-lock.ts --check
 
-      - name: bun audit (high+)
+      - name: bun audit (configurable threshold)
         id: bun_audit
         if: steps.verify_pins.outcome == 'success'
+        continue-on-error: true
+        # Threshold config via repo/org variables (Settings → Secrets and variables → Actions → Variables):
+        #   BUN_AUDIT_LEVEL      — severity floor: low | moderate | high | critical (default: high)
+        #   BUN_AUDIT_MAX_VULNS  — max advisories at/above LEVEL before failing (default: 0)
+        env:
+          BUN_AUDIT_LEVEL: ${{ vars.BUN_AUDIT_LEVEL || 'high' }}
+          BUN_AUDIT_MAX_VULNS: ${{ vars.BUN_AUDIT_MAX_VULNS || '0' }}
         run: |
           set +e
-          out=$(bun audit --audit-level=high 2>&1)
-          code=$?
-          echo "$out"
+          human=$(bun audit --audit-level="$BUN_AUDIT_LEVEL" 2>&1)
+          human_code=$?
+          echo "$human"
+
+          json=$(bun audit --audit-level="$BUN_AUDIT_LEVEL" --json 2>/dev/null)
+          # Count advisories at/above the configured level. bun audit --json
+          # emits either { advisories: {...} } (npm-compatible) or a metadata
+          # object with per-severity counts. Handle both, fall back to human
+          # exit code when parsing fails.
+          count=$(printf '%s' "$json" | node -e '
+            let raw = ""; process.stdin.on("data", c => raw += c); process.stdin.on("end", () => {
+              const level = process.env.BUN_AUDIT_LEVEL;
+              const order = ["low","moderate","high","critical"];
+              const min = order.indexOf(level);
+              if (min < 0) { console.log("0"); return; }
+              try {
+                const data = JSON.parse(raw);
+                const advisories = data.advisories && typeof data.advisories === "object" ? Object.values(data.advisories) : [];
+                if (advisories.length) {
+                  const n = advisories.filter(a => order.indexOf(String(a.severity || "").toLowerCase()) >= min).length;
+                  console.log(String(n)); return;
+                }
+                const vuln = (data.metadata && data.metadata.vulnerabilities) || data.vulnerabilities || {};
+                let n = 0; for (const sev of order.slice(min)) n += Number(vuln[sev] || 0);
+                console.log(String(n));
+              } catch { console.log(""); }
+            });
+          ' 2>/dev/null)
+
+          if [ -z "$count" ]; then
+            # JSON parse failed — fall back to exit code (0 = no vulns, non-zero = at least 1).
+            count=$([ "$human_code" -eq 0 ] && echo 0 || echo 1)
+            parsed="false"
+          else
+            parsed="true"
+          fi
+
+          echo "Advisories at level '$BUN_AUDIT_LEVEL' or above: $count (threshold: $BUN_AUDIT_MAX_VULNS)"
+
           {
-            echo "exit_code=$code"
+            echo "level=$BUN_AUDIT_LEVEL"
+            echo "threshold=$BUN_AUDIT_MAX_VULNS"
+            echo "count=$count"
+            echo "parsed=$parsed"
             echo "output<<EOF"
-            echo "$out"
+            echo "$human"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
-          exit $code
+
+          if [ "$count" -gt "$BUN_AUDIT_MAX_VULNS" ]; then
+            echo "::error::bun audit found $count advisories at severity '$BUN_AUDIT_LEVEL' or above (max allowed: $BUN_AUDIT_MAX_VULNS)."
+            exit 1
+          fi
+          exit 0
+
 
       - name: Post/update PR summary comment
         # Sticky comment (marker-based) summarizing drift + pinned-deps + audit
