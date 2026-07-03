@@ -11,6 +11,13 @@ import logoSyncVision from "@/assets/logo-sync-vision.png";
 import logoPodcast from "@/assets/logo-podcast.png";
 import logoCareerCompass from "@/assets/logo-career-compass.png";
 import logoYouTubeOptimizer from "@/assets/logo-youtube-optimizer.png";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -1305,13 +1312,6 @@ function Index() {
   );
 }
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 type UpdateTone = "live" | "updating" | "new" | "pilot";
 type UpdateLink = { label: string; href: string };
