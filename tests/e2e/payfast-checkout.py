@@ -210,28 +210,38 @@ async def test_business_pass_is_quote(context) -> list[str]:
 
 
 async def main() -> int:
-    storage_key, session_json, cookies_json = _require_session_env()
+    session = _session_env()
     all_errors: list[str] = []
+    ran_pass_launch = False
 
     async with async_playwright() as pw:
         browser = await pw.chromium.launch(headless=True)
         context = await browser.new_context(viewport={"width": 1280, "height": 1800})
-        setup_page = await context.new_page()
-        await _restore_session(context, setup_page, storage_key, session_json, cookies_json)
-        await setup_page.close()
 
-        # Business-pass sanity first (no auth-dependent surface).
+        if session:
+            storage_key, session_json, cookies_json = session
+            setup_page = await context.new_page()
+            await _restore_session(context, setup_page, storage_key, session_json, cookies_json)
+            await setup_page.close()
+
+        # Auth-free: /pricing quote CTA + /checkout 'Plan not found' for business_pass.
         all_errors += await test_business_pass_is_quote(context)
 
-        # Once-off packs (no PayFast form expected).
+        # Auth-free: once-off packs render waitlist stub and MUST NOT hit PayFast.
         for pack_id in PACK_CASES:
             all_errors += await test_pack(context, pack_id)
 
-        # Ecosystem passes — full PayFast launch.
-        for plan, label, cents in PASS_CASES:
-            all_errors += await test_pass(context, plan, label, cents)
+        # Auth-gated: full PayFast launch for ecosystem passes.
+        if session:
+            for plan, label, cents in PASS_CASES:
+                all_errors += await test_pass(context, plan, label, cents)
+            ran_pass_launch = True
+        else:
+            print(f"SKIP pass-launch tests: LOVABLE_BROWSER_AUTH_STATUS="
+                  f"{os.environ.get('LOVABLE_BROWSER_AUTH_STATUS', 'absent')} (need 'injected').")
 
         await browser.close()
+
 
     if all_errors:
         print("FAIL — PayFast checkout e2e:")
