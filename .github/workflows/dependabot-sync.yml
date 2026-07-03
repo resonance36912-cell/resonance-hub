@@ -1,12 +1,15 @@
 name: Dependabot lockfile sync
 
 # Runs on every Dependabot PR. Purpose:
-#   1. If Dependabot ever opens a PR that touches package.json but leaves
-#      bun.lock stale, regenerate the lockfile and commit it back to the PR
-#      branch so `verify-pinned-deps.ts` passes.
-#   2. Re-run the pinned-deps guard + `bun audit` on the final state.
+#   1. Hard-fail if `bun install` regenerates bun.lock differently than what
+#      Dependabot committed (stale lockfile → drift).
+#   2. Hard-fail if syncing overrides from bun.lock changes package.json or
+#      re-resolves bun.lock (overrides drift).
+#   3. Re-run the pinned-deps guard + `bun audit` on the final state.
 #
-# Only Dependabot PRs trigger this job (checked via actor + PR head ref).
+# We intentionally do NOT auto-commit fixes: a drifted lockfile must be
+# corrected in the PR branch (locally or by re-running Dependabot) before it
+# can merge.
 
 on:
   pull_request:
@@ -17,7 +20,7 @@ on:
       - ".github/dependabot.yml"
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 concurrency:
@@ -32,7 +35,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # Check out the PR head so we can push a follow-up commit if needed.
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,33 +43,59 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Snapshot committed lockfile + manifest
+        run: |
+          cp bun.lock .bun.lock.orig
+          cp package.json .package.json.orig
+
       - name: Regenerate lockfile from package.json
-        # `bun install` (no --frozen-lockfile) updates bun.lock to match
-        # whatever Dependabot wrote into package.json.
+        # No --frozen-lockfile: we WANT bun to rewrite bun.lock if it disagrees
+        # with package.json, so we can detect the drift on the next step.
         run: bun install
+
+      - name: Fail on bun.lock drift after bun install
+        run: |
+          if ! diff -u .bun.lock.orig bun.lock > /tmp/bun.lock.diff; then
+            echo "::error::bun.lock drifted after 'bun install'. The committed lockfile does not match package.json."
+            echo "Run 'bun install' locally, commit the updated bun.lock, and push to this PR branch."
+            echo "----- bun.lock diff (truncated to 200 lines) -----"
+            head -n 200 /tmp/bun.lock.diff
+            exit 1
+          fi
+          echo "bun.lock is in sync with package.json."
 
       - name: Sync overrides / pnpm.overrides from bun.lock
         # Dependabot doesn't touch `overrides` blocks. If a direct-dep bump
-        # pulls a newer safe version of an overridden transitive (undici, ws,
-        # vite, ...), advance the pin to match. Never downgrades.
+        # pulls a newer safe version of an overridden transitive, the sync
+        # script would advance the pin. Any change here is drift.
         run: bun run scripts/sync-overrides-from-lock.ts
 
-      - name: Re-install if overrides changed
-        # Overrides changing means bun.lock may need to re-resolve. A second
-        # `bun install` is cheap when nothing changed and correct when it did.
-        run: bun install
-
-      - name: Commit package.json + bun.lock if either changed
+      - name: Fail on package.json drift after overrides sync
         run: |
-          if ! git diff --quiet -- package.json bun.lock; then
-            git config user.name "dependabot[bot]"
-            git config user.email "49699333+dependabot[bot]@users.noreply.github.com"
-            git add package.json bun.lock
-            git commit -m "chore(deps): sync bun.lock + overrides after Dependabot bump"
-            git push
-          else
-            echo "package.json and bun.lock already in sync."
+          if ! diff -u .package.json.orig package.json > /tmp/package.json.diff; then
+            echo "::error::package.json 'overrides' drifted after sync-overrides-from-lock.ts."
+            echo "Run 'bun run scripts/sync-overrides-from-lock.ts' locally, then 'bun install', commit both files, and push."
+            echo "----- package.json diff -----"
+            cat /tmp/package.json.diff
+            exit 1
           fi
+
+      - name: Re-install and fail on any further bun.lock drift
+        # After overrides sync (which changed nothing at this point) confirm a
+        # second `bun install` is a no-op. Catches transitive re-resolution.
+        run: |
+          bun install
+          if ! diff -u .bun.lock.orig bun.lock > /tmp/bun.lock.diff2; then
+            echo "::error::bun.lock drifted after re-install. Overrides or transitive re-resolution changed the lockfile."
+            head -n 200 /tmp/bun.lock.diff2
+            exit 1
+          fi
+
+      - name: Cleanup snapshots
+        if: always()
+        run: rm -f .bun.lock.orig .package.json.orig
+
+
 
       - name: Verify pinned dependency versions
         id: verify_pins
