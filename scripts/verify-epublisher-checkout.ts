@@ -110,9 +110,8 @@ for (const tier of EPUB_TIERS) {
     : fail(`Hub catalog (${hub}¢) !== ITN catalog (${itn}¢)`);
 
 
-  hub === labelCents
-    ? pass(`Pricing page label "${labelStr}" matches catalog`)
-    : fail(`Pricing page label "${labelStr}" (${labelCents}¢) !== catalog (${hub}¢)`);
+  // (pricing page label check removed — ePublisher moved to once-off packs)
+
 
   const fields = buildLaunchFields(sku, hub, "test-user-id");
   fields.amount === (hub / 100).toFixed(2)
