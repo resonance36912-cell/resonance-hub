@@ -58,6 +58,14 @@ const DYNAMIC_CTA_CONTRACTS: Record<string, DynamicContract> = {
   },
 };
 
+// Files allowed to emit `/checkout?pack=${...}` with a dynamic pack id
+// (they iterate PACK_CATALOG at render time, so every emitted id is valid
+// by construction). Literal `pack=<id>` values elsewhere are still checked
+// against PACK_CATALOG.
+const DYNAMIC_PACK_ALLOWLIST = new Set<string>([
+  "src/routes/pricing.tsx",
+]);
+
 // Capture any quoted string or template literal that contains `checkout?`.
 const linkRegex = /["'`]([^"'`\n]*checkout\?[^"'`\n]+)["'`]/g;
 
