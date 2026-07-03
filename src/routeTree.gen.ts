@@ -16,6 +16,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
+import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -83,6 +84,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
   id: '/youtube-optimizer/pricing',
   path: '/youtube-optimizer/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
+  id: '/updates/preview',
+  path: '/updates/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
@@ -285,6 +291,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
@@ -327,6 +334,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
@@ -370,6 +378,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
@@ -414,6 +423,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
+    | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
     | '/api/public/entitlement'
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
+    | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
     | '/api/public/entitlement'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
+    | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
     | '/api/public/entitlement'
@@ -539,6 +551,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
+  UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
@@ -609,6 +622,13 @@ declare module '@tanstack/react-router' {
       path: '/youtube-optimizer/pricing'
       fullPath: '/youtube-optimizer/pricing'
       preLoaderRoute: typeof YoutubeOptimizerPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/updates/preview': {
+      id: '/updates/preview'
+      path: '/updates/preview'
+      fullPath: '/updates/preview'
+      preLoaderRoute: typeof UpdatesPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sync-vision/pricing': {
@@ -879,6 +899,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
+  UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
@@ -904,13 +925,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
