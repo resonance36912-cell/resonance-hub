@@ -12,7 +12,7 @@
  * Run with:  bun test src/lib/rop/cron-auth.server.test.ts
  */
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { assertCronAuthorized } from "./cron-auth.server";
+import { assertCronAuthorized } from "../../src/lib/rop/cron-auth.server";
 
 const KEY = "sb-service-role-key-abcdef0123456789";
 
