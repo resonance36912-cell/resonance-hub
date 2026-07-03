@@ -23,6 +23,7 @@ export const Route = createFileRoute("/lovable/email/transactional/preview")({
         const token = authHeader?.replace(/^Bearer\s+/i, '') ?? ''
         const { timingSafeEqual } = await import('node:crypto')
         const tokenBuf = Buffer.from(token, 'utf8')
+        // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_api_key -- apiKey is read from process.env.LOVABLE_API_KEY above.
         const keyBuf = Buffer.from(apiKey, 'utf8')
         if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
