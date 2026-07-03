@@ -82,10 +82,37 @@ async function loadUpdates(origin: string): Promise<UpdateItem[]> {
   return data.filter(isValid);
 }
 
-function buildRss(updates: UpdateItem[], origin: string): string {
-  const feedUrl = `${origin}/api/public/updates/rss`;
+const ALLOWED_STATUSES = ["Live", "Updating", "New", "Free Pilot"] as const;
+
+function parseStatusFilter(raw: string | null): string[] {
+  if (!raw) return [];
+  const wanted = raw
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  const allowed = new Set(ALLOWED_STATUSES.map((s) => s.toLowerCase()));
+  return wanted.filter((s) => allowed.has(s));
+}
+
+function applyStatusFilter(updates: UpdateItem[], statuses: string[]): UpdateItem[] {
+  if (statuses.length === 0) return updates;
+  const set = new Set(statuses);
+  return updates.filter((u) => set.has(u.status.toLowerCase()));
+}
+
+function buildRss(
+  updates: UpdateItem[],
+  origin: string,
+  statusFilter: string[],
+): string {
+  const qs = statusFilter.length > 0 ? `?status=${encodeURIComponent(statusFilter.join(","))}` : "";
+  const feedUrl = `${origin}/api/public/updates/rss${qs}`;
   const siteUrl = `${origin}/`;
   const now = new Date().toUTCString();
+  const titleSuffix =
+    statusFilter.length > 0
+      ? ` (${statusFilter.map((s) => s.replace(/\b\w/g, (c) => c.toUpperCase())).join(", ")})`
+      : "";
 
   const items = [...updates]
     .sort((a, b) => parseDate(b.date).getTime() - parseDate(a.date).getTime())
@@ -124,7 +151,7 @@ function buildRss(updates: UpdateItem[], origin: string): string {
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
     "  <channel>",
-    "    <title>Resonance — Latest Updates</title>",
+    `    <title>${escapeXml(`Resonance — Latest Updates${titleSuffix}`)}</title>`,
     `    <link>${escapeXml(siteUrl)}</link>`,
     "    <description>Release notes and status changes across the Resonance ecosystem: Hub, ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, Career Compass, and the Resonance Podcast.</description>",
     "    <language>en</language>",
@@ -139,19 +166,23 @@ function buildRss(updates: UpdateItem[], origin: string): string {
 export const Route = createFileRoute("/api/public/updates/rss")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const host = getRequestHost();
         const proto = getRequestUrl().protocol.replace(":", "") || "https";
         const origin = `${proto}://${host}`;
+        const url = new URL(request.url);
+        const statusFilter = parseStatusFilter(url.searchParams.get("status"));
         try {
-          const updates = await loadUpdates(origin);
-          const xml = buildRss(updates, origin);
+          const all = await loadUpdates(origin);
+          const filtered = applyStatusFilter(all, statusFilter);
+          const xml = buildRss(filtered, origin, statusFilter);
           return new Response(xml, {
             status: 200,
             headers: {
               "content-type": "application/rss+xml; charset=utf-8",
               // Small cache — feed changes only when updates.json changes.
               "cache-control": "public, max-age=300, s-maxage=300",
+              vary: "Accept, Accept-Encoding",
             },
           });
         } catch (err) {
@@ -164,3 +195,4 @@ export const Route = createFileRoute("/api/public/updates/rss")({
     },
   },
 });
+
