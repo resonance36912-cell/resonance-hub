@@ -38,6 +38,7 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicUpdatesRssRouteImport } from './routes/api/public/updates/rss'
+import { Route as ApiPublicUpdatesAtomRouteImport } from './routes/api/public/updates/atom'
 import { Route as ApiPublicRopPullBroadcastsRouteImport } from './routes/api/public/rop/pull-broadcasts'
 import { Route as ApiPublicRopIngestSuggestionRouteImport } from './routes/api/public/rop/ingest-suggestion'
 import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/rop/ingest-perf'
@@ -198,6 +199,11 @@ const ApiPublicUpdatesRssRoute = ApiPublicUpdatesRssRouteImport.update({
   path: '/api/public/updates/rss',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicUpdatesAtomRoute = ApiPublicUpdatesAtomRouteImport.update({
+  id: '/api/public/updates/atom',
+  path: '/api/public/updates/atom',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRopPullBroadcastsRoute =
   ApiPublicRopPullBroadcastsRouteImport.update({
     id: '/api/public/rop/pull-broadcasts',
@@ -290,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
   '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
+  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
   '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
+  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -373,6 +381,7 @@ export interface FileRoutesById {
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
   '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
+  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/api/public/rop/ingest-perf'
     | '/api/public/rop/ingest-suggestion'
     | '/api/public/rop/pull-broadcasts'
+    | '/api/public/updates/atom'
     | '/api/public/updates/rss'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -457,6 +467,7 @@ export interface FileRouteTypes {
     | '/api/public/rop/ingest-perf'
     | '/api/public/rop/ingest-suggestion'
     | '/api/public/rop/pull-broadcasts'
+    | '/api/public/updates/atom'
     | '/api/public/updates/rss'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/api/public/rop/ingest-perf'
     | '/api/public/rop/ingest-suggestion'
     | '/api/public/rop/pull-broadcasts'
+    | '/api/public/updates/atom'
     | '/api/public/updates/rss'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -538,6 +550,7 @@ export interface RootRouteChildren {
   ApiPublicRopIngestPerfRoute: typeof ApiPublicRopIngestPerfRoute
   ApiPublicRopIngestSuggestionRoute: typeof ApiPublicRopIngestSuggestionRoute
   ApiPublicRopPullBroadcastsRoute: typeof ApiPublicRopPullBroadcastsRoute
+  ApiPublicUpdatesAtomRoute: typeof ApiPublicUpdatesAtomRoute
   ApiPublicUpdatesRssRoute: typeof ApiPublicUpdatesRssRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -752,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicUpdatesRssRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/updates/atom': {
+      id: '/api/public/updates/atom'
+      path: '/api/public/updates/atom'
+      fullPath: '/api/public/updates/atom'
+      preLoaderRoute: typeof ApiPublicUpdatesAtomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/rop/pull-broadcasts': {
       id: '/api/public/rop/pull-broadcasts'
       path: '/api/public/rop/pull-broadcasts'
@@ -871,6 +891,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,
   ApiPublicRopIngestSuggestionRoute: ApiPublicRopIngestSuggestionRoute,
   ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
+  ApiPublicUpdatesAtomRoute: ApiPublicUpdatesAtomRoute,
   ApiPublicUpdatesRssRoute: ApiPublicUpdatesRssRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
