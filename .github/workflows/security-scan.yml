@@ -20,7 +20,9 @@ env:
 permissions:
   contents: read
   security-events: write
-  pull-requests: read
+  # `write` (not `read`) is required so the pr-comment job below can post
+  # and update the sticky SARIF-artifacts comment via the GitHub API.
+  pull-requests: write
 
 concurrency:
   group: security-scan-${{ github.ref }}
