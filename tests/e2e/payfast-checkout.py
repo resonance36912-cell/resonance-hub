@@ -248,7 +248,8 @@ async def main() -> int:
         for e in all_errors:
             print(f"  • {e}")
         return 1
-    print(f"PASS — {len(PACK_CASES)} pack(s) waitlisted, {len(PASS_CASES)} pass(es) launched PayFast, Business Pass is quote-only.")
+    pass_note = f"{len(PASS_CASES)} pass(es) launched PayFast" if ran_pass_launch else "pass-launch SKIPPED (no session)"
+    print(f"PASS — {len(PACK_CASES)} pack(s) waitlisted, {pass_note}, Business Pass is quote-only.")
     return 0
 
 
