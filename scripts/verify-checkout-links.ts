@@ -76,6 +76,9 @@ const DYNAMIC_PARAM_ALLOWLIST: Record<string, ReadonlySet<string>> = {
   // buildUpgradeRequiredResponse). app/plan literals are re-validated
   // downstream via DYNAMIC_CTA_CONTRACTS pass 2.
   "src/lib/requireTier-request.ts": new Set(["app", "plan", "return_to"]),
+  // Pricing page iterates PACK_CATALOG at render time; pass 1's existing
+  // pack-dynamic check enforces the allowlist further down.
+  "src/routes/pricing.tsx": new Set(["pack"]),
 };
 
 // Capture any quoted string or template literal that contains `checkout?`.
