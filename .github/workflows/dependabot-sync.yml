@@ -32,19 +32,33 @@ on:
       - "package.json"
       - "bun.lock"
       - ".github/dependabot.yml"
+  # Manual trigger for troubleshooting: run the exact drift gates against any
+  # branch without waiting for Dependabot to open a PR. No PR comment is
+  # posted (there's no PR context) — inspect the workflow-run Summary tab and
+  # the `dependabot-sync-drift` artifact instead.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to check out (defaults to the ref this workflow was dispatched on)."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: dependabot-sync-${{ github.ref }}
+  # Include event_name so a manual dispatch on `main` can't cancel an
+  # in-flight Dependabot PR run on the same ref.
+  group: dependabot-sync-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
+
 
 jobs:
   sync-lockfile:
     name: sync-lockfile
-    if: github.actor == 'dependabot[bot]'
+    if: github.event_name == 'workflow_dispatch' || github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Surface drift + artifact metadata to the drift-gate job so it can render
@@ -59,13 +73,16 @@ jobs:
       lock_reinstall_snippet: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
       artifact_url: ${{ steps.upload_drift.outputs.artifact-url }}
     steps:
-
-
+      # Checkout target ref:
+      #   - pull_request → the PR head branch (from the fork or same repo).
+      #   - workflow_dispatch → the user-supplied `ref` input, falling back to
+      #     the branch the workflow was dispatched on (github.ref_name).
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -211,8 +228,10 @@ jobs:
       - name: Post/update PR summary comment
         # Sticky comment (marker-based) summarizing drift + pinned-deps + audit
         # so reviewers see the exact failed step and can jump straight to the
-        # uploaded diff artifact.
-        if: always()
+        # uploaded diff artifact. Skipped on workflow_dispatch — there's no PR
+        # to comment on; inspect the run Summary tab + drift artifact instead.
+        if: always() && github.event_name == 'pull_request'
+
         uses: actions/github-script@v7
         env:
           DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
