@@ -46,20 +46,34 @@ jobs:
         # whatever Dependabot wrote into package.json.
         run: bun install
 
-      - name: Commit lockfile if it changed
+      - name: Sync overrides / pnpm.overrides from bun.lock
+        # Dependabot doesn't touch `overrides` blocks. If a direct-dep bump
+        # pulls a newer safe version of an overridden transitive (undici, ws,
+        # vite, ...), advance the pin to match. Never downgrades.
+        run: bun run scripts/sync-overrides-from-lock.ts
+
+      - name: Re-install if overrides changed
+        # Overrides changing means bun.lock may need to re-resolve. A second
+        # `bun install` is cheap when nothing changed and correct when it did.
+        run: bun install
+
+      - name: Commit package.json + bun.lock if either changed
         run: |
-          if ! git diff --quiet -- bun.lock; then
+          if ! git diff --quiet -- package.json bun.lock; then
             git config user.name "dependabot[bot]"
             git config user.email "49699333+dependabot[bot]@users.noreply.github.com"
-            git add bun.lock
-            git commit -m "chore(deps): sync bun.lock after Dependabot bump"
+            git add package.json bun.lock
+            git commit -m "chore(deps): sync bun.lock + overrides after Dependabot bump"
             git push
           else
-            echo "bun.lock already in sync."
+            echo "package.json and bun.lock already in sync."
           fi
 
       - name: Verify pinned dependency versions
         run: bun run scripts/verify-pinned-deps.ts
+
+      - name: Verify overrides match bun.lock
+        run: bun run scripts/sync-overrides-from-lock.ts --check
 
       - name: bun audit (high+)
         run: bun audit --audit-level=high
