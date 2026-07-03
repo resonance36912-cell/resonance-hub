@@ -14,7 +14,85 @@ import {
   stripComments,
   extractFieldLiteral,
   isValidSku,
+  validateCheckoutParams,
 } from "./checkout-link-verify";
+
+describe("validateCheckoutParams", () => {
+  const file = "src/routes/x.tsx";
+
+  test("accepts a canonical app/plan link", () => {
+    expect(validateCheckoutParams("app=epublisher&plan=starter", file)).toEqual([]);
+  });
+
+  test("accepts a pack link", () => {
+    expect(validateCheckoutParams("pack=epublisher_lifetime", file)).toEqual([]);
+  });
+
+  test("accepts ref and utm_* tracking params", () => {
+    const q = "app=epublisher&plan=starter&ref=partner_x&utm_source=twitter&utm_medium=cpc&utm_campaign=launch-2026&utm_content=hero.cta&utm_term=ai_writer";
+    expect(validateCheckoutParams(q, file)).toEqual([]);
+  });
+
+  test("accepts a root-relative return_to", () => {
+    expect(validateCheckoutParams("app=epublisher&plan=starter&return_to=/account/subscriptions", file)).toEqual([]);
+  });
+
+  test("rejects an unknown param", () => {
+    const errs = validateCheckoutParams("app=epublisher&plan=starter&sku=x", file);
+    expect(errs.length).toBe(1);
+    expect(errs[0]).toContain('unknown /checkout param "sku"');
+  });
+
+  test("rejects an off-site return_to", () => {
+    const errs = validateCheckoutParams(
+      "app=epublisher&plan=starter&return_to=" + encodeURIComponent("https://evil.com/x"),
+      file,
+    );
+    expect(errs.length).toBe(1);
+    expect(errs[0]).toContain('invalid "return_to');
+  });
+
+  test("rejects a protocol-relative return_to", () => {
+    const errs = validateCheckoutParams(
+      "app=epublisher&plan=starter&return_to=" + encodeURIComponent("//evil.com/x"),
+      file,
+    );
+    expect(errs.length).toBe(1);
+    expect(errs[0]).toContain('invalid "return_to');
+  });
+
+  test("rejects a badly shaped utm value", () => {
+    const errs = validateCheckoutParams(
+      "app=epublisher&plan=starter&utm_source=" + encodeURIComponent("bad value!"),
+      file,
+    );
+    expect(errs.some((e) => e.includes('invalid "utm_source'))).toBe(true);
+  });
+
+  test("rejects duplicate params", () => {
+    const errs = validateCheckoutParams("app=epublisher&plan=starter&ref=a&ref=b", file);
+    expect(errs.some((e) => e.includes('duplicate param "ref"'))).toBe(true);
+  });
+
+  test("rejects dynamic values for dynamicSafe:false params without allowlist", () => {
+    const errs = validateCheckoutParams("app=${x}&plan=starter", file);
+    expect(errs.some((e) => e.includes('dynamic value for "app"'))).toBe(true);
+  });
+
+  test("accepts dynamic values when the file allowlists that param", () => {
+    const errs = validateCheckoutParams(
+      "app=${x}&plan=${y}&return_to=${z}",
+      file,
+      new Set(["app", "plan", "return_to"]),
+    );
+    expect(errs).toEqual([]);
+  });
+
+  test("accepts dynamic tracking params without allowlist (dynamicSafe)", () => {
+    const errs = validateCheckoutParams("app=epublisher&plan=starter&utm_source=${src}", file);
+    expect(errs).toEqual([]);
+  });
+});
 
 describe("stripComments", () => {
   test("removes block comments", () => {
