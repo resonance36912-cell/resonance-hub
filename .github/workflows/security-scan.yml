@@ -109,7 +109,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: semgrep-sarif
+          # Artifact name includes the short SHA and workflow run ID so multiple
+          # runs (e.g. re-runs, matrix retries) don't collide and each artifact
+          # can be traced back to its exact commit + run.
+          name: semgrep-sarif-${{ github.run_id }}-${{ github.sha }}
           path: semgrep.sarif
           if-no-files-found: warn
           retention-days: 14
@@ -141,7 +144,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: codeql-sarif
+          # Artifact name includes the workflow run ID and commit SHA for easy
+          # correlation across re-runs and branches.
+          name: codeql-sarif-${{ github.run_id }}-${{ github.sha }}
           path: codeql-results
           if-no-files-found: warn
           retention-days: 14
