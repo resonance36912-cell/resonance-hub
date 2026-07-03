@@ -66,9 +66,16 @@ export const Route = createFileRoute("/")({
         {
           rel: "alternate",
           type: "application/rss+xml",
-          title: "Resonance — Latest Updates",
+          title: "Resonance — Latest Updates (RSS)",
           href: `${origin}/api/public/updates/rss`,
         },
+        {
+          rel: "alternate",
+          type: "application/atom+xml",
+          title: "Resonance — Latest Updates (Atom)",
+          href: `${origin}/api/public/updates/atom`,
+        },
+
       ],
       scripts: [
         {
