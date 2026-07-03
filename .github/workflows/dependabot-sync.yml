@@ -45,6 +45,7 @@ jobs:
 
       - name: Snapshot committed lockfile + manifest
         run: |
+          mkdir -p drift-artifacts
           cp bun.lock .bun.lock.orig
           cp package.json .package.json.orig
 
@@ -55,13 +56,17 @@ jobs:
 
       - name: Fail on bun.lock drift after bun install
         run: |
-          if ! diff -u .bun.lock.orig bun.lock > /tmp/bun.lock.diff; then
+          if ! diff -u .bun.lock.orig bun.lock > drift-artifacts/bun.lock.after-install.diff; then
+            cp bun.lock drift-artifacts/bun.lock.regenerated
+            cp .bun.lock.orig drift-artifacts/bun.lock.committed
             echo "::error::bun.lock drifted after 'bun install'. The committed lockfile does not match package.json."
             echo "Run 'bun install' locally, commit the updated bun.lock, and push to this PR branch."
+            echo "Full diff uploaded as workflow artifact 'dependabot-sync-drift'."
             echo "----- bun.lock diff (truncated to 200 lines) -----"
-            head -n 200 /tmp/bun.lock.diff
+            head -n 200 drift-artifacts/bun.lock.after-install.diff
             exit 1
           fi
+          rm -f drift-artifacts/bun.lock.after-install.diff
           echo "bun.lock is in sync with package.json."
 
       - name: Sync overrides / pnpm.overrides from bun.lock
@@ -72,28 +77,48 @@ jobs:
 
       - name: Fail on package.json drift after overrides sync
         run: |
-          if ! diff -u .package.json.orig package.json > /tmp/package.json.diff; then
+          if ! diff -u .package.json.orig package.json > drift-artifacts/package.json.diff; then
+            cp package.json drift-artifacts/package.json.regenerated
+            cp .package.json.orig drift-artifacts/package.json.committed
             echo "::error::package.json 'overrides' drifted after sync-overrides-from-lock.ts."
             echo "Run 'bun run scripts/sync-overrides-from-lock.ts' locally, then 'bun install', commit both files, and push."
+            echo "Full diff uploaded as workflow artifact 'dependabot-sync-drift'."
             echo "----- package.json diff -----"
-            cat /tmp/package.json.diff
+            cat drift-artifacts/package.json.diff
             exit 1
           fi
+          rm -f drift-artifacts/package.json.diff
 
       - name: Re-install and fail on any further bun.lock drift
         # After overrides sync (which changed nothing at this point) confirm a
         # second `bun install` is a no-op. Catches transitive re-resolution.
         run: |
           bun install
-          if ! diff -u .bun.lock.orig bun.lock > /tmp/bun.lock.diff2; then
+          if ! diff -u .bun.lock.orig bun.lock > drift-artifacts/bun.lock.after-reinstall.diff; then
+            cp bun.lock drift-artifacts/bun.lock.regenerated
+            cp .bun.lock.orig drift-artifacts/bun.lock.committed
             echo "::error::bun.lock drifted after re-install. Overrides or transitive re-resolution changed the lockfile."
-            head -n 200 /tmp/bun.lock.diff2
+            echo "Full diff uploaded as workflow artifact 'dependabot-sync-drift'."
+            head -n 200 drift-artifacts/bun.lock.after-reinstall.diff
             exit 1
           fi
+          rm -f drift-artifacts/bun.lock.after-reinstall.diff
+
+      - name: Upload drift diffs on failure
+        # Only fires when a preceding step failed. Bundles the *.diff files
+        # plus the committed vs regenerated originals for local inspection.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependabot-sync-drift
+          path: drift-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Cleanup snapshots
         if: always()
         run: rm -f .bun.lock.orig .package.json.orig
+
 
 
 
