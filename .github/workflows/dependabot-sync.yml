@@ -228,8 +228,10 @@ jobs:
       - name: Post/update PR summary comment
         # Sticky comment (marker-based) summarizing drift + pinned-deps + audit
         # so reviewers see the exact failed step and can jump straight to the
-        # uploaded diff artifact.
-        if: always()
+        # uploaded diff artifact. Skipped on workflow_dispatch — there's no PR
+        # to comment on; inspect the run Summary tab + drift artifact instead.
+        if: always() && github.event_name == 'pull_request'
+
         uses: actions/github-script@v7
         env:
           DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
