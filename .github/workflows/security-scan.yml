@@ -126,6 +126,7 @@ jobs:
         # Uploads SARIF on every run — success or failure — so alerts can be
         # triaged locally without needing the Security tab. Retention is
         # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
+        id: upload-semgrep-sarif
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -136,6 +137,16 @@ jobs:
           path: semgrep.sarif
           if-no-files-found: warn
           retention-days: ${{ env.SARIF_RETENTION_DAYS }}
+      - name: Annotate PR with top Semgrep findings
+        # Emits ::warning / ::error workflow commands so the top findings
+        # render as inline annotations on the PR "Files changed" tab. Each
+        # annotation message links back to this run's SARIF artifact entry.
+        # Runs on pull_request only; only fires when the upload actually
+        # produced an artifact ID (i.e. semgrep.sarif existed).
+        if: always() && github.event_name == 'pull_request' && steps.upload-semgrep-sarif.outputs.artifact-id != ''
+        env:
+          ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-semgrep-sarif.outputs.artifact-id }}
+        run: bun run scripts/annotate-sarif.ts semgrep.sarif --label "Semgrep" --top 20 --artifact-url "$ARTIFACT_URL"
 
   codeql:
     name: CodeQL (JavaScript/TypeScript)
@@ -173,6 +184,7 @@ jobs:
         # Uploads SARIF on every run — success or failure — so alerts can be
         # triaged locally without needing the Security tab. Retention is
         # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
+        id: upload-codeql-sarif
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -182,6 +194,15 @@ jobs:
           path: codeql-results
           if-no-files-found: warn
           retention-days: ${{ env.SARIF_RETENTION_DAYS }}
+      - name: Annotate PR with top CodeQL findings
+        # Emits ::warning / ::error workflow commands so the top findings
+        # render as inline annotations on the PR "Files changed" tab. Each
+        # annotation message links back to this run's SARIF artifact entry.
+        # Runs on pull_request only; skipped if the SARIF wasn't produced.
+        if: always() && github.event_name == 'pull_request' && steps.upload-codeql-sarif.outputs.artifact-id != ''
+        env:
+          ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-codeql-sarif.outputs.artifact-id }}
+        run: bun run scripts/annotate-sarif.ts codeql-results --label "CodeQL" --top 20 --artifact-url "$ARTIFACT_URL"
 
   pr-comment:
     name: SARIF artifacts PR comment
