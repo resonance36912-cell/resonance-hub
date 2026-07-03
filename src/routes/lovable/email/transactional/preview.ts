@@ -18,10 +18,13 @@ export const Route = createFileRoute("/lovable/email/transactional/preview")({
           )
         }
 
-        // Verify the caller is authorized with LOVABLE_API_KEY
+        // Verify the caller is authorized with LOVABLE_API_KEY (constant-time compare)
         const authHeader = request.headers.get('Authorization')
-        const token = authHeader?.replace(/^Bearer\s+/i, '')
-        if (token !== apiKey) {
+        const token = authHeader?.replace(/^Bearer\s+/i, '') ?? ''
+        const { timingSafeEqual } = await import('node:crypto')
+        const tokenBuf = Buffer.from(token, 'utf8')
+        const keyBuf = Buffer.from(apiKey, 'utf8')
+        if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
