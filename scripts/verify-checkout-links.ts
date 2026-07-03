@@ -66,6 +66,18 @@ const DYNAMIC_PACK_ALLOWLIST = new Set<string>([
   "src/routes/pricing.tsx",
 ]);
 
+// Per-file allowlist of params whose `${…}` interpolations are permitted
+// even though their ParamSpec is `dynamicSafe: false`. Use sparingly — each
+// entry means the value is URI-encoded / server-produced and cannot smuggle
+// unsafe characters into the checkout query string.
+const DYNAMIC_PARAM_ALLOWLIST: Record<string, ReadonlySet<string>> = {
+  // Server-side response builder for spoke apps: app/plan/return_to are all
+  // encodeURIComponent'd immediately before interpolation (see
+  // buildUpgradeRequiredResponse). app/plan literals are re-validated
+  // downstream via DYNAMIC_CTA_CONTRACTS pass 2.
+  "src/lib/requireTier-request.ts": new Set(["app", "plan", "return_to"]),
+};
+
 // Capture any quoted string or template literal that contains `checkout?`.
 const linkRegex = /["'`]([^"'`\n]*checkout\?[^"'`\n]+)["'`]/g;
 
