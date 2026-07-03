@@ -103,8 +103,10 @@ jobs:
         with:
           sarif_file: semgrep.sarif
           category: semgrep
-      - name: Upload Semgrep SARIF artifact (on failure)
-        if: failure()
+      - name: Upload Semgrep SARIF artifact (always)
+        # Uploads SARIF on every run — success or failure — so alerts can be
+        # triaged locally without needing the Security tab. Retained 14 days.
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-sarif
