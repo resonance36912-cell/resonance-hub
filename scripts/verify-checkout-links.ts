@@ -26,7 +26,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { SKU_CATALOG, PACK_CATALOG } from "../src/lib/checkout.functions";
-import { stripComments, extractFieldLiteral } from "./lib/checkout-link-verify";
+import { stripComments, extractFieldLiteral, validateCheckoutParams } from "./lib/checkout-link-verify";
 
 
 const ROOT = "src";
@@ -65,6 +65,21 @@ const DYNAMIC_CTA_CONTRACTS: Record<string, DynamicContract> = {
 const DYNAMIC_PACK_ALLOWLIST = new Set<string>([
   "src/routes/pricing.tsx",
 ]);
+
+// Per-file allowlist of params whose `${…}` interpolations are permitted
+// even though their ParamSpec is `dynamicSafe: false`. Use sparingly — each
+// entry means the value is URI-encoded / server-produced and cannot smuggle
+// unsafe characters into the checkout query string.
+const DYNAMIC_PARAM_ALLOWLIST: Record<string, ReadonlySet<string>> = {
+  // Server-side response builder for spoke apps: app/plan/return_to are all
+  // encodeURIComponent'd immediately before interpolation (see
+  // buildUpgradeRequiredResponse). app/plan literals are re-validated
+  // downstream via DYNAMIC_CTA_CONTRACTS pass 2.
+  "src/lib/requireTier-request.ts": new Set(["app", "plan", "return_to"]),
+  // Pricing page iterates PACK_CATALOG at render time; pass 1's existing
+  // pack-dynamic check enforces the allowlist further down.
+  "src/routes/pricing.tsx": new Set(["pack"]),
+};
 
 // Capture any quoted string or template literal that contains `checkout?`.
 const linkRegex = /["'`]([^"'`\n]*checkout\?[^"'`\n]+)["'`]/g;
@@ -110,7 +125,17 @@ for (const path of allFiles) {
     }
 
     const qStart = url.indexOf("checkout?") + "checkout?".length;
-    const params = new URLSearchParams(url.slice(qStart).replace(/&amp;/g, "&"));
+    const rawQuery = url.slice(qStart);
+
+    // Shape-check every param (unknown params, bad values, unsafe dynamics).
+    const paramErrors = validateCheckoutParams(
+      rawQuery,
+      rel,
+      DYNAMIC_PARAM_ALLOWLIST[rel],
+    );
+    for (const e of paramErrors) failures.push(e);
+
+    const params = new URLSearchParams(rawQuery.replace(/&amp;/g, "&"));
     const app = params.get("app");
     const plan = params.get("plan");
 
