@@ -1311,21 +1311,18 @@ function Index() {
             </div>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Governance
-            </Link>
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Privacy & POPIA
-            </Link>
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Terms
-            </Link>
-            <Link to="/governance" className="hover:text-white transition-colors">
-              Refunds
-            </Link>
-            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">
-              Support
-            </a>
+            <a href="/#apps" className="hover:text-white transition-colors">Apps</a>
+            <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <a href="/#updates" className="hover:text-white transition-colors">Updates</a>
+            <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
+            <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
+            <Link to="/governance" className="hover:text-white transition-colors">Governance</Link>
+            <Link to="/governance" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
+            <Link to="/governance" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/governance" className="hover:text-white transition-colors">Refunds</Link>
+            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Support</a>
+            <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Contact</a>
+
             <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
