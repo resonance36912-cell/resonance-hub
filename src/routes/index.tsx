@@ -110,18 +110,19 @@ export const Route = createFileRoute("/")({
                 name: "YouTube Optimizer",
                 applicationCategory: "BusinessApplication",
                 operatingSystem: "Web",
-                url: "https://resonanceoptimizer.lovable.app",
+                url: "https://www.youtubeoptimizer.life",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
               {
                 "@type": "FAQPage",
                 mainEntity: [
-                  ["Can I use Resonance tools for free?", "Yes. ePublisher has a free tier, The Resonance Podcast is free, and Career Compass is in free pilot for the first 50 students."],
-                  ["Is there a single login across every app?", "One Hub billing account today — manage subscriptions across every Resonance app from one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition."],
-                  ["Can I cancel anytime?", "Yes. Every subscription is cancel-anytime via PayFast."],
-                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT). Monthly billing only."],
-                  ["Can schools use Career Compass?", "Yes — schools can join the rewards-based pilot."],
-                  ["Can publishers test ePublisher with one title first?", "Yes. Start with a single title on the free or Starter tier."],
+                  ["Do individual apps have monthly subscriptions?", "No. Individual Resonance apps use once-off credits and project packs. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps."],
+                  ["Can I use Resonance tools for free?", "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits."],
+                  ["Is there a single login across every app?", "One Hub billing account today — packs and ecosystem passes live in one place. Unified app login is on the roadmap."],
+                  ["Can I cancel an ecosystem pass anytime?", "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases."],
+                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT)."],
+                  ["Can schools use Career Compass?", "Yes — schools can join the free pilot."],
+
                   ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
                   ["Can Creative Studio create ads and product visuals?", "Yes — posters, brochures, social ads, product mockups, and short marketing videos."],
                 ].map(([q, a]) => ({
