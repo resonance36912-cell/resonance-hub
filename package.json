@@ -110,11 +110,25 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.4"
+  },
+  "overrides": {
+    "undici": "^8.6.0",
+    "ws": "^8.21.0",
+    "esbuild": "^0.28.1",
+    "js-yaml": "^4.1.1",
+    "brace-expansion": "^5.0.7",
+    "@babel/core": "^8.0.1"
   },
   "pnpm": {
     "overrides": {
-      "entities": "4.5.0"
+      "entities": "4.5.0",
+      "undici": "^8.6.0",
+      "ws": "^8.21.0",
+      "esbuild": "^0.28.1",
+      "js-yaml": "^4.1.1",
+      "brace-expansion": "^5.0.7",
+      "@babel/core": "^8.0.1"
     }
   }
 }
