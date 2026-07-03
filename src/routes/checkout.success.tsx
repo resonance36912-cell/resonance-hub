@@ -2,9 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
+import {
+  resolveCheckoutContext,
+  primaryContinueHref,
+  primaryContinueLabel,
+} from "@/lib/checkout-return";
 
 const Search = z.object({
   sku: z.string().optional(),
+  pack: z.string().optional(),
   return_to: z
     .string()
     .url()
@@ -26,7 +32,25 @@ export const Route = createFileRoute("/checkout/success")({
 });
 
 function SuccessPage() {
-  const { return_to } = Route.useSearch();
+  const { sku, pack, return_to } = Route.useSearch();
+  const ctx = resolveCheckoutContext({ sku, pack, return_to });
+
+  const primaryHref = primaryContinueHref(ctx);
+  const primaryLabel = primaryContinueLabel(ctx);
+  const primaryIsExternal = primaryHref.startsWith("http");
+
+  // Secondary CTA: subscriptions for recurring purchases, pricing tab for packs.
+  const secondaryTo =
+    ctx.kind === "pack"
+      ? { to: "/pricing", hash: "packs", label: "See more packs" }
+      : { to: "/account/subscriptions", hash: undefined, label: "View subscriptions" };
+
+  const bodyCopy =
+    ctx.kind === "pack"
+      ? `Thanks — PayFast has confirmed your payment for ${ctx.label}. Your pack allowance will appear in ${ctx.app?.label ?? "the app"} within a few seconds.`
+      : ctx.kind === "pass" || ctx.kind === "legacy_monthly"
+        ? `Thanks — PayFast has confirmed your payment for ${ctx.label}. Your subscription will activate within a few seconds.`
+        : "Thanks — PayFast has confirmed your payment. Your purchase will be reflected within a few seconds.";
 
   return (
     <div className="min-h-screen text-foreground">
@@ -45,24 +69,30 @@ function SuccessPage() {
         <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/5 backdrop-blur-xl p-10">
           <div className="text-5xl mb-4">✓</div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-3">Payment received</h1>
-          <p className="text-white/70 mb-8">
-            Thanks — PayFast has confirmed your payment. Your subscription will activate within a
-            few seconds.
-          </p>
+          <p className="text-white/70 mb-8">{bodyCopy}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {return_to && (
+            {primaryIsExternal ? (
               <a
-                href={return_to}
+                href={primaryHref}
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
               >
-                Continue to your app →
+                {primaryLabel}
               </a>
+            ) : (
+              <Link
+                to="/pricing"
+                hash={ctx.pricingAnchor}
+                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
+              >
+                {primaryLabel}
+              </Link>
             )}
             <Link
-              to="/account/subscriptions"
+              to={secondaryTo.to}
+              hash={secondaryTo.hash}
               className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
             >
-              View subscriptions
+              {secondaryTo.label}
             </Link>
           </div>
         </div>

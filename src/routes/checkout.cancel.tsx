@@ -2,9 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
+import {
+  resolveCheckoutContext,
+  primaryContinueHref,
+  primaryContinueLabel,
+} from "@/lib/checkout-return";
 
 const Search = z.object({
   sku: z.string().optional(),
+  pack: z.string().optional(),
   return_to: z
     .string()
     .url()
@@ -26,7 +32,18 @@ export const Route = createFileRoute("/checkout/cancel")({
 });
 
 function CancelPage() {
-  const { sku, return_to } = Route.useSearch();
+  const { sku, pack, return_to } = Route.useSearch();
+  const ctx = resolveCheckoutContext({ sku, pack, return_to });
+
+  // "Try again" preserves whichever identifier we came in with.
+  const retrySearch: Record<string, string> = {};
+  if (pack) retrySearch.pack = pack;
+  else if (sku) retrySearch.sku = sku;
+  if (return_to && ctx.returnTo) retrySearch.return_to = return_to;
+
+  const secondaryHref = primaryContinueHref(ctx);
+  const secondaryLabel = ctx.returnTo || ctx.app ? "Back to app" : primaryContinueLabel(ctx);
+  const secondaryIsExternal = secondaryHref.startsWith("http");
 
   return (
     <div className="min-h-screen text-foreground">
@@ -45,23 +62,31 @@ function CancelPage() {
         <div className="rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl p-10">
           <h1 className="text-3xl font-extrabold tracking-tight mb-3">Checkout cancelled</h1>
           <p className="text-white/70 mb-8">
-            No charge was made. You can try again whenever you&apos;re ready.
+            No charge was made for {ctx.label}. You can try again whenever you&apos;re ready.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               to="/checkout"
-              search={{ sku }}
+              search={retrySearch}
               className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
             >
               Try again
             </Link>
-            {return_to && (
+            {secondaryIsExternal ? (
               <a
-                href={return_to}
+                href={secondaryHref}
                 className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
               >
-                Back to app
+                {secondaryLabel}
               </a>
+            ) : (
+              <Link
+                to="/pricing"
+                hash={ctx.pricingAnchor}
+                className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
+              >
+                {secondaryLabel}
+              </Link>
             )}
           </div>
         </div>
