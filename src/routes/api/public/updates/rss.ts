@@ -182,12 +182,22 @@ export const Route = createFileRoute("/api/public/updates/rss")({
           const all = await loadUpdates(origin);
           const filtered = applyStatusFilter(all, statusFilter);
           const xml = buildRss(filtered, origin, statusFilter);
+          const latest = filtered.length
+            ? filtered
+                .map((u) => parseDate(u.date))
+                .reduce((a, b) => (a > b ? a : b))
+            : null;
+          const cache = await computeFeedHeaders(xml, latest);
+          if (matchesConditional(request, cache)) {
+            return new Response(null, { status: 304, headers: notModifiedHeaders(cache) });
+          }
           return new Response(xml, {
             status: 200,
             headers: {
               "content-type": "application/rss+xml; charset=utf-8",
-              // Small cache — feed changes only when updates.json changes.
-              "cache-control": "public, max-age=300, s-maxage=300",
+              "cache-control": cache.cacheControl,
+              etag: cache.etag,
+              "last-modified": cache.lastModified,
               vary: "Accept, Accept-Encoding",
             },
           });
@@ -197,6 +207,7 @@ export const Route = createFileRoute("/api/public/updates/rss")({
             { status: 500, headers: { "content-type": "application/xml" } },
           );
         }
+
       },
     },
   },
