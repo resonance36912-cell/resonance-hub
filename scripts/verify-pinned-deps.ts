@@ -9,7 +9,12 @@ import { readFileSync } from "node:fs";
 
 type Deps = Record<string, string>;
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-const lock = JSON.parse(readFileSync("bun.lock", "utf8"));
+// bun.lock is JSONC (allows trailing commas); strip them before parsing.
+const lockRaw = readFileSync("bun.lock", "utf8")
+  .replace(/\/\/[^\n]*/g, "")
+  .replace(/\/\*[\s\S]*?\*\//g, "")
+  .replace(/,(\s*[}\]])/g, "$1");
+const lock = JSON.parse(lockRaw);
 
 const errors: string[] = [];
 
