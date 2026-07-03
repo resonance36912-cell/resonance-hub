@@ -119,19 +119,19 @@ function main(): void {
       console.log("→ bun install (verifying bun.lock matches package.json)");
       run("bun", ["install"]);
     }
-    results.push(check("bun-lock-after-install", "bun install → bun.lock drift", lockPath, originalLock));
+    results.push(check("bun_lock_after_install", "bun install → bun.lock drift", lockPath, originalLock));
 
     // Step 2: sync overrides — must not modify package.json.
     console.log("→ scripts/sync-overrides-from-lock.ts (verifying overrides match resolved versions)");
     run("bun", ["run", "scripts/sync-overrides-from-lock.ts"]);
-    results.push(check("package-json-after-overrides-sync", "overrides sync → package.json drift", pkgPath, originalPkg));
+    results.push(check("package_json_after_overrides_sync", "overrides sync → package.json drift", pkgPath, originalPkg));
 
     // Step 3: bun install again — must not modify bun.lock.
     if (!skipInstall) {
       console.log("→ bun install (re-verifying bun.lock is stable after overrides sync)");
       run("bun", ["install"]);
     }
-    results.push(check("bun-lock-after-reinstall", "re-install → bun.lock drift", lockPath, originalLock));
+    results.push(check("bun_lock_after_reinstall", "re-install → bun.lock drift", lockPath, originalLock));
   } catch (err) {
     console.error(String(err));
     // Restore originals so we don't leave a mutated working tree behind.
