@@ -321,7 +321,17 @@ jobs:
               '',
               '### Verification',
               `- ${icon(process.env.PINS_STATUS)} \`verify-pinned-deps.ts\` — **${process.env.PINS_STATUS || 'skipped'}**`,
-              `- ${icon(process.env.AUDIT_STATUS)} \`bun audit --audit-level=high\` — **${process.env.AUDIT_STATUS || 'skipped'}**`,
+              (() => {
+                const lvl = process.env.AUDIT_LEVEL || 'high';
+                const thr = process.env.AUDIT_THRESHOLD || '0';
+                const cnt = process.env.AUDIT_COUNT;
+                const parsed = process.env.AUDIT_PARSED === 'true';
+                const status = process.env.AUDIT_STATUS || 'skipped';
+                const detail = cnt !== undefined && cnt !== ''
+                  ? ` — ${cnt} advisor${cnt === '1' ? 'y' : 'ies'} at \`${lvl}+\` (threshold: \`${thr}\`)${parsed ? '' : ' _(count inferred from exit code)_'}`
+                  : ` — level \`${lvl}\`, threshold \`${thr}\``;
+                return `- ${icon(status)} \`bun audit\` — **${status}**${detail}`;
+              })(),
               '',
               '<details><summary>verify-pinned-deps.ts output</summary>',
               '',
