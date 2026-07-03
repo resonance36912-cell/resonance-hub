@@ -1,5 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getRequestHost, getRequestUrl } from "@tanstack/react-start/server";
+import {
+  computeFeedHeaders,
+  matchesConditional,
+  notModifiedHeaders,
+} from "@/lib/feed-cache";
+
 
 type UpdateLink = { label: string; href: string };
 type UpdateItem = {
@@ -176,12 +182,23 @@ export const Route = createFileRoute("/api/public/updates/atom")({
           const all = await loadUpdates(origin);
           const filtered = applyStatusFilter(all, statusFilter);
           const xml = buildAtom(filtered, origin, statusFilter);
-
+          const latest = filtered.length
+            ? filtered
+                .map((u) => parseDate(u.date))
+                .reduce((a, b) => (a > b ? a : b))
+            : null;
+          const cache = await computeFeedHeaders(xml, latest);
+          if (matchesConditional(request, cache)) {
+            return new Response(null, { status: 304, headers: notModifiedHeaders(cache) });
+          }
           return new Response(xml, {
             status: 200,
             headers: {
               "content-type": "application/atom+xml; charset=utf-8",
-              "cache-control": "public, max-age=300, s-maxage=300",
+              "cache-control": cache.cacheControl,
+              etag: cache.etag,
+              "last-modified": cache.lastModified,
+              vary: "Accept, Accept-Encoding",
             },
           });
         } catch (err) {
@@ -190,6 +207,7 @@ export const Route = createFileRoute("/api/public/updates/atom")({
             { status: 500, headers: { "content-type": "application/xml" } },
           );
         }
+
       },
     },
   },
