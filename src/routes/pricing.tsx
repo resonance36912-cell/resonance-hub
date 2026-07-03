@@ -22,7 +22,7 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
-const APP_META: Record<string, { name: string; accent: string; anchor: string; visit: string; visitLabel: string }> = {
+export const APP_META: Record<string, { name: string; accent: string; anchor: string; visit: string; visitLabel: string }> = {
   epublisher: {
     name: "Resonance ePublisher",
     accent: "295 90% 60%",
