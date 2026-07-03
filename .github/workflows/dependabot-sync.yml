@@ -308,10 +308,7 @@ jobs:
         run: |
           fail=0
           for step_outcome in \
-            "drift_lock_install:${{ steps.drift_lock_install.outcome }}" \
-            "overrides_sync:${{ steps.overrides_sync.outcome }}" \
-            "drift_package_json:${{ steps.drift_package_json.outcome }}" \
-            "drift_lock_reinstall:${{ steps.drift_lock_reinstall.outcome }}" \
+            "lockfile_consistency:${{ steps.lockfile_consistency.outcome }}" \
             "bun_audit:${{ steps.bun_audit.outcome }}"; do
             name="${step_outcome%%:*}"
             outcome="${step_outcome##*:}"
