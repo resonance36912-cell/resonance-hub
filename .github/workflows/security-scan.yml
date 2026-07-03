@@ -236,44 +236,93 @@ jobs:
             const marker = '<!-- security-scan:sarif-artifacts -->';
             const { RUN_ID, SHA, SEMGREP_RESULT, CODEQL_RESULT, RETENTION } = process.env;
             const { owner, repo } = context.repo;
-            const prNumber = context.payload.pull_request.number;
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
             const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${RUN_ID}`;
+            const summaryUrl = `${runUrl}#step-summary`;
             const shortSha = SHA.slice(0, 7);
 
-            // Fetch artifacts for this run so the comment links to the actual
-            // artifact download pages (not just the run) — one click to SARIF.
-            const { data: artifactData } = await github.rest.actions.listWorkflowRunArtifacts({
-              owner, repo, run_id: Number(RUN_ID), per_page: 100,
-            });
-            const artifactUrl = (namePrefix) => {
+            // Fork PRs run with a read-only GITHUB_TOKEN — pull-requests: write
+            // is downgraded, and listWorkflowRunArtifacts may also be blocked.
+            // Detect the fork case up front so we can skip API calls that would
+            // 403 and fall back to job-summary links instead of hard-failing.
+            const isFork = !!(pr.head?.repo?.full_name && pr.head.repo.full_name !== `${owner}/${repo}`);
+
+            // Try to resolve real artifact download URLs. Any failure (403 on
+            // fork PRs, transient API error, empty list) falls back to the
+            // job summary link so reviewers still get somewhere useful to click.
+            let artifactData = { artifacts: [] };
+            let artifactsResolved = false;
+            try {
+              const res = await github.rest.actions.listWorkflowRunArtifacts({
+                owner, repo, run_id: Number(RUN_ID), per_page: 100,
+              });
+              artifactData = res.data;
+              artifactsResolved = true;
+            } catch (err) {
+              core.warning(`Could not list run artifacts (${err.status || 'error'}: ${err.message}); falling back to job-summary links.`);
+            }
+
+            const artifactCell = (namePrefix, label) => {
               const a = artifactData.artifacts.find((x) => x.name.startsWith(namePrefix));
-              return a
-                ? `[\`${a.name}\`](https://github.com/${owner}/${repo}/actions/runs/${RUN_ID}/artifacts/${a.id})`
-                : '_(not produced — job may have failed before upload)_';
+              if (a) {
+                return `[\`${a.name}\`](https://github.com/${owner}/${repo}/actions/runs/${RUN_ID}/artifacts/${a.id})`;
+              }
+              if (!artifactsResolved) {
+                // API unavailable (e.g. fork PR) — link to the run's Artifacts
+                // section and to the job summary so reviewers can still triage.
+                return `[Artifacts tab](${runUrl}#artifacts) · [${label} summary](${summaryUrl})`;
+              }
+              return `_(not produced — job may have failed before upload)_`;
             };
             const icon = (r) => r === 'success' ? '✅' : r === 'failure' ? '❌' : r === 'cancelled' ? '⚪' : '⏭️';
+
+            const forkNote = isFork
+              ? `\n> ℹ️ **Fork PR detected** — GitHub restricts the Actions API for forks, so direct artifact download links may be unavailable. Use the [job summary](${summaryUrl}) or the run's [Artifacts tab](${runUrl}#artifacts) instead.\n`
+              : '';
 
             const body = [
               marker,
               `## 🔎 Security scan SARIF artifacts`,
               ``,
               `Commit \`${shortSha}\` · [Run #${RUN_ID}](${runUrl}) · Retention: **${RETENTION} days**`,
-              ``,
+              forkNote,
               `| Scanner | Status | SARIF artifact |`,
               `| ------- | ------ | -------------- |`,
-              `| Semgrep | ${icon(SEMGREP_RESULT)} \`${SEMGREP_RESULT}\` | ${artifactUrl('semgrep-sarif-')} |`,
-              `| CodeQL  | ${icon(CODEQL_RESULT)} \`${CODEQL_RESULT}\` | ${artifactUrl('codeql-sarif-')} |`,
+              `| Semgrep | ${icon(SEMGREP_RESULT)} \`${SEMGREP_RESULT}\` | ${artifactCell('semgrep-sarif-', 'Semgrep')} |`,
+              `| CodeQL  | ${icon(CODEQL_RESULT)} \`${CODEQL_RESULT}\` | ${artifactCell('codeql-sarif-', 'CodeQL')} |`,
               ``,
-              `<sub>Download the SARIF, then triage with any viewer (e.g. \`code --install-extension MS-SarifVSCode.sarif-viewer\`), or check the top rule IDs in the [job summary](${runUrl}#step-summary).</sub>`,
+              `<sub>Download the SARIF, then triage with any viewer (e.g. \`code --install-extension MS-SarifVSCode.sarif-viewer\`), or check the top rule IDs in the [job summary](${summaryUrl}).</sub>`,
             ].join('\n');
 
-            // Sticky comment: find previous marker, update in place; else create.
-            const { data: comments } = await github.rest.issues.listComments({
-              owner, repo, issue_number: prNumber, per_page: 100,
-            });
-            const existing = comments.find((c) => c.body && c.body.includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+            // Sticky comment upsert. On fork PRs GITHUB_TOKEN lacks
+            // pull-requests: write, so listComments/create/update will 403.
+            // Wrap in try/catch and mirror the payload into the job summary so
+            // reviewers still see the artifact table on the run page.
+            const emitFallbackSummary = (reason) => {
+              core.warning(`PR comment skipped (${reason}); rendering to job summary instead.`);
+              core.summary
+                .addRaw(body.replace(marker, ''))
+                .addRaw(`\n\n_Posted to the job summary because the PR comment could not be written (${reason})._\n`)
+                .write();
+            };
+
+            try {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner, repo, issue_number: prNumber, per_page: 100,
+              });
+              const existing = comments.find((c) => c.body && c.body.includes(marker));
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+              }
+            } catch (err) {
+              const status = err.status || 'error';
+              if (status === 403 || status === 404 || isFork) {
+                emitFallbackSummary(`fork PR / restricted token: ${err.message}`);
+              } else {
+                emitFallbackSummary(`${status}: ${err.message}`);
+                throw err;
+              }
             }
