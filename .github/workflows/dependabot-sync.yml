@@ -260,6 +260,10 @@ jobs:
           PINS_OUTPUT: ${{ steps.verify_pins.outputs.output }}
           AUDIT_STATUS: ${{ steps.bun_audit.outcome }}
           AUDIT_OUTPUT: ${{ steps.bun_audit.outputs.output }}
+          AUDIT_LEVEL: ${{ steps.bun_audit.outputs.level }}
+          AUDIT_THRESHOLD: ${{ steps.bun_audit.outputs.threshold }}
+          AUDIT_COUNT: ${{ steps.bun_audit.outputs.count }}
+          AUDIT_PARSED: ${{ steps.bun_audit.outputs.parsed }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
