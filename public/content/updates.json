@@ -6,7 +6,12 @@
     "change": "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.",
     "date": "Jun 2026",
     "href": "/pricing#passes",
-    "cta": "See passes"
+    "cta": "See passes",
+    "details": "The Hub is now the single source of truth for all recurring billing. Individual Resonance apps have shifted to once-off credit and project packs, and the three ecosystem passes (Creator, Studio, Business) bundle cross-app usage under one monthly plan.\n\nExisting monthly app subscribers keep their access under a legacy plan label until their next renewal window, at which point they can move to a pass or to once-off packs — no forced migration.",
+    "links": [
+      { "label": "Compare passes", "href": "/pricing#passes" },
+      { "label": "Governance framework (RCGF v1.0)", "href": "/governance" }
+    ]
   },
   {
     "app": "Resonance ePublisher",
@@ -15,7 +20,12 @@
     "change": "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.",
     "date": "May 2026",
     "href": "/pricing#epublisher",
-    "cta": "View packs"
+    "cta": "View packs",
+    "details": "ePublisher moved from a per-month plan to project- and credit-based packs. A new R149 starter pack lets first-time authors publish one short-form title end-to-end without committing to a subscription.\n\nExisting subscribers keep their unused monthly allowance and can top up with packs at any time.",
+    "links": [
+      { "label": "Open ePublisher", "href": "https://www.resonanceonline.life" },
+      { "label": "Starter pack details", "href": "/pricing#epublisher" }
+    ]
   },
   {
     "app": "Creative Studio",
@@ -24,7 +34,12 @@
     "change": "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.",
     "date": "Apr 2026",
     "href": "/pricing#creative-studio",
-    "cta": "View packs"
+    "cta": "View packs",
+    "details": "Creative Studio now routes paid generation through the Hub proxy, which enforces tier checks server-side and improves render times for posters and full social kits. Credit packs replace the old monthly plan; unused credits never expire.",
+    "links": [
+      { "label": "Open Creative Studio", "href": "https://www.creativestudio.life" },
+      { "label": "Credit packs", "href": "/pricing#creative-studio" }
+    ]
   },
   {
     "app": "Sync Vision",
@@ -33,7 +48,12 @@
     "change": "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.",
     "date": "Mar 2026",
     "href": "/pricing#sync-vision",
-    "cta": "View packs"
+    "cta": "View packs",
+    "details": "Sync Vision's music-video packs are live with a redesigned storyboard flow: shot lists, character sheets, and scene prompts are generated in one pass. Checkout runs through the Hub in ZAR via PayFast — no separate provider account needed.",
+    "links": [
+      { "label": "Open Sync Vision", "href": "https://www.syncvision.life" },
+      { "label": "Music-video packs", "href": "/pricing#sync-vision" }
+    ]
   },
   {
     "app": "YouTube Optimizer",
@@ -42,7 +62,12 @@
     "change": "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.",
     "date": "Jun 2026",
     "href": "/pricing#youtube-optimizer",
-    "cta": "View packs"
+    "cta": "View packs",
+    "details": "The app is moving to its canonical domain, youtubeoptimizer.life, with three new pack families: channel audits, thumbnail generation, and growth playbooks. Existing users keep their access and history — no re-signup needed. Some workflows may briefly show 'Updating' badges during the rollout.",
+    "links": [
+      { "label": "New home", "href": "https://www.youtubeoptimizer.life" },
+      { "label": "Packs", "href": "/pricing#youtube-optimizer" }
+    ]
   },
   {
     "app": "Career Compass",
@@ -51,7 +76,12 @@
     "change": "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.",
     "date": "Feb 2026",
     "href": "https://www.career-compass.org/#how",
-    "cta": "Join pilot"
+    "cta": "Join pilot",
+    "details": "Career Compass is in an open free pilot for schools, counsellors, and individual learners. The pilot covers career-path discovery, skills mapping, bursary matching, and role-fit insights. Per-report pricing and district/school-wide packages roll out later in 2026 — pilot participants keep free access through the launch.",
+    "links": [
+      { "label": "How it works", "href": "https://www.career-compass.org/#how" },
+      { "label": "Career Compass home", "href": "https://www.career-compass.org" }
+    ]
   },
   {
     "app": "The Resonance Podcast",
@@ -60,7 +90,12 @@
     "change": "New season live — free episodes, media kits, and shop. Never a subscription.",
     "date": "Jun 2026",
     "href": "https://www.resonance-podcast.com",
-    "cta": "Listen"
+    "cta": "Listen",
+    "details": "The new season is streaming on the podcast site with free episodes, downloadable media kits, and a merch shop. The podcast is intentionally never gated behind a subscription.",
+    "links": [
+      { "label": "Listen now", "href": "https://www.resonance-podcast.com" },
+      { "label": "Media kits", "href": "https://www.resonance-podcast.com/#media" }
+    ]
   },
   {
     "app": "Reson8 Governance",
@@ -69,6 +104,10 @@
     "change": "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.",
     "date": "May 2026",
     "href": "/governance",
-    "cta": "Read RCGF"
+    "cta": "Read RCGF",
+    "details": "RCGF v1.0 is the constitutional framework that governs how every Resonance app is built, priced, and evolved. It codifies our principles around user sovereignty, honest pricing, transparent AI usage, and pass/pack alignment across the ecosystem.\n\nThe framework is public, versioned, and referenced directly in the AI prompts that power our optimization protocol.",
+    "links": [
+      { "label": "Read RCGF v1.0", "href": "/governance" }
+    ]
   }
 ]

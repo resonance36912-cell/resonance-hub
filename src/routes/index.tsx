@@ -1305,7 +1305,16 @@ function Index() {
   );
 }
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 type UpdateTone = "live" | "updating" | "new" | "pilot";
+type UpdateLink = { label: string; href: string };
 type UpdateItem = {
   app: string;
   status: string;
@@ -1314,6 +1323,8 @@ type UpdateItem = {
   date: string;
   href: string;
   cta: string;
+  details?: string;
+  links?: UpdateLink[];
 };
 
 // Fallback in case /content/updates.json can't be fetched (offline, 404).
@@ -1360,9 +1371,14 @@ function isValidUpdate(u: unknown): u is UpdateItem {
   );
 }
 
+function isExternal(href: string) {
+  return /^https?:\/\//i.test(href);
+}
+
 function UpdatesGrid() {
   const [updates, setUpdates] = useState<UpdateItem[]>(FALLBACK_UPDATES);
   const [filter, setFilter] = useState<string>("all");
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1388,6 +1404,7 @@ function UpdatesGrid() {
     acc[u.tone] = (acc[u.tone] ?? 0) + 1;
     return acc;
   }, {});
+  const active = openIndex !== null ? visible[openIndex] ?? null : null;
 
   return (
     <>
@@ -1397,16 +1414,19 @@ function UpdatesGrid() {
         className="flex flex-wrap gap-2 mb-6"
       >
         {FILTERS.map((f) => {
-          const active = filter === f.key;
+          const isActive = filter === f.key;
           const count = f.key === "all" ? updates.length : counts[f.key] ?? 0;
           return (
             <button
               key={f.key}
               role="tab"
-              aria-selected={active}
-              onClick={() => setFilter(f.key)}
+              aria-selected={isActive}
+              onClick={() => {
+                setFilter(f.key);
+                setOpenIndex(null);
+              }}
               className={`text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border transition-colors ${
-                active
+                isActive
                   ? "border-white/40 bg-white/[0.08] text-white"
                   : "border-white/10 bg-white/[0.02] text-white/60 hover:text-white hover:border-white/25"
               }`}
@@ -1420,29 +1440,119 @@ function UpdatesGrid() {
         <p className="text-sm text-white/60">No updates in this category yet.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {visible.map((u) => {
-            const external = u.href.startsWith("http");
+          {visible.map((u, i) => {
+            const external = isExternal(u.href);
             const badgeCls = TONE_BADGE[u.tone] ?? NEUTRAL_BADGE;
+            const hasMore = Boolean((u.details && u.details.trim().length > 0) || (u.links && u.links.length > 0));
             return (
-              <article key={u.app} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5 flex flex-col">
+              <article key={`${u.app}-${i}`} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5 flex flex-col">
                 <div className="flex items-center justify-between mb-3">
                   <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${badgeCls}`}>{u.status}</span>
                   <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">{u.date}</span>
                 </div>
                 <h3 className="text-sm font-bold tracking-tight mb-2">{u.app}</h3>
                 <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1">{u.change}</p>
-                {external ? (
-                  <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
-                ) : (
-                  <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
-                )}
+                <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
+                  {external ? (
+                    <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
+                  ) : (
+                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
+                  )}
+                  {hasMore && (
+                    <button
+                      type="button"
+                      onClick={() => setOpenIndex(i)}
+                      aria-label={`Read the full update for ${u.app}`}
+                      className="text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-white/15 text-white/60 hover:text-white hover:border-white/40 transition-colors"
+                    >
+                      Read more
+                    </button>
+                  )}
+                </div>
               </article>
             );
           })}
         </div>
       )}
+
+      <Dialog open={active !== null} onOpenChange={(o) => { if (!o) setOpenIndex(null); }}>
+        <DialogContent className="max-w-xl bg-card/95 backdrop-blur-xl border-white/10 text-white">
+          {active && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${TONE_BADGE[active.tone] ?? NEUTRAL_BADGE}`}>
+                    {active.status}
+                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white/50">{active.date}</span>
+                </div>
+                <DialogTitle className="font-display text-2xl tracking-[-0.02em]">{active.app}</DialogTitle>
+                <DialogDescription className="text-white/70 text-sm leading-relaxed pt-1">
+                  {active.change}
+                </DialogDescription>
+              </DialogHeader>
+
+              {active.details && (
+                <div className="mt-4 space-y-3 text-sm text-white/75 leading-relaxed max-h-[45vh] overflow-y-auto pr-1">
+                  {active.details.split(/\n{2,}/).map((para, idx) => (
+                    <p key={idx}>{para}</p>
+                  ))}
+                </div>
+              )}
+
+              {active.links && active.links.length > 0 && (
+                <div className="mt-5 pt-4 border-t border-white/10">
+                  <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-2">
+                    Supporting links
+                  </div>
+                  <ul className="flex flex-col gap-1.5">
+                    {active.links.map((l, idx) => {
+                      const ext = isExternal(l.href);
+                      return (
+                        <li key={idx}>
+                          {ext ? (
+                            <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
+                              {l.label} ↗
+                            </a>
+                          ) : (
+                            <Link to={l.href} onClick={() => setOpenIndex(null)} className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
+                              {l.label} →
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+
+              <div className="mt-6 flex justify-end">
+                {isExternal(active.href) ? (
+                  <a
+                    href={active.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
+                  >
+                    {active.cta} ↗
+                  </a>
+                ) : (
+                  <Link
+                    to={active.href}
+                    onClick={() => setOpenIndex(null)}
+                    className="px-4 py-2 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
+                  >
+                    {active.cta} →
+                  </Link>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
+
 
 
