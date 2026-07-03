@@ -114,8 +114,29 @@ for (const path of allFiles) {
     const app = params.get("app");
     const plan = params.get("plan");
 
+    const pack = params.get("pack");
+
+    // Once-off pack link: `/checkout?pack=<id>`
+    if (pack && !app && !plan) {
+      const isDynamicPack = pack.includes("${");
+      if (isDynamicPack) {
+        dynamicLinks++;
+        if (!DYNAMIC_PACK_ALLOWLIST.has(rel)) {
+          failures.push(
+            `${rel}: dynamic pack URL "${url}" — add file to DYNAMIC_PACK_ALLOWLIST ` +
+              `(only allowed where PACK_CATALOG is iterated at render time).`,
+          );
+        }
+        continue;
+      }
+      if (!PACK_CATALOG[pack]) {
+        failures.push(`${rel}: "${url}" → unknown pack "${pack}"`);
+      }
+      continue;
+    }
+
     if (!app || !plan) {
-      failures.push(`${rel}: "${url}" missing app= or plan= param`);
+      failures.push(`${rel}: "${url}" missing app= or plan= param (or pack= for once-off packs)`);
       continue;
     }
 
