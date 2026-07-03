@@ -47,7 +47,19 @@ jobs:
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Surface drift + artifact metadata to the drift-gate job so it can render
+    # a workflow-run summary without re-parsing summary.json.
+    outputs:
+      any_drift: ${{ steps.drift_summary.outputs.any_drift }}
+      lock_install_status: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
+      lock_install_snippet: ${{ steps.drift_summary.outputs.bun_lock_after_install_snippet }}
+      pkg_json_status: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_status }}
+      pkg_json_snippet: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_snippet }}
+      lock_reinstall_status: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_status }}
+      lock_reinstall_snippet: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
+      artifact_url: ${{ steps.upload_drift.outputs.artifact-url }}
     steps:
+
 
       - uses: actions/checkout@v4
         with:
