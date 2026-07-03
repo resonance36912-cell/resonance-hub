@@ -32,14 +32,28 @@ on:
       - "package.json"
       - "bun.lock"
       - ".github/dependabot.yml"
+  # Manual trigger for troubleshooting: run the exact drift gates against any
+  # branch without waiting for Dependabot to open a PR. No PR comment is
+  # posted (there's no PR context) — inspect the workflow-run Summary tab and
+  # the `dependabot-sync-drift` artifact instead.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to check out (defaults to the ref this workflow was dispatched on)."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: dependabot-sync-${{ github.ref }}
+  # Include event_name so a manual dispatch on `main` can't cancel an
+  # in-flight Dependabot PR run on the same ref.
+  group: dependabot-sync-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
+
 
 jobs:
   sync-lockfile:
