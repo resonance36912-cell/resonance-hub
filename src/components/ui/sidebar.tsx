@@ -640,6 +640,7 @@ const SidebarMenuSkeleton = React.forwardRef<
 >(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
+    // nosemgrep: ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator -- cosmetic skeleton width, non-security.
     return `${Math.floor(Math.random() * 40) + 50}%`;
   }, []);
 

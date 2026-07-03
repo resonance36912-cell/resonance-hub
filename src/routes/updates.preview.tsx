@@ -172,6 +172,7 @@ function FeedPreview() {
                   <a
                     href={u.href}
                     className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/70 hover:text-white underline"
+                    // nosemgrep: ajinabraham.njsscan.dos.regex_dos.regex_dos -- anchored regex, linear time.
                     target={/^https?:\/\//.test(u.href) ? "_blank" : undefined}
                     rel="noreferrer"
                   >
@@ -198,6 +199,7 @@ function FeedPreview() {
                         <a
                           href={l.href}
                           className="text-white/70 hover:text-white underline"
+                          // nosemgrep: ajinabraham.njsscan.dos.regex_dos.regex_dos -- anchored regex, linear time.
                           target={/^https?:\/\//.test(l.href) ? "_blank" : undefined}
                           rel="noreferrer"
                         >

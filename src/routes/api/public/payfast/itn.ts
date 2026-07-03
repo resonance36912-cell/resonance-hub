@@ -43,6 +43,7 @@ function buildSignature(params: Record<string, string>, passphrase: string): str
   const withPass = passphrase
     ? `${base}&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, "+")}`
     : base;
+  // nosemgrep: ajinabraham.njsscan.crypto.crypto_node.node_md5 -- PayFast ITN signature protocol mandates MD5.
   return createHash("md5").update(withPass).digest("hex");
 }
 

@@ -84,7 +84,10 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
         }
 
         const token = authHeader.slice('Bearer '.length).trim()
-        if (token !== supabaseServiceKey) {
+        const { timingSafeEqual } = await import('node:crypto')
+        const tokenBuf = Buffer.from(token, 'utf8')
+        const keyBuf = Buffer.from(supabaseServiceKey, 'utf8')
+        if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
           return Response.json({ error: 'Forbidden' }, { status: 403 })
         }
 
