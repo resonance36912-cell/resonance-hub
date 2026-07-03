@@ -10,6 +10,20 @@ name: Dependabot lockfile sync
 # We intentionally do NOT auto-commit fixes: a drifted lockfile must be
 # corrected in the PR branch (locally or by re-running Dependabot) before it
 # can merge.
+#
+# ─── Required status check ───────────────────────────────────────────────
+# Configure branch protection on `main` to require this status check:
+#
+#   Dependabot lockfile sync / drift-gate
+#
+# The `drift-gate` job is the single required check. It runs on every PR
+# (including non-Dependabot PRs, where `sync-lockfile` is skipped) and only
+# fails when `sync-lockfile` actually failed. This lets branch protection
+# block Dependabot merges on drift without wedging human PRs in "pending".
+# Do NOT require `sync-lockfile` directly — it's conditional on the actor
+# and would leave non-Dependabot PRs stuck waiting for a check that never
+# reports.
+# ─────────────────────────────────────────────────────────────────────────
 
 on:
   pull_request:
@@ -29,10 +43,12 @@ concurrency:
 
 jobs:
   sync-lockfile:
+    name: sync-lockfile
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
