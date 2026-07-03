@@ -58,7 +58,7 @@ concurrency:
 jobs:
   sync-lockfile:
     name: sync-lockfile
-    if: github.actor == 'dependabot[bot]'
+    if: github.event_name == 'workflow_dispatch' || github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Surface drift + artifact metadata to the drift-gate job so it can render
@@ -73,13 +73,16 @@ jobs:
       lock_reinstall_snippet: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
       artifact_url: ${{ steps.upload_drift.outputs.artifact-url }}
     steps:
-
-
+      # Checkout target ref:
+      #   - pull_request → the PR head branch (from the fork or same repo).
+      #   - workflow_dispatch → the user-supplied `ref` input, falling back to
+      #     the branch the workflow was dispatched on (github.ref_name).
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           token: ${{ secrets.GITHUB_TOKEN }}
+
 
       - uses: oven-sh/setup-bun@v2
         with:
