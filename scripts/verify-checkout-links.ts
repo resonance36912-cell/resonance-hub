@@ -122,7 +122,17 @@ for (const path of allFiles) {
     }
 
     const qStart = url.indexOf("checkout?") + "checkout?".length;
-    const params = new URLSearchParams(url.slice(qStart).replace(/&amp;/g, "&"));
+    const rawQuery = url.slice(qStart);
+
+    // Shape-check every param (unknown params, bad values, unsafe dynamics).
+    const paramErrors = validateCheckoutParams(
+      rawQuery,
+      rel,
+      DYNAMIC_PARAM_ALLOWLIST[rel],
+    );
+    for (const e of paramErrors) failures.push(e);
+
+    const params = new URLSearchParams(rawQuery.replace(/&amp;/g, "&"));
     const app = params.get("app");
     const plan = params.get("plan");
 
