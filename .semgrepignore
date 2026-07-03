@@ -1,0 +1,12 @@
+# Exclude build artifacts and vendored files
+node_modules/
+.output/
+dist/
+build/
+src/routeTree.gen.ts
+src/integrations/supabase/types.ts
+
+# Repo tooling scripts run at build time only, not shipped to users.
+# Findings inside verifier scripts (regex patterns, test fixtures, MD5 for
+# PayFast test signatures) are self-referential and non-exploitable.
+scripts/
