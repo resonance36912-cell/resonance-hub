@@ -5,9 +5,12 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
   SKU_CATALOG,
+  PACK_CATALOG,
   createPayfastLaunch,
   resolveSku,
   type PayfastLaunch,
+  type PackDef,
+  type SkuDef,
 } from "@/lib/checkout.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
@@ -15,6 +18,7 @@ const SearchSchema = z.object({
   app: z.string().optional(),
   plan: z.string().optional(),
   sku: z.string().optional(),
+  pack: z.string().optional(),
   cycle: z.literal("monthly").optional(),
   return_to: z.string().url().optional(),
 });
@@ -24,8 +28,8 @@ type Search = z.infer<typeof SearchSchema>;
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — The Resonance" },
-      { name: "description", content: "Secure checkout for Resonance apps via PayFast." },
+      { title: "Checkout — The Resonance Hub" },
+      { name: "description", content: "Secure Hub checkout for Resonance app packs and ecosystem passes via PayFast." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -33,16 +37,18 @@ export const Route = createFileRoute("/checkout")({
   component: CheckoutPage,
 });
 
-function resolveFromSearch(s: Search) {
+function resolveFromSearch(s: Search): SkuDef | null {
   if (s.sku && SKU_CATALOG[s.sku]) return SKU_CATALOG[s.sku];
   if (s.app && s.plan) return resolveSku(s.app, s.plan, s.cycle ?? "monthly");
   return null;
 }
 
+
 function CheckoutPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
-  const def = resolveFromSearch(search);
+  const pack: PackDef | null = search.pack ? PACK_CATALOG[search.pack] ?? null : null;
+  const def = pack ? null : resolveFromSearch(search);
 
   const [authReady, setAuthReady] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
@@ -63,6 +69,66 @@ function CheckoutPage() {
     };
   }, []);
 
+  // Once-off pack: waitlist stub (not wired to PayFast one-time yet).
+  if (pack) {
+    return (
+      <Shell>
+        <div className="mb-6">
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/55 mb-2">
+            Checkout · Once-off pack · ZAR · PayFast
+          </p>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{pack.name}</h1>
+          <p className="text-white/65 mt-2">
+            {pack.zar} · once-off · no recurring app fees
+          </p>
+        </div>
+
+        <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm space-y-2">
+          <Row label="Purchase type" value="Once-off pack (no subscription)" />
+          <Row label="App" value={pack.app.replace(/_/g, " ")} />
+          <Row label="Price" value={`${pack.zar} once-off`} />
+          <Row label="Includes" value={pack.includes.join(" · ")} />
+        </div>
+
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200/90 mb-6 leading-relaxed">
+          Once-off pack checkout is opening in Q1 2027. Join the waitlist below and we'll email
+          you the moment PayFast one-time checkout is live for {pack.name}.
+        </div>
+
+        {authReady && email ? (
+          <p className="text-sm text-white/70 mb-6">
+            You're signed in as <span className="text-white">{email}</span> — we'll notify this
+            account when the pack goes live.
+          </p>
+        ) : (
+          <p className="text-sm text-white/70 mb-6">
+            Sign in from the{" "}
+            <Link to="/" className="underline hover:text-white">
+              Hub home
+            </Link>{" "}
+            to join the pack waitlist automatically.
+          </p>
+        )}
+
+        <div className="flex gap-3">
+          <Link
+            to="/pricing"
+            className="px-5 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
+          >
+            ← Back to packs
+          </Link>
+          <Link
+            to="/pricing"
+            hash="passes"
+            className="px-5 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest"
+          >
+            See ecosystem passes →
+          </Link>
+        </div>
+      </Shell>
+    );
+  }
+
   if (!def) {
     return (
       <Shell>
@@ -80,11 +146,14 @@ function CheckoutPage() {
     );
   }
 
+  const isLegacy = def.kind === "legacy_monthly";
+  const purchaseType = def.kind === "pass" ? "Monthly ecosystem pass" : "Monthly subscription";
+
   return (
     <Shell>
       <div className="mb-8">
         <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/55 mb-2">
-          Checkout · ZAR · PayFast
+          Checkout · {purchaseType} · ZAR · PayFast
         </p>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
           {def.label}
@@ -92,6 +161,16 @@ function CheckoutPage() {
         <p className="text-white/65 mt-2">
           R{(def.amountCents / 100).toFixed(2)} / {def.cycle}
         </p>
+        {isLegacy && (
+          <div className="mt-4 rounded-xl border border-white/15 bg-white/[0.04] p-3 text-xs text-white/70 leading-relaxed">
+            This is a retired per-app monthly plan. New signups should choose an ecosystem pass or
+            a once-off pack from the{" "}
+            <Link to="/pricing" className="underline hover:text-white">
+              pricing page
+            </Link>
+            . Existing subscribers can continue renewing here.
+          </div>
+        )}
       </div>
 
       {!authReady ? (
@@ -110,11 +189,6 @@ function CheckoutPage() {
         You&apos;ll be redirected to PayFast to complete payment securely. Cancel anytime from
         your account.
       </p>
-      <p className="mt-3 text-[11px] text-white/55 leading-relaxed">
-        One Hub billing account today — your Resonance subscriptions and invoices live in one
-        place. Unified app login is on the roadmap, so some apps may still require their own
-        login during the transition.
-      </p>
 
       <div className="mt-6">
         <button
@@ -127,6 +201,7 @@ function CheckoutPage() {
     </Shell>
   );
 }
+
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (

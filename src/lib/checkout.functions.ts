@@ -18,6 +18,8 @@ import { isAllowedReturnTo } from "./return-to-allowlist";
 // extend the union and add matching entries to SKU_CATALOG + ITN SKU_CATALOG.
 export type Cycle = "monthly";
 
+export type SkuKind = "pass" | "legacy_monthly";
+
 export type SkuDef = {
   sku: string;
   app: string;
@@ -25,26 +27,69 @@ export type SkuDef = {
   cycle: Cycle;
   amountCents: number;
   label: string;
+  /** UI classification: `pass` = active ecosystem pass, `legacy_monthly` = retired per-app plan (kept only so existing subscribers keep renewing). */
+  kind: SkuKind;
 };
 
 // Monthly catalog mirrors SKU_CATALOG in routes/api/public/payfast/itn.ts
 // Prices reflect 2026-05-28 repricing audit (target ≥70% gross margin).
 export const SKU_CATALOG: Record<string, SkuDef> = {
-  "epublisher:starter:monthly":       { sku: "epublisher:starter:monthly",       app: "epublisher",       tier: "starter",    cycle: "monthly", amountCents: 9900,   label: "ePublisher · Starter" },
-  "epublisher:creator:monthly":       { sku: "epublisher:creator:monthly",       app: "epublisher",       tier: "creator",    cycle: "monthly", amountCents: 19900,  label: "ePublisher · Creator" },
-  "epublisher:pro:monthly":           { sku: "epublisher:pro:monthly",           app: "epublisher",       tier: "pro",        cycle: "monthly", amountCents: 44900,  label: "ePublisher · Pro" },
-  "epublisher:business:monthly":      { sku: "epublisher:business:monthly",      app: "epublisher",       tier: "business",   cycle: "monthly", amountCents: 99900,  label: "ePublisher · Business" },
-  "creative_studio:creator:monthly":  { sku: "creative_studio:creator:monthly",  app: "creative_studio",  tier: "creator",    cycle: "monthly", amountCents: 14900,  label: "Creative Studio · Creator" },
-  "creative_studio:pro:monthly":      { sku: "creative_studio:pro:monthly",      app: "creative_studio",  tier: "pro",        cycle: "monthly", amountCents: 29900,  label: "Creative Studio · Pro" },
-  "creative_studio:business:monthly": { sku: "creative_studio:business:monthly", app: "creative_studio",  tier: "business",   cycle: "monthly", amountCents: 69900,  label: "Creative Studio · Business" },
-  "sync_vision:creator:monthly":      { sku: "sync_vision:creator:monthly",      app: "sync_vision",      tier: "creator",    cycle: "monthly", amountCents: 54900,  label: "Sync Vision · Creator" },
-  "sync_vision:pro:monthly":          { sku: "sync_vision:pro:monthly",          app: "sync_vision",      tier: "pro",        cycle: "monthly", amountCents: 139900, label: "Sync Vision · Pro" },
-  "sync_vision:business:monthly":     { sku: "sync_vision:business:monthly",     app: "sync_vision",      tier: "business",   cycle: "monthly", amountCents: 279900, label: "Sync Vision · Business" },
-  "youtube_optimizer:starter:monthly":  { sku: "youtube_optimizer:starter:monthly",  app: "youtube_optimizer", tier: "starter",  cycle: "monthly", amountCents: 14900,  label: "YouTube Optimizer · Starter" },
-  "youtube_optimizer:pro:monthly":      { sku: "youtube_optimizer:pro:monthly",      app: "youtube_optimizer", tier: "pro",      cycle: "monthly", amountCents: 59900,  label: "YouTube Optimizer · Pro" },
-  "youtube_optimizer:business:monthly": { sku: "youtube_optimizer:business:monthly", app: "youtube_optimizer", tier: "business", cycle: "monthly", amountCents: 299900, label: "YouTube Optimizer · Business" },
-  "all_access:all_access:monthly":    { sku: "all_access:all_access:monthly",    app: "all_access",       tier: "all_access", cycle: "monthly", amountCents: 149900, label: "All-Access Bundle" },
+  // ---------- Ecosystem passes (Hub-only, active) ----------
+  "all_access:creator_pass:monthly":  { sku: "all_access:creator_pass:monthly",  app: "all_access", tier: "creator_pass",  cycle: "monthly", amountCents: 49900,  label: "Creator Pass",              kind: "pass" },
+  "all_access:studio_pass:monthly":   { sku: "all_access:studio_pass:monthly",   app: "all_access", tier: "studio_pass",   cycle: "monthly", amountCents: 149900, label: "Studio Pass",               kind: "pass" },
+  // Legacy per-app monthly SKUs — retired from all UI surfaces. Kept in catalog
+  // so existing PayFast subscriptions keep renewing until customers migrate.
+  "epublisher:starter:monthly":       { sku: "epublisher:starter:monthly",       app: "epublisher",       tier: "starter",    cycle: "monthly", amountCents: 9900,   label: "ePublisher · Starter (legacy)",       kind: "legacy_monthly" },
+  "epublisher:creator:monthly":       { sku: "epublisher:creator:monthly",       app: "epublisher",       tier: "creator",    cycle: "monthly", amountCents: 19900,  label: "ePublisher · Creator (legacy)",       kind: "legacy_monthly" },
+  "epublisher:pro:monthly":           { sku: "epublisher:pro:monthly",           app: "epublisher",       tier: "pro",        cycle: "monthly", amountCents: 44900,  label: "ePublisher · Pro (legacy)",           kind: "legacy_monthly" },
+  "epublisher:business:monthly":      { sku: "epublisher:business:monthly",      app: "epublisher",       tier: "business",   cycle: "monthly", amountCents: 99900,  label: "ePublisher · Business (legacy)",      kind: "legacy_monthly" },
+  "creative_studio:creator:monthly":  { sku: "creative_studio:creator:monthly",  app: "creative_studio",  tier: "creator",    cycle: "monthly", amountCents: 14900,  label: "Creative Studio · Creator (legacy)",  kind: "legacy_monthly" },
+  "creative_studio:pro:monthly":      { sku: "creative_studio:pro:monthly",      app: "creative_studio",  tier: "pro",        cycle: "monthly", amountCents: 29900,  label: "Creative Studio · Pro (legacy)",      kind: "legacy_monthly" },
+  "creative_studio:business:monthly": { sku: "creative_studio:business:monthly", app: "creative_studio",  tier: "business",   cycle: "monthly", amountCents: 69900,  label: "Creative Studio · Business (legacy)", kind: "legacy_monthly" },
+  "sync_vision:creator:monthly":      { sku: "sync_vision:creator:monthly",      app: "sync_vision",      tier: "creator",    cycle: "monthly", amountCents: 54900,  label: "Sync Vision · Creator (legacy)",      kind: "legacy_monthly" },
+  "sync_vision:pro:monthly":          { sku: "sync_vision:pro:monthly",          app: "sync_vision",      tier: "pro",        cycle: "monthly", amountCents: 139900, label: "Sync Vision · Pro (legacy)",          kind: "legacy_monthly" },
+  "sync_vision:business:monthly":     { sku: "sync_vision:business:monthly",     app: "sync_vision",      tier: "business",   cycle: "monthly", amountCents: 279900, label: "Sync Vision · Business (legacy)",     kind: "legacy_monthly" },
+  "youtube_optimizer:starter:monthly":  { sku: "youtube_optimizer:starter:monthly",  app: "youtube_optimizer", tier: "starter",  cycle: "monthly", amountCents: 14900,  label: "YouTube Optimizer · Starter (legacy)",  kind: "legacy_monthly" },
+  "youtube_optimizer:pro:monthly":      { sku: "youtube_optimizer:pro:monthly",      app: "youtube_optimizer", tier: "pro",      cycle: "monthly", amountCents: 59900,  label: "YouTube Optimizer · Pro (legacy)",      kind: "legacy_monthly" },
+  "youtube_optimizer:business:monthly": { sku: "youtube_optimizer:business:monthly", app: "youtube_optimizer", tier: "business", cycle: "monthly", amountCents: 299900, label: "YouTube Optimizer · Business (legacy)", kind: "legacy_monthly" },
+  // Legacy All-Access — replaced in UI by Studio Pass at same R1,499 price point.
+  "all_access:all_access:monthly":    { sku: "all_access:all_access:monthly",    app: "all_access",       tier: "all_access", cycle: "monthly", amountCents: 149900, label: "All-Access Bundle (legacy)",          kind: "legacy_monthly" },
 };
+
+/**
+ * Once-off app packs (UI/marketing catalog). NOT wired to PayFast yet —
+ * checkout renders a waitlist stub. Prices and included allowances are
+ * scaffolded defaults; edit freely.
+ */
+export type PackDef = {
+  id: string;
+  app: "epublisher" | "creative_studio" | "sync_vision" | "youtube_optimizer";
+  name: string;
+  zar: string;
+  amountCents: number;
+  blurb: string;
+  includes: string[];
+};
+
+export const PACK_CATALOG: Record<string, PackDef> = {
+  "epublisher_starter_pack":  { id: "epublisher_starter_pack",  app: "epublisher",       name: "Starter Pack",  zar: "R99",  amountCents: 9900,   blurb: "First-book kit",       includes: ["1 project", "Standard ePub export", "Watermark-free preview"] },
+  "epublisher_creator_pack":  { id: "epublisher_creator_pack",  app: "epublisher",       name: "Creator Pack",  zar: "R299", amountCents: 29900,  blurb: "For active authors",   includes: ["3 projects", "Audio narration credits", "AV export"] },
+  "epublisher_studio_pack":   { id: "epublisher_studio_pack",   app: "epublisher",       name: "Studio Pack",   zar: "R699", amountCents: 69900,  blurb: "Backlist migration",   includes: ["10 projects", "Custom voices", "Priority render queue"] },
+  "creative_studio_starter":  { id: "creative_studio_starter",  app: "creative_studio",  name: "Starter Pack",  zar: "R149", amountCents: 14900,  blurb: "Small campaigns",      includes: ["30 image credits", "5 short videos", "HD exports"] },
+  "creative_studio_pro":      { id: "creative_studio_pro",      app: "creative_studio",  name: "Pro Pack",      zar: "R399", amountCents: 39900,  blurb: "Full campaigns",       includes: ["100 image credits", "20 videos", "Brand kit slot"] },
+  "creative_studio_agency":   { id: "creative_studio_agency",   app: "creative_studio",  name: "Agency Pack",   zar: "R899", amountCents: 89900,  blurb: "Multi-client output",  includes: ["300 image credits", "60 videos", "White-label option"] },
+  "sync_vision_single":       { id: "sync_vision_single",       app: "sync_vision",      name: "Single Track",  zar: "R349", amountCents: 34900,  blurb: "One music video",      includes: ["1 track storyboard", "Character concepts", "Scene prompts"] },
+  "sync_vision_ep":           { id: "sync_vision_ep",           app: "sync_vision",      name: "EP Pack",       zar: "R999", amountCents: 99900,  blurb: "Four-track EP",        includes: ["4 track storyboards", "Character consistency", "Priority render"] },
+  "sync_vision_album":        { id: "sync_vision_album",        app: "sync_vision",      name: "Album Pack",    zar: "R2,499", amountCents: 249900, blurb: "Album/tour ready",    includes: ["12 track storyboards", "Tour visuals", "Studio support"] },
+  "yto_channel_audit":        { id: "yto_channel_audit",        app: "youtube_optimizer",name: "Channel Audit", zar: "R149", amountCents: 14900,  blurb: "First deep audit",     includes: ["1 channel audit", "10 AI thumbnails", "Title/tag report"] },
+  "yto_growth_pack":          { id: "yto_growth_pack",          app: "youtube_optimizer",name: "Growth Pack",   zar: "R599", amountCents: 59900,  blurb: "Ongoing optimisation", includes: ["5 audits", "50 thumbnails", "90-day growth roadmap"] },
+  "yto_agency_pack":          { id: "yto_agency_pack",          app: "youtube_optimizer",name: "Agency Pack",   zar: "R2,499", amountCents: 249900, blurb: "Multi-channel teams", includes: ["25 audits", "250 thumbnails", "Team seats"] },
+};
+
+export function resolvePack(id: string): PackDef | null {
+  return PACK_CATALOG[id] ?? null;
+}
+
 
 export function resolveSku(app: string, plan: string, cycle: Cycle = "monthly"): SkuDef | null {
   const key = `${app}:${plan}:${cycle}`;
