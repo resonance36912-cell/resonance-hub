@@ -151,7 +151,7 @@ function buildAtom(
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<feed xmlns="http://www.w3.org/2005/Atom">',
-    "  <title>Resonance — Latest Updates</title>",
+    `  <title>${escapeXml(`Resonance — Latest Updates${titleSuffix}`)}</title>`,
     "  <subtitle>Release notes and status changes across the Resonance ecosystem: Hub, ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, Career Compass, and the Resonance Podcast.</subtitle>",
     `  <link rel="self" type="application/atom+xml" href="${escapeXml(feedUrl)}" />`,
     `  <link rel="alternate" type="text/html" href="${escapeXml(siteUrl)}" />`,
@@ -166,13 +166,17 @@ function buildAtom(
 export const Route = createFileRoute("/api/public/updates/atom")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         const host = getRequestHost();
         const proto = getRequestUrl().protocol.replace(":", "") || "https";
         const origin = `${proto}://${host}`;
+        const url = new URL(request.url);
+        const statusFilter = parseStatusFilter(url.searchParams.get("status"));
         try {
-          const updates = await loadUpdates(origin);
-          const xml = buildAtom(updates, origin);
+          const all = await loadUpdates(origin);
+          const filtered = applyStatusFilter(all, statusFilter);
+          const xml = buildAtom(filtered, origin, statusFilter);
+
           return new Response(xml, {
             status: 200,
             headers: {
