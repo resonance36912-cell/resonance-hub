@@ -83,7 +83,7 @@ async function loadUpdates(origin: string): Promise<UpdateItem[]> {
 }
 
 function buildRss(updates: UpdateItem[], origin: string): string {
-  const feedUrl = `${origin}/api/public/updates.rss`;
+  const feedUrl = `${origin}/api/public/updates/rss`;
   const siteUrl = `${origin}/`;
   const now = new Date().toUTCString();
 
