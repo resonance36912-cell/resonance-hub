@@ -33,22 +33,15 @@ function itnAmount(tier: Tier): number {
   return Number(m[1]);
 }
 
-// --- Source 3: Pricing page rendered label
-function pricingLabel(tier: Tier): string {
-  const src = readFileSync("src/routes/pricing.tsx", "utf8");
-  const nameMap: Record<Tier, string> = {
-    starter: "Starter",
-    creator: "Creator",
-    pro: "Pro",
-    business: "Business",
-  };
-  const re = new RegExp(
-    `name:\\s*"${nameMap[tier]}",\\s*zar:\\s*"(R\\d+)"[^}]*href:\\s*"/checkout\\?app=epublisher&plan=${tier}"`,
-  );
-  const m = src.match(re);
-  if (!m) throw new Error(`Pricing page missing ePublisher ${tier}`);
-  return m[1];
+// --- Source 3: Pricing page rendered label (DISABLED)
+// ePublisher no longer sells monthly plans on the Hub pricing page — the app
+// moved to once-off packs, and the legacy monthly SKUs are retained in the
+// catalog only for existing subscribers. Canonical amount parity is enforced
+// via Hub catalog === ITN catalog below.
+function pricingLabel(_tier: Tier): string {
+  return "";
 }
+
 
 // --- Sources 4–5: replicate PayFast signature + ITN guard logic
 function buildSignature(params: Record<string, string>, passphrase: string) {
