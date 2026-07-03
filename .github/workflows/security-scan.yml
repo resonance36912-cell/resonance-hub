@@ -103,6 +103,16 @@ jobs:
         with:
           sarif_file: semgrep.sarif
           category: semgrep
+      - name: Setup Bun (for SARIF summarizer)
+        if: always()
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Summarize Semgrep findings to job summary
+        # Parses semgrep.sarif and appends top rule IDs + file:line to
+        # $GITHUB_STEP_SUMMARY so alerts are visible in the run log.
+        if: always()
+        run: bun run scripts/summarize-sarif.ts semgrep.sarif --label "Semgrep" --top 10
       - name: Upload Semgrep SARIF artifact (always)
         # Uploads SARIF on every run — success or failure — so alerts can be
         # triaged locally without needing the Security tab. Retained 14 days.
@@ -138,6 +148,17 @@ jobs:
         with:
           category: "/language:javascript-typescript"
           output: codeql-results
+      - name: Summarize CodeQL findings to job summary
+        # Parses the SARIF that CodeQL just emitted and appends a compact
+        # Markdown table (top rule IDs + locations) to $GITHUB_STEP_SUMMARY
+        # so reviewers can triage the top alerts without downloading anything.
+        if: always()
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Write CodeQL summary
+        if: always()
+        run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL" --top 10
       - name: Upload CodeQL SARIF artifact (always)
         # Uploads SARIF on every run — success or failure — so alerts can be
         # triaged locally without needing the Security tab. Retained 14 days.
