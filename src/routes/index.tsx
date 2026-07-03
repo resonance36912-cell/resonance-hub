@@ -880,13 +880,23 @@ function Index() {
               <p className="text-white/60 text-sm leading-relaxed">
                 The Hub is the source of truth for every product change, status update, and rollout.
               </p>
-              <a
-                href="/api/public/updates/rss"
-                className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
-                aria-label="Subscribe to Resonance updates via RSS"
-              >
-                <span aria-hidden>📡</span> Subscribe · RSS
-              </a>
+              <div className="flex items-center gap-2 flex-wrap">
+                <a
+                  href="/api/public/updates/rss"
+                  className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+                  aria-label="Subscribe to Resonance updates via RSS"
+                >
+                  <span aria-hidden>📡</span> Subscribe · RSS
+                </a>
+                <a
+                  href="/api/public/updates/atom"
+                  className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+                  aria-label="Subscribe to Resonance updates via Atom"
+                >
+                  <span aria-hidden>⚛️</span> Subscribe · Atom
+                </a>
+              </div>
+
             </div>
           </div>
           <UpdatesGrid />
