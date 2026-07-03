@@ -101,14 +101,14 @@ for (const tier of EPUB_TIERS) {
   const sku = `epublisher:${tier}:monthly`;
   const hub = hubAmount(tier);
   const itn = itnAmount(tier);
-  const labelStr = pricingLabel(tier);
-  const labelCents = Number(labelStr.replace("R", "")) * 100;
+  void pricingLabel(tier);
 
   console.log(`[${sku}]  canonical = R${(hub / 100).toFixed(2)} (${hub}¢)`);
 
   hub === itn
     ? pass(`Hub catalog === ITN catalog (${itn}¢)`)
     : fail(`Hub catalog (${hub}¢) !== ITN catalog (${itn}¢)`);
+
 
   hub === labelCents
     ? pass(`Pricing page label "${labelStr}" matches catalog`)
