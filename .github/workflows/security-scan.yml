@@ -126,7 +126,7 @@ jobs:
         # Parses semgrep.sarif and appends top rule IDs + file:line to
         # $GITHUB_STEP_SUMMARY so alerts are visible in the run log.
         if: always()
-        run: bun run scripts/summarize-sarif.ts semgrep.sarif --label "Semgrep" --top 10
+        run: bun run scripts/summarize-sarif.ts semgrep.sarif --label "Semgrep" --top "$SARIF_SUMMARY_TOP_N"
       - name: Upload Semgrep SARIF artifact (always)
         # Uploads SARIF on every run — success or failure — so alerts can be
         # triaged locally without needing the Security tab. Retention is
@@ -151,7 +151,7 @@ jobs:
         if: always() && github.event_name == 'pull_request' && steps.upload-semgrep-sarif.outputs.artifact-id != ''
         env:
           ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-semgrep-sarif.outputs.artifact-id }}
-        run: bun run scripts/annotate-sarif.ts semgrep.sarif --label "Semgrep" --top 20 --artifact-url "$ARTIFACT_URL"
+        run: bun run scripts/annotate-sarif.ts semgrep.sarif --label "Semgrep" --top "$SARIF_SUMMARY_TOP_N" --artifact-url "$ARTIFACT_URL"
 
   codeql:
     name: CodeQL (JavaScript/TypeScript)
@@ -184,7 +184,7 @@ jobs:
           bun-version: latest
       - name: Write CodeQL summary
         if: always()
-        run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL" --top 10
+        run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL" --top "$SARIF_SUMMARY_TOP_N"
       - name: Upload CodeQL SARIF artifact (always)
         # Uploads SARIF on every run — success or failure — so alerts can be
         # triaged locally without needing the Security tab. Retention is
@@ -207,7 +207,7 @@ jobs:
         if: always() && github.event_name == 'pull_request' && steps.upload-codeql-sarif.outputs.artifact-id != ''
         env:
           ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-codeql-sarif.outputs.artifact-id }}
-        run: bun run scripts/annotate-sarif.ts codeql-results --label "CodeQL" --top 20 --artifact-url "$ARTIFACT_URL"
+        run: bun run scripts/annotate-sarif.ts codeql-results --label "CodeQL" --top "$SARIF_SUMMARY_TOP_N" --artifact-url "$ARTIFACT_URL"
 
   pr-comment:
     name: SARIF artifacts PR comment
