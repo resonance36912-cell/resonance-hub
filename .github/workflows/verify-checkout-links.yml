@@ -29,3 +29,10 @@ jobs:
       - name: Verify all pricing pages use relative /checkout URLs with valid SKUs
         run: bun run verify:checkout-links
 
+      - name: Unit tests for pricing pack ↔ PACK_CATALOG cross-check
+        run: bun run test:pricing-packs
+
+      - name: Verify /pricing renders exactly the packs in PACK_CATALOG
+        run: bun run verify:pricing-packs
+
+
