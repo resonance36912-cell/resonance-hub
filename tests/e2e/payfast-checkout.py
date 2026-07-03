@@ -49,11 +49,11 @@ REQUIRED_PAYFAST_FIELDS = {
 }
 
 
-def _require_session_env():
+def _session_env():
+    """Return session vars if injected, else None (auth-gated tests get skipped)."""
     status = os.environ.get("LOVABLE_BROWSER_AUTH_STATUS", "absent")
     if status != "injected":
-        print(f"SKIP: LOVABLE_BROWSER_AUTH_STATUS={status}; need 'injected'.")
-        sys.exit(0)
+        return None
     return (
         os.environ["LOVABLE_BROWSER_SUPABASE_STORAGE_KEY"],
         os.environ["LOVABLE_BROWSER_SUPABASE_SESSION_JSON"],
