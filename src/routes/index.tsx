@@ -63,6 +63,12 @@ export const Route = createFileRoute("/")({
       ],
       links: [
         { rel: "canonical", href: `${origin}/` },
+        {
+          rel: "alternate",
+          type: "application/rss+xml",
+          title: "Resonance — Latest Updates",
+          href: `${origin}/api/public/updates/rss`,
+        },
       ],
       scripts: [
         {

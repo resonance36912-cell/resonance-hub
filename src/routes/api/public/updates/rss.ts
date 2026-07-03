@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getRequestHost, getRequestURL } from "@tanstack/react-start/server";
+import { getRequestHost, getRequestUrl } from "@tanstack/react-start/server";
 
 type UpdateLink = { label: string; href: string };
 type UpdateItem = {
@@ -141,7 +141,7 @@ export const Route = createFileRoute("/api/public/updates/rss")({
     handlers: {
       GET: async () => {
         const host = getRequestHost();
-        const proto = getRequestURL().protocol.replace(":", "") || "https";
+        const proto = getRequestUrl().protocol.replace(":", "") || "https";
         const origin = `${proto}://${host}`;
         try {
           const updates = await loadUpdates(origin);
