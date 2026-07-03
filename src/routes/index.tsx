@@ -862,12 +862,86 @@ function Index() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs now available on the Hub.", date: "Nov 2025", href: "/pricing#epublisher", cta: "View packs" },
-              { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs replace monthly subscriptions.", date: "Nov 2025", href: "/pricing#creative-studio", cta: "View packs" },
-              { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs launched with new storyboarding flow.", date: "Nov 2025", href: "/pricing#sync-vision", cta: "View packs" },
-              { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Moving to youtubeoptimizer.life with new audit and growth packs.", date: "Nov 2025", href: "/pricing#youtube-optimizer", cta: "View packs" },
-              { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Pilot open to first schools and learners — paid packages later.", date: "Nov 2025", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
-              { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New episodes and free media, no subscription required.", date: "Nov 2025", href: "https://www.resonance-podcast.com", cta: "Listen" },
+              {
+                app: "Reson8 Hub",
+                status: "Live",
+                tone: "live",
+                change:
+                  "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.",
+                date: "Jun 2026",
+                href: "/pricing#passes",
+                cta: "See passes",
+              },
+              {
+                app: "Resonance ePublisher",
+                status: "Live",
+                tone: "live",
+                change:
+                  "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.",
+                date: "May 2026",
+                href: "/pricing#epublisher",
+                cta: "View packs",
+              },
+              {
+                app: "Creative Studio",
+                status: "Live",
+                tone: "live",
+                change:
+                  "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.",
+                date: "Apr 2026",
+                href: "/pricing#creative-studio",
+                cta: "View packs",
+              },
+              {
+                app: "Sync Vision",
+                status: "Live",
+                tone: "live",
+                change:
+                  "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.",
+                date: "Mar 2026",
+                href: "/pricing#sync-vision",
+                cta: "View packs",
+              },
+              {
+                app: "YouTube Optimizer",
+                status: "Updating",
+                tone: "updating",
+                change:
+                  "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.",
+                date: "Jun 2026",
+                href: "/pricing#youtube-optimizer",
+                cta: "View packs",
+              },
+              {
+                app: "Career Compass",
+                status: "Free Pilot",
+                tone: "pilot",
+                change:
+                  "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.",
+                date: "Feb 2026",
+                href: "https://www.career-compass.org/#how",
+                cta: "Join pilot",
+              },
+              {
+                app: "The Resonance Podcast",
+                status: "Live",
+                tone: "live",
+                change:
+                  "New season live — free episodes, media kits, and shop. Never a subscription.",
+                date: "Jun 2026",
+                href: "https://www.resonance-podcast.com",
+                cta: "Listen",
+              },
+              {
+                app: "Reson8 Governance",
+                status: "New",
+                tone: "new",
+                change:
+                  "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.",
+                date: "May 2026",
+                href: "/governance",
+                cta: "Read RCGF",
+              },
             ].map((u) => {
               const badgeCls =
                 u.tone === "live"
@@ -876,6 +950,8 @@ function Index() {
                   ? "border-[hsl(200_80%_60%/0.3)] bg-[hsl(200_80%_60%/0.12)] text-[hsl(200_80%_80%)]"
                   : u.tone === "updating"
                   ? "border-[hsl(45_90%_60%/0.3)] bg-[hsl(45_90%_60%/0.12)] text-[hsl(45_90%_80%)]"
+                  : u.tone === "new"
+                  ? "border-[hsl(295_90%_70%/0.35)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_85%)]"
                   : "border-white/15 bg-white/[0.04] text-white/65";
               const external = u.href.startsWith("http");
               return (
