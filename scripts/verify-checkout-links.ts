@@ -25,7 +25,7 @@
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { SKU_CATALOG } from "../src/lib/checkout.functions";
+import { SKU_CATALOG, PACK_CATALOG } from "../src/lib/checkout.functions";
 import { stripComments, extractFieldLiteral } from "./lib/checkout-link-verify";
 
 
@@ -57,6 +57,14 @@ const DYNAMIC_CTA_CONTRACTS: Record<string, DynamicContract> = {
     planArg: "required",
   },
 };
+
+// Files allowed to emit `/checkout?pack=${...}` with a dynamic pack id
+// (they iterate PACK_CATALOG at render time, so every emitted id is valid
+// by construction). Literal `pack=<id>` values elsewhere are still checked
+// against PACK_CATALOG.
+const DYNAMIC_PACK_ALLOWLIST = new Set<string>([
+  "src/routes/pricing.tsx",
+]);
 
 // Capture any quoted string or template literal that contains `checkout?`.
 const linkRegex = /["'`]([^"'`\n]*checkout\?[^"'`\n]+)["'`]/g;
@@ -106,8 +114,29 @@ for (const path of allFiles) {
     const app = params.get("app");
     const plan = params.get("plan");
 
+    const pack = params.get("pack");
+
+    // Once-off pack link: `/checkout?pack=<id>`
+    if (pack && !app && !plan) {
+      const isDynamicPack = pack.includes("${");
+      if (isDynamicPack) {
+        dynamicLinks++;
+        if (!DYNAMIC_PACK_ALLOWLIST.has(rel)) {
+          failures.push(
+            `${rel}: dynamic pack URL "${url}" — add file to DYNAMIC_PACK_ALLOWLIST ` +
+              `(only allowed where PACK_CATALOG is iterated at render time).`,
+          );
+        }
+        continue;
+      }
+      if (!PACK_CATALOG[pack]) {
+        failures.push(`${rel}: "${url}" → unknown pack "${pack}"`);
+      }
+      continue;
+    }
+
     if (!app || !plan) {
-      failures.push(`${rel}: "${url}" missing app= or plan= param`);
+      failures.push(`${rel}: "${url}" missing app= or plan= param (or pack= for once-off packs)`);
       continue;
     }
 
