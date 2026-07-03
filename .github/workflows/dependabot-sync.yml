@@ -43,99 +43,44 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Snapshot committed lockfile + manifest
-        run: |
-          mkdir -p drift-artifacts
-          cp bun.lock .bun.lock.orig
-          cp package.json .package.json.orig
-
-      - name: Regenerate lockfile from package.json
-        # No --frozen-lockfile: we WANT bun to rewrite bun.lock if it disagrees
-        # with package.json, so we can detect the drift on the next step.
-        run: bun install
-
-      - name: Fail on bun.lock drift after bun install
-        id: drift_lock_install
+      - name: Verify bun.lock consistency (shared script)
+        id: lockfile_consistency
         continue-on-error: true
+        # Single source of truth for drift checks. The same script is invoked
+        # locally via `bun run verify:lockfile-consistency`, so CI and local
+        # runs stay identical. Writes machine-readable summary.json + per-step
+        # .diff files under drift-artifacts/ that the comment step consumes.
+        run: bun run scripts/verify-lockfile-consistency.ts --out-dir=drift-artifacts
+
+      - name: Extract drift summary for PR comment
+        id: drift_summary
+        if: always()
         run: |
-          if ! diff -u .bun.lock.orig bun.lock > drift-artifacts/bun.lock.after-install.diff; then
-            cp bun.lock drift-artifacts/bun.lock.regenerated
-            cp .bun.lock.orig drift-artifacts/bun.lock.committed
-            snippet=$(head -n 80 drift-artifacts/bun.lock.after-install.diff)
-            {
-              echo "snippet<<EOF"
-              echo "$snippet"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::bun.lock drifted after 'bun install'. The committed lockfile does not match package.json."
-            echo "Run 'bun install' locally, commit the updated bun.lock, and push to this PR branch."
-            echo "----- bun.lock diff (truncated to 200 lines) -----"
-            head -n 200 drift-artifacts/bun.lock.after-install.diff
-            exit 1
+          set -e
+          summary=drift-artifacts/summary.json
+          if [ ! -f "$summary" ]; then
+            echo "any_drift=false" >> "$GITHUB_OUTPUT"
+            for id in bun_lock_after_install package_json_after_overrides_sync bun_lock_after_reinstall; do
+              echo "${id}_status=success" >> "$GITHUB_OUTPUT"
+            done
+            exit 0
           fi
-          rm -f drift-artifacts/bun.lock.after-install.diff
-          echo "bun.lock is in sync with package.json."
-
-      - name: Sync overrides / pnpm.overrides from bun.lock
-        id: overrides_sync
-        continue-on-error: true
-        # Dependabot doesn't touch `overrides` blocks. If a direct-dep bump
-        # pulls a newer safe version of an overridden transitive, the sync
-        # script would advance the pin. Any change here is drift.
-        run: bun run scripts/sync-overrides-from-lock.ts
-
-      - name: Fail on package.json drift after overrides sync
-        id: drift_package_json
-        continue-on-error: true
-        run: |
-          if ! diff -u .package.json.orig package.json > drift-artifacts/package.json.diff; then
-            cp package.json drift-artifacts/package.json.regenerated
-            cp .package.json.orig drift-artifacts/package.json.committed
-            snippet=$(head -n 80 drift-artifacts/package.json.diff)
-            {
-              echo "snippet<<EOF"
-              echo "$snippet"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::package.json 'overrides' drifted after sync-overrides-from-lock.ts."
-            echo "Run 'bun run scripts/sync-overrides-from-lock.ts' locally, then 'bun install', commit both files, and push."
-            echo "----- package.json diff -----"
-            cat drift-artifacts/package.json.diff
-            exit 1
-          fi
-          rm -f drift-artifacts/package.json.diff
-
-      - name: Re-install and fail on any further bun.lock drift
-        id: drift_lock_reinstall
-        continue-on-error: true
-        # After overrides sync (which changed nothing at this point) confirm a
-        # second `bun install` is a no-op. Catches transitive re-resolution.
-        run: |
-          bun install
-          if ! diff -u .bun.lock.orig bun.lock > drift-artifacts/bun.lock.after-reinstall.diff; then
-            cp bun.lock drift-artifacts/bun.lock.regenerated
-            cp .bun.lock.orig drift-artifacts/bun.lock.committed
-            snippet=$(head -n 80 drift-artifacts/bun.lock.after-reinstall.diff)
-            {
-              echo "snippet<<EOF"
-              echo "$snippet"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-            echo "::error::bun.lock drifted after re-install. Overrides or transitive re-resolution changed the lockfile."
-            head -n 200 drift-artifacts/bun.lock.after-reinstall.diff
-            exit 1
-          fi
-          rm -f drift-artifacts/bun.lock.after-reinstall.diff
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("drift-artifacts/summary.json", "utf8"));
+            const out = process.env.GITHUB_OUTPUT;
+            const append = (k, v) => fs.appendFileSync(out, `${k}=${v}\n`);
+            const appendMulti = (k, v) => fs.appendFileSync(out, `${k}<<__EOF__\n${v}\n__EOF__\n`);
+            append("any_drift", data.results.some(r => !r.ok) ? "true" : "false");
+            for (const r of data.results) {
+              append(`${r.id}_status`, r.ok ? "success" : "failure");
+              if (!r.ok && r.snippet) appendMulti(`${r.id}_snippet`, r.snippet);
+            }
+          '
 
       - name: Upload drift diffs on failure
         id: upload_drift
-        # Fires when any preceding drift step failed. Bundles the *.diff files
-        # plus the committed vs regenerated originals for local inspection.
-        if: >-
-          steps.drift_lock_install.outcome == 'failure' ||
-          steps.overrides_sync.outcome == 'failure' ||
-          steps.drift_package_json.outcome == 'failure' ||
-          steps.drift_lock_reinstall.outcome == 'failure'
+        if: steps.lockfile_consistency.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: dependabot-sync-drift
@@ -143,19 +88,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Cleanup snapshots
-        if: always()
-        run: rm -f .bun.lock.orig .package.json.orig
 
       - name: Verify pinned dependency versions
         id: verify_pins
-        # Skip when a drift step already failed — pins are meaningless on a
+        # Skip when the shared drift check failed — pins are meaningless on a
         # drifted tree, and we want the comment to render before we fail.
-        if: >-
-          steps.drift_lock_install.outcome == 'success' &&
-          steps.overrides_sync.outcome == 'success' &&
-          steps.drift_package_json.outcome == 'success' &&
-          steps.drift_lock_reinstall.outcome == 'success'
+        if: steps.lockfile_consistency.outcome == 'success'
         run: |
           set +e
           out=$(bun run scripts/verify-pinned-deps.ts 2>&1)
@@ -177,6 +115,7 @@ jobs:
         id: bun_audit
         if: steps.verify_pins.outcome == 'success'
         continue-on-error: true
+
         # Threshold config via repo/org variables (Settings → Secrets and variables → Actions → Variables):
         #   BUN_AUDIT_LEVEL      — severity floor: low | moderate | high | critical (default: high)
         #   BUN_AUDIT_MAX_VULNS  — max advisories at/above LEVEL before failing (default: 0)
@@ -248,13 +187,12 @@ jobs:
         if: always()
         uses: actions/github-script@v7
         env:
-          DRIFT_LOCK_INSTALL: ${{ steps.drift_lock_install.outcome }}
-          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_lock_install.outputs.snippet }}
-          DRIFT_OVERRIDES_SYNC: ${{ steps.overrides_sync.outcome }}
-          DRIFT_PACKAGE_JSON: ${{ steps.drift_package_json.outcome }}
-          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_package_json.outputs.snippet }}
-          DRIFT_LOCK_REINSTALL: ${{ steps.drift_lock_reinstall.outcome }}
-          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_lock_reinstall.outputs.snippet }}
+          DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
+          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_install_snippet }}
+          DRIFT_PACKAGE_JSON: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_status }}
+          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_snippet }}
+          DRIFT_LOCK_REINSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_status }}
+          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
           ARTIFACT_URL: ${{ steps.upload_drift.outputs.artifact-url }}
           PINS_STATUS: ${{ steps.verify_pins.outcome }}
           PINS_OUTPUT: ${{ steps.verify_pins.outputs.output }}
@@ -274,10 +212,10 @@ jobs:
 
             const driftRows = [
               ['bun install → bun.lock drift', process.env.DRIFT_LOCK_INSTALL, process.env.DRIFT_LOCK_INSTALL_SNIPPET],
-              ['sync-overrides-from-lock.ts', process.env.DRIFT_OVERRIDES_SYNC, ''],
               ['overrides sync → package.json drift', process.env.DRIFT_PACKAGE_JSON, process.env.DRIFT_PACKAGE_JSON_SNIPPET],
               ['re-install → bun.lock drift', process.env.DRIFT_LOCK_REINSTALL, process.env.DRIFT_LOCK_REINSTALL_SNIPPET],
             ];
+
             const anyDrift = driftRows.some(([, s]) => s === 'failure');
             const artifactUrl = process.env.ARTIFACT_URL || '';
             const runUrl = process.env.RUN_URL;
@@ -370,10 +308,7 @@ jobs:
         run: |
           fail=0
           for step_outcome in \
-            "drift_lock_install:${{ steps.drift_lock_install.outcome }}" \
-            "overrides_sync:${{ steps.overrides_sync.outcome }}" \
-            "drift_package_json:${{ steps.drift_package_json.outcome }}" \
-            "drift_lock_reinstall:${{ steps.drift_lock_reinstall.outcome }}" \
+            "lockfile_consistency:${{ steps.lockfile_consistency.outcome }}" \
             "bun_audit:${{ steps.bun_audit.outcome }}"; do
             name="${step_outcome%%:*}"
             outcome="${step_outcome##*:}"
