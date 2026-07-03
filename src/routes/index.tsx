@@ -512,16 +512,8 @@ function Index() {
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const featuredApp = apps[carouselIndex];
-  // Map app to internal subscribe target; for free apps fall back to their site.
-  const featuredCtaHref = featuredApp.subscribeHref.startsWith("/")
-    ? featuredApp.subscribeHref
-    : featuredApp.href;
-  const featuredCtaIsExternal = featuredCtaHref.startsWith("http");
-  const featuredCtaLabel =
-    featuredApp.status === "free"
-      ? `Open ${featuredApp.name} →`
-      : `Start with ${featuredApp.name} →`;
+  void apps[carouselIndex];
+
 
   async function onJoinSubmit(e: React.FormEvent) {
     e.preventDefault();
