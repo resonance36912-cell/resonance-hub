@@ -16,6 +16,11 @@ env:
   # Default: 14 days — long enough to triage a work week + weekend, short
   # enough to keep artifact storage bounded.
   SARIF_RETENTION_DAYS: ${{ vars.SARIF_RETENTION_DAYS || '14' }}
+  # Number of top rule IDs to include in job-summary tables AND PR-annotation
+  # emissions for both CodeQL and Semgrep. Override with repo/org variable
+  # SARIF_SUMMARY_TOP_N. Default: 10 — small enough to skim in a PR review,
+  # large enough to cover the meaningful long tail on most runs.
+  SARIF_SUMMARY_TOP_N: ${{ vars.SARIF_SUMMARY_TOP_N || '10' }}
 
 permissions:
   contents: read
