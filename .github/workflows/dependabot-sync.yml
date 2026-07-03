@@ -363,9 +363,9 @@ jobs:
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
             }
 
-      - name: Enforce drift failures
+      - name: Enforce drift + audit failures
         # Runs last so the PR comment is posted before the job fails. Turns the
-        # deferred `continue-on-error` drift outcomes into a hard job failure.
+        # deferred `continue-on-error` drift/audit outcomes into a hard job failure.
         if: always()
         run: |
           fail=0
@@ -373,13 +373,15 @@ jobs:
             "drift_lock_install:${{ steps.drift_lock_install.outcome }}" \
             "overrides_sync:${{ steps.overrides_sync.outcome }}" \
             "drift_package_json:${{ steps.drift_package_json.outcome }}" \
-            "drift_lock_reinstall:${{ steps.drift_lock_reinstall.outcome }}"; do
+            "drift_lock_reinstall:${{ steps.drift_lock_reinstall.outcome }}" \
+            "bun_audit:${{ steps.bun_audit.outcome }}"; do
             name="${step_outcome%%:*}"
             outcome="${step_outcome##*:}"
             if [ "$outcome" = "failure" ]; then
-              echo "::error::Drift check failed: $name"
+              echo "::error::Step failed: $name"
               fail=1
             fi
           done
           exit $fail
+
 
