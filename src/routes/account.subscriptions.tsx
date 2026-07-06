@@ -361,6 +361,45 @@ function SubscriptionsPage() {
   subs.forEach((s) => byApp.set(s.app as AppKey, s));
   const bundle = byApp.get("all_access");
   const bundleActive = bundle?.status === "active";
+  // Derive the bundle's display identity from its tier — every active
+  // ecosystem row is persisted with app='all_access' but a distinct tier
+  // (creator_pass / studio_pass / legacy all_access), and each covers a
+  // different app set. Falling back to Studio Pass would mislabel Creator
+  // Pass customers and mis-grant Sync Vision to them.
+  const bundleInfo = (() => {
+    switch (bundle?.tier) {
+      case "creator_pass":
+        return {
+          name: "Creator Pass",
+          description: "Ecosystem pass — includes ePublisher, Creative Studio, and YouTube Optimizer.",
+          coveredApps: new Set<AppKey>(["epublisher", "creative_studio", "youtube_optimizer"]),
+          coveredTierLabel: "Pro (via Creator Pass)",
+        };
+      case "studio_pass":
+        return {
+          name: "Studio Pass",
+          description: "Ecosystem pass — Pro-level access across every Resonance app.",
+          coveredApps: new Set<AppKey>(["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"]),
+          coveredTierLabel: "Pro (via Studio Pass)",
+        };
+      case "all_access":
+        return {
+          name: "All-Access (legacy)",
+          description: "Legacy ecosystem pass — Pro-level access across every Resonance app.",
+          coveredApps: new Set<AppKey>(["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"]),
+          coveredTierLabel: "Pro (via All-Access)",
+        };
+      default:
+        return {
+          name: "Studio Pass",
+          description:
+            "Optional ecosystem pass — Pro-level access across current and upcoming Resonance apps for R1,499/month. Individual apps stay available as once-off packs.",
+          coveredApps: new Set<AppKey>(),
+          coveredTierLabel: "Pro (via Studio Pass)",
+        };
+    }
+  })();
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -403,12 +442,13 @@ function SubscriptionsPage() {
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">
                     {bundleActive ? "Active ecosystem pass" : "Optional ecosystem pass"}
                   </p>
-                  <h2 className="mt-1 text-2xl font-semibold">Studio Pass</h2>
+                  <h2 className="mt-1 text-2xl font-semibold">{bundleInfo.name}</h2>
                   <p className="mt-1 text-sm text-muted-foreground max-w-md">
                     {bundleActive
-                      ? `Ecosystem pass — Pro-level access across every Resonance app. Renews ${formatDate(bundle?.current_period_end ?? null)}.`
-                      : "Optional ecosystem pass — Pro-level access across current and upcoming Resonance apps for R1,499/month. Individual apps stay available as once-off packs."}
+                      ? `${bundleInfo.description} Renews ${formatDate(bundle?.current_period_end ?? null)}.`
+                      : bundleInfo.description}
                   </p>
+
                 </div>
                 <div className="text-right">
                   {bundleActive ? (
@@ -436,13 +476,17 @@ function SubscriptionsPage() {
                 {ALL_APPS.map((app) => {
                   const sub = byApp.get(app);
                   const meta = APP_META[app];
-                  // Bundle override
-                  const effectiveTier = bundleActive ? "Pro (via All-Access)" : sub?.tier ?? "Free";
+                  // Bundle override — only apps actually covered by this
+                  // tier's pass get relabeled. Creator Pass excludes Sync
+                  // Vision; that app must still show its own per-app sub.
+                  const coveredByBundle = bundleActive && bundleInfo.coveredApps.has(app);
+                  const effectiveTier = coveredByBundle ? bundleInfo.coveredTierLabel : sub?.tier ?? "Free";
                   const effectiveStatus: SubscriptionRow["status"] =
-                    bundleActive ? "active" : sub?.status ?? "pending";
-                  const renewal = bundleActive
+                    coveredByBundle ? "active" : sub?.status ?? "pending";
+                  const renewal = coveredByBundle
                     ? bundle?.current_period_end
                     : sub?.current_period_end ?? null;
+
 
                   return (
                     <div
@@ -465,12 +509,12 @@ function SubscriptionsPage() {
                         <span className={`inline-block rounded-full border px-3 py-1 text-xs capitalize ${statusBadge(effectiveStatus)}`}>
                           {effectiveStatus.replace("_", " ")}
                         </span>
-                        {sub && !bundleActive ? (
+                        {sub && !coveredByBundle ? (
                           <span className="text-xs text-muted-foreground font-mono">
                             {formatPrice(sub.amount_cents)}/{sub.billing_cycle === "monthly" ? "mo" : "yr"}
                           </span>
                         ) : (
-                          !bundleActive && (
+                          !coveredByBundle && (
                             <Link to="/pricing" className="text-xs text-primary hover:underline">
                               Upgrade
                             </Link>
