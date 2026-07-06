@@ -509,12 +509,12 @@ function SubscriptionsPage() {
                         <span className={`inline-block rounded-full border px-3 py-1 text-xs capitalize ${statusBadge(effectiveStatus)}`}>
                           {effectiveStatus.replace("_", " ")}
                         </span>
-                        {sub && !bundleActive ? (
+                        {sub && !coveredByBundle ? (
                           <span className="text-xs text-muted-foreground font-mono">
                             {formatPrice(sub.amount_cents)}/{sub.billing_cycle === "monthly" ? "mo" : "yr"}
                           </span>
                         ) : (
-                          !bundleActive && (
+                          !coveredByBundle && (
                             <Link to="/pricing" className="text-xs text-primary hover:underline">
                               Upgrade
                             </Link>
