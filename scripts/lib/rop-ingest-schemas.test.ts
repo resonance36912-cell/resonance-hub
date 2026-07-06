@@ -13,7 +13,75 @@ import {
   AppliedSchema,
   PerfPayloadSchema,
   SuggestionSchema,
+  parseIngestBody,
 } from "../../src/lib/rop/ingest-schemas";
+
+describe("parseIngestBody", () => {
+  test("returns ok:true with parsed data on a valid payload", () => {
+    const res = parseIngestBody(SuggestionSchema, JSON.stringify({
+      local_id: "s", source: "rule", title: "t",
+    }));
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.data.local_id).toBe("s");
+  });
+
+  test("returns invalid_json for malformed JSON", () => {
+    const res = parseIngestBody(SuggestionSchema, "{not json");
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.code).toBe("invalid_json");
+      expect(res.status).toBe(400);
+      expect(res.error).toMatch(/Invalid JSON/);
+      expect(res.issues).toBeUndefined();
+    }
+  });
+
+  test("returns invalid_payload with per-field issues on schema violation", () => {
+    const res = parseIngestBody(SuggestionSchema, JSON.stringify({
+      local_id: "", source: "guess", title: "",
+    }));
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.code).toBe("invalid_payload");
+      expect(res.status).toBe(400);
+      expect(res.issues).toBeDefined();
+      const paths = res.issues!.map((i) => i.path);
+      expect(paths).toContain("local_id");
+      expect(paths).toContain("source");
+      expect(paths).toContain("title");
+      for (const issue of res.issues!) {
+        expect(typeof issue.message).toBe("string");
+        expect(issue.message.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test("summary lists first 3 issues and counts the rest", () => {
+    const res = parseIngestBody(PerfPayloadSchema, JSON.stringify({
+      events: [{
+        step: "", action: "", occurred_at: "", duration_ms: -1, metadata: "bad",
+      }],
+    }));
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error.startsWith("Invalid payload:")).toBe(true);
+      if ((res.issues?.length ?? 0) > 3) {
+        expect(res.error).toMatch(/\(\+\d+ more\)/);
+      }
+    }
+  });
+
+  test("nested array paths are dotted in issue.path", () => {
+    const res = parseIngestBody(PerfPayloadSchema, JSON.stringify({
+      events: [{ step: "s", action: "a", occurred_at: "2026-07-06T10:00:00Z", duration_ms: -1 }],
+    }));
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      const paths = res.issues!.map((i) => i.path);
+      expect(paths).toContain("events.0.duration_ms");
+    }
+  });
+});
 
 describe("PerfPayloadSchema", () => {
   test("accepts a valid event with metadata record", () => {
