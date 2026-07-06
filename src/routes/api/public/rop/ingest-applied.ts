@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { jsonResponse, logAudit, verifyRopRequest } from "@/lib/rop/hmac.server";
-import { AppliedSchema } from "@/lib/rop/ingest-schemas";
+import { AppliedSchema, parseIngestBody } from "@/lib/rop/ingest-schemas";
 
 const OUTCOME_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -13,12 +12,15 @@ export const Route = createFileRoute("/api/public/rop/ingest-applied")({
         const verified = await verifyRopRequest(request);
         if (!verified.ok) return jsonResponse({ ok: false, error: verified.error }, verified.status);
 
-        let p: z.infer<typeof AppliedSchema>;
-        try {
-          p = AppliedSchema.parse(JSON.parse(verified.rawBody || "{}"));
-        } catch (e) {
-          return jsonResponse({ ok: false, error: `Invalid payload: ${(e as Error).message}` }, 400);
+        const result = parseIngestBody(AppliedSchema, verified.rawBody);
+        if (!result.ok) {
+          return jsonResponse(
+            { ok: false, error: result.error, code: result.code, issues: result.issues },
+            result.status,
+          );
         }
+        const p = result.data;
+
 
         // Resolve hub_suggestion_id
         let hubSuggestionId = p.hub_suggestion_id ?? null;

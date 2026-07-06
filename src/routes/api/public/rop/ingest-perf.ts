@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { jsonResponse, logAudit, verifyRopRequest } from "@/lib/rop/hmac.server";
-import { PerfPayloadSchema } from "@/lib/rop/ingest-schemas";
+import { PerfPayloadSchema, parseIngestBody } from "@/lib/rop/ingest-schemas";
 
 export const Route = createFileRoute("/api/public/rop/ingest-perf")({
   server: {
@@ -11,12 +10,15 @@ export const Route = createFileRoute("/api/public/rop/ingest-perf")({
         const verified = await verifyRopRequest(request);
         if (!verified.ok) return jsonResponse({ ok: false, error: verified.error }, verified.status);
 
-        let parsed: z.infer<typeof PerfPayloadSchema>;
-        try {
-          parsed = PerfPayloadSchema.parse(JSON.parse(verified.rawBody || "{}"));
-        } catch (e) {
-          return jsonResponse({ ok: false, error: `Invalid payload: ${(e as Error).message}` }, 400);
+        const result = parseIngestBody(PerfPayloadSchema, verified.rawBody);
+        if (!result.ok) {
+          return jsonResponse(
+            { ok: false, error: result.error, code: result.code, issues: result.issues },
+            result.status,
+          );
         }
+        const parsed = result.data;
+
 
         const rows = parsed.events.map((ev) => ({
           app_id: verified.app.id,
