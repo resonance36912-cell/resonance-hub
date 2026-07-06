@@ -11,7 +11,7 @@ const EventSchema = z.object({
   status: z.string().max(40).nullable().optional(),
   error_code: z.string().max(120).nullable().optional(),
   occurred_at: z.string().min(10),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 const PayloadSchema = z.object({ events: z.array(EventSchema).min(1).max(500) });

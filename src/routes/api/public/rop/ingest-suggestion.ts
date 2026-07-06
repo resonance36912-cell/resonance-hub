@@ -9,7 +9,7 @@ const SuggestionSchema = z.object({
   category: z.string().max(80).optional(),
   title: z.string().min(1).max(280),
   rationale: z.string().max(4000).optional(),
-  evidence: z.record(z.unknown()).optional(),
+  evidence: z.record(z.string(), z.unknown()).optional(),
   target_key: z.string().max(160).optional(),
   current_value: z.unknown().optional(),
   suggested_value: z.unknown().optional(),
