@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { jsonResponse, logAudit, verifyRopRequest } from "@/lib/rop/hmac.server";
-import { SuggestionSchema } from "@/lib/rop/ingest-schemas";
+import { SuggestionSchema, parseIngestBody } from "@/lib/rop/ingest-schemas";
 
 
 export const Route = createFileRoute("/api/public/rop/ingest-suggestion")({
@@ -12,12 +11,15 @@ export const Route = createFileRoute("/api/public/rop/ingest-suggestion")({
         const verified = await verifyRopRequest(request);
         if (!verified.ok) return jsonResponse({ ok: false, error: verified.error }, verified.status);
 
-        let p: z.infer<typeof SuggestionSchema>;
-        try {
-          p = SuggestionSchema.parse(JSON.parse(verified.rawBody || "{}"));
-        } catch (e) {
-          return jsonResponse({ ok: false, error: `Invalid payload: ${(e as Error).message}` }, 400);
+        const result = parseIngestBody(SuggestionSchema, verified.rawBody);
+        if (!result.ok) {
+          return jsonResponse(
+            { ok: false, error: result.error, code: result.code, issues: result.issues },
+            result.status,
+          );
         }
+        const p = result.data;
+
 
         // Idempotency on (app_id, evidence->>'local_id'): look up first.
         const { data: existing } = await supabaseAdmin
