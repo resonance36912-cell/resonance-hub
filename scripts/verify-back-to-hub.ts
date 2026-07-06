@@ -74,11 +74,18 @@ for (const path of walk(ROUTES_DIR)) {
 
   const src = readFileSync(path, "utf8");
 
+  // Skip auto-generated files (e.g. @lovable.dev/mcp-js emitted routes).
+  if (src.includes("AUTO-GENERATED")) {
+    skipped.push({ file: rel, reason: "auto-generated" });
+    continue;
+  }
+
   // Only check files that actually define a page route.
   if (!src.includes("createFileRoute(")) {
     skipped.push({ file: rel, reason: "non-route" });
     continue;
   }
+
 
   if (src.includes(OPT_OUT_MARKER)) {
     skipped.push({ file: rel, reason: "opted out via // @no-back-to-hub" });
