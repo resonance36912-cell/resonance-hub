@@ -1,18 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { jsonResponse, logAudit, verifyRopRequest } from "@/lib/rop/hmac.server";
-
-const AppliedSchema = z.object({
-  local_id: z.string().min(1).max(120),
-  hub_suggestion_id: z.string().uuid().optional(),
-  action: z.enum(["applied", "reverted"]),
-  target_key: z.string().min(1).max(160),
-  value_now: z.unknown().optional(),
-  value_prior: z.unknown().optional(),
-  metric: z.string().max(80).optional(),
-  occurred_at: z.string().min(10).optional(),
-});
+import { AppliedSchema } from "@/lib/rop/ingest-schemas";
 
 const OUTCOME_WINDOW_MS = 24 * 60 * 60 * 1000;
 

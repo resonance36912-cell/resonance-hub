@@ -1,20 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { jsonResponse, logAudit, verifyRopRequest } from "@/lib/rop/hmac.server";
-
-const EventSchema = z.object({
-  step: z.string().min(1).max(120),
-  action: z.string().min(1).max(120),
-  provider: z.string().max(120).nullable().optional(),
-  duration_ms: z.number().int().min(0).max(24 * 60 * 60 * 1000).nullable().optional(),
-  status: z.string().max(40).nullable().optional(),
-  error_code: z.string().max(120).nullable().optional(),
-  occurred_at: z.string().min(10),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-});
-
-const PayloadSchema = z.object({ events: z.array(EventSchema).min(1).max(500) });
+import { PerfPayloadSchema } from "@/lib/rop/ingest-schemas";
 
 export const Route = createFileRoute("/api/public/rop/ingest-perf")({
   server: {
