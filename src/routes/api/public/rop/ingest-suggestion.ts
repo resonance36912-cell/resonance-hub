@@ -1,19 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import type { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { jsonResponse, logAudit, verifyRopRequest } from "@/lib/rop/hmac.server";
+import { SuggestionSchema } from "@/lib/rop/ingest-schemas";
 
-const SuggestionSchema = z.object({
-  local_id: z.string().min(1).max(120),
-  source: z.enum(["rule", "ai", "cross_app", "manual"]),
-  category: z.string().max(80).optional(),
-  title: z.string().min(1).max(280),
-  rationale: z.string().max(4000).optional(),
-  evidence: z.record(z.string(), z.unknown()).optional(),
-  target_key: z.string().max(160).optional(),
-  current_value: z.unknown().optional(),
-  suggested_value: z.unknown().optional(),
-});
 
 export const Route = createFileRoute("/api/public/rop/ingest-suggestion")({
   server: {

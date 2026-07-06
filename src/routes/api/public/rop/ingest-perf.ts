@@ -11,9 +11,9 @@ export const Route = createFileRoute("/api/public/rop/ingest-perf")({
         const verified = await verifyRopRequest(request);
         if (!verified.ok) return jsonResponse({ ok: false, error: verified.error }, verified.status);
 
-        let parsed: z.infer<typeof PayloadSchema>;
+        let parsed: z.infer<typeof PerfPayloadSchema>;
         try {
-          parsed = PayloadSchema.parse(JSON.parse(verified.rawBody || "{}"));
+          parsed = PerfPayloadSchema.parse(JSON.parse(verified.rawBody || "{}"));
         } catch (e) {
           return jsonResponse({ ok: false, error: `Invalid payload: ${(e as Error).message}` }, 400);
         }
