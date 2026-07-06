@@ -25,8 +25,8 @@ const ROOT = resolve(import.meta.dir, "..");
 // Files that display tier prices the user pays via Hub checkout.
 const PRICING_FILES = [
   "src/routes/pricing.tsx",
-  "src/routes/youtube-optimizer.pricing.tsx",
 ];
+
 
 /** "R1,499" / "R99" / "R0" -> cents. Returns null if unparseable. */
 function zarToCents(zar: string): number | null {
