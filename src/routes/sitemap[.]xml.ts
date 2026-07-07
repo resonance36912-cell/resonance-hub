@@ -20,12 +20,11 @@ export const Route = createFileRoute("/sitemap.xml")({
         const hubEntries: SitemapEntry[] = [
           { loc: `${BASE_URL}/`, changefreq: "weekly", priority: "1.0", lastmod: today },
           { loc: `${BASE_URL}/pricing`, changefreq: "monthly", priority: "0.9", lastmod: today },
-          {
-            loc: `${BASE_URL}/youtube-optimizer/pricing`,
-            changefreq: "monthly",
-            priority: "0.8",
-            lastmod: today,
-          },
+          { loc: `${BASE_URL}/governance`, changefreq: "monthly", priority: "0.5", lastmod: today },
+          { loc: `${BASE_URL}/epublisher/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
+          { loc: `${BASE_URL}/creative-studio/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
+          { loc: `${BASE_URL}/sync-vision/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
+          { loc: `${BASE_URL}/youtube-optimizer/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
         ];
 
         // One entry per canonical public app URL from APP_REGISTRY.
