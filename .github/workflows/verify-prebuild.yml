@@ -93,9 +93,11 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-hub-routes.ts
 
-      - name: Stop dev server
+      - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
         run: |
-          if [ -f /tmp/dev-server.pid ]; then
-            kill "$(cat /tmp/dev-server.pid)" || true
+          if [ -f /tmp/preview-server.pid ]; then
+            kill "$(cat /tmp/preview-server.pid)" 2>/dev/null || true
           fi
+          pkill -f workerd 2>/dev/null || true
+          pkill -f wrangler 2>/dev/null || true
