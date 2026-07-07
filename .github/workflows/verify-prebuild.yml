@@ -33,7 +33,7 @@ jobs:
        #   1. If `vars.SMOKE_BASE_URL` (repository/environment variable) is set, use it —
        #      typically the deployed preview URL (e.g. https://id-preview--<id>.lovable.app
        #      or https://project--<id>-dev.lovable.app).
-       #   2. Otherwise fall back to a locally started dev server on :8080.
+       #   2. Otherwise build locally and serve dist/server via wrangler dev on :8080.
       - name: Resolve smoke test BASE_URL
         id: smoke_target
         env:
