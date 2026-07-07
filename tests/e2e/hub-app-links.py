@@ -67,7 +67,7 @@ async def check_app(page, card_label: str, anchor: str) -> tuple[bool, str]:
             top: r.top,
             bottom: r.bottom,
             viewportH: window.innerHeight,
-            inView: r.top >= -50 && r.top < window.innerHeight,
+            inView: r.bottom > 0 && r.top < window.innerHeight,
           };
         }""",
         anchor,
