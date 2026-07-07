@@ -43,9 +43,16 @@ async def check_app(page, card_label: str, anchor: str) -> tuple[bool, str]:
         return False, f"'View packs' link not found in '{card_label}' card"
 
     await link.first.click()
-    # Client-side nav -> URL should update to /pricing#<anchor>
     try:
-        await page.wait_for_url(f"**/pricing#{anchor}", timeout=5000)
+        await page.wait_for_url(f"**/pricing#{anchor}", timeout=10000)
+    except Exception:
+        return False, f"URL did not become /pricing#{anchor} (got {page.url})"
+
+    # Wait for the pricing route to actually render the target section.
+    try:
+        await page.wait_for_selector(f"#{anchor}", timeout=10000)
+    except Exception:
+        return False, f"#{anchor} never rendered on /pricing (url={page.url})"
     except Exception:
         return False, f"URL did not become /pricing#{anchor} (got {page.url})"
 
