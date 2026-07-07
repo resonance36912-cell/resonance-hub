@@ -46,6 +46,14 @@ jobs:
             ${{ runner.os }}-vite-${{ hashFiles('bun.lock', 'bun.lockb', 'vite.config.ts', 'tsconfig.json') }}-
             ${{ runner.os }}-vite-
 
+      # Prettier: 134 files currently have style drift. Surface without
+      # blocking until the backlog is formatted; flip continue-on-error to
+      # false to enforce. Runs before typecheck/lint/smoke so style issues
+      # show up first in the log.
+      - name: Prettier format check
+        continue-on-error: true
+        run: bunx prettier --check .
+
       - name: TypeScript typecheck
         run: bunx tsgo --noEmit
 
