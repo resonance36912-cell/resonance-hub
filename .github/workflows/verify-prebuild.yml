@@ -49,20 +49,28 @@ jobs:
             echo "No SMOKE_BASE_URL configured; will start local dev server"
           fi
 
-      - name: Start dev server for smoke test
+      - name: Build production bundle
         if: steps.smoke_target.outputs.needs_local == 'true'
+        run: bun run build
+
+      # The TanStack Start build emits a Cloudflare Worker at
+      # dist/server/index.mjs plus its own wrangler.json. wrangler dev serves
+      # the real production worker — closer to prod than `vite dev`.
+      - name: Start production preview (wrangler dev) for smoke test
+        if: steps.smoke_target.outputs.needs_local == 'true'
+        working-directory: dist/server
         run: |
-          bun run dev > /tmp/dev-server.log 2>&1 &
-          echo $! > /tmp/dev-server.pid
-          for i in {1..60}; do
-            if curl -sf http://localhost:8080/ > /dev/null; then
-              echo "Dev server ready"
+          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          echo $! > /tmp/preview-server.pid
+          for i in {1..90}; do
+            if curl -sf http://127.0.0.1:8080/ > /dev/null; then
+              echo "Preview server ready after ${i}s"
               exit 0
             fi
             sleep 1
           done
-          echo "Dev server failed to start" >&2
-          cat /tmp/dev-server.log >&2
+          echo "Preview server failed to start" >&2
+          tail -40 /tmp/preview-server.log >&2
           exit 1
 
       - name: Wait for remote preview to respond
