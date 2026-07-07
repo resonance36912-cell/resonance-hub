@@ -93,6 +93,11 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-hub-routes.ts
 
+      - name: Verify sitemap.xml, robots.txt, and pricing anchors
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: bun run scripts/verify-sitemap-robots.ts
+
       - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
         run: |
