@@ -64,5 +64,55 @@ for (const r of results) {
   if (!r.ok) failed++;
 }
 
-console.log(`\n${results.length - failed}/${results.length} passed (base: ${BASE})`);
-if (failed > 0) process.exit(1);
+// --- Sitemap check: every Hub-domain entry must return 200 ------------------
+console.log("\nSitemap URL checks:");
+const HUB_HOSTS = ["reson8.life", "www.reson8.life", "resonance-hub.lovable.app"];
+let sitemapChecked = 0;
+let sitemapFailed = 0;
+
+try {
+  const smRes = await fetch(new URL("/sitemap.xml", BASE).toString());
+  if (!smRes.ok) throw new Error(`sitemap.xml → ${smRes.status}`);
+  const smXml = await smRes.text();
+  const locs = Array.from(smXml.matchAll(/<loc>([^<]+)<\/loc>/g)).map((m) => m[1].trim());
+
+  // Only verify entries pointing at the Hub host — external app URLs (spokes)
+  // are not this smoke test's responsibility.
+  const hubLocs = locs.filter((loc) => {
+    try {
+      return HUB_HOSTS.includes(new URL(loc).hostname);
+    } catch {
+      return false;
+    }
+  });
+
+  const smResults = await Promise.all(
+    hubLocs.map(async (loc) => {
+      const path = new URL(loc).pathname;
+      const url = new URL(path, BASE).toString();
+      try {
+        const r = await fetch(url, { redirect: "follow" });
+        return { loc, path, ok: r.ok, status: r.status };
+      } catch (err) {
+        return { loc, path, ok: false, status: 0, err: (err as Error).message };
+      }
+    }),
+  );
+
+  for (const r of smResults) {
+    sitemapChecked++;
+    const mark = r.ok ? "✓" : "✗";
+    console.log(`${mark} sitemap ${r.path} → ${r.status}${r.err ? ` (${r.err})` : ""}`);
+    if (!r.ok) sitemapFailed++;
+  }
+} catch (err) {
+  console.log(`✗ sitemap check failed: ${(err as Error).message}`);
+  sitemapFailed++;
+  sitemapChecked = sitemapChecked || 1;
+}
+
+const total = results.length + sitemapChecked;
+const totalFailed = failed + sitemapFailed;
+console.log(`\n${total - totalFailed}/${total} passed (base: ${BASE})`);
+if (totalFailed > 0) process.exit(1);
+
