@@ -33,7 +33,7 @@ jobs:
        #   1. If `vars.SMOKE_BASE_URL` (repository/environment variable) is set, use it —
        #      typically the deployed preview URL (e.g. https://id-preview--<id>.lovable.app
        #      or https://project--<id>-dev.lovable.app).
-       #   2. Otherwise fall back to a locally started dev server on :8080.
+       #   2. Otherwise build locally and serve dist/server via wrangler dev on :8080.
       - name: Resolve smoke test BASE_URL
         id: smoke_target
         env:
@@ -49,20 +49,28 @@ jobs:
             echo "No SMOKE_BASE_URL configured; will start local dev server"
           fi
 
-      - name: Start dev server for smoke test
+      - name: Build production bundle
         if: steps.smoke_target.outputs.needs_local == 'true'
+        run: bun run build
+
+      # The TanStack Start build emits a Cloudflare Worker at
+      # dist/server/index.mjs plus its own wrangler.json. wrangler dev serves
+      # the real production worker — closer to prod than `vite dev`.
+      - name: Start production preview (wrangler dev) for smoke test
+        if: steps.smoke_target.outputs.needs_local == 'true'
+        working-directory: dist/server
         run: |
-          bun run dev > /tmp/dev-server.log 2>&1 &
-          echo $! > /tmp/dev-server.pid
-          for i in {1..60}; do
-            if curl -sf http://localhost:8080/ > /dev/null; then
-              echo "Dev server ready"
+          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          echo $! > /tmp/preview-server.pid
+          for i in {1..90}; do
+            if curl -sf http://127.0.0.1:8080/ > /dev/null; then
+              echo "Preview server ready after ${i}s"
               exit 0
             fi
             sleep 1
           done
-          echo "Dev server failed to start" >&2
-          cat /tmp/dev-server.log >&2
+          echo "Preview server failed to start" >&2
+          tail -40 /tmp/preview-server.log >&2
           exit 1
 
       - name: Wait for remote preview to respond
@@ -85,9 +93,11 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-hub-routes.ts
 
-      - name: Stop dev server
+      - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
         run: |
-          if [ -f /tmp/dev-server.pid ]; then
-            kill "$(cat /tmp/dev-server.pid)" || true
+          if [ -f /tmp/preview-server.pid ]; then
+            kill "$(cat /tmp/preview-server.pid)" 2>/dev/null || true
           fi
+          pkill -f workerd 2>/dev/null || true
+          pkill -f wrangler 2>/dev/null || true
