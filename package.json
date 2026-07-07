@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test": "bun test scripts/lib/",
     "format": "prettier --write .",
     "check:prices": "bun run scripts/check-prices.ts",
     "test:payfast": "bun run scripts/test-payfast-itn.ts",

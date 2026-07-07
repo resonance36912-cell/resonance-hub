@@ -67,6 +67,11 @@ jobs:
       - name: Check price parity (SKU_CATALOG vs pricing UI)
         run: bun run check:prices
 
+      # Unit/integration tests. Hard-fails CI on any failure. Runs before
+      # smoke tests so logic regressions surface before we spin up a server.
+      - name: Unit & integration tests (bun test)
+        run: bun run test
+
       - name: Run all prebuild verification scripts
         run: bun run prebuild
 
