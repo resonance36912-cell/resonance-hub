@@ -53,8 +53,6 @@ async def check_app(page, card_label: str, anchor: str) -> tuple[bool, str]:
         await page.wait_for_selector(f"#{anchor}", timeout=10000)
     except Exception:
         return False, f"#{anchor} never rendered on /pricing (url={page.url})"
-    except Exception:
-        return False, f"URL did not become /pricing#{anchor} (got {page.url})"
 
     await page.wait_for_load_state("networkidle")
 
