@@ -28,3 +28,28 @@ jobs:
 
       - name: Run all prebuild verification scripts
         run: bun run prebuild
+
+      - name: Start dev server for smoke test
+        run: |
+          bun run dev > /tmp/dev-server.log 2>&1 &
+          echo $! > /tmp/dev-server.pid
+          for i in {1..60}; do
+            if curl -sf http://localhost:8080/ > /dev/null; then
+              echo "Dev server ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Dev server failed to start" >&2
+          cat /tmp/dev-server.log >&2
+          exit 1
+
+      - name: Smoke test hub routes
+        run: BASE_URL=http://localhost:8080 bun run scripts/smoke-hub-routes.ts
+
+      - name: Stop dev server
+        if: always()
+        run: |
+          if [ -f /tmp/dev-server.pid ]; then
+            kill "$(cat /tmp/dev-server.pid)" || true
+          fi
