@@ -98,6 +98,13 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/verify-sitemap-robots.ts
 
+      # Lighthouse: performance ≥ 0.80, accessibility ≥ 0.90 (see lighthouserc.json).
+      # Only runs when we have a locally served build — skipping for remote preview
+      # keeps LHCI from hitting arbitrary URLs the workflow doesn't own.
+      - name: Lighthouse CI (performance + a11y thresholds)
+        if: steps.smoke_target.outputs.needs_local == 'true'
+        run: bunx --bun @lhci/cli@0.14.x autorun --config=./lighthouserc.json
+
       - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
         run: |
