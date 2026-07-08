@@ -37,6 +37,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Dependency vulnerability scan. Fails the build if any installed
+      # package has a high (or critical) severity advisory.
+      - name: Audit dependencies for high-severity vulnerabilities
+        run: bun audit --audit-level=high
+
       # Cache Vite's transform cache. Restored across runs so unchanged
       # modules skip re-transformation. Safe: Vite invalidates entries
       # whose source or config hash changed.
