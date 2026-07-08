@@ -63,9 +63,42 @@ jobs:
       # Lint has ~2400 preexisting issues in this repo — surface them without
       # blocking the pipeline until the backlog is cleaned up. Flip
       # continue-on-error to false to enforce.
-      - name: Lint (eslint)
+      # Full-repo lint has ~2400 preexisting issues — surface them without
+      # blocking until the backlog is cleaned up.
+      - name: Lint backlog (full repo, non-blocking)
         continue-on-error: true
         run: bun run lint
+
+      # Diff-based lint: hard-fail on any lint error introduced in files
+      # changed by this PR / push. Existing backlog in untouched files is
+      # ignored, but new/edited files must be clean.
+      #
+      # Base ref resolution:
+      #   - PRs: compare against the PR base branch SHA
+      #   - Push to main: compare against the previous commit
+      - name: Lint changed files (blocking)
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -n "${PR_BASE_SHA:-}" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+          elif [ -n "${BEFORE_SHA:-}" ] && [ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]; then
+            BASE_SHA="$BEFORE_SHA"
+          else
+            BASE_SHA="$(git rev-parse HEAD~1)"
+          fi
+          echo "Diffing against base: $BASE_SHA"
+          # Only .ts/.tsx files that still exist (exclude deleted).
+          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB "$BASE_SHA"...HEAD -- '*.ts' '*.tsx' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts)' || true)
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
+            echo "No changed .ts/.tsx files to lint."
+            exit 0
+          fi
+          printf 'Linting %d changed file(s):\n' "${#CHANGED[@]}"
+          printf '  %s\n' "${CHANGED[@]}"
+          bunx eslint --max-warnings=0 "${CHANGED[@]}"
 
       - name: Check price parity (SKU_CATALOG vs pricing UI)
         run: bun run check:prices
