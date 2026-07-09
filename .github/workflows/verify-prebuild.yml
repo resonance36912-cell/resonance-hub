@@ -38,9 +38,16 @@ jobs:
         with:
           bun-version: 1.3.3
 
-      # Cache bun's global install cache (~/.bun/install/cache) keyed by
-      # bun.lock. `bun install` still runs but resolves from cache, cutting
-      # install time roughly in half on cache hits.
+      # Two-layer bun cache:
+      #   1. ~/.bun/install/cache — bun's global download store. Restored
+      #      on any prior run for this OS; makes cold installs cheaper even
+      #      when the lockfile changed. Uses restore-keys as a fallback.
+      #   2. node_modules — the fully-resolved dependency tree. Restored
+      #      only on an EXACT match of (bun version + lockfile hash), so a
+      #      hit skips `bun install` entirely. No restore-keys here on
+      #      purpose: a partial restore would leave a stale tree that
+      #      doesn't match the current lockfile and would silently poison
+      #      later steps.
       - name: Cache bun install store
         uses: actions/cache@v4
         with:
@@ -49,11 +56,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-store-
 
+      - name: Cache node_modules
+        id: cache_node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-nm-1.3.3-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json', '.npmrc', 'bunfig.toml') }}
+
       - name: Install dependencies
+        if: steps.cache_node_modules.outputs.cache-hit != 'true'
         run: bun install --frozen-lockfile
 
-      # Dependency vulnerability scan. Fails the build if any installed
-      # package has a high (or critical) severity advisory.
+      # Dependency vulnerability scan. Reads the lockfile, not node_modules
+      # state, so it stays authoritative whether or not the install step
+      # was skipped by a cache hit. Fails the build on any high- or
+      # critical-severity advisory.
       - name: Audit dependencies for high-severity vulnerabilities
         run: bun audit --audit-level=high
 
