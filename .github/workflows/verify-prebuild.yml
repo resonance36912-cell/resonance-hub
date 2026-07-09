@@ -42,6 +42,42 @@ jobs:
       - name: Audit dependencies for high-severity vulnerabilities
         run: bun audit --audit-level=high
 
+      # SBOM: syft scans the installed node_modules + lockfile and emits a
+      # CycloneDX + SPDX inventory of every shipped dependency. Uploaded as
+      # a workflow artifact for supply-chain traceability (auditing what
+      # exact versions were built into a given commit). Non-blocking.
+      - name: Generate SBOM (syft, CycloneDX + SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          artifact-name: sbom-cyclonedx.json
+          output-file: sbom-cyclonedx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Generate SBOM (syft, SPDX)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: sbom-spdx.json
+          output-file: sbom-spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Upload SBOM artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ github.sha }}
+          path: |
+            sbom-cyclonedx.json
+            sbom-spdx.json
+          if-no-files-found: warn
+          retention-days: 90
+
+
       # Cache Vite's transform cache. Restored across runs so unchanged
       # modules skip re-transformation. Safe: Vite invalidates entries
       # whose source or config hash changed.
