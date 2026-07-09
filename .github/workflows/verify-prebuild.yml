@@ -18,6 +18,21 @@ jobs:
           # Need history so diff-based lint can compare against the base ref.
           fetch-depth: 0
 
+      # Secret scanning: gitleaks inspects the checked-out tree (and, on PRs,
+      # the diff against the base ref) for high-confidence credential
+      # patterns — API keys, tokens, private keys, provider secrets. Fails
+      # the build on any finding. Runs before install/build so a leaked
+      # credential is caught even if later steps would fail for other
+      # reasons.
+      - name: Scan for leaked secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No GITLEAKS_LICENSE — required only for org-owned private repos
+          # under the paid tier. Public repos and personal repos run free.
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
+          GITLEAKS_ENABLE_SUMMARY: "true"
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
