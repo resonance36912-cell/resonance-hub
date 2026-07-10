@@ -42,7 +42,7 @@ async function serverReachable(): Promise<boolean> {
 
 async function call(repos: string[]): Promise<Response> {
   const body = JSON.stringify(await toJSONAsync({ data: { repos } }));
-  return fetch(`${DEV_URL}/_serverFn/${ID}`, {
+  return fetchRpcWithRetry(`${DEV_URL}/_serverFn/${ID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
