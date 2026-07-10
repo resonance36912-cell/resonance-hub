@@ -361,14 +361,8 @@ async function fetchJobLogsTail(
 
 export const getRunDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repo: string; runId: number; includeLogs?: boolean }) => {
-    const parsed = z
-      .object({
-        repo: z.string().min(1).max(140),
-        runId: z.number().int().positive(),
-        includeLogs: z.boolean().optional().default(true),
-      })
-      .parse(data);
+  .inputValidator((data: unknown) => {
+    const parsed = GetRunDetailsInputSchema.parse(data);
     const check = validateRepoSlug(parsed.repo);
     if (!check.ok) throw new Error(check.error);
     return { ...parsed, repo: check.repo };
