@@ -303,9 +303,38 @@ function RepoCard({
 }
 
 function CiHealthPage() {
-  const { repos: reposParam, filter } = Route.useSearch();
+  const search = Route.useSearch();
+  const reposParam = search.repos;
+  const filter = normalizeFilter(search.filter);
+  const sort = normalizeSort(search.sort);
+  const refresh = normalizeRefresh(search.refresh);
   const navigate = Route.useNavigate();
   const [reposInput, setReposInput] = useState(reposParam);
+
+  // On first mount, if URL matches defaults, hydrate from localStorage.
+  useEffect(() => {
+    const stored = readStoredPrefs();
+    if (!stored) return;
+    const patch: Partial<{ filter: string; sort: string; refresh: number }> = {};
+    if (search.filter === "failing" && stored.filter && stored.filter !== "failing") {
+      patch.filter = stored.filter;
+    }
+    if (search.sort === "failing_desc" && stored.sort && stored.sort !== "failing_desc") {
+      patch.sort = stored.sort;
+    }
+    if (search.refresh === 60 && stored.refresh !== undefined && stored.refresh !== 60) {
+      patch.refresh = stored.refresh;
+    }
+    if (Object.keys(patch).length > 0) {
+      navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist current prefs to localStorage whenever they change.
+  useEffect(() => {
+    writeStoredPrefs({ filter, sort, refresh });
+  }, [filter, sort, refresh]);
 
   const repos = useMemo(() => parseRepos(reposParam), [reposParam]);
   const fetchCi = useServerFn(getCiHealth);
@@ -314,7 +343,7 @@ function CiHealthPage() {
     queryKey: ["ci-health", repos.join(",")],
     queryFn: () => fetchCi({ data: { repos } }),
     enabled: repos.length > 0,
-    refetchInterval: 60_000,
+    refetchInterval: refresh > 0 ? refresh * 1000 : false,
   });
 
   const rows: RepoCiHealth[] = q.data?.repos ?? [];
@@ -334,15 +363,29 @@ function CiHealthPage() {
     [rows],
   );
 
-  const sorted = useMemo(
-    () => [...rows].sort((a, b) => b.totals.failure - a.totals.failure),
-    [rows],
-  );
+  const sorted = useMemo(() => {
+    const arr = [...rows];
+    switch (sort) {
+      case "failing_asc":
+        return arr.sort((a, b) => a.totals.failure - b.totals.failure);
+      case "name_asc":
+        return arr.sort((a, b) => a.repo.localeCompare(b.repo));
+      case "name_desc":
+        return arr.sort((a, b) => b.repo.localeCompare(a.repo));
+      case "failing_desc":
+      default:
+        return arr.sort((a, b) => b.totals.failure - a.totals.failure);
+    }
+  }, [rows, sort]);
 
   const applyRepos = () =>
-    navigate({ search: { repos: reposInput, filter } });
+    navigate({ search: (prev) => ({ ...prev, repos: reposInput }) });
   const setFilter = (f: "all" | "failing") =>
-    navigate({ search: { repos: reposParam, filter: f } });
+    navigate({ search: (prev) => ({ ...prev, filter: f }) });
+  const setSort = (s: SortOrder) =>
+    navigate({ search: (prev) => ({ ...prev, sort: s }) });
+  const setRefresh = (r: number) =>
+    navigate({ search: (prev) => ({ ...prev, refresh: r }) });
 
   const [selected, setSelected] = useState<{ repo: string; run: WorkflowRun } | null>(null);
   const onSelectRun = (repo: string, run: WorkflowRun) => setSelected({ repo, run });
@@ -382,9 +425,10 @@ function CiHealthPage() {
             onLoadPreset={(repos) => {
               const joined = repos.join(", ");
               setReposInput(joined);
-              navigate({ search: { repos: joined, filter } });
+              navigate({ search: (prev) => ({ ...prev, repos: joined }) });
             }}
           />
+
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               placeholder="owner/repo, owner/repo2, …"
