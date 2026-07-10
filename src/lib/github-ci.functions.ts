@@ -207,7 +207,7 @@ async function loadRepoCi(repo: string): Promise<RepoCiHealth> {
   }
 }
 
-function invalidRepoResult(input: string, error: string): RepoCiHealth {
+export function invalidRepoResult(input: string, error: string): RepoCiHealth {
   return {
     repo: input,
     html_url: "",
@@ -228,6 +228,42 @@ function invalidRepoResult(input: string, error: string): RepoCiHealth {
     error,
   };
 }
+
+/**
+ * Deduplicates and validates a repo list, then invokes `loader` for each valid
+ * slug. A thrown error from `loader` is caught and translated into a friendly
+ * error on that repo's result — one bad repo never fails the whole batch.
+ * Exposed for unit testing; the server-fn handler uses this with `loadRepoCi`.
+ */
+export async function runRepoBatch(
+  repos: string[],
+  loader: (repo: string) => Promise<RepoCiHealth>,
+): Promise<{ repos: RepoCiHealth[]; invalidCount: number }> {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const r of repos) {
+    const key = r.trim();
+    if (!key || seen.has(key.toLowerCase())) continue;
+    seen.add(key.toLowerCase());
+    ordered.push(key);
+  }
+
+  const results = await Promise.all(
+    ordered.map(async (raw): Promise<RepoCiHealth> => {
+      const check = validateRepoSlug(raw);
+      if (!check.ok) return invalidRepoResult(raw, check.error);
+      try {
+        return await loader(check.repo);
+      } catch (err) {
+        return invalidRepoResult(check.repo, friendlyGithubError(err, check.repo));
+      }
+    }),
+  );
+
+  const invalidCount = results.filter((r) => r.error && !r.default_branch).length;
+  return { repos: results, invalidCount };
+}
+
 
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
