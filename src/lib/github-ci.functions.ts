@@ -38,7 +38,7 @@ async function ghFetch(path: string) {
 
 export { validateRepoSlug };
 
-function friendlyGithubError(err: unknown, repo: string): string {
+export function friendlyGithubError(err: unknown, repo: string): string {
   if (err instanceof GitHubApiError) {
     if (err.status === 404) {
       return `Repository "${repo}" not found or not accessible with the connected GitHub account`;
@@ -52,6 +52,7 @@ function friendlyGithubError(err: unknown, repo: string): string {
   }
   return (err as Error).message || `Failed to load "${repo}"`;
 }
+
 
 async function ghFetchRaw(path: string): Promise<Response> {
   const lovableKey = process.env.LOVABLE_API_KEY;
