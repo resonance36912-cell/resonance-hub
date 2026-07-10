@@ -377,3 +377,136 @@ function CiHealthPage() {
     </div>
   );
 }
+
+function AlertSettingsCard({ reposHint }: { reposHint: string }) {
+  const qc = useQueryClient();
+  const load = useServerFn(getCiAlertConfig);
+  const save = useServerFn(updateCiAlertConfig);
+
+  const cfgQ = useQuery({
+    queryKey: ["ci-alert-config"],
+    queryFn: () => load({}),
+  });
+
+  const [email, setEmail] = useState("");
+  const [reposText, setReposText] = useState("");
+  const [enabled, setEnabled] = useState(true);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!cfgQ.data) return;
+    setEmail(cfgQ.data.recipient_email ?? "");
+    setReposText((cfgQ.data.repos ?? []).join(", "));
+    setEnabled(cfgQ.data.enabled ?? true);
+    setSavedAt(cfgQ.data.updated_at);
+  }, [cfgQ.data]);
+
+  const mut = useMutation({
+    mutationFn: (input: { recipient_email?: string; repos: string[]; enabled: boolean }) =>
+      save({ data: input }),
+    onSuccess: (data) => {
+      qc.setQueryData(["ci-alert-config"], data);
+      setSavedAt(data.updated_at);
+    },
+  });
+
+  const parsedRepos = parseRepos(reposText);
+  const emailValid = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-base">Failure alerts (email)</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground">
+          Sends one email per hour when new workflow runs fail in the watched
+          repos. Delivery uses the Resonance transactional email system, so the
+          recipient domain must not be on the suppression list.
+        </p>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-xs font-medium">Recipient email</label>
+            <Input
+              type="email"
+              placeholder="alerts@yourdomain.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            {!emailValid && (
+              <div className="mt-1 text-xs text-destructive">Enter a valid email or leave empty.</div>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium">
+              Watched repos <span className="text-muted-foreground">(comma-separated owner/repo)</span>
+            </label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="owner/hub, owner/spoke-a"
+                value={reposText}
+                onChange={(e) => setReposText(e.target.value)}
+              />
+              {reposHint && reposHint !== reposText && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReposText(reposHint)}
+                  title="Copy repos from dashboard input"
+                >
+                  Use above
+                </Button>
+              )}
+            </div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {parsedRepos.length} valid repo{parsedRepos.length === 1 ? "" : "s"}
+              {parsedRepos.length > 15 ? " · max 15 will be saved" : ""}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            id="ci-alerts-enabled"
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => setEnabled(e.target.checked)}
+            className="h-4 w-4"
+          />
+          <label htmlFor="ci-alerts-enabled" className="text-sm">
+            Alerts enabled
+          </label>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() =>
+              mut.mutate({
+                recipient_email: email.trim() || undefined,
+                repos: parsedRepos.slice(0, 15),
+                enabled,
+              })
+            }
+            disabled={!emailValid || mut.isPending || cfgQ.isLoading}
+          >
+            {mut.isPending ? "Saving…" : "Save alert settings"}
+          </Button>
+          {mut.isError && (
+            <span className="text-xs text-destructive">{(mut.error as Error).message}</span>
+          )}
+          {savedAt && !mut.isPending && (
+            <span className="text-xs text-muted-foreground">
+              Saved {new Date(savedAt).toLocaleString()}
+            </span>
+          )}
+        </div>
+
+        <div className="text-[11px] text-muted-foreground">
+          Polling runs hourly via a Cloud cron job. Each failing run is emailed
+          once; duplicates are suppressed for 7 days.
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
