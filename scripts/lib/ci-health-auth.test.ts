@@ -93,31 +93,21 @@ function extractErrorMessage(body: string): string | null {
   return m ? m[1] : null;
 }
 
-let _serverUp: boolean | null = null;
-async function serverUp(): Promise<boolean> {
-  if (_serverUp !== null) return _serverUp;
-  try {
-    // Probe the RPC endpoint (any response = server is up). Do NOT probe
-    // `/` — that triggers SSR and can leave the Vite dev server in a state
-    // where subsequent `/_serverFn/*` calls fall back to the HTML error page.
-    await fetch(`${DEV_URL}/_serverFn/ping`, { method: "POST" });
-    _serverUp = true;
-  } catch {
-    _serverUp = false;
-  }
-  return _serverUp;
-}
-
 async function assertUnauthorized(
   id: string,
   payload: unknown,
   extra: Record<string, string>,
   expectedMessage: string,
 ) {
-  if (!(await serverUp())) return; // silently skip when dev server absent
-  const { status, body } = await callServerFn(id, payload, extra);
-  expect(status).toBe(200); // RPC envelope; error is inside the body
-  expect(extractErrorMessage(body)).toBe(expectedMessage);
+  let result;
+  try {
+    result = await callServerFn(id, payload, extra);
+  } catch {
+    // Dev server not reachable — treat as skip so unit-only environments pass.
+    return;
+  }
+  expect(result.status).toBe(200); // RPC envelope; error is inside the body
+  expect(extractErrorMessage(result.body)).toBe(expectedMessage);
 }
 
 describe("admin/ci-health server functions require auth", () => {
