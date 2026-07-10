@@ -19,10 +19,53 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
+type SortOrder = (typeof SORT_OPTIONS)[number];
+const REFRESH_OPTIONS = [0, 15, 30, 60, 120, 300] as const;
+const PREFS_STORAGE_KEY = "ci-health.prefs.v1";
+
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
-  filter: fallback(z.enum(["all", "failing"]), "failing").default("failing"),
+  filter: fallback(z.string(), "failing").default("failing"),
+  sort: fallback(z.string(), "failing_desc").default("failing_desc"),
+  refresh: fallback(z.number().int(), 60).default(60),
 });
+
+function normalizeFilter(v: string): "all" | "failing" {
+  return v === "all" ? "all" : "failing";
+}
+function normalizeSort(v: string): SortOrder {
+  return (SORT_OPTIONS as readonly string[]).includes(v) ? (v as SortOrder) : "failing_desc";
+}
+function normalizeRefresh(v: number): number {
+  return (REFRESH_OPTIONS as readonly number[]).includes(v) ? v : 60;
+}
+
+type Prefs = { filter: "all" | "failing"; sort: SortOrder; refresh: number };
+function readStoredPrefs(): Partial<Prefs> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<Prefs>;
+    return {
+      filter: parsed.filter ? normalizeFilter(parsed.filter) : undefined,
+      sort: parsed.sort ? normalizeSort(parsed.sort) : undefined,
+      refresh: typeof parsed.refresh === "number" ? normalizeRefresh(parsed.refresh) : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+function writeStoredPrefs(prefs: Prefs) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs));
+  } catch {
+    /* ignore */
+  }
+}
+
 
 export const Route = createFileRoute("/admin/ci-health")({
   head: () => ({
@@ -260,9 +303,41 @@ function RepoCard({
 }
 
 function CiHealthPage() {
-  const { repos: reposParam, filter } = Route.useSearch();
+  type CiSearch = ReturnType<typeof Route.useSearch>;
+  const search = Route.useSearch();
+
+
+  const reposParam = search.repos;
+  const filter = normalizeFilter(search.filter);
+  const sort = normalizeSort(search.sort);
+  const refresh = normalizeRefresh(search.refresh);
   const navigate = Route.useNavigate();
   const [reposInput, setReposInput] = useState(reposParam);
+
+  // On first mount, if URL matches defaults, hydrate from localStorage.
+  useEffect(() => {
+    const stored = readStoredPrefs();
+    if (!stored) return;
+    const patch: Partial<{ filter: string; sort: string; refresh: number }> = {};
+    if (search.filter === "failing" && stored.filter && stored.filter !== "failing") {
+      patch.filter = stored.filter;
+    }
+    if (search.sort === "failing_desc" && stored.sort && stored.sort !== "failing_desc") {
+      patch.sort = stored.sort;
+    }
+    if (search.refresh === 60 && stored.refresh !== undefined && stored.refresh !== 60) {
+      patch.refresh = stored.refresh;
+    }
+    if (Object.keys(patch).length > 0) {
+      navigate({ search: (prev: CiSearch) => ({ ...prev, ...patch }), replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist current prefs to localStorage whenever they change.
+  useEffect(() => {
+    writeStoredPrefs({ filter, sort, refresh });
+  }, [filter, sort, refresh]);
 
   const repos = useMemo(() => parseRepos(reposParam), [reposParam]);
   const fetchCi = useServerFn(getCiHealth);
@@ -271,7 +346,7 @@ function CiHealthPage() {
     queryKey: ["ci-health", repos.join(",")],
     queryFn: () => fetchCi({ data: { repos } }),
     enabled: repos.length > 0,
-    refetchInterval: 60_000,
+    refetchInterval: refresh > 0 ? refresh * 1000 : false,
   });
 
   const rows: RepoCiHealth[] = q.data?.repos ?? [];
@@ -291,15 +366,29 @@ function CiHealthPage() {
     [rows],
   );
 
-  const sorted = useMemo(
-    () => [...rows].sort((a, b) => b.totals.failure - a.totals.failure),
-    [rows],
-  );
+  const sorted = useMemo(() => {
+    const arr = [...rows];
+    switch (sort) {
+      case "failing_asc":
+        return arr.sort((a, b) => a.totals.failure - b.totals.failure);
+      case "name_asc":
+        return arr.sort((a, b) => a.repo.localeCompare(b.repo));
+      case "name_desc":
+        return arr.sort((a, b) => b.repo.localeCompare(a.repo));
+      case "failing_desc":
+      default:
+        return arr.sort((a, b) => b.totals.failure - a.totals.failure);
+    }
+  }, [rows, sort]);
 
   const applyRepos = () =>
-    navigate({ search: { repos: reposInput, filter } });
+    navigate({ search: (prev: CiSearch) => ({ ...prev, repos: reposInput }) });
   const setFilter = (f: "all" | "failing") =>
-    navigate({ search: { repos: reposParam, filter: f } });
+    navigate({ search: (prev: CiSearch) => ({ ...prev, filter: f }) });
+  const setSort = (s: SortOrder) =>
+    navigate({ search: (prev: CiSearch) => ({ ...prev, sort: s }) });
+  const setRefresh = (r: number) =>
+    navigate({ search: (prev: CiSearch) => ({ ...prev, refresh: r }) });
 
   const [selected, setSelected] = useState<{ repo: string; run: WorkflowRun } | null>(null);
   const onSelectRun = (repo: string, run: WorkflowRun) => setSelected({ repo, run });
@@ -339,9 +428,10 @@ function CiHealthPage() {
             onLoadPreset={(repos) => {
               const joined = repos.join(", ");
               setReposInput(joined);
-              navigate({ search: { repos: joined, filter } });
+              navigate({ search: (prev: CiSearch) => ({ ...prev, repos: joined }) });
             }}
           />
+
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               placeholder="owner/repo, owner/repo2, …"
@@ -358,7 +448,7 @@ function CiHealthPage() {
               {q.isFetching ? "Refreshing…" : "Refresh"}
             </Button>
           </div>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">Show:</span>
             <Button
               size="sm"
@@ -374,10 +464,40 @@ function CiHealthPage() {
             >
               All recent
             </Button>
+            <label className="ml-2 flex items-center gap-1 text-muted-foreground">
+              Sort:
+              <select
+                className="rounded border bg-background px-1 py-0.5 text-foreground"
+                value={sort}
+                onChange={(e) => setSort(normalizeSort(e.target.value))}
+              >
+                <option value="failing_desc">Most failing</option>
+                <option value="failing_asc">Fewest failing</option>
+                <option value="name_asc">Name A–Z</option>
+                <option value="name_desc">Name Z–A</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-1 text-muted-foreground">
+              Refresh:
+              <select
+                className="rounded border bg-background px-1 py-0.5 text-foreground"
+                value={refresh}
+                onChange={(e) => setRefresh(normalizeRefresh(Number(e.target.value)))}
+              >
+                <option value={0}>Off</option>
+                <option value={15}>15s</option>
+                <option value={30}>30s</option>
+                <option value={60}>60s</option>
+                <option value={120}>2m</option>
+                <option value={300}>5m</option>
+              </select>
+            </label>
             <span className="ml-auto text-muted-foreground">
-              Auto-refreshes every 60s. Max 10 repos. Last 50 runs per repo.
+              {refresh > 0 ? `Auto-refreshes every ${refresh}s.` : "Auto-refresh off."}{" "}
+              Max 10 repos. Last 50 runs per repo.
             </span>
           </div>
+
           {q.error ? (
             <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
               {(q.error as Error).message}
