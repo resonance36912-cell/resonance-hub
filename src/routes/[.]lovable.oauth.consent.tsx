@@ -139,6 +139,13 @@ function Consent() {
             {busy ? "Please wait…" : "Approve"}
           </button>
         </div>
+
+        <a
+          href="/"
+          className="mt-4 block text-center text-xs text-white/60 hover:text-white"
+        >
+          Back to Hub
+        </a>
       </div>
     </main>
   );

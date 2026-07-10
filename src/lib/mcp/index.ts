@@ -5,7 +5,7 @@ import listUpdatesTool from "./tools/list-updates";
 // OAuth issuer MUST be the direct Supabase host — the `.lovable.cloud` proxy
 // fails RFC 8414 issuer discovery. VITE_SUPABASE_PROJECT_ID is inlined by Vite
 // at build time; the fallback keeps the issuer well-formed during the
-// manifest-extract eval (no real token verifies against it).
+// manifest-extract evaluation (no real token verifies against it).
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 export default defineMcp({
