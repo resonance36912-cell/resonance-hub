@@ -19,6 +19,8 @@
 import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
 import { fetchRpcWithRetry } from "./security-scan-retry";
+import { parseReportOrThrow } from "./security-scan-schema";
+
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
