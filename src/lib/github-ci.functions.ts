@@ -25,6 +25,22 @@ async function ghFetch(path: string) {
   return res.json();
 }
 
+async function ghFetchRaw(path: string): Promise<Response> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const ghKey = process.env.GITHUB_API_KEY;
+  if (!lovableKey) throw new Error("LOVABLE_API_KEY missing");
+  if (!ghKey) throw new Error("GITHUB_API_KEY missing (GitHub connector not linked)");
+  return fetch(`${GATEWAY_URL}${path}`, {
+    method: "GET",
+    redirect: "follow",
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": ghKey,
+    },
+  });
+}
+
 async function requireAdmin(ctx: { supabase: any; userId: string }) {
   const { data, error } = await ctx.supabase
     .from("user_roles")
