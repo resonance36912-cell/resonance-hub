@@ -22,6 +22,14 @@
 // Overridable per-suite via SECURITY_SCAN_RETRY_ATTEMPTS=1 (disables) or
 // any higher number for extra tolerance in flaky environments.
 
+// Side-effect import: when SECURITY_SCAN_MOCK=1, this installs an
+// in-process fetch shim so the suites run without a live preview server
+// or Supabase admin credentials. No-op otherwise. Sits at the retry
+// helper (imported by every security-scan suite) so no suite has to opt
+// in individually.
+import "./security-scan-mock";
+
+
 const DEFAULT_ATTEMPTS = Number(
   process.env.SECURITY_SCAN_RETRY_ATTEMPTS ?? "3",
 );
