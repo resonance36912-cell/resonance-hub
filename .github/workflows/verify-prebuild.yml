@@ -265,7 +265,49 @@ jobs:
       - name: Verify sitemap.xml, robots.txt, and pricing anchors
         env:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
-        run: bun run scripts/verify-sitemap-robots.ts
+         run: bun run scripts/verify-sitemap-robots.ts
+
+      # Security-scan RPC integration tests. Drive the live preview server
+      # (local wrangler dev or remote SMOKE_BASE_URL) over the TanStack
+      # Start serverFn RPC protocol and assert the auth / shape / invariant
+      # contract of getSecurityScanReport — the exact contract the
+      # /admin/security-scan UI depends on. Includes:
+      #   - security-scan-auth.test.ts     (401/403/400 error envelopes)
+      #   - security-scan-success.test.ts  (200 + DTO shape + invariants)
+      #   - security-scan-decode.test.ts   (strict schema, no unknown keys)
+      #   - security-scan-grouping.test.ts (multi-repo order + dedup)
+      #   - security-scan-zero-alerts.test.ts (zero-alert invariants)
+      #
+      # Requires an admin Supabase user's access token to be provided as
+      # the SUPABASE_ADMIN_ACCESS_TOKEN repository secret; without it the
+      # step hard-fails so a missing/expired token can't silently mask a
+      # regression (the suites otherwise self-skip on missing auth).
+      #
+      # Configure once in GitHub → Settings → Secrets and variables →
+      # Actions → New repository secret:
+      #   SUPABASE_ADMIN_ACCESS_TOKEN = <access_token from a signed-in
+      #     admin user; obtain via `supabase.auth.getSession()` in the app,
+      #     or from the browser's Supabase storage entry>
+      # Rotate whenever the token expires — Supabase access tokens are
+      # short-lived, so a long-lived service session or refresh-token
+      # exchange is the practical path.
+      - name: Security scan RPC integration tests
+        env:
+          DEV_SERVER_URL: ${{ steps.smoke_target.outputs.base_url }}
+          LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN:-}" ]; then
+            echo "::error::SUPABASE_ADMIN_ACCESS_TOKEN repository secret is not set." >&2
+            echo "::error::The security-scan integration tests self-skip without a bearer, which would silently mask regressions. Configure the secret and re-run." >&2
+            exit 1
+          fi
+          bun test \
+            scripts/lib/security-scan-auth.test.ts \
+            scripts/lib/security-scan-success.test.ts \
+            scripts/lib/security-scan-decode.test.ts \
+            scripts/lib/security-scan-grouping.test.ts \
+            scripts/lib/security-scan-zero-alerts.test.ts
 
       # Lighthouse: performance ≥ 0.80, accessibility ≥ 0.90 (see lighthouserc.json).
       # Only runs when we have a locally served build — skipping for remote preview
