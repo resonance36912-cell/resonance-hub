@@ -140,10 +140,11 @@ describe("getSecurityScanReport — multi-repo grouping & order", () => {
       return;
     }
 
+    // Strict schema parse via shared canonical schema — every 200 test
+    // path runs this before the per-suite invariants below.
     const result = extractResult(body);
-    expect(isReport(result)).toBe(true);
-    if (!isReport(result)) return;
-    const report = result;
+    const report: Report = parseReportOrThrow(result, "grouping.test");
+
 
     // (1) Exactly one entry per unique input repo (case-insensitive).
     expect(report.repos.length).toBe(expectedUnique.length);

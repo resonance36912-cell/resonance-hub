@@ -131,9 +131,12 @@ describe("getSecurityScanReport — zero-alert shape", () => {
       return;
     }
 
-    const result = extractResult(body) as Report | undefined;
-    expect(result).toBeTruthy();
-    if (!result) return;
+    // Strict schema parse via shared canonical schema — every 200 test
+    // path runs this before the per-suite invariants below.
+    const raw = extractResult(body);
+    expect(raw).toBeTruthy();
+    const result: Report = parseReportOrThrow(raw, "zero-alerts.test");
+
 
     // (2) Report-level shape.
     expect(Array.isArray(result.repos)).toBe(true);
