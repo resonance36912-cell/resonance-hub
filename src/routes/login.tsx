@@ -153,6 +153,13 @@ function LoginPage() {
         >
           {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
         </button>
+
+        <a
+          href="/"
+          className="mt-4 block text-center text-xs text-white/60 hover:text-white"
+        >
+          Back to Hub
+        </a>
       </div>
     </main>
   );
