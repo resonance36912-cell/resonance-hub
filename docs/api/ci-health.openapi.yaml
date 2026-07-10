@@ -1,0 +1,342 @@
+# OpenAPI 3.1 specification for the /admin/ci-health server functions.
+#
+# This spec is the wire contract for the CI-health dashboard. It is kept in
+# lock-step with `src/lib/github-ci.contract.ts` — the Zod schemas in that
+# module are the runtime source of truth and this document mirrors them for
+# external consumers and human review. Any change here MUST be mirrored in
+# the contract module, or `scripts/lib/github-ci-openapi.test.ts` will fail.
+#
+# Transport notes
+# ---------------
+# The two operations below are TanStack Start `createServerFn` handlers,
+# invoked over the framework's own RPC transport (`POST /_serverFn/<id>`).
+# The identifier is generated at build time from the module path and export
+# name and is NOT a stable URL — external callers should not target it
+# directly. This spec pins request/response *shape*; the paths below are
+# logical, not literal, and are useful for docs, client generators, and
+# schema-diff tooling.
+
+openapi: 3.1.0
+info:
+  title: Reson8 Hub — CI Health API
+  version: 1.0.0
+  description: |
+    Server-side contract for the `/admin/ci-health` dashboard. All operations
+    require an authenticated Supabase session AND the `admin` role in
+    `public.user_roles`; unauthenticated or non-admin callers receive a 401 or
+    a generic `Forbidden` error.
+servers:
+  - url: https://resonance-hub.lovable.app
+    description: Production (Lovable Cloud)
+  - url: http://localhost:8080
+    description: Local dev server
+
+tags:
+  - name: ci-health
+    description: GitHub Actions health for a configured list of repositories.
+
+paths:
+  /_serverFn/getCiHealth:
+    post:
+      operationId: getCiHealth
+      tags: [ci-health]
+      summary: Fetch CI health for up to 10 repositories in a single batch.
+      description: |
+        Validates each `owner/repo` slug, fetches the last 50 workflow runs per
+        repo through the GitHub connector, and returns aggregated totals plus
+        the latest / failing runs. Invalid or inaccessible repositories are
+        returned inline as rows with an `error` field — they never fail the
+        whole batch.
+      security:
+        - supabaseBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetCiHealthInput"
+      responses:
+        "200":
+          description: Aggregated CI health for the requested repositories.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetCiHealthResponse"
+        "400":
+          description: Input validation failed (missing/oversized repo list).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CiHealthError" }
+        "401":
+          description: Missing or invalid Supabase bearer token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CiHealthError" }
+        "403":
+          description: Authenticated but not an admin.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CiHealthError" }
+
+  /_serverFn/getRunDetails:
+    post:
+      operationId: getRunDetails
+      tags: [ci-health]
+      summary: Fetch jobs, commit info, and log tail for a single workflow run.
+      security:
+        - supabaseBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetRunDetailsInput"
+      responses:
+        "200":
+          description: Run details including jobs, failing jobs, and commit.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetRunDetailsResponse"
+        "400":
+          description: Invalid `owner/repo` slug or non-positive run id.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CiHealthError" }
+        "401":
+          description: Missing or invalid Supabase bearer token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CiHealthError" }
+        "403":
+          description: Authenticated but not an admin.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CiHealthError" }
+
+components:
+  securitySchemes:
+    supabaseBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Supabase user access token attached by `attachSupabaseAuth` (see
+        `src/start.ts`). The server-side `requireSupabaseAuth` middleware
+        rejects requests without a valid token, and the handler further
+        requires the `admin` role in `public.user_roles`.
+
+  schemas:
+    GetCiHealthInput:
+      type: object
+      required: [repos]
+      additionalProperties: false
+      properties:
+        repos:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 140
+            description: "GitHub slug in `owner/repo` form."
+
+    GetCiHealthResponse:
+      type: object
+      required: [repos, fetchedAt, invalidCount]
+      additionalProperties: false
+      properties:
+        repos:
+          type: array
+          items: { $ref: "#/components/schemas/RepoCiHealth" }
+        fetchedAt:
+          type: string
+          format: date-time
+        invalidCount:
+          type: integer
+          minimum: 0
+          description: "Number of rows in `repos` whose slug or GitHub call failed."
+
+    RepoCiHealth:
+      type: object
+      required:
+        [repo, html_url, default_branch, totals, latest_run,
+          latest_default_branch_run, failing_runs, recent_runs]
+      additionalProperties: false
+      properties:
+        repo: { type: string }
+        html_url: { type: string }
+        default_branch: { type: string }
+        totals: { $ref: "#/components/schemas/RepoTotals" }
+        latest_run:
+          oneOf:
+            - { $ref: "#/components/schemas/WorkflowRun" }
+            - { type: "null" }
+        latest_default_branch_run:
+          oneOf:
+            - { $ref: "#/components/schemas/WorkflowRun" }
+            - { type: "null" }
+        failing_runs:
+          type: array
+          items: { $ref: "#/components/schemas/WorkflowRun" }
+        recent_runs:
+          type: array
+          items: { $ref: "#/components/schemas/WorkflowRun" }
+        error:
+          type: string
+          description: |
+            Present ONLY when the repo could not be loaded (invalid slug,
+            404, 403, rate-limited, etc.). The client renders this string
+            directly — never `undefined` for a healthy row.
+
+    RepoTotals:
+      type: object
+      required:
+        [last, success, failure, cancelled, in_progress, other, success_rate]
+      additionalProperties: false
+      properties:
+        last: { type: integer, minimum: 0 }
+        success: { type: integer, minimum: 0 }
+        failure: { type: integer, minimum: 0 }
+        cancelled: { type: integer, minimum: 0 }
+        in_progress: { type: integer, minimum: 0 }
+        other: { type: integer, minimum: 0 }
+        success_rate:
+          oneOf:
+            - { type: number, minimum: 0, maximum: 1 }
+            - { type: "null" }
+
+    WorkflowRun:
+      type: object
+      required:
+        [id, name, workflow_name, head_branch, event, status, conclusion,
+          html_url, run_number, attempt, actor, head_sha, head_commit_message,
+          created_at, updated_at, run_started_at]
+      additionalProperties: false
+      properties:
+        id: { type: integer }
+        name: { type: [string, "null"] }
+        workflow_name: { type: [string, "null"] }
+        head_branch: { type: [string, "null"] }
+        event: { type: [string, "null"] }
+        status:
+          type: [string, "null"]
+          description: "queued | in_progress | completed"
+        conclusion:
+          type: [string, "null"]
+          description: "success | failure | cancelled | timed_out | skipped"
+        html_url: { type: string }
+        run_number: { type: integer }
+        attempt: { type: integer }
+        actor: { type: [string, "null"] }
+        head_sha: { type: string }
+        head_commit_message: { type: [string, "null"] }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        run_started_at:
+          oneOf:
+            - { type: string, format: date-time }
+            - { type: "null" }
+
+    GetRunDetailsInput:
+      type: object
+      required: [repo, runId]
+      additionalProperties: false
+      properties:
+        repo: { type: string, minLength: 1, maxLength: 140 }
+        runId: { type: integer, minimum: 1 }
+        includeLogs: { type: boolean, default: true }
+
+    GetRunDetailsResponse:
+      type: object
+      required: [run, jobs, failing_jobs, commit, fetchedAt]
+      additionalProperties: false
+      properties:
+        run:
+          allOf:
+            - { $ref: "#/components/schemas/WorkflowRun" }
+            - type: object
+              required: [duration_ms]
+              properties:
+                duration_ms: { type: [number, "null"] }
+        jobs:
+          type: array
+          items: { $ref: "#/components/schemas/RunJob" }
+        failing_jobs:
+          type: array
+          items: { $ref: "#/components/schemas/RunJob" }
+        commit:
+          oneOf:
+            - { $ref: "#/components/schemas/CommitInfo" }
+            - { type: "null" }
+        fetchedAt: { type: string, format: date-time }
+
+    RunJob:
+      type: object
+      required:
+        [id, name, status, conclusion, html_url, started_at, completed_at,
+          runner_name, steps, failing_step, logs_tail, logs_error]
+      additionalProperties: false
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        status: { type: [string, "null"] }
+        conclusion: { type: [string, "null"] }
+        html_url: { type: [string, "null"] }
+        started_at: { type: [string, "null"], format: date-time }
+        completed_at: { type: [string, "null"], format: date-time }
+        runner_name: { type: [string, "null"] }
+        steps:
+          type: array
+          items: { $ref: "#/components/schemas/RunStep" }
+        failing_step:
+          oneOf:
+            - { $ref: "#/components/schemas/RunStep" }
+            - { type: "null" }
+        logs_tail: { type: [string, "null"] }
+        logs_error: { type: [string, "null"] }
+
+    RunStep:
+      type: object
+      required: [name, status, conclusion, number, started_at, completed_at]
+      additionalProperties: false
+      properties:
+        name: { type: string }
+        status: { type: [string, "null"] }
+        conclusion: { type: [string, "null"] }
+        number: { type: integer, minimum: 0 }
+        started_at: { type: [string, "null"], format: date-time }
+        completed_at: { type: [string, "null"], format: date-time }
+
+    CommitInfo:
+      type: object
+      required:
+        [sha, short_sha, html_url, message, author_name, author_login,
+          author_avatar, authored_at, stats, files_changed]
+      additionalProperties: false
+      properties:
+        sha: { type: string }
+        short_sha: { type: string }
+        html_url: { type: string }
+        message: { type: string }
+        author_name: { type: [string, "null"] }
+        author_login: { type: [string, "null"] }
+        author_avatar: { type: [string, "null"] }
+        authored_at: { type: [string, "null"], format: date-time }
+        stats:
+          oneOf:
+            - type: object
+              required: [additions, deletions, total]
+              properties:
+                additions: { type: integer, minimum: 0 }
+                deletions: { type: integer, minimum: 0 }
+                total: { type: integer, minimum: 0 }
+            - { type: "null" }
+        files_changed: { type: integer, minimum: 0 }
+
+    CiHealthError:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string }

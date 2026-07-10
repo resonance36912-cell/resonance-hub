@@ -2,6 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { validateRepoSlug } from "./repo-slug";
+import {
+  GetCiHealthInputSchema,
+  GetRunDetailsInputSchema,
+} from "./github-ci.contract";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
@@ -268,16 +272,7 @@ export async function runRepoBatch(
 
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: unknown }) =>
-    z
-      .object({
-        repos: z
-          .array(z.string().min(1).max(140))
-          .min(1, "Provide at least one repository")
-          .max(10, "Maximum 10 repositories per request"),
-      })
-      .parse(data),
-  )
+  .inputValidator((data: unknown) => GetCiHealthInputSchema.parse(data))
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { repos, invalidCount } = await runRepoBatch(data.repos, loadRepoCi);
@@ -366,14 +361,8 @@ async function fetchJobLogsTail(
 
 export const getRunDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repo: string; runId: number; includeLogs?: boolean }) => {
-    const parsed = z
-      .object({
-        repo: z.string().min(1).max(140),
-        runId: z.number().int().positive(),
-        includeLogs: z.boolean().optional().default(true),
-      })
-      .parse(data);
+  .inputValidator((data: unknown) => {
+    const parsed = GetRunDetailsInputSchema.parse(data);
     const check = validateRepoSlug(parsed.repo);
     if (!check.ok) throw new Error(check.error);
     return { ...parsed, repo: check.repo };
