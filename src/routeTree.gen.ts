@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
+import { Route as ToolsIssueTriageRouteImport } from './routes/tools.issue-triage'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -98,6 +99,11 @@ const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
 const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
   id: '/updates/preview',
   path: '/updates/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsIssueTriageRoute = ToolsIssueTriageRouteImport.update({
+  id: '/tools/issue-triage',
+  path: '/tools/issue-triage',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
@@ -416,6 +424,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -465,6 +474,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
+    | '/tools/issue-triage'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -512,6 +522,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
+    | '/tools/issue-triage'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
@@ -559,6 +570,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
+    | '/tools/issue-triage'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -605,6 +617,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
+  ToolsIssueTriageRoute: typeof ToolsIssueTriageRoute
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -691,6 +704,13 @@ declare module '@tanstack/react-router' {
       path: '/updates/preview'
       fullPath: '/updates/preview'
       preLoaderRoute: typeof UpdatesPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/issue-triage': {
+      id: '/tools/issue-triage'
+      path: '/tools/issue-triage'
+      fullPath: '/tools/issue-triage'
+      preLoaderRoute: typeof ToolsIssueTriageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sync-vision/pricing': {
@@ -986,6 +1006,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
+  ToolsIssueTriageRoute: ToolsIssueTriageRoute,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
