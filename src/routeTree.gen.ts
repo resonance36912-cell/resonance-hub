@@ -29,6 +29,7 @@ import { Route as CreativeStudioPricingRouteImport } from './routes/creative-stu
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AdminSecurityScanRouteImport } from './routes/admin.security-scan'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
@@ -162,6 +163,11 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
   path: '/admin/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSecurityScanRoute = AdminSecurityScanRouteImport.update({
+  id: '/admin/security-scan',
+  path: '/admin/security-scan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRopRoute = AdminRopRouteImport.update({
@@ -373,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -429,6 +436,7 @@ export interface FileRoutesByTo {
   '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -486,6 +494,7 @@ export interface FileRoutesById {
   '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -544,6 +553,7 @@ export interface FileRouteTypes {
     | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/security-scan'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -600,6 +610,7 @@ export interface FileRouteTypes {
     | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/security-scan'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -656,6 +667,7 @@ export interface FileRouteTypes {
     | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/security-scan'
     | '/admin/webhooks'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -713,6 +725,7 @@ export interface RootRouteChildren {
   AdminRepoHealthRoute: typeof AdminRepoHealthRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
+  AdminSecurityScanRoute: typeof AdminSecurityScanRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -887,6 +900,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/webhooks'
       fullPath: '/admin/webhooks'
       preLoaderRoute: typeof AdminWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/security-scan': {
+      id: '/admin/security-scan'
+      path: '/admin/security-scan'
+      fullPath: '/admin/security-scan'
+      preLoaderRoute: typeof AdminSecurityScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/rop': {
@@ -1166,6 +1186,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRepoHealthRoute: AdminRepoHealthRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
+  AdminSecurityScanRoute: AdminSecurityScanRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
