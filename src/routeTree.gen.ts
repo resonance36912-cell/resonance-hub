@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
+import { Route as ToolsPrStatusRouteImport } from './routes/tools.pr-status'
 import { Route as ToolsIssueTriageRouteImport } from './routes/tools.issue-triage'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
@@ -99,6 +100,11 @@ const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
 const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
   id: '/updates/preview',
   path: '/updates/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsPrStatusRoute = ToolsPrStatusRouteImport.update({
+  id: '/tools/pr-status',
+  path: '/tools/pr-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsIssueTriageRoute = ToolsIssueTriageRouteImport.update({
@@ -328,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
+  '/tools/pr-status': typeof ToolsPrStatusRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -376,6 +383,7 @@ export interface FileRoutesByTo {
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
+  '/tools/pr-status': typeof ToolsPrStatusRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
@@ -425,6 +433,7 @@ export interface FileRoutesById {
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
+  '/tools/pr-status': typeof ToolsPrStatusRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -475,6 +484,7 @@ export interface FileRouteTypes {
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
+    | '/tools/pr-status'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
+    | '/tools/pr-status'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
@@ -571,6 +582,7 @@ export interface FileRouteTypes {
     | '/epublisher/pricing'
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
+    | '/tools/pr-status'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -618,6 +630,7 @@ export interface RootRouteChildren {
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   ToolsIssueTriageRoute: typeof ToolsIssueTriageRoute
+  ToolsPrStatusRoute: typeof ToolsPrStatusRoute
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -704,6 +717,13 @@ declare module '@tanstack/react-router' {
       path: '/updates/preview'
       fullPath: '/updates/preview'
       preLoaderRoute: typeof UpdatesPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/pr-status': {
+      id: '/tools/pr-status'
+      path: '/tools/pr-status'
+      fullPath: '/tools/pr-status'
+      preLoaderRoute: typeof ToolsPrStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools/issue-triage': {
@@ -1007,6 +1027,7 @@ const rootRouteChildren: RootRouteChildren = {
   EpublisherPricingRoute: EpublisherPricingRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
   ToolsIssueTriageRoute: ToolsIssueTriageRoute,
+  ToolsPrStatusRoute: ToolsPrStatusRoute,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
