@@ -370,6 +370,7 @@ function CiHealthPage() {
   const refresh = normalizeRefresh(search.refresh);
   const navigate = Route.useNavigate();
   const [reposInput, setReposInput] = useState(reposParam);
+  const [clientErrors, setClientErrors] = useState<{ repo: string; error: string }[]>([]);
 
   // On first mount, if URL matches defaults, hydrate from localStorage.
   useEffect(() => {
