@@ -409,7 +409,256 @@ function CiHealthPage() {
           </p>
         </>
       )}
+
+      <RunDetailsDialog
+        selection={selected}
+        onOpenChange={(open) => !open && setSelected(null)}
+      />
     </div>
+  );
+}
+
+function formatDuration(ms: number | null): string {
+  if (ms == null) return "—";
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rs = s % 60;
+  if (m < 60) return `${m}m ${rs}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
+
+function JobBlock({ job }: { job: RunJob }) {
+  const b = runConclusionBadge({
+    ...({} as WorkflowRun),
+    status: job.status,
+    conclusion: job.conclusion,
+  } as WorkflowRun);
+  const isFailing = job.conclusion === "failure" || job.conclusion === "timed_out";
+  return (
+    <div className={`rounded border p-3 ${isFailing ? "border-red-500/40 bg-red-500/5" : ""}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm">
+          <Badge variant="outline" className={b.className}>
+            {b.label}
+          </Badge>
+          <span className="font-medium">{job.name}</span>
+        </div>
+        {job.html_url && (
+          <a
+            href={job.html_url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs underline-offset-2 hover:underline"
+          >
+            Open job ↗
+          </a>
+        )}
+      </div>
+
+      {job.failing_step && (
+        <div className="mt-2 rounded border border-red-500/40 bg-background p-2 text-xs">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            Failing step
+          </div>
+          <div className="font-mono">
+            #{job.failing_step.number} · {job.failing_step.name}
+          </div>
+        </div>
+      )}
+
+      <details className="mt-2">
+        <summary className="cursor-pointer text-xs text-muted-foreground">
+          Steps ({job.steps.length})
+        </summary>
+        <ol className="mt-1 space-y-0.5 text-xs">
+          {job.steps.map((s) => {
+            const sb = runConclusionBadge({
+              ...({} as WorkflowRun),
+              status: s.status,
+              conclusion: s.conclusion,
+            } as WorkflowRun);
+            return (
+              <li key={s.number} className="flex items-center gap-2">
+                <Badge variant="outline" className={`${sb.className} shrink-0`}>
+                  {sb.label}
+                </Badge>
+                <span className="truncate">
+                  #{s.number} {s.name}
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+      </details>
+
+      {(job.logs_tail || job.logs_error) && (
+        <details className="mt-2" open={isFailing}>
+          <summary className="cursor-pointer text-xs text-muted-foreground">
+            Logs summary (last ~120 lines)
+          </summary>
+          {job.logs_error ? (
+            <div className="mt-1 text-xs text-muted-foreground">{job.logs_error}</div>
+          ) : (
+            <pre className="mt-1 max-h-72 overflow-auto whitespace-pre-wrap rounded bg-muted p-2 text-[11px] leading-relaxed">
+              {job.logs_tail}
+            </pre>
+          )}
+        </details>
+      )}
+    </div>
+  );
+}
+
+function RunDetailsDialog({
+  selection,
+  onOpenChange,
+}: {
+  selection: { repo: string; run: WorkflowRun } | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const fetchDetails = useServerFn(getRunDetails);
+  const q = useQuery({
+    queryKey: ["run-details", selection?.repo, selection?.run.id],
+    queryFn: () =>
+      fetchDetails({
+        data: { repo: selection!.repo, runId: selection!.run.id, includeLogs: true },
+      }),
+    enabled: !!selection,
+    staleTime: 30_000,
+  });
+
+  const details: RunDetails | undefined = q.data;
+  const run = selection?.run;
+
+  return (
+    <Dialog open={!!selection} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-base">
+            {selection?.repo} · {run?.workflow_name ?? "workflow"} #{run?.run_number}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            {run?.head_branch ? `${run.head_branch} · ` : ""}
+            {run?.event ? `${run.event} · ` : ""}
+            {run?.actor ? `by ${run.actor}` : ""}
+          </DialogDescription>
+        </DialogHeader>
+
+        {q.isLoading && (
+          <p className="text-sm text-muted-foreground">Loading run details…</p>
+        )}
+        {q.error && (
+          <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
+            {(q.error as Error).message}
+          </div>
+        )}
+
+        {details && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Stat
+                label="Status"
+                value={runConclusionBadge(details.run).label}
+                tone={
+                  details.run.conclusion === "success"
+                    ? "ok"
+                    : details.run.conclusion === "failure" ||
+                      details.run.conclusion === "timed_out"
+                    ? "bad"
+                    : undefined
+                }
+              />
+              <Stat label="Duration" value={formatDuration(details.run.duration_ms)} />
+              <Stat label="Jobs" value={details.jobs.length} />
+              <Stat
+                label="Failing"
+                value={details.failing_jobs.length}
+                tone={details.failing_jobs.length ? "bad" : "ok"}
+              />
+            </div>
+
+            {details.commit && (
+              <div className="rounded border p-3">
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Commit
+                </div>
+                <div className="mt-1 flex items-start gap-3">
+                  {details.commit.author_avatar && (
+                    <img
+                      src={details.commit.author_avatar}
+                      alt=""
+                      className="h-8 w-8 shrink-0 rounded-full"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <a
+                      href={details.commit.html_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-mono text-xs underline-offset-2 hover:underline"
+                    >
+                      {details.commit.short_sha}
+                    </a>
+                    <div className="mt-0.5 whitespace-pre-wrap text-sm">
+                      {details.commit.message.split("\n")[0]}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {details.commit.author_login ?? details.commit.author_name ?? "unknown"}
+                      {details.commit.authored_at
+                        ? ` · ${timeAgo(details.commit.authored_at)}`
+                        : ""}
+                      {details.commit.stats
+                        ? ` · +${details.commit.stats.additions}/-${details.commit.stats.deletions} in ${details.commit.files_changed} file${details.commit.files_changed === 1 ? "" : "s"}`
+                        : ""}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {details.failing_jobs.length > 0 && (
+              <div>
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Failing jobs
+                </div>
+                <div className="space-y-2">
+                  {details.failing_jobs.map((j) => (
+                    <JobBlock key={j.id} job={j} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {details.jobs.length > 0 && (
+              <details>
+                <summary className="cursor-pointer text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  All jobs ({details.jobs.length})
+                </summary>
+                <div className="mt-2 space-y-2">
+                  {details.jobs.map((j) => (
+                    <JobBlock key={j.id} job={j} />
+                  ))}
+                </div>
+              </details>
+            )}
+
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <a
+                href={run?.html_url}
+                target="_blank"
+                rel="noreferrer"
+                className="underline-offset-2 hover:underline"
+              >
+                Open run on GitHub ↗
+              </a>
+              <span>Fetched {new Date(details.fetchedAt).toLocaleTimeString()}</span>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
