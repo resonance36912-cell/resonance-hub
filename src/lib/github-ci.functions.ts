@@ -272,16 +272,7 @@ export async function runRepoBatch(
 
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: unknown }) =>
-    z
-      .object({
-        repos: z
-          .array(z.string().min(1).max(140))
-          .min(1, "Provide at least one repository")
-          .max(10, "Maximum 10 repositories per request"),
-      })
-      .parse(data),
-  )
+  .inputValidator((data: unknown) => GetCiHealthInputSchema.parse(data))
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { repos, invalidCount } = await runRepoBatch(data.repos, loadRepoCi);
