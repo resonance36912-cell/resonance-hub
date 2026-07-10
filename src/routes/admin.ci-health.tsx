@@ -448,7 +448,7 @@ function CiHealthPage() {
               {q.isFetching ? "Refreshing…" : "Refresh"}
             </Button>
           </div>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">Show:</span>
             <Button
               size="sm"
@@ -464,10 +464,40 @@ function CiHealthPage() {
             >
               All recent
             </Button>
+            <label className="ml-2 flex items-center gap-1 text-muted-foreground">
+              Sort:
+              <select
+                className="rounded border bg-background px-1 py-0.5 text-foreground"
+                value={sort}
+                onChange={(e) => setSort(normalizeSort(e.target.value))}
+              >
+                <option value="failing_desc">Most failing</option>
+                <option value="failing_asc">Fewest failing</option>
+                <option value="name_asc">Name A–Z</option>
+                <option value="name_desc">Name Z–A</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-1 text-muted-foreground">
+              Refresh:
+              <select
+                className="rounded border bg-background px-1 py-0.5 text-foreground"
+                value={refresh}
+                onChange={(e) => setRefresh(normalizeRefresh(Number(e.target.value)))}
+              >
+                <option value={0}>Off</option>
+                <option value={15}>15s</option>
+                <option value={30}>30s</option>
+                <option value={60}>60s</option>
+                <option value={120}>2m</option>
+                <option value={300}>5m</option>
+              </select>
+            </label>
             <span className="ml-auto text-muted-foreground">
-              Auto-refreshes every 60s. Max 10 repos. Last 50 runs per repo.
+              {refresh > 0 ? `Auto-refreshes every ${refresh}s.` : "Auto-refresh off."}{" "}
+              Max 10 repos. Last 50 runs per repo.
             </span>
           </div>
+
           {q.error ? (
             <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
               {(q.error as Error).message}
