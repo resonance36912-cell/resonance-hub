@@ -295,6 +295,9 @@ function CiHealthPage() {
   const setFilter = (f: "all" | "failing") =>
     navigate({ search: { repos: reposParam, filter: f } });
 
+  const [selected, setSelected] = useState<{ repo: string; run: WorkflowRun } | null>(null);
+  const onSelectRun = (repo: string, run: WorkflowRun) => setSelected({ repo, run });
+
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
