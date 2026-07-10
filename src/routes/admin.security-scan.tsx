@@ -265,7 +265,7 @@ function SecurityScanPage() {
   });
 
   const rows: RepoSecurityScan[] = q.data?.repos ?? [];
-  const minRank = SEV_MIN[minSeverity];
+  const minRank = SEV_MIN[minSeverity as keyof typeof SEV_MIN];
 
   const totals = useMemo(
     () =>
