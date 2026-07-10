@@ -31,6 +31,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
 type SortOrder = (typeof SORT_OPTIONS)[number];
