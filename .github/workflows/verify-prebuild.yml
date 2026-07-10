@@ -292,9 +292,15 @@ jobs:
       # short-lived, so a long-lived service session or refresh-token
       # exchange is the practical path.
       - name: Security scan RPC integration tests
+        id: security_scan_tests
         env:
           DEV_SERVER_URL: ${{ steps.smoke_target.outputs.base_url }}
           LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
+          # Preloaded fetch recorder (see scripts/lib/security-scan-fetch-recorder.ts)
+          # writes every serverFn response body to this directory so the
+          # follow-up upload step has the exact wire payloads to attach on
+          # failure.
+          SECURITY_SCAN_ARTIFACT_DIR: reports/security-scan/payloads
         run: |
           set -euo pipefail
           if [ -z "${LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN:-}" ]; then
@@ -302,12 +308,34 @@ jobs:
             echo "::error::The security-scan integration tests self-skip without a bearer, which would silently mask regressions. Configure the secret and re-run." >&2
             exit 1
           fi
+          mkdir -p reports/security-scan
+          # tee stdout+stderr into the log so bun's real exit status still
+          # propagates (pipefail + PIPESTATUS-safe via `set -o pipefail` above).
           bun test \
+            --preload ./scripts/lib/security-scan-fetch-recorder.ts \
             scripts/lib/security-scan-auth.test.ts \
             scripts/lib/security-scan-success.test.ts \
             scripts/lib/security-scan-decode.test.ts \
             scripts/lib/security-scan-grouping.test.ts \
-            scripts/lib/security-scan-zero-alerts.test.ts
+            scripts/lib/security-scan-zero-alerts.test.ts \
+            2>&1 | tee reports/security-scan/tests.log
+
+      # Upload logs + recorded payloads whenever the tests step failed.
+      # `if: failure() && steps.security_scan_tests.outcome == 'failure'`
+      # scopes the artifact to a real regression here — a missing-secret
+      # abort or an earlier unrelated failure won't produce this artifact
+      # (nothing was recorded, and the noise would just clutter triage).
+      - name: Upload security-scan test logs and payloads (on failure)
+        if: failure() && steps.security_scan_tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-failure-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            reports/security-scan/tests.log
+            reports/security-scan/payloads/**
+          if-no-files-found: warn
+          retention-days: 14
+
 
       # Lighthouse: performance ≥ 0.80, accessibility ≥ 0.90 (see lighthouserc.json).
       # Only runs when we have a locally served build — skipping for remote preview
