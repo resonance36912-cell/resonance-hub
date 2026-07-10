@@ -689,6 +689,8 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
   const [email, setEmail] = useState("");
   const [reposText, setReposText] = useState("");
   const [enabled, setEnabled] = useState(true);
+  const [defaultBranchOnly, setDefaultBranchOnly] = useState(true);
+  const [slackUrl, setSlackUrl] = useState("");
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
   useEffect(() => {
@@ -696,12 +698,19 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
     setEmail(cfgQ.data.recipient_email ?? "");
     setReposText((cfgQ.data.repos ?? []).join(", "));
     setEnabled(cfgQ.data.enabled ?? true);
+    setDefaultBranchOnly(cfgQ.data.default_branch_only ?? true);
+    setSlackUrl(cfgQ.data.slack_webhook_url ?? "");
     setSavedAt(cfgQ.data.updated_at);
   }, [cfgQ.data]);
 
   const mut = useMutation({
-    mutationFn: (input: { recipient_email?: string; repos: string[]; enabled: boolean }) =>
-      save({ data: input }),
+    mutationFn: (input: {
+      recipient_email?: string;
+      repos: string[];
+      enabled: boolean;
+      default_branch_only: boolean;
+      slack_webhook_url?: string;
+    }) => save({ data: input }),
     onSuccess: (data) => {
       qc.setQueryData(["ci-alert-config"], data);
       setSavedAt(data.updated_at);
@@ -710,17 +719,18 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
 
   const parsedRepos = parseRepos(reposText);
   const emailValid = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const slackValid =
+    slackUrl === "" || /^https:\/\/hooks\.slack\.com\//.test(slackUrl.trim());
 
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle className="text-base">Failure alerts (email)</CardTitle>
+        <CardTitle className="text-base">Failure alerts</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-xs text-muted-foreground">
-          Sends one email per hour when new workflow runs fail in the watched
-          repos. Delivery uses the Resonance transactional email system, so the
-          recipient domain must not be on the suppression list.
+          Delivers one alert per hour when workflow runs fail in the watched
+          repos. Choose email, Slack, or both — at least one channel is required.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -738,42 +748,70 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium">
-              Watched repos <span className="text-muted-foreground">(comma-separated owner/repo)</span>
+              Slack Incoming Webhook <span className="text-muted-foreground">(optional)</span>
             </label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="owner/hub, owner/spoke-a"
-                value={reposText}
-                onChange={(e) => setReposText(e.target.value)}
-              />
-              {reposHint && reposHint !== reposText && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setReposText(reposHint)}
-                  title="Copy repos from dashboard input"
-                >
-                  Use above
-                </Button>
-              )}
-            </div>
+            <Input
+              type="url"
+              placeholder="https://hooks.slack.com/services/T…/B…/…"
+              value={slackUrl}
+              onChange={(e) => setSlackUrl(e.target.value)}
+            />
+            {!slackValid && (
+              <div className="mt-1 text-xs text-destructive">
+                Must start with https://hooks.slack.com/
+              </div>
+            )}
             <div className="mt-1 text-xs text-muted-foreground">
-              {parsedRepos.length} valid repo{parsedRepos.length === 1 ? "" : "s"}
-              {parsedRepos.length > 15 ? " · max 15 will be saved" : ""}
+              Create one at Slack → Apps → Incoming Webhooks and paste the URL.
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            id="ci-alerts-enabled"
-            type="checkbox"
-            checked={enabled}
-            onChange={(e) => setEnabled(e.target.checked)}
-            className="h-4 w-4"
-          />
-          <label htmlFor="ci-alerts-enabled" className="text-sm">
+        <div>
+          <label className="mb-1 block text-xs font-medium">
+            Watched repos <span className="text-muted-foreground">(comma-separated owner/repo)</span>
+          </label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="owner/hub, owner/spoke-a"
+              value={reposText}
+              onChange={(e) => setReposText(e.target.value)}
+            />
+            {reposHint && reposHint !== reposText && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReposText(reposHint)}
+                title="Copy repos from dashboard input"
+              >
+                Use above
+              </Button>
+            )}
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            {parsedRepos.length} valid repo{parsedRepos.length === 1 ? "" : "s"}
+            {parsedRepos.length > 15 ? " · max 15 will be saved" : ""}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={(e) => setEnabled(e.target.checked)}
+              className="h-4 w-4"
+            />
             Alerts enabled
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={defaultBranchOnly}
+              onChange={(e) => setDefaultBranchOnly(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Default branch only
           </label>
         </div>
 
@@ -784,9 +822,17 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
                 recipient_email: email.trim() || undefined,
                 repos: parsedRepos.slice(0, 15),
                 enabled,
+                default_branch_only: defaultBranchOnly,
+                slack_webhook_url: slackUrl.trim() || undefined,
               })
             }
-            disabled={!emailValid || mut.isPending || cfgQ.isLoading}
+            disabled={
+              !emailValid ||
+              !slackValid ||
+              mut.isPending ||
+              cfgQ.isLoading ||
+              (email.trim() === "" && slackUrl.trim() === "")
+            }
           >
             {mut.isPending ? "Saving…" : "Save alert settings"}
           </Button>
@@ -801,13 +847,15 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
         </div>
 
         <div className="text-[11px] text-muted-foreground">
-          Polling runs hourly via a Cloud cron job. Each failing run is emailed
-          once; duplicates are suppressed for 7 days.
+          Polling runs hourly via a Cloud cron job. Each failing run alerts
+          once; duplicates are suppressed for 7 days. With "Default branch
+          only" on, feature-branch and PR failures are ignored.
         </div>
       </CardContent>
     </Card>
   );
 }
+
 
 function PresetsBar({
   currentInput,
