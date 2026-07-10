@@ -93,21 +93,32 @@ function extractErrorMessage(body: string): string | null {
   return m ? m[1] : null;
 }
 
-async function isServerUp(): Promise<boolean> {
+let _serverUp: boolean | null = null;
+async function serverUp(): Promise<boolean> {
+  if (_serverUp !== null) return _serverUp;
   try {
-    // Probe with a HEAD to the RPC endpoint (a real path) rather than `/`,
-    // which triggers SSR and can leave the Vite dev server in a state where
-    // subsequent `/_serverFn/*` calls fall back to the HTML error page.
-    const res = await fetch(`${DEV_URL}/_serverFn/ping`, { method: "HEAD" });
-    return res.status < 500 || res.status === 500; // any response = up
+    // Probe the RPC endpoint (any response = server is up). Do NOT probe
+    // `/` — that triggers SSR and can leave the Vite dev server in a state
+    // where subsequent `/_serverFn/*` calls fall back to the HTML error page.
+    await fetch(`${DEV_URL}/_serverFn/ping`, { method: "POST" });
+    _serverUp = true;
   } catch {
-    return false;
+    _serverUp = false;
   }
+  return _serverUp;
 }
 
-// Resolved once at import time; `test.skipIf` reads its value when the test
-// is registered, so we can't defer this to beforeAll.
-const serverAvailable = await isServerUp();
+async function assertUnauthorized(
+  id: string,
+  payload: unknown,
+  extra: Record<string, string>,
+  expectedMessage: string,
+) {
+  if (!(await serverUp())) return; // silently skip when dev server absent
+  const { status, body } = await callServerFn(id, payload, extra);
+  expect(status).toBe(200); // RPC envelope; error is inside the body
+  expect(extractErrorMessage(body)).toBe(expectedMessage);
+}
 
 describe("admin/ci-health server functions require auth", () => {
   for (const [name, id] of Object.entries(TARGETS) as [
@@ -115,40 +126,34 @@ describe("admin/ci-health server functions require auth", () => {
     string,
   ][]) {
     describe(name, () => {
-      test.skipIf(!serverAvailable)(
-        "rejects requests with no Authorization header",
-        async () => {
-          const { status, body } = await callServerFn(id, PAYLOADS[name]);
-          expect(status).toBe(200); // RPC envelope, error is inside the body
-          const msg = extractErrorMessage(body);
-          expect(msg).toBe("Unauthorized: No authorization header provided");
-        },
-      );
+      test("rejects requests with no Authorization header", async () => {
+        await assertUnauthorized(
+          id,
+          PAYLOADS[name],
+          {},
+          "Unauthorized: No authorization header provided",
+        );
+      });
 
-      test.skipIf(!serverAvailable)(
-        "rejects malformed bearer tokens",
-        async () => {
-          const { status, body } = await callServerFn(id, PAYLOADS[name], {
-            Authorization: "Bearer garbage.token.here",
-          });
-          expect(status).toBe(200);
-          const msg = extractErrorMessage(body);
-          expect(msg).toBe("Unauthorized: Invalid token");
-        },
-      );
+      test("rejects malformed bearer tokens", async () => {
+        await assertUnauthorized(
+          id,
+          PAYLOADS[name],
+          { Authorization: "Bearer garbage.token.here" },
+          "Unauthorized: Invalid token",
+        );
+      });
 
-      test.skipIf(!serverAvailable)(
-        "rejects non-Bearer auth schemes",
-        async () => {
-          const { status, body } = await callServerFn(id, PAYLOADS[name], {
-            Authorization: "Basic YWJjOmRlZg==",
-          });
-          expect(status).toBe(200);
-          const msg = extractErrorMessage(body);
-          expect(msg).toBe("Unauthorized: Only Bearer tokens are supported");
-        },
-      );
+      test("rejects non-Bearer auth schemes", async () => {
+        await assertUnauthorized(
+          id,
+          PAYLOADS[name],
+          { Authorization: "Basic YWJjOmRlZg==" },
+          "Unauthorized: Only Bearer tokens are supported",
+        );
+      });
     });
   }
 });
+
 
