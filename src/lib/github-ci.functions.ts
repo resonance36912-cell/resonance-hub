@@ -38,7 +38,7 @@ async function ghFetch(path: string) {
 
 export { validateRepoSlug };
 
-function friendlyGithubError(err: unknown, repo: string): string {
+export function friendlyGithubError(err: unknown, repo: string): string {
   if (err instanceof GitHubApiError) {
     if (err.status === 404) {
       return `Repository "${repo}" not found or not accessible with the connected GitHub account`;
@@ -52,6 +52,7 @@ function friendlyGithubError(err: unknown, repo: string): string {
   }
   return (err as Error).message || `Failed to load "${repo}"`;
 }
+
 
 async function ghFetchRaw(path: string): Promise<Response> {
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -206,7 +207,7 @@ async function loadRepoCi(repo: string): Promise<RepoCiHealth> {
   }
 }
 
-function invalidRepoResult(input: string, error: string): RepoCiHealth {
+export function invalidRepoResult(input: string, error: string): RepoCiHealth {
   return {
     repo: input,
     html_url: "",
@@ -228,6 +229,42 @@ function invalidRepoResult(input: string, error: string): RepoCiHealth {
   };
 }
 
+/**
+ * Deduplicates and validates a repo list, then invokes `loader` for each valid
+ * slug. A thrown error from `loader` is caught and translated into a friendly
+ * error on that repo's result — one bad repo never fails the whole batch.
+ * Exposed for unit testing; the server-fn handler uses this with `loadRepoCi`.
+ */
+export async function runRepoBatch(
+  repos: string[],
+  loader: (repo: string) => Promise<RepoCiHealth>,
+): Promise<{ repos: RepoCiHealth[]; invalidCount: number }> {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const r of repos) {
+    const key = r.trim();
+    if (!key || seen.has(key.toLowerCase())) continue;
+    seen.add(key.toLowerCase());
+    ordered.push(key);
+  }
+
+  const results = await Promise.all(
+    ordered.map(async (raw): Promise<RepoCiHealth> => {
+      const check = validateRepoSlug(raw);
+      if (!check.ok) return invalidRepoResult(raw, check.error);
+      try {
+        return await loader(check.repo);
+      } catch (err) {
+        return invalidRepoResult(check.repo, friendlyGithubError(err, check.repo));
+      }
+    }),
+  );
+
+  const invalidCount = results.filter((r) => r.error && !r.default_branch).length;
+  return { repos: results, invalidCount };
+}
+
+
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { repos: unknown }) =>
@@ -242,32 +279,14 @@ export const getCiHealth = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
-
-    // Deduplicate while preserving order, then validate each slug shape.
-    const seen = new Set<string>();
-    const ordered: string[] = [];
-    for (const r of data.repos) {
-      const key = r.trim();
-      if (!key || seen.has(key.toLowerCase())) continue;
-      seen.add(key.toLowerCase());
-      ordered.push(key);
-    }
-
-    const results = await Promise.all(
-      ordered.map(async (raw): Promise<RepoCiHealth> => {
-        const check = validateRepoSlug(raw);
-        if (!check.ok) return invalidRepoResult(raw, check.error);
-        return loadRepoCi(check.repo);
-      }),
-    );
-
-    const invalid = results.filter((r) => r.error && !r.default_branch);
+    const { repos, invalidCount } = await runRepoBatch(data.repos, loadRepoCi);
     return {
-      repos: results,
+      repos,
       fetchedAt: new Date().toISOString(),
-      invalidCount: invalid.length,
+      invalidCount,
     };
   });
+
 
 // ---------- Workflow run details ----------
 
