@@ -120,7 +120,7 @@ async function serverReachable(): Promise<boolean> {
 
 async function callFn(payload: unknown, token?: string): Promise<Response> {
   const serialized = await toJSONAsync(payload);
-  return fetch(`${DEV_URL}/_serverFn/${ID}`, {
+  return fetchRpcWithRetry(`${DEV_URL}/_serverFn/${ID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
