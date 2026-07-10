@@ -373,7 +373,7 @@ function CiHealthPage() {
     refetchInterval: refresh > 0 ? refresh * 1000 : false,
   });
 
-  const rows: RepoCiHealth[] = q.data?.repos ?? [];
+  const rows: RepoCiHealth[] = useMemo(() => q.data?.repos ?? [], [q.data?.repos]);
   const invalidRepos = useMemo(() => rows.filter((r) => r.error && !r.default_branch), [rows]);
 
   const totals = useMemo(
