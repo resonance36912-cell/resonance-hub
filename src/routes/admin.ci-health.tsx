@@ -400,6 +400,14 @@ function CiHealthPage() {
   const repos = useMemo(() => parseRepos(reposParam), [reposParam]);
   const fetchCi = useServerFn(getCiHealth);
 
+  const validateInput = useCallback(() => {
+    setClientErrors(validateRepoList(reposInput));
+  }, [reposInput]);
+
+  const handleBlur = () => {
+    validateInput();
+  };
+
   const q = useQuery({
     queryKey: ["ci-health", repos.join(",")],
     queryFn: () => fetchCi({ data: { repos } }),
