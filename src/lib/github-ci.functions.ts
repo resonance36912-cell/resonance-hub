@@ -4,6 +4,16 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
+export class GitHubApiError extends Error {
+  status: number;
+  body: string;
+  constructor(status: number, body: string) {
+    super(`GitHub gateway ${status}: ${body.slice(0, 200)}`);
+    this.status = status;
+    this.body = body;
+  }
+}
+
 async function ghFetch(path: string) {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const ghKey = process.env.GITHUB_API_KEY;
@@ -20,10 +30,57 @@ async function ghFetch(path: string) {
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`GitHub gateway ${res.status}: ${body.slice(0, 200)}`);
+    throw new GitHubApiError(res.status, body);
   }
   return res.json();
 }
+
+// GitHub owner/repo rules (simplified but strict):
+//  - Owner: 1–39 chars; alphanumerics and single hyphens; no leading/trailing hyphen.
+//  - Repo:  1–100 chars; alphanumerics, dot, hyphen, underscore; not "." or "..".
+const OWNER_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
+const REPO_RE = /^[a-zA-Z0-9._-]{1,100}$/;
+
+export function validateRepoSlug(slug: string):
+  | { ok: true; repo: string }
+  | { ok: false; error: string } {
+  const trimmed = slug.trim();
+  if (!trimmed) return { ok: false, error: "Empty repository name" };
+  const parts = trimmed.split("/");
+  if (parts.length !== 2) {
+    return { ok: false, error: `"${trimmed}" is not in owner/repo format` };
+  }
+  const [owner, repo] = parts;
+  if (!OWNER_RE.test(owner)) {
+    return {
+      ok: false,
+      error: `Invalid owner "${owner}" — use 1–39 letters, digits or single hyphens`,
+    };
+  }
+  if (!REPO_RE.test(repo) || repo === "." || repo === "..") {
+    return {
+      ok: false,
+      error: `Invalid repository "${repo}" — use letters, digits, dot, hyphen or underscore (max 100 chars)`,
+    };
+  }
+  return { ok: true, repo: `${owner}/${repo}` };
+}
+
+function friendlyGithubError(err: unknown, repo: string): string {
+  if (err instanceof GitHubApiError) {
+    if (err.status === 404) {
+      return `Repository "${repo}" not found or not accessible with the connected GitHub account`;
+    }
+    if (err.status === 401 || err.status === 403) {
+      return `Access denied to "${repo}" (HTTP ${err.status}). Reconnect the GitHub connector with the "repo" scope.`;
+    }
+    if (err.status === 429) return `GitHub rate limit hit for "${repo}" — try again shortly`;
+    if (err.status >= 500) return `GitHub is unavailable (HTTP ${err.status})`;
+    return `GitHub error ${err.status} for "${repo}"`;
+  }
+  return (err as Error).message || `Failed to load "${repo}"`;
+}
+
 
 async function ghFetchRaw(path: string): Promise<Response> {
   const lovableKey = process.env.LOVABLE_API_KEY;
@@ -174,28 +231,74 @@ async function loadRepoCi(repo: string): Promise<RepoCiHealth> {
       latest_default_branch_run: null,
       failing_runs: [],
       recent_runs: [],
-      error: (err as Error).message,
+      error: friendlyGithubError(err, repo),
     };
   }
 }
 
+function invalidRepoResult(input: string, error: string): RepoCiHealth {
+  return {
+    repo: input,
+    html_url: "",
+    default_branch: "",
+    totals: {
+      last: 0,
+      success: 0,
+      failure: 0,
+      cancelled: 0,
+      in_progress: 0,
+      other: 0,
+      success_rate: null,
+    },
+    latest_run: null,
+    latest_default_branch_run: null,
+    failing_runs: [],
+    recent_runs: [],
+    error,
+  };
+}
+
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: string[] }) =>
+  .inputValidator((data: { repos: unknown }) =>
     z
       .object({
         repos: z
-          .array(z.string().regex(/^[\w.-]+\/[\w.-]+$/, "expected owner/repo"))
-          .min(1)
-          .max(10),
+          .array(z.string().min(1).max(140))
+          .min(1, "Provide at least one repository")
+          .max(10, "Maximum 10 repositories per request"),
       })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
-    const results = await Promise.all(data.repos.map((r) => loadRepoCi(r)));
-    return { repos: results, fetchedAt: new Date().toISOString() };
+
+    // Deduplicate while preserving order, then validate each slug shape.
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const r of data.repos) {
+      const key = r.trim();
+      if (!key || seen.has(key.toLowerCase())) continue;
+      seen.add(key.toLowerCase());
+      ordered.push(key);
+    }
+
+    const results = await Promise.all(
+      ordered.map(async (raw): Promise<RepoCiHealth> => {
+        const check = validateRepoSlug(raw);
+        if (!check.ok) return invalidRepoResult(raw, check.error);
+        return loadRepoCi(check.repo);
+      }),
+    );
+
+    const invalid = results.filter((r) => r.error && !r.default_branch);
+    return {
+      repos: results,
+      fetchedAt: new Date().toISOString(),
+      invalidCount: invalid.length,
+    };
   });
+
 
 // ---------- Workflow run details ----------
 
@@ -278,15 +381,19 @@ async function fetchJobLogsTail(
 
 export const getRunDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repo: string; runId: number; includeLogs?: boolean }) =>
-    z
+  .inputValidator((data: { repo: string; runId: number; includeLogs?: boolean }) => {
+    const parsed = z
       .object({
-        repo: z.string().regex(/^[\w.-]+\/[\w.-]+$/, "expected owner/repo"),
+        repo: z.string().min(1).max(140),
         runId: z.number().int().positive(),
         includeLogs: z.boolean().optional().default(true),
       })
-      .parse(data),
-  )
+      .parse(data);
+    const check = validateRepoSlug(parsed.repo);
+    if (!check.ok) throw new Error(check.error);
+    return { ...parsed, repo: check.repo };
+  })
+
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { repo, runId, includeLogs } = data;
