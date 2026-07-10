@@ -31,6 +31,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
 type SortOrder = (typeof SORT_OPTIONS)[number];
@@ -245,16 +246,39 @@ function RepoCard({
     rate == null ? undefined : rate >= 0.9 ? "ok" : rate >= 0.7 ? "warn" : "bad";
   const runs = filter === "failing" ? repo.failing_runs : repo.recent_runs;
   const dbRun = repo.latest_default_branch_run;
+  const hasError = !!repo.error;
+
+  const title = (
+    <CardTitle className="text-base">
+      {repo.html_url ? (
+        <a href={repo.html_url} target="_blank" rel="noreferrer" className="hover:underline">
+          {repo.repo}
+        </a>
+      ) : (
+        <span className="text-destructive">{repo.repo}</span>
+      )}
+    </CardTitle>
+  );
 
   return (
-    <Card>
+    <Card className={hasError ? "border-destructive" : undefined}>
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div>
-          <CardTitle className="text-base">
-            <a href={repo.html_url} target="_blank" rel="noreferrer" className="hover:underline">
-              {repo.repo}
-            </a>
-          </CardTitle>
+          {hasError ? (
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>{title}</TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  className="max-w-sm bg-destructive text-destructive-foreground"
+                >
+                  <p className="font-medium">{repo.error}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            title
+          )}
           <div className="mt-1 text-xs text-muted-foreground">
             default: <span className="font-mono">{repo.default_branch || "?"}</span>
             {dbRun ? (
@@ -273,6 +297,14 @@ function RepoCard({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {hasError && (
+            <Badge
+              variant="outline"
+              className="border-destructive text-destructive bg-destructive/10"
+            >
+              Invalid / inaccessible
+            </Badge>
+          )}
           {repo.totals.failure > 0 && (
             <Badge variant="outline" className="border-red-500/40 text-red-700 bg-red-500/5">
               {repo.totals.failure} failing
