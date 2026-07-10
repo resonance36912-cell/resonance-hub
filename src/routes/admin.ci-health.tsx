@@ -7,6 +7,12 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { getCiHealth, getRunDetails, type RepoCiHealth, type RunDetails, type RunJob, type WorkflowRun } from "@/lib/github-ci.functions";
 import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
+import {
+  listCiRepoPresets,
+  saveCiRepoPreset,
+  deleteCiRepoPreset,
+  type CiRepoPreset,
+} from "@/lib/ci-repo-presets.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
