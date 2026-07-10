@@ -105,7 +105,7 @@ async function callGetSecurityScanReport(
   headers: Record<string, string> = {},
 ): Promise<Response> {
   const serialized = await toJSONAsync(payload);
-  return fetch(`${DEV_URL}/_serverFn/${ID}`, {
+  return fetchRpcWithRetry(`${DEV_URL}/_serverFn/${ID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
