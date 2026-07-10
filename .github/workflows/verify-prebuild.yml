@@ -179,7 +179,21 @@ jobs:
       # Unit/integration tests. Hard-fails CI on any failure. Runs before
       # smoke tests so logic regressions surface before we spin up a server.
       - name: Unit & integration tests (bun test)
-        run: bun run test
+        run: bun run test:ci
+
+      # Publish test results (JUnit) and coverage (lcov) for quick failure
+      # triage. Runs on success and failure so red builds still surface the
+      # JUnit report in the Actions UI.
+      - name: Upload test results (JUnit + coverage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            reports/junit.xml
+            reports/coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Run all prebuild verification scripts
         run: bun run prebuild
