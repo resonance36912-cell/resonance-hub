@@ -5,12 +5,13 @@ import { useEffect, useMemo, useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { getCiHealth, type RepoCiHealth, type WorkflowRun } from "@/lib/github-ci.functions";
+import { getCiHealth, getRunDetails, type RepoCiHealth, type RunDetails, type RunJob, type WorkflowRun } from "@/lib/github-ci.functions";
 import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
