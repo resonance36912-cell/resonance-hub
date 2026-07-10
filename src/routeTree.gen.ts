@@ -30,6 +30,7 @@ import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
@@ -161,6 +162,11 @@ const AdminRopRoute = AdminRopRouteImport.update({
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRepoHealthRoute = AdminRepoHealthRouteImport.update({
+  id: '/admin/repo-health',
+  path: '/admin/repo-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
@@ -330,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -380,6 +387,7 @@ export interface FileRoutesByTo {
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -483,6 +492,7 @@ export interface FileRouteTypes {
     | '/admin/entitlement-diagnostics'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
     | '/admin/webhooks'
@@ -533,6 +543,7 @@ export interface FileRouteTypes {
     | '/admin/entitlement-diagnostics'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
     | '/admin/webhooks'
@@ -583,6 +594,7 @@ export interface FileRouteTypes {
     | '/admin/entitlement-diagnostics'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
     | '/admin/webhooks'
@@ -634,6 +646,7 @@ export interface RootRouteChildren {
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
+  AdminRepoHealthRoute: typeof AdminRepoHealthRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
@@ -814,6 +827,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/repo-health': {
+      id: '/admin/repo-health'
+      path: '/admin/repo-health'
+      fullPath: '/admin/repo-health'
+      preLoaderRoute: typeof AdminRepoHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/payfast-audit': {
@@ -1039,6 +1059,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
+  AdminRepoHealthRoute: AdminRepoHealthRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
