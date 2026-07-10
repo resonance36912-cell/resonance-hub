@@ -56,33 +56,16 @@ async function callServerFn(
   extraHeaders: Record<string, string> = {},
 ) {
   const serialized = await toJSONAsync(payload);
-  // The Vite dev server occasionally returns a fallback HTML 500 for the
-  // first request against `/_serverFn/*` after a hot-reload; retry a couple
-  // of times so this test isn't flaky in dev. Real callers see the same
-  // pattern and the framework retries transparently.
-  let lastStatus = 0;
-  let lastBody = "";
-  for (let attempt = 0; attempt < 4; attempt++) {
-    const res = await fetch(`${DEV_URL}/_serverFn/${id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-tsr-serverFn": "true",
-        ...extraHeaders,
-      },
-      body: JSON.stringify(serialized),
-    });
-    lastStatus = res.status;
-    lastBody = await res.text();
-    if (
-      res.headers.get("content-type")?.includes("application/json") &&
-      lastBody.startsWith("{")
-    ) {
-      return { status: lastStatus, body: lastBody };
-    }
-    await new Promise((r) => setTimeout(r, 100 * (attempt + 1)));
-  }
-  return { status: lastStatus, body: lastBody };
+  const res = await fetch(`${DEV_URL}/_serverFn/${id}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-tsr-serverFn": "true",
+      ...extraHeaders,
+    },
+    body: JSON.stringify(serialized),
+  });
+  return { status: res.status, body: await res.text() };
 }
 
 function extractErrorMessage(body: string): string | null {
