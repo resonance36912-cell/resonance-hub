@@ -31,12 +31,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
 type SortOrder = (typeof SORT_OPTIONS)[number];
@@ -273,7 +268,10 @@ function RepoCard({
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>{title}</TooltipTrigger>
-                <TooltipContent side="top" className="max-w-sm bg-destructive text-destructive-foreground">
+                <TooltipContent
+                  side="top"
+                  className="max-w-sm bg-destructive text-destructive-foreground"
+                >
                   <p className="font-medium">{repo.error}</p>
                 </TooltipContent>
               </Tooltip>
@@ -300,7 +298,10 @@ function RepoCard({
         </div>
         <div className="flex items-center gap-2">
           {hasError && (
-            <Badge variant="outline" className="border-destructive text-destructive bg-destructive/10">
+            <Badge
+              variant="outline"
+              className="border-destructive text-destructive bg-destructive/10"
+            >
               Invalid / inaccessible
             </Badge>
           )}
