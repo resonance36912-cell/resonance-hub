@@ -350,10 +350,7 @@ function CiHealthPage() {
   });
 
   const rows: RepoCiHealth[] = q.data?.repos ?? [];
-  const invalidRepos = useMemo(
-    () => rows.filter((r) => r.error && !r.default_branch),
-    [rows],
-  );
+  const invalidRepos = useMemo(() => rows.filter((r) => r.error && !r.default_branch), [rows]);
 
   const totals = useMemo(
     () =>
