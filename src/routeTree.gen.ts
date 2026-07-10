@@ -54,6 +54,7 @@ import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicFormsCreateIssueRouteImport } from './routes/api/public/forms/create-issue'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
 import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
@@ -295,6 +296,12 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicFormsCreateIssueRoute =
+  ApiPublicFormsCreateIssueRouteImport.update({
+    id: '/api/public/forms/create-issue',
+    path: '/api/public/forms/create-issue',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicAnalyticsAuthGateRouteImport.update({
     id: '/api/public/analytics/auth-gate',
@@ -356,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -407,6 +415,7 @@ export interface FileRoutesByTo {
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -459,6 +468,7 @@ export interface FileRoutesById {
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -512,6 +522,7 @@ export interface FileRouteTypes {
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/forms/create-issue'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/forms/create-issue'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -614,6 +626,7 @@ export interface FileRouteTypes {
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/forms/create-issue'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -664,6 +677,7 @@ export interface RootRouteChildren {
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
+  ApiPublicFormsCreateIssueRoute: typeof ApiPublicFormsCreateIssueRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
@@ -997,6 +1011,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/forms/create-issue': {
+      id: '/api/public/forms/create-issue'
+      path: '/api/public/forms/create-issue'
+      fullPath: '/api/public/forms/create-issue'
+      preLoaderRoute: typeof ApiPublicFormsCreateIssueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/analytics/auth-gate': {
       id: '/api/public/analytics/auth-gate'
       path: '/api/public/analytics/auth-gate'
@@ -1077,6 +1098,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
+  ApiPublicFormsCreateIssueRoute: ApiPublicFormsCreateIssueRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
