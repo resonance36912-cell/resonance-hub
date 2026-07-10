@@ -157,21 +157,9 @@ describe("getSecurityScanReport — admin success shape", () => {
     expect(envelope).toBeTruthy();
     expect(envelope.result).toBeTruthy();
 
-    const parsed = SecurityScanReportSchema.safeParse(envelope.result);
-    if (!parsed.success) {
-      console.error(
-        "Schema mismatch:",
-        JSON.stringify(parsed.error.issues, null, 2),
-      );
-      console.error(
-        "Actual result:",
-        JSON.stringify(envelope.result, null, 2).slice(0, 2000),
-      );
-    }
-    expect(parsed.success).toBe(true);
-    if (!parsed.success) return;
+    // Strict Zod parse via shared schema — every 200 test path runs this.
+    const report = parseReportOrThrow(envelope.result, "success.test");
 
-    const report = parsed.data;
 
     // --- Invariants ---
     // 1. One entry per requested repo, in input order.
