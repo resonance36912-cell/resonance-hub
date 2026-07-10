@@ -399,7 +399,7 @@ function CiHealthPage() {
 
           <div className="space-y-4">
             {sorted.map((r) => (
-              <RepoCard key={r.repo} repo={r} filter={filter} />
+              <RepoCard key={r.repo} repo={r} filter={filter} onSelectRun={onSelectRun} />
             ))}
           </div>
 
