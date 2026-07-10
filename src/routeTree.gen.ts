@@ -37,6 +37,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
+import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -203,6 +204,11 @@ const AdminEmailDomainRoute = AdminEmailDomainRouteImport.update({
   path: '/admin/email-domain',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
+  id: '/admin/ci-health',
+  path: '/admin/ci-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
@@ -351,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
@@ -405,6 +412,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
@@ -460,6 +468,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
@@ -516,6 +525,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
@@ -570,6 +580,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
@@ -624,6 +635,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
@@ -679,6 +691,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
@@ -918,6 +931,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailDomainRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/ci-health': {
+      id: '/admin/ci-health'
+      path: '/admin/ci-health'
+      fullPath: '/admin/ci-health'
+      preLoaderRoute: typeof AdminCiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/subscriptions': {
       id: '/account/subscriptions'
       path: '/account/subscriptions'
@@ -1116,6 +1136,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminCiHealthRoute: AdminCiHealthRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
