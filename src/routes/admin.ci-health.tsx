@@ -1,11 +1,12 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { getCiHealth, type RepoCiHealth, type WorkflowRun } from "@/lib/github-ci.functions";
+import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -335,6 +336,10 @@ function CiHealthPage() {
           ) : null}
         </CardContent>
       </Card>
+
+      <AlertSettingsCard reposHint={reposInput} />
+
+
 
       {repos.length === 0 ? (
         <p className="text-muted-foreground">
