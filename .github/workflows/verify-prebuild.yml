@@ -265,7 +265,7 @@ jobs:
       - name: Verify sitemap.xml, robots.txt, and pricing anchors
         env:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
-         run: bun run scripts/verify-sitemap-robots.ts
+        run: bun run scripts/verify-sitemap-robots.ts
 
       # Security-scan RPC integration tests. Drive the live preview server
       # (local wrangler dev or remote SMOKE_BASE_URL) over the TanStack
