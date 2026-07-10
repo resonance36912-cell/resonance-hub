@@ -451,7 +451,32 @@ function CiHealthPage() {
             >
               {q.isFetching ? "Refreshing…" : "Refresh"}
             </Button>
+            {invalidRepos.length > 0 && (
+              <Badge
+                variant="outline"
+                className="h-9 border-destructive/40 bg-destructive/10 px-2.5 text-destructive"
+              >
+                {invalidRepos.length} rejected
+              </Badge>
+            )}
           </div>
+
+          {invalidRepos.length > 0 && (
+            <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
+              <div className="mb-1 font-medium text-destructive">
+                Invalid or inaccessible repositories
+              </div>
+              <ul className="space-y-1">
+                {invalidRepos.map((r) => (
+                  <li key={r.repo} className="flex items-start gap-2">
+                    <span className="font-mono text-destructive">{r.repo}</span>
+                    <span className="text-muted-foreground">— {r.error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">Show:</span>
             <Button
