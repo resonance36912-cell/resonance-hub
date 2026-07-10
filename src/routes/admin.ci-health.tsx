@@ -503,8 +503,15 @@ function CiHealthPage() {
             <Input
               placeholder="owner/repo, owner/repo2, …"
               value={reposInput}
-              onChange={(e) => setReposInput(e.target.value)}
+              onChange={(e) => {
+                setReposInput(e.target.value);
+                if (clientErrors.length > 0) setClientErrors([]);
+              }}
               onKeyDown={(e) => e.key === "Enter" && applyRepos()}
+              onBlur={handleBlur}
+              className={clientErrors.length > 0 ? "border-destructive focus-visible:ring-destructive" : undefined}
+              aria-invalid={clientErrors.length > 0}
+              aria-describedby={clientErrors.length > 0 ? "repo-client-errors" : undefined}
             />
             <Button onClick={applyRepos}>Load</Button>
             <Button
