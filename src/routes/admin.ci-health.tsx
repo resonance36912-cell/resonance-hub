@@ -19,10 +19,53 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
+const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
+type SortOrder = (typeof SORT_OPTIONS)[number];
+const REFRESH_OPTIONS = [0, 15, 30, 60, 120, 300] as const;
+const PREFS_STORAGE_KEY = "ci-health.prefs.v1";
+
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
-  filter: fallback(z.enum(["all", "failing"]), "failing").default("failing"),
+  filter: fallback(z.string(), "failing").default("failing"),
+  sort: fallback(z.string(), "failing_desc").default("failing_desc"),
+  refresh: fallback(z.number().int(), 60).default(60),
 });
+
+function normalizeFilter(v: string): "all" | "failing" {
+  return v === "all" ? "all" : "failing";
+}
+function normalizeSort(v: string): SortOrder {
+  return (SORT_OPTIONS as readonly string[]).includes(v) ? (v as SortOrder) : "failing_desc";
+}
+function normalizeRefresh(v: number): number {
+  return (REFRESH_OPTIONS as readonly number[]).includes(v) ? v : 60;
+}
+
+type Prefs = { filter: "all" | "failing"; sort: SortOrder; refresh: number };
+function readStoredPrefs(): Partial<Prefs> | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<Prefs>;
+    return {
+      filter: parsed.filter ? normalizeFilter(parsed.filter) : undefined,
+      sort: parsed.sort ? normalizeSort(parsed.sort) : undefined,
+      refresh: typeof parsed.refresh === "number" ? normalizeRefresh(parsed.refresh) : undefined,
+    };
+  } catch {
+    return null;
+  }
+}
+function writeStoredPrefs(prefs: Prefs) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs));
+  } catch {
+    /* ignore */
+  }
+}
+
 
 export const Route = createFileRoute("/admin/ci-health")({
   head: () => ({
