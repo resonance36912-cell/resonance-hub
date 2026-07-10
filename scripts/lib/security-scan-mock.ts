@@ -38,7 +38,7 @@
 // regexes (the strict `"message":{"t":1,"s":"..."}` and the loose
 // fallback) resolve.
 
-import { fromJSON, toJSONAsync } from "seroval";
+import { fromJSON } from "seroval";
 import { z } from "zod";
 
 const ENABLED = process.env.SECURITY_SCAN_MOCK === "1";
@@ -186,7 +186,7 @@ function encodeEnvelope(payload: {
 
 
 async function envelopeOk(result: unknown): Promise<Response> {
-  const body = await encodeEnvelope({
+  const body = encodeEnvelope({
     result,
     error: undefined,
     context: {},
@@ -198,7 +198,7 @@ async function envelopeOk(result: unknown): Promise<Response> {
 }
 
 async function envelopeError(message: string): Promise<Response> {
-  const body = await encodeEnvelope({
+  const body = encodeEnvelope({
     result: undefined,
     error: { message },
     context: {},
