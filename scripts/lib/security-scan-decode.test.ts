@@ -143,21 +143,9 @@ describe("getSecurityScanReport — 200 decode + full schema coverage", () => {
     const result = envelope.result;
     expect(result).toBeTruthy();
 
-    // --- Strict schema parse (rejects unknown keys anywhere). ---
-    const parsed = SecurityScanReportSchema.safeParse(result);
-    if (!parsed.success) {
-      console.error(
-        "Schema mismatch:",
-        JSON.stringify(parsed.error.issues, null, 2),
-      );
-      console.error(
-        "Actual result:",
-        JSON.stringify(result, null, 2).slice(0, 2000),
-      );
-    }
-    expect(parsed.success).toBe(true);
-    if (!parsed.success) return;
-    const report = parsed.data;
+    // --- Strict schema parse via shared canonical schema. ---
+    const report = parseReportOrThrow(result, "decode.test");
+
 
     // --- Top-level key coverage: `repos` + `fetched_at`, nothing else. ---
     const topKeys = Object.keys(result as Record<string, unknown>).sort();
