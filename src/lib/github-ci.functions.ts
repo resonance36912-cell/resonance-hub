@@ -196,3 +196,184 @@ export const getCiHealth = createServerFn({ method: "POST" })
     const results = await Promise.all(data.repos.map((r) => loadRepoCi(r)));
     return { repos: results, fetchedAt: new Date().toISOString() };
   });
+
+// ---------- Workflow run details ----------
+
+export type RunStep = {
+  name: string;
+  status: string | null;
+  conclusion: string | null;
+  number: number;
+  started_at: string | null;
+  completed_at: string | null;
+};
+
+export type RunJob = {
+  id: number;
+  name: string;
+  status: string | null;
+  conclusion: string | null;
+  html_url: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  runner_name: string | null;
+  steps: RunStep[];
+  failing_step: RunStep | null;
+  logs_tail: string | null;
+  logs_error: string | null;
+};
+
+export type CommitInfo = {
+  sha: string;
+  short_sha: string;
+  html_url: string;
+  message: string;
+  author_name: string | null;
+  author_login: string | null;
+  author_avatar: string | null;
+  authored_at: string | null;
+  stats: { additions: number; deletions: number; total: number } | null;
+  files_changed: number;
+};
+
+export type RunDetails = {
+  run: WorkflowRun & { duration_ms: number | null };
+  jobs: RunJob[];
+  failing_jobs: RunJob[];
+  commit: CommitInfo | null;
+  fetchedAt: string;
+};
+
+function pickFailingStep(steps: RunStep[]): RunStep | null {
+  return (
+    steps.find(
+      (s) => s.conclusion === "failure" || s.conclusion === "timed_out",
+    ) ?? null
+  );
+}
+
+function tailLines(text: string, n: number): string {
+  const lines = text.split(/\r?\n/);
+  return lines.slice(-n).join("\n");
+}
+
+async function fetchJobLogsTail(
+  repo: string,
+  jobId: number,
+): Promise<{ tail: string | null; error: string | null }> {
+  try {
+    const res = await ghFetchRaw(`/repos/${repo}/actions/jobs/${jobId}/logs`);
+    if (!res.ok) {
+      return { tail: null, error: `Logs unavailable (HTTP ${res.status})` };
+    }
+    const text = await res.text();
+    if (!text) return { tail: null, error: "Logs empty" };
+    // GitHub log lines start with an ISO timestamp; keep as-is, cap length.
+    const tail = tailLines(text, 120);
+    return { tail: tail.slice(-8000), error: null };
+  } catch (err) {
+    return { tail: null, error: (err as Error).message };
+  }
+}
+
+export const getRunDetails = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { repo: string; runId: number; includeLogs?: boolean }) =>
+    z
+      .object({
+        repo: z.string().regex(/^[\w.-]+\/[\w.-]+$/, "expected owner/repo"),
+        runId: z.number().int().positive(),
+        includeLogs: z.boolean().optional().default(true),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await requireAdmin(context);
+    const { repo, runId, includeLogs } = data;
+
+    const [runResp, jobsResp] = await Promise.all([
+      ghFetch(`/repos/${repo}/actions/runs/${runId}`) as Promise<any>,
+      ghFetch(`/repos/${repo}/actions/runs/${runId}/jobs?per_page=50`) as Promise<any>,
+    ]);
+
+    const jobs: RunJob[] = (jobsResp?.jobs ?? []).map((j: any) => {
+      const steps: RunStep[] = (j.steps ?? []).map((s: any) => ({
+        name: s.name,
+        status: s.status ?? null,
+        conclusion: s.conclusion ?? null,
+        number: s.number ?? 0,
+        started_at: s.started_at ?? null,
+        completed_at: s.completed_at ?? null,
+      }));
+      return {
+        id: j.id,
+        name: j.name,
+        status: j.status ?? null,
+        conclusion: j.conclusion ?? null,
+        html_url: j.html_url ?? null,
+        started_at: j.started_at ?? null,
+        completed_at: j.completed_at ?? null,
+        runner_name: j.runner_name ?? null,
+        steps,
+        failing_step: pickFailingStep(steps),
+        logs_tail: null,
+        logs_error: null,
+      };
+    });
+
+    const failing_jobs = jobs.filter(
+      (j) => j.conclusion === "failure" || j.conclusion === "timed_out",
+    );
+
+    if (includeLogs && failing_jobs.length > 0) {
+      // Fetch logs only for failing jobs, cap to 3 to keep response small.
+      const targets = failing_jobs.slice(0, 3);
+      const logs = await Promise.all(
+        targets.map((j) => fetchJobLogsTail(repo, j.id)),
+      );
+      targets.forEach((j, i) => {
+        j.logs_tail = logs[i].tail;
+        j.logs_error = logs[i].error;
+      });
+    }
+
+    let commit: CommitInfo | null = null;
+    try {
+      const c: any = await ghFetch(`/repos/${repo}/commits/${runResp.head_sha}`);
+      commit = {
+        sha: c.sha,
+        short_sha: (c.sha ?? "").slice(0, 7),
+        html_url: c.html_url,
+        message: c.commit?.message ?? "",
+        author_name: c.commit?.author?.name ?? null,
+        author_login: c.author?.login ?? null,
+        author_avatar: c.author?.avatar_url ?? null,
+        authored_at: c.commit?.author?.date ?? null,
+        stats: c.stats
+          ? {
+              additions: c.stats.additions ?? 0,
+              deletions: c.stats.deletions ?? 0,
+              total: c.stats.total ?? 0,
+            }
+          : null,
+        files_changed: Array.isArray(c.files) ? c.files.length : 0,
+      };
+    } catch {
+      commit = null;
+    }
+
+    const started = runResp.run_started_at ?? runResp.created_at;
+    const ended = runResp.updated_at;
+    const duration_ms =
+      started && ended
+        ? Math.max(0, Date.parse(ended) - Date.parse(started))
+        : null;
+
+    return {
+      run: { ...mapRun(runResp), duration_ms },
+      jobs,
+      failing_jobs,
+      commit,
+      fetchedAt: new Date().toISOString(),
+    } satisfies RunDetails;
+  });
