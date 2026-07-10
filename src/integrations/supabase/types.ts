@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      ci_alert_config: {
+        Row: {
+          enabled: boolean
+          id: number
+          recipient_email: string | null
+          repos: string[]
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: number
+          recipient_email?: string | null
+          repos?: string[]
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: number
+          recipient_email?: string | null
+          repos?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ci_alert_sent: {
+        Row: {
+          conclusion: string | null
+          head_branch: string | null
+          html_url: string | null
+          repo: string
+          run_id: number
+          sent_at: string
+          workflow_name: string | null
+        }
+        Insert: {
+          conclusion?: string | null
+          head_branch?: string | null
+          html_url?: string | null
+          repo: string
+          run_id: number
+          sent_at?: string
+          workflow_name?: string | null
+        }
+        Update: {
+          conclusion?: string | null
+          head_branch?: string | null
+          html_url?: string | null
+          repo?: string
+          run_id?: number
+          sent_at?: string
+          workflow_name?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
