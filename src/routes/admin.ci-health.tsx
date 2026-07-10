@@ -241,7 +241,7 @@ function RepoCard({
               ) : (
                 <div className="space-y-2">
                   {runs.map((r) => (
-                    <RunRow key={r.id} run={r} />
+                    <RunRow key={r.id} run={r} repo={repo.repo} onSelect={onSelectRun} />
                   ))}
                 </div>
               )}
