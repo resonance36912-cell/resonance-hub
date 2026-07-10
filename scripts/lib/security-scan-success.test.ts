@@ -18,65 +18,12 @@
 
 import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
-import { z } from "zod";
 import { fetchRpcWithRetry } from "./security-scan-retry";
+import { parseReportOrThrow } from "./security-scan-schema";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
 
-// Mirror of the SecurityScanReport DTO exported from
-// src/lib/github-security.functions.ts. Kept local so a wire-shape drift
-// (renamed field, changed nullability, new required key) fails this test
-// even without a shared contract module.
-const SeveritySchema = z.enum([
-  "critical",
-  "high",
-  "medium",
-  "low",
-  "warning",
-  "note",
-  "error",
-  "unknown",
-]);
-
-const AlertSchema = z.object({
-  number: z.number(),
-  html_url: z.string().url(),
-  state: z.string(),
-  severity: SeveritySchema,
-  rule_id: z.string(),
-  rule_name: z.string(),
-  rule_description: z.string(),
-  tool: z.string(),
-  path: z.string().nullable().optional(),
-  ref: z.string().nullable().optional(),
-  created_at: z.string(),
-  updated_at: z.string(),
-  most_recent_instance_message: z.string().nullable().optional(),
-});
-
-const TotalsSchema = z.object({
-  open: z.number().int().min(0),
-  critical: z.number().int().min(0),
-  high: z.number().int().min(0),
-  medium: z.number().int().min(0),
-  low: z.number().int().min(0),
-  other: z.number().int().min(0),
-});
-
-const RepoScanSchema = z.object({
-  repo: z.string(),
-  html_url: z.string().url(),
-  error: z.string().optional(),
-  totals: TotalsSchema,
-  alerts: z.array(AlertSchema),
-  fetched_at: z.string(),
-});
-
-const SecurityScanReportSchema = z.object({
-  repos: z.array(RepoScanSchema),
-  fetched_at: z.string(),
-});
 
 function fnId(file: string, exportName: string): string {
   const meta = JSON.stringify({
