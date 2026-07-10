@@ -160,7 +160,15 @@ function RunRow({
   );
 }
 
-function RepoCard({ repo, filter }: { repo: RepoCiHealth; filter: "all" | "failing" }) {
+function RepoCard({
+  repo,
+  filter,
+  onSelectRun,
+}: {
+  repo: RepoCiHealth;
+  filter: "all" | "failing";
+  onSelectRun: (repo: string, run: WorkflowRun) => void;
+}) {
   const rate = repo.totals.success_rate;
   const ratePct = rate == null ? "—" : `${Math.round(rate * 100)}%`;
   const rateTone: "ok" | "warn" | "bad" | undefined =
