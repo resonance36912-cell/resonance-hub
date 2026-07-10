@@ -12,69 +12,12 @@
 
 import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
-import { z } from "zod";
 import { fetchRpcWithRetry } from "./security-scan-retry";
+import { parseReportOrThrow } from "./security-scan-schema";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
 
-// Canonical client-facing schema. Uses `.strict()` so an unexpected key
-// in the wire payload fails parsing — the whole point of this suite.
-const AlertSchema = z
-  .object({
-    number: z.number(),
-    html_url: z.string().url(),
-    state: z.string(),
-    severity: z.enum([
-      "critical",
-      "high",
-      "medium",
-      "low",
-      "warning",
-      "note",
-      "error",
-      "unknown",
-    ]),
-    rule_id: z.string(),
-    rule_name: z.string(),
-    rule_description: z.string(),
-    tool: z.string(),
-    path: z.string().nullable().optional(),
-    ref: z.string().nullable().optional(),
-    created_at: z.string(),
-    updated_at: z.string(),
-    most_recent_instance_message: z.string().nullable().optional(),
-  })
-  .strict();
-
-const TotalsSchema = z
-  .object({
-    open: z.number().int().min(0),
-    critical: z.number().int().min(0),
-    high: z.number().int().min(0),
-    medium: z.number().int().min(0),
-    low: z.number().int().min(0),
-    other: z.number().int().min(0),
-  })
-  .strict();
-
-const RepoScanSchema = z
-  .object({
-    repo: z.string(),
-    html_url: z.string().url(),
-    error: z.string().optional(),
-    totals: TotalsSchema,
-    alerts: z.array(AlertSchema),
-    fetched_at: z.string(),
-  })
-  .strict();
-
-const SecurityScanReportSchema = z
-  .object({
-    repos: z.array(RepoScanSchema),
-    fetched_at: z.string(),
-  })
-  .strict();
 
 // Exact required key sets — asserted independently of Zod so a drift
 // message points at the offending key set directly.
@@ -200,21 +143,9 @@ describe("getSecurityScanReport — 200 decode + full schema coverage", () => {
     const result = envelope.result;
     expect(result).toBeTruthy();
 
-    // --- Strict schema parse (rejects unknown keys anywhere). ---
-    const parsed = SecurityScanReportSchema.safeParse(result);
-    if (!parsed.success) {
-      console.error(
-        "Schema mismatch:",
-        JSON.stringify(parsed.error.issues, null, 2),
-      );
-      console.error(
-        "Actual result:",
-        JSON.stringify(result, null, 2).slice(0, 2000),
-      );
-    }
-    expect(parsed.success).toBe(true);
-    if (!parsed.success) return;
-    const report = parsed.data;
+    // --- Strict schema parse via shared canonical schema. ---
+    const report = parseReportOrThrow(result, "decode.test");
+
 
     // --- Top-level key coverage: `repos` + `fetched_at`, nothing else. ---
     const topKeys = Object.keys(result as Record<string, unknown>).sort();

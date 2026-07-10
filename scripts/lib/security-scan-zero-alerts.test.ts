@@ -20,6 +20,8 @@ import { describe, expect, test } from "bun:test";
 import { randomUUID } from "crypto";
 import { toJSONAsync } from "seroval";
 import { fetchRpcWithRetry } from "./security-scan-retry";
+import { parseReportOrThrow } from "./security-scan-schema";
+
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
@@ -86,23 +88,10 @@ function extractErrorMessage(body: string): string | null {
   return m ? (JSON.parse(`"${m[1]}"`) as string) : null;
 }
 
-type Totals = {
-  open: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-  other: number;
-};
-type RepoScan = {
-  repo: string;
-  html_url: string;
-  error?: string;
-  totals: Totals;
-  alerts: unknown[];
-  fetched_at: string;
-};
-type Report = { repos: RepoScan[]; fetched_at: string };
+// Full-shape validation lives in the shared schema; local type alias
+// used for the invariants below.
+type Report = ReturnType<typeof parseReportOrThrow>;
+
 
 describe("getSecurityScanReport — zero-alert shape", () => {
   test("all repos with zero alerts satisfy the zero-alert invariants", async () => {
@@ -142,9 +131,12 @@ describe("getSecurityScanReport — zero-alert shape", () => {
       return;
     }
 
-    const result = extractResult(body) as Report | undefined;
-    expect(result).toBeTruthy();
-    if (!result) return;
+    // Strict schema parse via shared canonical schema — every 200 test
+    // path runs this before the per-suite invariants below.
+    const raw = extractResult(body);
+    expect(raw).toBeTruthy();
+    const result: Report = parseReportOrThrow(raw, "zero-alerts.test");
+
 
     // (2) Report-level shape.
     expect(Array.isArray(result.repos)).toBe(true);

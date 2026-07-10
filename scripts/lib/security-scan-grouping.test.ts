@@ -19,6 +19,8 @@
 import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
 import { fetchRpcWithRetry } from "./security-scan-retry";
+import { parseReportOrThrow } from "./security-scan-schema";
+
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
@@ -85,22 +87,10 @@ function extractErrorMessage(body: string): string | null {
   return m ? (JSON.parse(`"${m[1]}"`) as string) : null;
 }
 
-type RepoScan = {
-  repo: string;
-  html_url: string;
-  alerts: unknown[];
-  error?: string;
-};
-type Report = { repos: RepoScan[]; fetched_at: string };
+// Full-shape validation lives in the shared schema; local type used for
+// per-suite invariants only.
+type Report = ReturnType<typeof parseReportOrThrow>;
 
-function isReport(x: unknown): x is Report {
-  return (
-    !!x &&
-    typeof x === "object" &&
-    Array.isArray((x as Report).repos) &&
-    typeof (x as Report).fetched_at === "string"
-  );
-}
 
 describe("getSecurityScanReport — multi-repo grouping & order", () => {
   test("groups by repo with input order preserved and case-insensitive dedup", async () => {
@@ -150,10 +140,11 @@ describe("getSecurityScanReport — multi-repo grouping & order", () => {
       return;
     }
 
+    // Strict schema parse via shared canonical schema — every 200 test
+    // path runs this before the per-suite invariants below.
     const result = extractResult(body);
-    expect(isReport(result)).toBe(true);
-    if (!isReport(result)) return;
-    const report = result;
+    const report: Report = parseReportOrThrow(result, "grouping.test");
+
 
     // (1) Exactly one entry per unique input repo (case-insensitive).
     expect(report.repos.length).toBe(expectedUnique.length);
