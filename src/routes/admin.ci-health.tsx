@@ -13,6 +13,7 @@ import {
   type RunJob,
   type WorkflowRun,
 } from "@/lib/github-ci.functions";
+import { validateRepoList } from "@/lib/repo-slug";
 import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
 import {
   listCiRepoPresets,
