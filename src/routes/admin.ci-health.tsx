@@ -448,8 +448,12 @@ function CiHealthPage() {
     }
   }, [rows, sort]);
 
-  const applyRepos = () =>
+  const applyRepos = () => {
+    const errors = validateRepoList(reposInput);
+    setClientErrors(errors);
+    if (errors.length > 0) return;
     navigate({ search: (prev: CiSearch) => ({ ...prev, repos: reposInput }) });
+  };
   const setFilter = (f: "all" | "failing") =>
     navigate({ search: (prev: CiSearch) => ({ ...prev, filter: f }) });
   const setSort = (s: SortOrder) =>
