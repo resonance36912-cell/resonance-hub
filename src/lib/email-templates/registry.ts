@@ -18,7 +18,9 @@ export interface TemplateEntry {
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
 import { template as subscriptionConfirmed } from './subscription-confirmed'
+import { template as ciFailureAlert } from './ci-failure-alert'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'subscription-confirmed': subscriptionConfirmed,
+  'ci-failure-alert': ciFailureAlert,
 }
