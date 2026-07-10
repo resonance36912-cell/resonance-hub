@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import {
   type RunJob,
   type WorkflowRun,
 } from "@/lib/github-ci.functions";
+import { validateRepoList } from "@/lib/repo-slug";
 import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
 import {
   listCiRepoPresets,
@@ -369,6 +370,7 @@ function CiHealthPage() {
   const refresh = normalizeRefresh(search.refresh);
   const navigate = Route.useNavigate();
   const [reposInput, setReposInput] = useState(reposParam);
+  const [clientErrors, setClientErrors] = useState<{ repo: string; error: string }[]>([]);
 
   // On first mount, if URL matches defaults, hydrate from localStorage.
   useEffect(() => {
@@ -397,6 +399,14 @@ function CiHealthPage() {
 
   const repos = useMemo(() => parseRepos(reposParam), [reposParam]);
   const fetchCi = useServerFn(getCiHealth);
+
+  const validateInput = useCallback(() => {
+    setClientErrors(validateRepoList(reposInput));
+  }, [reposInput]);
+
+  const handleBlur = () => {
+    validateInput();
+  };
 
   const q = useQuery({
     queryKey: ["ci-health", repos.join(",")],
@@ -438,8 +448,12 @@ function CiHealthPage() {
     }
   }, [rows, sort]);
 
-  const applyRepos = () =>
+  const applyRepos = () => {
+    const errors = validateRepoList(reposInput);
+    setClientErrors(errors);
+    if (errors.length > 0) return;
     navigate({ search: (prev: CiSearch) => ({ ...prev, repos: reposInput }) });
+  };
   const setFilter = (f: "all" | "failing") =>
     navigate({ search: (prev: CiSearch) => ({ ...prev, filter: f }) });
   const setSort = (s: SortOrder) =>
@@ -493,8 +507,19 @@ function CiHealthPage() {
             <Input
               placeholder="owner/repo, owner/repo2, …"
               value={reposInput}
-              onChange={(e) => setReposInput(e.target.value)}
+              onChange={(e) => {
+                setReposInput(e.target.value);
+                if (clientErrors.length > 0) setClientErrors([]);
+              }}
               onKeyDown={(e) => e.key === "Enter" && applyRepos()}
+              onBlur={handleBlur}
+              className={
+                clientErrors.length > 0
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : undefined
+              }
+              aria-invalid={clientErrors.length > 0}
+              aria-describedby={clientErrors.length > 0 ? "repo-client-errors" : undefined}
             />
             <Button onClick={applyRepos}>Load</Button>
             <Button
@@ -513,6 +538,25 @@ function CiHealthPage() {
               </Badge>
             )}
           </div>
+
+          {clientErrors.length > 0 && (
+            <div
+              id="repo-client-errors"
+              className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs"
+            >
+              <div className="mb-1 font-medium text-destructive">
+                Fix {clientErrors.length} invalid repo{clientErrors.length === 1 ? "" : "s"}
+              </div>
+              <ul className="space-y-1">
+                {clientErrors.map((e) => (
+                  <li key={e.repo} className="flex items-start gap-2">
+                    <span className="font-mono text-destructive">{e.repo}</span>
+                    <span className="text-muted-foreground">— {e.error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {invalidRepos.length > 0 && (
             <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
