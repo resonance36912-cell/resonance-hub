@@ -53,7 +53,6 @@ function friendlyGithubError(err: unknown, repo: string): string {
   return (err as Error).message || `Failed to load "${repo}"`;
 }
 
-
 async function ghFetchRaw(path: string): Promise<Response> {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const ghKey = process.env.GITHUB_API_KEY;
@@ -172,8 +171,7 @@ async function loadRepoCi(repo: string): Promise<RepoCiHealth> {
       .filter((r) => r.conclusion === "failure" || r.conclusion === "timed_out")
       .slice(0, 10);
 
-    const latest_default_branch_run =
-      runs.find((r) => r.head_branch === defaultBranch) ?? null;
+    const latest_default_branch_run = runs.find((r) => r.head_branch === defaultBranch) ?? null;
 
     return {
       repo,
@@ -271,7 +269,6 @@ export const getCiHealth = createServerFn({ method: "POST" })
     };
   });
 
-
 // ---------- Workflow run details ----------
 
 export type RunStep = {
@@ -320,11 +317,7 @@ export type RunDetails = {
 };
 
 function pickFailingStep(steps: RunStep[]): RunStep | null {
-  return (
-    steps.find(
-      (s) => s.conclusion === "failure" || s.conclusion === "timed_out",
-    ) ?? null
-  );
+  return steps.find((s) => s.conclusion === "failure" || s.conclusion === "timed_out") ?? null;
 }
 
 function tailLines(text: string, n: number): string {
@@ -407,9 +400,7 @@ export const getRunDetails = createServerFn({ method: "POST" })
     if (includeLogs && failing_jobs.length > 0) {
       // Fetch logs only for failing jobs, cap to 3 to keep response small.
       const targets = failing_jobs.slice(0, 3);
-      const logs = await Promise.all(
-        targets.map((j) => fetchJobLogsTail(repo, j.id)),
-      );
+      const logs = await Promise.all(targets.map((j) => fetchJobLogsTail(repo, j.id)));
       targets.forEach((j, i) => {
         j.logs_tail = logs[i].tail;
         j.logs_error = logs[i].error;
@@ -444,9 +435,7 @@ export const getRunDetails = createServerFn({ method: "POST" })
     const started = runResp.run_started_at ?? runResp.created_at;
     const ended = runResp.updated_at;
     const duration_ms =
-      started && ended
-        ? Math.max(0, Date.parse(ended) - Date.parse(started))
-        : null;
+      started && ended ? Math.max(0, Date.parse(ended) - Date.parse(started)) : null;
 
     return {
       run: { ...mapRun(runResp), duration_ms },
