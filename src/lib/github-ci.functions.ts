@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { validateRepoSlug } from "./repo-slug";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
@@ -35,36 +36,7 @@ async function ghFetch(path: string) {
   return res.json();
 }
 
-// GitHub owner/repo rules (simplified but strict):
-//  - Owner: 1–39 chars; alphanumerics and single hyphens; no leading/trailing hyphen.
-//  - Repo:  1–100 chars; alphanumerics, dot, hyphen, underscore; not "." or "..".
-const OWNER_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
-const REPO_RE = /^[a-zA-Z0-9._-]{1,100}$/;
-
-export function validateRepoSlug(slug: string):
-  | { ok: true; repo: string }
-  | { ok: false; error: string } {
-  const trimmed = slug.trim();
-  if (!trimmed) return { ok: false, error: "Empty repository name" };
-  const parts = trimmed.split("/");
-  if (parts.length !== 2) {
-    return { ok: false, error: `"${trimmed}" is not in owner/repo format` };
-  }
-  const [owner, repo] = parts;
-  if (!OWNER_RE.test(owner)) {
-    return {
-      ok: false,
-      error: `Invalid owner "${owner}" — use 1–39 letters, digits or single hyphens`,
-    };
-  }
-  if (!REPO_RE.test(repo) || repo === "." || repo === "..") {
-    return {
-      ok: false,
-      error: `Invalid repository "${repo}" — use letters, digits, dot, hyphen or underscore (max 100 chars)`,
-    };
-  }
-  return { ok: true, repo: `${owner}/${repo}` };
-}
+export { validateRepoSlug };
 
 function friendlyGithubError(err: unknown, repo: string): string {
   if (err instanceof GitHubApiError) {
