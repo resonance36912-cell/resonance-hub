@@ -102,7 +102,7 @@ function Consent() {
 
         {scopes.length > 0 && (
           <ul className="mt-5 space-y-2 text-sm text-white/80">
-            {scopes.map((s) => (
+            {scopes.map((s: string) => (
               <li key={s} className="flex items-start gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/50" />
                 <span>{scopeLabel(s)}</span>
