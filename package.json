@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "bun test scripts/lib/",
+    "test:ci": "bun test scripts/lib/ --reporter=junit --reporter-outfile=./reports/junit.xml --coverage --coverage-reporter=lcov --coverage-dir=./reports/coverage",
     "format": "prettier --write .",
     "check:prices": "bun run scripts/check-prices.ts",
     "test:payfast": "bun run scripts/test-payfast-itn.ts",
