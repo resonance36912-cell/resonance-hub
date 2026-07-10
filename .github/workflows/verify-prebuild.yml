@@ -336,6 +336,27 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      # Security-scan RPC integration tests — MOCK MODE. Runs the same
+      # five suites against the in-process fetch shim in
+      # scripts/lib/security-scan-mock.ts, which synthesizes the exact
+      # serverFn/Seroval wire contract getSecurityScanReport produces.
+      # No live server, no Supabase secret, no network — so this step
+      # runs on every PR and gates shape/auth-envelope drift even when
+      # SUPABASE_ADMIN_ACCESS_TOKEN is unset or the live step above
+      # skipped its shape branches. Complements (does not replace) the
+      # live-server step: this locks the contract shape; the live step
+      # locks that the deployed handler still matches it.
+      - name: Security scan RPC integration tests (mock mode)
+        env:
+          SECURITY_SCAN_MOCK: "1"
+        run: |
+          bun test \
+            scripts/lib/security-scan-auth.test.ts \
+            scripts/lib/security-scan-success.test.ts \
+            scripts/lib/security-scan-decode.test.ts \
+            scripts/lib/security-scan-grouping.test.ts \
+            scripts/lib/security-scan-zero-alerts.test.ts
+
 
       # Lighthouse: performance ≥ 0.80, accessibility ≥ 0.90 (see lighthouserc.json).
       # Only runs when we have a locally served build — skipping for remote preview
