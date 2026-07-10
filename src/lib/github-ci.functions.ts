@@ -50,7 +50,8 @@ export function friendlyGithubError(err: unknown, repo: string): string {
     if (err.status >= 500) return `GitHub is unavailable (HTTP ${err.status})`;
     return `GitHub error ${err.status} for "${repo}"`;
   }
-  return (err as Error).message || `Failed to load "${repo}"`;
+  const msg = err && typeof err === "object" ? (err as { message?: unknown }).message : undefined;
+  return typeof msg === "string" && msg.length > 0 ? msg : `Failed to load "${repo}"`;
 }
 
 
