@@ -5,7 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { getCiHealth, getRunDetails, type RepoCiHealth, type RunDetails, type RunJob, type WorkflowRun } from "@/lib/github-ci.functions";
+import {
+  getCiHealth,
+  getRunDetails,
+  type RepoCiHealth,
+  type RunDetails,
+  type RunJob,
+  type WorkflowRun,
+} from "@/lib/github-ci.functions";
 import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
 import {
   listCiRepoPresets,
@@ -17,7 +24,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
 type SortOrder = (typeof SORT_OPTIONS)[number];
@@ -66,15 +79,13 @@ function writeStoredPrefs(prefs: Prefs) {
   }
 }
 
-
 export const Route = createFileRoute("/admin/ci-health")({
   head: () => ({
     meta: [
       { title: "CI Health — Resonance Hub" },
       {
         name: "description",
-        content:
-          "Failing workflow runs and recent CI status for each Hub and spoke repository.",
+        content: "Failing workflow runs and recent CI status for each Hub and spoke repository.",
       },
       { name: "robots", content: "noindex, nofollow" },
     ],
@@ -133,15 +144,25 @@ function timeAgo(iso: string): string {
   return `${d}d ago`;
 }
 
-function Stat({ label, value, sub, tone }: { label: string; value: string | number; sub?: string; tone?: "ok" | "warn" | "bad" }) {
+function Stat({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  tone?: "ok" | "warn" | "bad";
+}) {
   const toneCls =
     tone === "bad"
       ? "text-red-700"
       : tone === "warn"
-      ? "text-amber-700"
-      : tone === "ok"
-      ? "text-green-700"
-      : "";
+        ? "text-amber-700"
+        : tone === "ok"
+          ? "text-green-700"
+          : "";
   return (
     <div className="rounded border p-3">
       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
@@ -274,7 +295,11 @@ function RepoCard({
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               <Stat label="Runs" value={repo.totals.last} sub="last 50" />
               <Stat label="Success" value={repo.totals.success} tone="ok" />
-              <Stat label="Failed" value={repo.totals.failure} tone={repo.totals.failure ? "bad" : undefined} />
+              <Stat
+                label="Failed"
+                value={repo.totals.failure}
+                tone={repo.totals.failure ? "bad" : undefined}
+              />
               <Stat label="Cancelled" value={repo.totals.cancelled} />
               <Stat label="Pass rate" value={ratePct} tone={rateTone} />
             </div>
@@ -305,7 +330,6 @@ function RepoCard({
 function CiHealthPage() {
   type CiSearch = ReturnType<typeof Route.useSearch>;
   const search = Route.useSearch();
-
 
   const reposParam = search.repos;
   const filter = normalizeFilter(search.filter);
@@ -349,7 +373,8 @@ function CiHealthPage() {
     refetchInterval: refresh > 0 ? refresh * 1000 : false,
   });
 
-  const rows: RepoCiHealth[] = q.data?.repos ?? [];
+  const rows: RepoCiHealth[] = useMemo(() => q.data?.repos ?? [], [q.data?.repos]);
+  const invalidRepos = useMemo(() => rows.filter((r) => r.error && !r.default_branch), [rows]);
 
   const totals = useMemo(
     () =>
@@ -447,7 +472,32 @@ function CiHealthPage() {
             >
               {q.isFetching ? "Refreshing…" : "Refresh"}
             </Button>
+            {invalidRepos.length > 0 && (
+              <Badge
+                variant="outline"
+                className="h-9 border-destructive/40 bg-destructive/10 px-2.5 text-destructive"
+              >
+                {invalidRepos.length} rejected
+              </Badge>
+            )}
           </div>
+
+          {invalidRepos.length > 0 && (
+            <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
+              <div className="mb-1 font-medium text-destructive">
+                Invalid or inaccessible repositories
+              </div>
+              <ul className="space-y-1">
+                {invalidRepos.map((r) => (
+                  <li key={r.repo} className="flex items-start gap-2">
+                    <span className="font-mono text-destructive">{r.repo}</span>
+                    <span className="text-muted-foreground">— {r.error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-muted-foreground">Show:</span>
             <Button
@@ -493,8 +543,8 @@ function CiHealthPage() {
               </select>
             </label>
             <span className="ml-auto text-muted-foreground">
-              {refresh > 0 ? `Auto-refreshes every ${refresh}s.` : "Auto-refresh off."}{" "}
-              Max 10 repos. Last 50 runs per repo.
+              {refresh > 0 ? `Auto-refreshes every ${refresh}s.` : "Auto-refresh off."} Max 10
+              repos. Last 50 runs per repo.
             </span>
           </div>
 
@@ -507,8 +557,6 @@ function CiHealthPage() {
       </Card>
 
       <AlertSettingsCard reposHint={reposInput} />
-
-
 
       {repos.length === 0 ? (
         <p className="text-muted-foreground">
@@ -526,7 +574,11 @@ function CiHealthPage() {
               value={totals.repos_failing}
               tone={totals.repos_failing ? "bad" : "ok"}
             />
-            <Stat label="Failed runs" value={totals.failure} tone={totals.failure ? "bad" : undefined} />
+            <Stat
+              label="Failed runs"
+              value={totals.failure}
+              tone={totals.failure ? "bad" : undefined}
+            />
             <Stat label="In progress" value={totals.running} />
             <Stat label="Success runs" value={totals.success} tone="ok" />
           </div>
@@ -538,16 +590,12 @@ function CiHealthPage() {
           </div>
 
           <p className="mt-6 text-xs text-muted-foreground">
-            Fetched at{" "}
-            {q.data?.fetchedAt ? new Date(q.data.fetchedAt).toLocaleTimeString() : "—"}
+            Fetched at {q.data?.fetchedAt ? new Date(q.data.fetchedAt).toLocaleTimeString() : "—"}
           </p>
         </>
       )}
 
-      <RunDetailsDialog
-        selection={selected}
-        onOpenChange={(open) => !open && setSelected(null)}
-      />
+      <RunDetailsDialog selection={selected} onOpenChange={(open) => !open && setSelected(null)} />
     </div>
   );
 }
@@ -680,9 +728,7 @@ function RunDetailsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {q.isLoading && (
-          <p className="text-sm text-muted-foreground">Loading run details…</p>
-        )}
+        {q.isLoading && <p className="text-sm text-muted-foreground">Loading run details…</p>}
         {q.error && (
           <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs text-destructive">
             {(q.error as Error).message}
@@ -698,10 +744,9 @@ function RunDetailsDialog({
                 tone={
                   details.run.conclusion === "success"
                     ? "ok"
-                    : details.run.conclusion === "failure" ||
-                      details.run.conclusion === "timed_out"
-                    ? "bad"
-                    : undefined
+                    : details.run.conclusion === "failure" || details.run.conclusion === "timed_out"
+                      ? "bad"
+                      : undefined
                 }
               />
               <Stat label="Duration" value={formatDuration(details.run.duration_ms)} />
@@ -839,8 +884,7 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
 
   const parsedRepos = parseRepos(reposText);
   const emailValid = email === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const slackValid =
-    slackUrl === "" || /^https:\/\/hooks\.slack\.com\//.test(slackUrl.trim());
+  const slackValid = slackUrl === "" || /^https:\/\/hooks\.slack\.com\//.test(slackUrl.trim());
 
   return (
     <Card className="mb-6">
@@ -849,8 +893,8 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-xs text-muted-foreground">
-          Delivers one alert per hour when workflow runs fail in the watched
-          repos. Choose email, Slack, or both — at least one channel is required.
+          Delivers one alert per hour when workflow runs fail in the watched repos. Choose email,
+          Slack, or both — at least one channel is required.
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -863,7 +907,9 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
               onChange={(e) => setEmail(e.target.value)}
             />
             {!emailValid && (
-              <div className="mt-1 text-xs text-destructive">Enter a valid email or leave empty.</div>
+              <div className="mt-1 text-xs text-destructive">
+                Enter a valid email or leave empty.
+              </div>
             )}
           </div>
           <div>
@@ -889,7 +935,8 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
 
         <div>
           <label className="mb-1 block text-xs font-medium">
-            Watched repos <span className="text-muted-foreground">(comma-separated owner/repo)</span>
+            Watched repos{" "}
+            <span className="text-muted-foreground">(comma-separated owner/repo)</span>
           </label>
           <div className="flex gap-2">
             <Input
@@ -967,15 +1014,14 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
         </div>
 
         <div className="text-[11px] text-muted-foreground">
-          Polling runs hourly via a Cloud cron job. Each failing run alerts
-          once; duplicates are suppressed for 7 days. With "Default branch
-          only" on, feature-branch and PR failures are ignored.
+          Polling runs hourly via a Cloud cron job. Each failing run alerts once; duplicates are
+          suppressed for 7 days. With "Default branch only" on, feature-branch and PR failures are
+          ignored.
         </div>
       </CardContent>
     </Card>
   );
 }
-
 
 function PresetsBar({
   currentInput,
@@ -1001,8 +1047,7 @@ function PresetsBar({
   const selected = presets.find((p) => p.id === selectedId) ?? null;
 
   const saveM = useMutation({
-    mutationFn: (input: { name: string; repos: string[] }) =>
-      saveFn({ data: input }),
+    mutationFn: (input: { name: string; repos: string[] }) => saveFn({ data: input }),
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: ["ci-repo-presets"] });
       setSelectedId(row.id);
@@ -1034,11 +1079,7 @@ function PresetsBar({
         }}
       >
         <option value="">
-          {listQ.isLoading
-            ? "Loading…"
-            : presets.length
-              ? "Select a preset…"
-              : "No saved presets"}
+          {listQ.isLoading ? "Loading…" : presets.length ? "Select a preset…" : "No saved presets"}
         </option>
         {presets.map((p) => (
           <option key={p.id} value={p.id}>
@@ -1075,12 +1116,8 @@ function PresetsBar({
         size="sm"
         variant="outline"
         className="h-7 text-xs"
-        onClick={() =>
-          saveM.mutate({ name: name.trim(), repos: currentRepos })
-        }
-        disabled={
-          saveM.isPending || !name.trim() || currentRepos.length === 0
-        }
+        onClick={() => saveM.mutate({ name: name.trim(), repos: currentRepos })}
+        disabled={saveM.isPending || !name.trim() || currentRepos.length === 0}
         title={
           currentRepos.length === 0
             ? "Enter repos above first"
@@ -1095,9 +1132,7 @@ function PresetsBar({
           size="sm"
           variant="outline"
           className="h-7 text-xs"
-          onClick={() =>
-            saveM.mutate({ name: selected.name, repos: currentRepos })
-          }
+          onClick={() => saveM.mutate({ name: selected.name, repos: currentRepos })}
           disabled={saveM.isPending || currentRepos.length === 0}
           title={`Overwrite "${selected.name}" with current repos`}
         >
@@ -1113,4 +1148,3 @@ function PresetsBar({
     </div>
   );
 }
-
