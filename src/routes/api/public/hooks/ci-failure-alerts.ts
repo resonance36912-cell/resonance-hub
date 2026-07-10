@@ -104,8 +104,27 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
 
         for (const repo of repos.slice(0, 15)) {
           try {
+            let defaultBranch: string | null = null
+            if (defaultBranchOnly) {
+              try {
+                const repoInfo: any = await ghFetch(`/repos/${repo}`, lovableKey, ghKey)
+                defaultBranch = repoInfo?.default_branch ?? null
+              } catch (err) {
+                console.error(
+                  `[ci-failure-alerts] ${repo} default_branch lookup failed`,
+                  (err as Error).message,
+                )
+                continue
+              }
+              if (!defaultBranch) continue
+            }
+
+            const branchQuery =
+              defaultBranchOnly && defaultBranch
+                ? `&branch=${encodeURIComponent(defaultBranch)}`
+                : ''
             const data: any = await ghFetch(
-              `/repos/${repo}/actions/runs?per_page=50`,
+              `/repos/${repo}/actions/runs?per_page=50${branchQuery}`,
               lovableKey,
               ghKey,
             )
@@ -114,7 +133,10 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
               (r) =>
                 r.status === 'completed' &&
                 (r.conclusion === 'failure' || r.conclusion === 'timed_out') &&
-                Date.parse(r.updated_at) >= since,
+                Date.parse(r.updated_at) >= since &&
+                (!defaultBranchOnly ||
+                  !defaultBranch ||
+                  r.head_branch === defaultBranch),
             )
             if (candidates.length === 0) continue
 
@@ -149,6 +171,7 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
             console.error(`[ci-failure-alerts] ${repo} fetch failed`, (err as Error).message)
           }
         }
+
 
         if (newFailures.length === 0) {
           return Response.json({ ok: true, checked: repos.length, new_failures: 0 })
