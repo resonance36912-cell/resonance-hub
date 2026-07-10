@@ -303,7 +303,8 @@ function RepoCard({
 }
 
 function CiHealthPage() {
-  const search = Route.useSearch();
+  type CiSearch = ReturnType<typeof Route.useSearch>;
+
   const reposParam = search.repos;
   const filter = normalizeFilter(search.filter);
   const sort = normalizeSort(search.sort);
