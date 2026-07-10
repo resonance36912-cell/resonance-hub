@@ -279,32 +279,14 @@ export const getCiHealth = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
-
-    // Deduplicate while preserving order, then validate each slug shape.
-    const seen = new Set<string>();
-    const ordered: string[] = [];
-    for (const r of data.repos) {
-      const key = r.trim();
-      if (!key || seen.has(key.toLowerCase())) continue;
-      seen.add(key.toLowerCase());
-      ordered.push(key);
-    }
-
-    const results = await Promise.all(
-      ordered.map(async (raw): Promise<RepoCiHealth> => {
-        const check = validateRepoSlug(raw);
-        if (!check.ok) return invalidRepoResult(raw, check.error);
-        return loadRepoCi(check.repo);
-      }),
-    );
-
-    const invalid = results.filter((r) => r.error && !r.default_branch);
+    const { repos, invalidCount } = await runRepoBatch(data.repos, loadRepoCi);
     return {
-      repos: results,
+      repos,
       fetchedAt: new Date().toISOString(),
-      invalidCount: invalid.length,
+      invalidCount,
     };
   });
+
 
 // ---------- Workflow run details ----------
 
