@@ -53,25 +53,32 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
 
         const token = authHeader.slice('Bearer '.length).trim()
         const supabase = createClient(supabaseUrl, supabaseServiceKey)
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
-        if (authError || !user) {
-          return Response.json({ error: 'Unauthorized' }, { status: 401 })
-        }
+        // Internal server-to-server callers (cron routes, admin jobs) present
+        // the service role key. Bypass user-JWT + admin-role checks in that
+        // case — the key is a server-only secret and never leaves the Worker.
+        const isInternalServiceCaller = token === supabaseServiceKey
+        if (!isInternalServiceCaller) {
+          const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
-        // Restrict this endpoint to admin users. The endpoint accepts an
-        // arbitrary recipientEmail and templateData, so allowing any
-        // authenticated user would enable branded phishing/fraud via the
-        // Resonance email infrastructure.
-        const { data: roleRow, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle()
+          if (authError || !user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 })
+          }
 
-        if (roleError || !roleRow) {
-          return Response.json({ error: 'Forbidden' }, { status: 403 })
+          // Restrict this endpoint to admin users. The endpoint accepts an
+          // arbitrary recipientEmail and templateData, so allowing any
+          // authenticated user would enable branded phishing/fraud via the
+          // Resonance email infrastructure.
+          const { data: roleRow, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle()
+
+          if (roleError || !roleRow) {
+            return Response.json({ error: 'Forbidden' }, { status: 403 })
+          }
         }
 
         // Parse request body
