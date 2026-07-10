@@ -4,6 +4,16 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
+export class GitHubApiError extends Error {
+  status: number;
+  body: string;
+  constructor(status: number, body: string) {
+    super(`GitHub gateway ${status}: ${body.slice(0, 200)}`);
+    this.status = status;
+    this.body = body;
+  }
+}
+
 async function ghFetch(path: string) {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const ghKey = process.env.GITHUB_API_KEY;
@@ -20,10 +30,57 @@ async function ghFetch(path: string) {
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`GitHub gateway ${res.status}: ${body.slice(0, 200)}`);
+    throw new GitHubApiError(res.status, body);
   }
   return res.json();
 }
+
+// GitHub owner/repo rules (simplified but strict):
+//  - Owner: 1–39 chars; alphanumerics and single hyphens; no leading/trailing hyphen.
+//  - Repo:  1–100 chars; alphanumerics, dot, hyphen, underscore; not "." or "..".
+const OWNER_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
+const REPO_RE = /^[a-zA-Z0-9._-]{1,100}$/;
+
+export function validateRepoSlug(slug: string):
+  | { ok: true; repo: string }
+  | { ok: false; error: string } {
+  const trimmed = slug.trim();
+  if (!trimmed) return { ok: false, error: "Empty repository name" };
+  const parts = trimmed.split("/");
+  if (parts.length !== 2) {
+    return { ok: false, error: `"${trimmed}" is not in owner/repo format` };
+  }
+  const [owner, repo] = parts;
+  if (!OWNER_RE.test(owner)) {
+    return {
+      ok: false,
+      error: `Invalid owner "${owner}" — use 1–39 letters, digits or single hyphens`,
+    };
+  }
+  if (!REPO_RE.test(repo) || repo === "." || repo === "..") {
+    return {
+      ok: false,
+      error: `Invalid repository "${repo}" — use letters, digits, dot, hyphen or underscore (max 100 chars)`,
+    };
+  }
+  return { ok: true, repo: `${owner}/${repo}` };
+}
+
+function friendlyGithubError(err: unknown, repo: string): string {
+  if (err instanceof GitHubApiError) {
+    if (err.status === 404) {
+      return `Repository "${repo}" not found or not accessible with the connected GitHub account`;
+    }
+    if (err.status === 401 || err.status === 403) {
+      return `Access denied to "${repo}" (HTTP ${err.status}). Reconnect the GitHub connector with the "repo" scope.`;
+    }
+    if (err.status === 429) return `GitHub rate limit hit for "${repo}" — try again shortly`;
+    if (err.status >= 500) return `GitHub is unavailable (HTTP ${err.status})`;
+    return `GitHub error ${err.status} for "${repo}"`;
+  }
+  return (err as Error).message || `Failed to load "${repo}"`;
+}
+
 
 async function ghFetchRaw(path: string): Promise<Response> {
   const lovableKey = process.env.LOVABLE_API_KEY;
