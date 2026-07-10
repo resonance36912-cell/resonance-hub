@@ -19,6 +19,7 @@
 import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
 import { z } from "zod";
+import { fetchRpcWithRetry } from "./security-scan-retry";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
@@ -104,7 +105,7 @@ async function callGetSecurityScanReport(
   headers: Record<string, string> = {},
 ): Promise<Response> {
   const serialized = await toJSONAsync(payload);
-  return fetch(`${DEV_URL}/_serverFn/${ID}`, {
+  return fetchRpcWithRetry(`${DEV_URL}/_serverFn/${ID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

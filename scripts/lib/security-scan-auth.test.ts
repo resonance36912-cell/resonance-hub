@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
+import { fetchRpcWithRetry } from "./security-scan-retry";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 
@@ -37,7 +38,7 @@ async function callServerFn(
   extraHeaders: Record<string, string> = {},
 ) {
   const serialized = await toJSONAsync(payload);
-  const res = await fetch(`${DEV_URL}/_serverFn/${ID}`, {
+  const res = await fetchRpcWithRetry(`${DEV_URL}/_serverFn/${ID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -19,6 +19,7 @@
 import { describe, expect, test } from "bun:test";
 import { randomUUID } from "crypto";
 import { toJSONAsync } from "seroval";
+import { fetchRpcWithRetry } from "./security-scan-retry";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
 const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
@@ -42,7 +43,7 @@ async function serverReachable(): Promise<boolean> {
 
 async function call(repos: string[]): Promise<Response> {
   const body = JSON.stringify(await toJSONAsync({ data: { repos } }));
-  return fetch(`${DEV_URL}/_serverFn/${ID}`, {
+  return fetchRpcWithRetry(`${DEV_URL}/_serverFn/${ID}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
