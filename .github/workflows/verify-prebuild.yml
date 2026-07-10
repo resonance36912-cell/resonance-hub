@@ -447,17 +447,46 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+      # Mock-mode preload order matters:
+      #   1. security-scan-mock.ts installs the synthetic fetch shim at
+      #      module top-level (SECURITY_SCAN_MOCK=1).
+      #   2. security-scan-fetch-recorder.ts then wraps whatever
+      #      globalThis.fetch currently points to — i.e. the mock's
+      #      `patched` — so /_serverFn/* responses synthesized by the
+      #      shim are still captured to SECURITY_SCAN_ARTIFACT_DIR.
+      # Reversing the order would let the mock overwrite the recorder's
+      # wrapper (tests re-import the mock, but the module-level install
+      # only runs on first import — which is the preload), silently
+      # producing an empty payload directory on failure.
       - name: Security scan RPC integration tests (mock)
         if: matrix.mode == 'mock'
+        id: security_scan_tests_mock
         env:
           SECURITY_SCAN_MOCK: "1"
+          SECURITY_SCAN_ARTIFACT_DIR: reports/security-scan/payloads
         run: |
+          set -euo pipefail
+          mkdir -p reports/security-scan
           bun test \
+            --preload ./scripts/lib/security-scan-mock.ts \
+            --preload ./scripts/lib/security-scan-fetch-recorder.ts \
             scripts/lib/security-scan-auth.test.ts \
             scripts/lib/security-scan-success.test.ts \
             scripts/lib/security-scan-decode.test.ts \
             scripts/lib/security-scan-grouping.test.ts \
-            scripts/lib/security-scan-zero-alerts.test.ts
+            scripts/lib/security-scan-zero-alerts.test.ts \
+            2>&1 | tee reports/security-scan/tests.log
+
+      - name: Upload security-scan test logs and payloads (mock, on failure)
+        if: matrix.mode == 'mock' && failure() && steps.security_scan_tests_mock.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-mock-failure-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            reports/security-scan/tests.log
+            reports/security-scan/payloads/**
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Stop preview server (live)
         if: always() && matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
