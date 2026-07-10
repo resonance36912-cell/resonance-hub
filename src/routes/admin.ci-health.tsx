@@ -257,9 +257,10 @@ function CiHealthPage() {
     [rows],
   );
 
-  const applyRepos = () => navigate({ search: (p) => ({ ...p, repos: reposInput }) });
+  const applyRepos = () =>
+    navigate({ search: { repos: reposInput, filter } });
   const setFilter = (f: "all" | "failing") =>
-    navigate({ search: (p) => ({ ...p, filter: f }) });
+    navigate({ search: { repos: reposParam, filter: f } });
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
