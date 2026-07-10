@@ -15,6 +15,22 @@
 //                          → return "Forbidden" for the shape suites so
 //                            the non-admin branches exercise.
 //
+// Contract assumption vs. the auth suite's nonadmin mode:
+//   In live mode the auth suite (security-scan-auth.test.ts) re-uses the
+//   single LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN env var; whether the
+//   caller is treated as admin or non-admin depends on the real Supabase
+//   user's role. The 403 case therefore self-skips when no token is set,
+//   and when a token is present it may still pass through to GitHub if
+//   the user happens to be an admin.
+//
+//   Mock mode decouples role from the env var: the *token value* encodes
+//   the role. `MOCK_ADMIN_TOKEN` always passes the gate and returns a
+//   synthetic report; `MOCK_NONADMIN_TOKEN` always returns "Forbidden".
+//   This lets CI run both the shape suites (admin path) and the auth
+//   suite's 403 branch deterministically, without needing a real non-admin
+//   Supabase session. `SECURITY_SCAN_MOCK_ROLE=nonadmin` seeds the
+//   non-admin token so the live auth suite exercises the Forbidden path.
+//
 // What the shim covers:
 //   - `GET  ${DEV_URL}/`         → 200 "ok" (serverReachable probe).
 //   - `POST ${DEV_URL}/_serverFn/<id>` where <id> base64-decodes to the
