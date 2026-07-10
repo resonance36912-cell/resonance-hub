@@ -87,22 +87,10 @@ function extractErrorMessage(body: string): string | null {
   return m ? (JSON.parse(`"${m[1]}"`) as string) : null;
 }
 
-type RepoScan = {
-  repo: string;
-  html_url: string;
-  alerts: unknown[];
-  error?: string;
-};
-type Report = { repos: RepoScan[]; fetched_at: string };
+// Full-shape validation lives in the shared schema; local type used for
+// per-suite invariants only.
+type Report = ReturnType<typeof parseReportOrThrow>;
 
-function isReport(x: unknown): x is Report {
-  return (
-    !!x &&
-    typeof x === "object" &&
-    Array.isArray((x as Report).repos) &&
-    typeof (x as Report).fetched_at === "string"
-  );
-}
 
 describe("getSecurityScanReport — multi-repo grouping & order", () => {
   test("groups by repo with input order preserved and case-insensitive dedup", async () => {
