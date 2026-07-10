@@ -2,6 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { validateRepoSlug } from "./repo-slug";
+import {
+  GetCiHealthInputSchema,
+  GetRunDetailsInputSchema,
+} from "./github-ci.contract";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
