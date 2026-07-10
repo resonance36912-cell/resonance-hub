@@ -16,24 +16,30 @@ export type Database = {
     Tables: {
       ci_alert_config: {
         Row: {
+          default_branch_only: boolean
           enabled: boolean
           id: number
           recipient_email: string | null
           repos: string[]
+          slack_webhook_url: string | null
           updated_at: string
         }
         Insert: {
+          default_branch_only?: boolean
           enabled?: boolean
           id?: number
           recipient_email?: string | null
           repos?: string[]
+          slack_webhook_url?: string | null
           updated_at?: string
         }
         Update: {
+          default_branch_only?: boolean
           enabled?: boolean
           id?: number
           recipient_email?: string | null
           repos?: string[]
+          slack_webhook_url?: string | null
           updated_at?: string
         }
         Relationships: []

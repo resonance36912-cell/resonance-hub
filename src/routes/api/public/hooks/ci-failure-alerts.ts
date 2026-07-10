@@ -66,7 +66,9 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
 
         const { data: cfg, error: cfgErr } = await admin
           .from('ci_alert_config')
-          .select('recipient_email, repos, enabled')
+          .select(
+            'recipient_email, repos, enabled, default_branch_only, slack_webhook_url',
+          )
           .eq('id', 1)
           .maybeSingle()
         if (cfgErr) {
@@ -79,10 +81,13 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
           return Response.json({ ok: true, skipped: 'disabled_or_missing' })
         }
         const recipient = cfg.recipient_email?.trim()
+        const slackWebhook = cfg.slack_webhook_url?.trim() || null
+        const defaultBranchOnly = cfg.default_branch_only !== false
         const repos: string[] = Array.isArray(cfg.repos) ? cfg.repos : []
-        if (!recipient || repos.length === 0) {
-          return Response.json({ ok: true, skipped: 'no_recipient_or_repos' })
+        if ((!recipient && !slackWebhook) || repos.length === 0) {
+          return Response.json({ ok: true, skipped: 'no_channel_or_repos' })
         }
+
 
         const since = Date.now() - LOOKBACK_HOURS * 3600_000
         const newFailures: Array<{
@@ -99,8 +104,27 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
 
         for (const repo of repos.slice(0, 15)) {
           try {
+            let defaultBranch: string | null = null
+            if (defaultBranchOnly) {
+              try {
+                const repoInfo: any = await ghFetch(`/repos/${repo}`, lovableKey, ghKey)
+                defaultBranch = repoInfo?.default_branch ?? null
+              } catch (err) {
+                console.error(
+                  `[ci-failure-alerts] ${repo} default_branch lookup failed`,
+                  (err as Error).message,
+                )
+                continue
+              }
+              if (!defaultBranch) continue
+            }
+
+            const branchQuery =
+              defaultBranchOnly && defaultBranch
+                ? `&branch=${encodeURIComponent(defaultBranch)}`
+                : ''
             const data: any = await ghFetch(
-              `/repos/${repo}/actions/runs?per_page=50`,
+              `/repos/${repo}/actions/runs?per_page=50${branchQuery}`,
               lovableKey,
               ghKey,
             )
@@ -109,7 +133,10 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
               (r) =>
                 r.status === 'completed' &&
                 (r.conclusion === 'failure' || r.conclusion === 'timed_out') &&
-                Date.parse(r.updated_at) >= since,
+                Date.parse(r.updated_at) >= since &&
+                (!defaultBranchOnly ||
+                  !defaultBranch ||
+                  r.head_branch === defaultBranch),
             )
             if (candidates.length === 0) continue
 
@@ -145,6 +172,7 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
           }
         }
 
+
         if (newFailures.length === 0) {
           return Response.json({ ok: true, checked: repos.length, new_failures: 0 })
         }
@@ -159,38 +187,109 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
           .join(',')
           .slice(0, 200)}`
 
-        const sendRes = await fetch(`${origin}/lovable/email/transactional/send`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${serviceRoleKey}`,
-          },
-          body: JSON.stringify({
-            templateName: 'ci-failure-alert',
-            recipientEmail: recipient,
-            idempotencyKey,
-            templateData: {
-              failures: batch.map((f) => ({
-                repo: f.repo,
-                workflow_name: f.workflow_name,
-                head_branch: f.head_branch,
-                conclusion: f.conclusion,
-                actor: f.actor,
-                commit_message: f.commit_message,
-                html_url: f.html_url,
-                updated_at: f.updated_at,
-              })),
-              dashboardUrl,
-              summary: `${newFailures.length} new CI failure${newFailures.length === 1 ? '' : 's'}`,
-            },
-          }),
-        })
+        const summary = `${newFailures.length} new CI failure${newFailures.length === 1 ? '' : 's'}${defaultBranchOnly ? ' on default branch' : ''}`
 
-        if (!sendRes.ok) {
-          const body = await sendRes.text()
-          console.error(`[ci-failure-alerts] send failed ${sendRes.status}: ${body.slice(0, 200)}`)
+        let emailed = 0
+        let emailError: string | null = null
+        if (recipient) {
+          const sendRes = await fetch(`${origin}/lovable/email/transactional/send`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${serviceRoleKey}`,
+            },
+            body: JSON.stringify({
+              templateName: 'ci-failure-alert',
+              recipientEmail: recipient,
+              idempotencyKey,
+              templateData: {
+                failures: batch.map((f) => ({
+                  repo: f.repo,
+                  workflow_name: f.workflow_name,
+                  head_branch: f.head_branch,
+                  conclusion: f.conclusion,
+                  actor: f.actor,
+                  commit_message: f.commit_message,
+                  html_url: f.html_url,
+                  updated_at: f.updated_at,
+                })),
+                dashboardUrl,
+                summary,
+              },
+            }),
+          })
+          if (sendRes.ok) {
+            emailed = batch.length
+          } else {
+            emailError = `${sendRes.status}: ${(await sendRes.text()).slice(0, 200)}`
+            console.error(`[ci-failure-alerts] email send failed ${emailError}`)
+          }
+        }
+
+        let slackPosted = 0
+        let slackError: string | null = null
+        if (slackWebhook) {
+          const text = `:rotating_light: *${summary}*`
+          const blocks: any[] = [
+            { type: 'section', text: { type: 'mrkdwn', text } },
+          ]
+          for (const f of batch) {
+            const meta = [
+              `\`${f.head_branch}\``,
+              f.actor ? `by ${f.actor}` : null,
+              new Date(f.updated_at).toISOString().slice(0, 16).replace('T', ' '),
+            ]
+              .filter(Boolean)
+              .join(' · ')
+            blocks.push({
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `*<${f.html_url}|${f.repo} — ${f.workflow_name}>* (${f.conclusion})\n${meta}${f.commit_message ? `\n> ${f.commit_message.replace(/[<>]/g, '')}` : ''}`,
+              },
+            })
+          }
+          if (newFailures.length > batch.length) {
+            blocks.push({
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: `…and ${newFailures.length - batch.length} more. <${dashboardUrl}|Open CI Health dashboard>`,
+                },
+              ],
+            })
+          } else {
+            blocks.push({
+              type: 'context',
+              elements: [
+                { type: 'mrkdwn', text: `<${dashboardUrl}|Open CI Health dashboard>` },
+              ],
+            })
+          }
+          const slackRes = await fetch(slackWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, blocks }),
+          })
+          if (slackRes.ok) {
+            slackPosted = batch.length
+          } else {
+            slackError = `${slackRes.status}: ${(await slackRes.text()).slice(0, 200)}`
+            console.error(`[ci-failure-alerts] slack post failed ${slackError}`)
+          }
+        }
+
+        // If BOTH channels failed, don't mark as sent so we retry next hour.
+        const anyDelivered = emailed > 0 || slackPosted > 0
+        const noChannelConfigured = !recipient && !slackWebhook
+        if (!anyDelivered && !noChannelConfigured) {
           return new Response(
-            JSON.stringify({ error: 'email_send_failed', status: sendRes.status }),
+            JSON.stringify({
+              error: 'all_channels_failed',
+              email_error: emailError,
+              slack_error: slackError,
+            }),
             { status: 502, headers: { 'Content-Type': 'application/json' } },
           )
         }
@@ -215,10 +314,14 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
           ok: true,
           checked: repos.length,
           new_failures: newFailures.length,
-          emailed: batch.length,
+          emailed,
+          slack_posted: slackPosted,
+          email_error: emailError,
+          slack_error: slackError,
           truncated: newFailures.length > batch.length,
         })
       },
     },
+
   },
 })
