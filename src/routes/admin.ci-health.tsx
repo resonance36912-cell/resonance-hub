@@ -329,7 +329,7 @@ function CiHealthPage() {
       patch.refresh = stored.refresh;
     }
     if (Object.keys(patch).length > 0) {
-      navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true });
+      navigate({ search: (prev: CiSearch) => ({ ...prev, ...patch }), replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -382,13 +382,13 @@ function CiHealthPage() {
   }, [rows, sort]);
 
   const applyRepos = () =>
-    navigate({ search: (prev) => ({ ...prev, repos: reposInput }) });
+    navigate({ search: (prev: CiSearch) => ({ ...prev, repos: reposInput }) });
   const setFilter = (f: "all" | "failing") =>
-    navigate({ search: (prev) => ({ ...prev, filter: f }) });
+    navigate({ search: (prev: CiSearch) => ({ ...prev, filter: f }) });
   const setSort = (s: SortOrder) =>
-    navigate({ search: (prev) => ({ ...prev, sort: s }) });
+    navigate({ search: (prev: CiSearch) => ({ ...prev, sort: s }) });
   const setRefresh = (r: number) =>
-    navigate({ search: (prev) => ({ ...prev, refresh: r }) });
+    navigate({ search: (prev: CiSearch) => ({ ...prev, refresh: r }) });
 
   const [selected, setSelected] = useState<{ repo: string; run: WorkflowRun } | null>(null);
   const onSelectRun = (repo: string, run: WorkflowRun) => setSelected({ repo, run });
@@ -428,7 +428,7 @@ function CiHealthPage() {
             onLoadPreset={(repos) => {
               const joined = repos.join(", ");
               setReposInput(joined);
-              navigate({ search: (prev) => ({ ...prev, repos: joined }) });
+              navigate({ search: (prev: CiSearch) => ({ ...prev, repos: joined }) });
             }}
           />
 
