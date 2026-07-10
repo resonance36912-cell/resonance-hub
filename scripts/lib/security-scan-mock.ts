@@ -136,18 +136,54 @@ function buildReport(inputRepos: string[]): Report {
   return { repos, fetched_at: nowIso };
 }
 
-async function encodeEnvelope(payload: {
+/**
+ * Hand-rolled Seroval-compatible encoder matching what the suites'
+ * `extractResult` walkers actually decode:
+ *   - object      → `{ p: { k: string[], v: EncodedNode[] } }`
+ *   - array       → `{ a: EncodedNode[] }`
+ *   - string      → `{ t: 1, s: string }`  (so extractErrorMessage's regex
+ *                    `"message":{"t":1,"s":"..."}` matches error messages)
+ *   - null        → `{ t: 4 }`
+ *   - undefined   → `{ t: 5 }`
+ *   - number/bool → passed through as JSON primitives (walker's
+ *                    `typeof node !== "object"` shortcut returns them raw)
+ *
+ * `toJSONAsync` would produce a fuller `{ t, f, m }` document with a
+ * different node layout that the tests' walkers don't decode — so we
+ * encode responses ourselves and only use seroval for decoding inbound
+ * request bodies (which use the full `fromJSON`-compatible format).
+ */
+function encodeNode(v: unknown): unknown {
+  if (v === undefined) return { t: 5 };
+  if (v === null) return { t: 4 };
+  if (Array.isArray(v)) return { a: v.map(encodeNode) };
+  if (typeof v === "object") {
+    const keys = Object.keys(v as Record<string, unknown>);
+    return {
+      p: {
+        k: keys,
+        v: keys.map((k) => encodeNode((v as Record<string, unknown>)[k])),
+      },
+    };
+  }
+  if (typeof v === "string") return { t: 1, s: v };
+  return v;
+}
+
+function encodeEnvelope(payload: {
   result?: unknown;
   error?: unknown;
   context?: unknown;
-}): Promise<string> {
-  const serialized = await toJSONAsync({
-    result: payload.result,
-    error: payload.error,
-    context: payload.context ?? {},
-  });
-  return JSON.stringify(serialized);
+}): string {
+  return JSON.stringify(
+    encodeNode({
+      result: payload.result,
+      error: payload.error,
+      context: payload.context ?? {},
+    }),
+  );
 }
+
 
 async function envelopeOk(result: unknown): Promise<Response> {
   const body = await encodeEnvelope({
