@@ -231,28 +231,74 @@ async function loadRepoCi(repo: string): Promise<RepoCiHealth> {
       latest_default_branch_run: null,
       failing_runs: [],
       recent_runs: [],
-      error: (err as Error).message,
+      error: friendlyGithubError(err, repo),
     };
   }
 }
 
+function invalidRepoResult(input: string, error: string): RepoCiHealth {
+  return {
+    repo: input,
+    html_url: "",
+    default_branch: "",
+    totals: {
+      last: 0,
+      success: 0,
+      failure: 0,
+      cancelled: 0,
+      in_progress: 0,
+      other: 0,
+      success_rate: null,
+    },
+    latest_run: null,
+    latest_default_branch_run: null,
+    failing_runs: [],
+    recent_runs: [],
+    error,
+  };
+}
+
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: string[] }) =>
+  .inputValidator((data: { repos: unknown }) =>
     z
       .object({
         repos: z
-          .array(z.string().regex(/^[\w.-]+\/[\w.-]+$/, "expected owner/repo"))
-          .min(1)
-          .max(10),
+          .array(z.string().min(1).max(140))
+          .min(1, "Provide at least one repository")
+          .max(10, "Maximum 10 repositories per request"),
       })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
-    const results = await Promise.all(data.repos.map((r) => loadRepoCi(r)));
-    return { repos: results, fetchedAt: new Date().toISOString() };
+
+    // Deduplicate while preserving order, then validate each slug shape.
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const r of data.repos) {
+      const key = r.trim();
+      if (!key || seen.has(key.toLowerCase())) continue;
+      seen.add(key.toLowerCase());
+      ordered.push(key);
+    }
+
+    const results = await Promise.all(
+      ordered.map(async (raw): Promise<RepoCiHealth> => {
+        const check = validateRepoSlug(raw);
+        if (!check.ok) return invalidRepoResult(raw, check.error);
+        return loadRepoCi(check.repo);
+      }),
+    );
+
+    const invalid = results.filter((r) => r.error && !r.default_branch);
+    return {
+      repos: results,
+      fetchedAt: new Date().toISOString(),
+      invalidCount: invalid.length,
+    };
   });
+
 
 // ---------- Workflow run details ----------
 
