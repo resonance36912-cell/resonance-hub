@@ -531,6 +531,25 @@ function CiHealthPage() {
             )}
           </div>
 
+          {clientErrors.length > 0 && (
+            <div
+              id="repo-client-errors"
+              className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs"
+            >
+              <div className="mb-1 font-medium text-destructive">
+                Fix {clientErrors.length} invalid repo{clientErrors.length === 1 ? "" : "s"}
+              </div>
+              <ul className="space-y-1">
+                {clientErrors.map((e) => (
+                  <li key={e.repo} className="flex items-start gap-2">
+                    <span className="font-mono text-destructive">{e.repo}</span>
+                    <span className="text-muted-foreground">— {e.error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {invalidRepos.length > 0 && (
             <div className="rounded border border-destructive/40 bg-destructive/5 p-2 text-xs">
               <div className="mb-1 font-medium text-destructive">
