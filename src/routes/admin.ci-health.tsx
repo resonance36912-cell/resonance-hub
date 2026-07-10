@@ -102,7 +102,15 @@ function Stat({ label, value, sub, tone }: { label: string; value: string | numb
   );
 }
 
-function RunRow({ run }: { run: WorkflowRun }) {
+function RunRow({
+  run,
+  repo,
+  onSelect,
+}: {
+  run: WorkflowRun;
+  repo: string;
+  onSelect: (repo: string, run: WorkflowRun) => void;
+}) {
   const b = runConclusionBadge(run);
   return (
     <div className="flex flex-col gap-1 rounded border p-2 sm:flex-row sm:items-center sm:justify-between">
@@ -111,14 +119,14 @@ function RunRow({ run }: { run: WorkflowRun }) {
           <Badge variant="outline" className={b.className}>
             {b.label}
           </Badge>
-          <a
-            href={run.html_url}
-            target="_blank"
-            rel="noreferrer"
-            className="truncate font-medium underline-offset-2 hover:underline"
+          <button
+            type="button"
+            onClick={() => onSelect(repo, run)}
+            className="truncate text-left font-medium underline-offset-2 hover:underline"
+            title="View run details"
           >
             {run.workflow_name ?? "workflow"} #{run.run_number}
-          </a>
+          </button>
           {run.attempt > 1 && (
             <span className="text-xs text-muted-foreground">attempt {run.attempt}</span>
           )}
@@ -130,8 +138,23 @@ function RunRow({ run }: { run: WorkflowRun }) {
           {run.head_commit_message ? ` · ${run.head_commit_message}` : ""}
         </div>
       </div>
-      <div className="whitespace-nowrap text-xs text-muted-foreground">
-        {timeAgo(run.updated_at)}
+      <div className="flex items-center gap-2 whitespace-nowrap text-xs text-muted-foreground">
+        <button
+          type="button"
+          onClick={() => onSelect(repo, run)}
+          className="rounded border px-2 py-1 hover:bg-muted"
+        >
+          Details
+        </button>
+        <a
+          href={run.html_url}
+          target="_blank"
+          rel="noreferrer"
+          className="underline-offset-2 hover:underline"
+        >
+          GitHub ↗
+        </a>
+        <span>{timeAgo(run.updated_at)}</span>
       </div>
     </div>
   );
