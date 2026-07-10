@@ -334,6 +334,14 @@ function CiHealthPage() {
           <CardTitle className="text-base">Repositories</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <PresetsBar
+            currentInput={reposInput}
+            onLoadPreset={(repos) => {
+              const joined = repos.join(", ");
+              setReposInput(joined);
+              navigate({ search: { repos: joined, filter } });
+            }}
+          />
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               placeholder="owner/repo, owner/repo2, …"
