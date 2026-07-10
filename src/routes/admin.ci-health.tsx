@@ -7,6 +7,12 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { getCiHealth, getRunDetails, type RepoCiHealth, type RunDetails, type RunJob, type WorkflowRun } from "@/lib/github-ci.functions";
 import { getCiAlertConfig, updateCiAlertConfig } from "@/lib/ci-alert-config.functions";
+import {
+  listCiRepoPresets,
+  saveCiRepoPreset,
+  deleteCiRepoPreset,
+  type CiRepoPreset,
+} from "@/lib/ci-repo-presets.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -328,6 +334,14 @@ function CiHealthPage() {
           <CardTitle className="text-base">Repositories</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <PresetsBar
+            currentInput={reposInput}
+            onLoadPreset={(repos) => {
+              const joined = repos.join(", ");
+              setReposInput(joined);
+              navigate({ search: { repos: joined, filter } });
+            }}
+          />
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
               placeholder="owner/repo, owner/repo2, …"
@@ -794,3 +808,141 @@ function AlertSettingsCard({ reposHint }: { reposHint: string }) {
     </Card>
   );
 }
+
+function PresetsBar({
+  currentInput,
+  onLoadPreset,
+}: {
+  currentInput: string;
+  onLoadPreset: (repos: string[]) => void;
+}) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listCiRepoPresets);
+  const saveFn = useServerFn(saveCiRepoPreset);
+  const deleteFn = useServerFn(deleteCiRepoPreset);
+
+  const listQ = useQuery({
+    queryKey: ["ci-repo-presets"],
+    queryFn: () => listFn({ data: undefined as never }),
+  });
+
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [name, setName] = useState("");
+
+  const presets: CiRepoPreset[] = listQ.data ?? [];
+  const selected = presets.find((p) => p.id === selectedId) ?? null;
+
+  const saveM = useMutation({
+    mutationFn: (input: { name: string; repos: string[] }) =>
+      saveFn({ data: input }),
+    onSuccess: (row) => {
+      qc.invalidateQueries({ queryKey: ["ci-repo-presets"] });
+      setSelectedId(row.id);
+      setName("");
+    },
+  });
+
+  const deleteM = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ci-repo-presets"] });
+      setSelectedId("");
+    },
+  });
+
+  const currentRepos = parseRepos(currentInput);
+
+  return (
+    <div className="flex flex-col gap-2 rounded border bg-muted/20 p-2 text-xs sm:flex-row sm:items-center">
+      <span className="text-muted-foreground">Presets:</span>
+      <select
+        className="h-8 rounded border bg-background px-2 text-xs"
+        value={selectedId}
+        onChange={(e) => {
+          const id = e.target.value;
+          setSelectedId(id);
+          const p = presets.find((x) => x.id === id);
+          if (p) onLoadPreset(p.repos);
+        }}
+      >
+        <option value="">
+          {listQ.isLoading
+            ? "Loading…"
+            : presets.length
+              ? "Select a preset…"
+              : "No saved presets"}
+        </option>
+        {presets.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.name} ({p.repos.length})
+          </option>
+        ))}
+      </select>
+
+      {selected && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 text-xs text-destructive"
+          onClick={() => {
+            if (confirm(`Delete preset "${selected.name}"?`)) {
+              deleteM.mutate(selected.id);
+            }
+          }}
+          disabled={deleteM.isPending}
+        >
+          {deleteM.isPending ? "Deleting…" : "Delete"}
+        </Button>
+      )}
+
+      <span className="hidden text-muted-foreground sm:inline">·</span>
+
+      <Input
+        placeholder="New preset name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="h-8 max-w-[200px] text-xs"
+      />
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7 text-xs"
+        onClick={() =>
+          saveM.mutate({ name: name.trim(), repos: currentRepos })
+        }
+        disabled={
+          saveM.isPending || !name.trim() || currentRepos.length === 0
+        }
+        title={
+          currentRepos.length === 0
+            ? "Enter repos above first"
+            : `Save ${currentRepos.length} repo(s) as "${name || "…"}"`
+        }
+      >
+        {saveM.isPending ? "Saving…" : "Save current"}
+      </Button>
+
+      {selected && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 text-xs"
+          onClick={() =>
+            saveM.mutate({ name: selected.name, repos: currentRepos })
+          }
+          disabled={saveM.isPending || currentRepos.length === 0}
+          title={`Overwrite "${selected.name}" with current repos`}
+        >
+          Update
+        </Button>
+      )}
+
+      {(saveM.isError || deleteM.isError) && (
+        <span className="text-destructive">
+          {((saveM.error ?? deleteM.error) as Error)?.message}
+        </span>
+      )}
+    </div>
+  );
+}
+
