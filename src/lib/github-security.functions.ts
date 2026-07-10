@@ -201,8 +201,17 @@ const Input = z.object({
 });
 
 export const getSecurityScanReport = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input) => Input.parse(input))
-  .handler(async ({ data }): Promise<SecurityScanReport> => {
+  .handler(async ({ data, context }): Promise<SecurityScanReport> => {
+    const { data: adminRow, error: adminErr } = await context.supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (adminErr || !adminRow) throw new Error("Forbidden");
+
     const lovableKey = process.env.LOVABLE_API_KEY;
     const ghKey = process.env.GITHUB_API_KEY;
     if (!lovableKey || !ghKey) {
