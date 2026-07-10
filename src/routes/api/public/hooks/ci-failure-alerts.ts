@@ -66,7 +66,9 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
 
         const { data: cfg, error: cfgErr } = await admin
           .from('ci_alert_config')
-          .select('recipient_email, repos, enabled')
+          .select(
+            'recipient_email, repos, enabled, default_branch_only, slack_webhook_url',
+          )
           .eq('id', 1)
           .maybeSingle()
         if (cfgErr) {
@@ -79,10 +81,13 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
           return Response.json({ ok: true, skipped: 'disabled_or_missing' })
         }
         const recipient = cfg.recipient_email?.trim()
+        const slackWebhook = cfg.slack_webhook_url?.trim() || null
+        const defaultBranchOnly = cfg.default_branch_only !== false
         const repos: string[] = Array.isArray(cfg.repos) ? cfg.repos : []
-        if (!recipient || repos.length === 0) {
-          return Response.json({ ok: true, skipped: 'no_recipient_or_repos' })
+        if ((!recipient && !slackWebhook) || repos.length === 0) {
+          return Response.json({ ok: true, skipped: 'no_channel_or_repos' })
         }
+
 
         const since = Date.now() - LOOKBACK_HOURS * 3600_000
         const newFailures: Array<{
