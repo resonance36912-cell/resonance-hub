@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
+import { Route as ToolsReleasesRouteImport } from './routes/tools.releases'
 import { Route as ToolsPrStatusRouteImport } from './routes/tools.pr-status'
 import { Route as ToolsIssueTriageRouteImport } from './routes/tools.issue-triage'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
@@ -100,6 +101,11 @@ const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
 const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
   id: '/updates/preview',
   path: '/updates/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsReleasesRoute = ToolsReleasesRouteImport.update({
+  id: '/tools/releases',
+  path: '/tools/releases',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsPrStatusRoute = ToolsPrStatusRouteImport.update({
@@ -335,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/tools/pr-status': typeof ToolsPrStatusRoute
+  '/tools/releases': typeof ToolsReleasesRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/tools/pr-status': typeof ToolsPrStatusRoute
+  '/tools/releases': typeof ToolsReleasesRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
@@ -434,6 +442,7 @@ export interface FileRoutesById {
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/tools/pr-status': typeof ToolsPrStatusRoute
+  '/tools/releases': typeof ToolsReleasesRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -485,6 +494,7 @@ export interface FileRouteTypes {
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
     | '/tools/pr-status'
+    | '/tools/releases'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -534,6 +544,7 @@ export interface FileRouteTypes {
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
     | '/tools/pr-status'
+    | '/tools/releases'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
@@ -583,6 +594,7 @@ export interface FileRouteTypes {
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
     | '/tools/pr-status'
+    | '/tools/releases'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -631,6 +643,7 @@ export interface RootRouteChildren {
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   ToolsIssueTriageRoute: typeof ToolsIssueTriageRoute
   ToolsPrStatusRoute: typeof ToolsPrStatusRoute
+  ToolsReleasesRoute: typeof ToolsReleasesRoute
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -717,6 +730,13 @@ declare module '@tanstack/react-router' {
       path: '/updates/preview'
       fullPath: '/updates/preview'
       preLoaderRoute: typeof UpdatesPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/releases': {
+      id: '/tools/releases'
+      path: '/tools/releases'
+      fullPath: '/tools/releases'
+      preLoaderRoute: typeof ToolsReleasesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools/pr-status': {
@@ -1028,6 +1048,7 @@ const rootRouteChildren: RootRouteChildren = {
   SyncVisionPricingRoute: SyncVisionPricingRoute,
   ToolsIssueTriageRoute: ToolsIssueTriageRoute,
   ToolsPrStatusRoute: ToolsPrStatusRoute,
+  ToolsReleasesRoute: ToolsReleasesRoute,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
