@@ -57,6 +57,7 @@ import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicHooksCiFailureAlertsRouteImport } from './routes/api/public/hooks/ci-failure-alerts'
 import { Route as ApiPublicFormsCreateIssueRouteImport } from './routes/api/public/forms/create-issue'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
@@ -314,6 +315,12 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksCiFailureAlertsRoute =
+  ApiPublicHooksCiFailureAlertsRouteImport.update({
+    id: '/api/public/hooks/ci-failure-alerts',
+    path: '/api/public/hooks/ci-failure-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicFormsCreateIssueRoute =
   ApiPublicFormsCreateIssueRouteImport.update({
     id: '/api/public/forms/create-issue',
@@ -385,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
+  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -440,6 +448,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
+  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -496,6 +505,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
+  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -553,6 +563,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
+    | '/api/public/hooks/ci-failure-alerts'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -608,6 +619,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
+    | '/api/public/hooks/ci-failure-alerts'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -663,6 +675,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
+    | '/api/public/hooks/ci-failure-alerts'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -717,6 +730,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicFormsCreateIssueRoute: typeof ApiPublicFormsCreateIssueRoute
+  ApiPublicHooksCiFailureAlertsRoute: typeof ApiPublicHooksCiFailureAlertsRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
@@ -1071,6 +1085,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/ci-failure-alerts': {
+      id: '/api/public/hooks/ci-failure-alerts'
+      path: '/api/public/hooks/ci-failure-alerts'
+      fullPath: '/api/public/hooks/ci-failure-alerts'
+      preLoaderRoute: typeof ApiPublicHooksCiFailureAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/forms/create-issue': {
       id: '/api/public/forms/create-issue'
       path: '/api/public/forms/create-issue'
@@ -1162,6 +1183,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicFormsCreateIssueRoute: ApiPublicFormsCreateIssueRoute,
+  ApiPublicHooksCiFailureAlertsRoute: ApiPublicHooksCiFailureAlertsRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
