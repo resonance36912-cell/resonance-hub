@@ -112,24 +112,36 @@ describe("getSecurityScanReport auth + validation", () => {
     );
   });
 
-  test("400: rejects empty repos array (zod min(1))", async () => {
-    // Auth runs before inputValidator — send a valid bearer if we have one,
-    // otherwise this asserts the anonymous 401 path (already covered) and
-    // exits without failing the validation assertion.
+  test("400: rejects missing repos field", async () => {
     const token = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    if (!token) return; // auth runs before validation; need a bearer to reach Zod
     let r;
     try {
-      r = await callServerFn({ data: { repos: [] } }, headers);
+      r = await callServerFn({ data: {} }, { Authorization: `Bearer ${token}` });
     } catch {
       return;
     }
     if (!envelopeOrSkip(r.body, r.status)) return;
     const msg = extractErrorMessage(r.body) ?? "";
-    if (!token) {
-      expect(msg.startsWith("Unauthorized")).toBe(true);
+    expect(
+      msg.startsWith("[") || /required|expected array|invalid/i.test(msg),
+    ).toBe(true);
+  });
+
+  test("400: rejects empty repos array (zod min(1))", async () => {
+    const token = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+    if (!token) return; // need a bearer to reach inputValidator
+    let r;
+    try {
+      r = await callServerFn(
+        { data: { repos: [] } },
+        { Authorization: `Bearer ${token}` },
+      );
+    } catch {
       return;
     }
+    if (!envelopeOrSkip(r.body, r.status)) return;
+    const msg = extractErrorMessage(r.body) ?? "";
     // Zod v3/v4 message shape starts with "[" (JSON issues) or contains
     // "Too small"/"at least 1"; accept either.
     expect(
