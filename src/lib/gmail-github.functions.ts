@@ -143,8 +143,9 @@ const ListInput = z.object({
   maxResults: z.number().int().min(1).max(50).optional(),
 });
 
+const HUB_INBOX = process.env.HUB_INBOX_EMAIL ?? "resonance.36912@gmail.com";
 const DEFAULT_QUERY =
-  'from:(notifications@github.com OR noreply@github.com) (subject:"run failed" OR subject:"failed" OR subject:"security" OR subject:"vulnerability" OR "actions/runs/") newer_than:14d';
+  `(to:${HUB_INBOX} OR deliveredto:${HUB_INBOX}) from:(notifications@github.com OR noreply@github.com) (subject:"run failed" OR subject:"failed" OR subject:"security" OR subject:"vulnerability" OR "actions/runs/") newer_than:14d`;
 
 export const listGitHubEmails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
