@@ -28,8 +28,12 @@ supabase lovable ecosystem hub webhooks rop
 
 ## Branch protection (`main`)
 
-- Require pull request before merging (1 approving review, dismiss stale on push)
-- Require status checks to pass:
+> **Enforcement note:** GitHub **Rulesets** only enforce on private repos under a **Team** (paid) organization. On a free personal/private repo, use **classic Branch protection** instead (Settings → Branches → Add branch protection rule). Switch to Rulesets only if the repo is made public or moved to a Team org.
+
+Classic branch protection settings for `main`:
+
+- Require a pull request before merging (1 approving review, dismiss stale approvals on push)
+- Require status checks to pass before merging:
   - `verify-prebuild`
   - `security-scan`
   - `codeql`
@@ -39,8 +43,9 @@ supabase lovable ecosystem hub webhooks rop
 - Require branches to be up to date before merging
 - Require conversation resolution before merging
 - Require signed commits: recommended
-- Restrict who can push: admins + CODEOWNERS
 - Do not allow force pushes or deletions
+- Restrict who can push: admins + CODEOWNERS (Team org only; skip on free personal accounts)
+
 
 ## Secrets (repo scope)
 
