@@ -20,7 +20,7 @@ export type InvoiceRow = {
   issued_at: string;
   refunded_at: string | null;
   pdf_path: string | null;
-  metadata: Record<string, unknown>;
+  metadata: unknown;
   created_at: string;
   updated_at: string;
 };
