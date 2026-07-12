@@ -588,10 +588,13 @@ function SubscriptionsPage() {
                         <th className="px-4 py-3">Cycle</th>
                         <th className="px-4 py-3">Renews</th>
                         <th className="px-4 py-3 text-right">Amount</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {subs.map((s) => (
+                      {subs.map((s) => {
+                        const retryable = s.status === "pending" || s.status === "past_due" || s.status === "cancelled";
+                        return (
                         <tr key={`${s.app}-${s.updated_at}`} className="border-t border-border">
                           <td className="px-4 py-3">{APP_META[s.app as AppKey]?.label ?? s.app}</td>
                           <td className="px-4 py-3 capitalize">{s.tier}</td>
@@ -603,8 +606,12 @@ function SubscriptionsPage() {
                           <td className="px-4 py-3 capitalize">{s.billing_cycle}</td>
                           <td className="px-4 py-3 text-xs">{formatDate(s.current_period_end)}</td>
                           <td className="px-4 py-3 text-right font-mono text-xs">{formatPrice(s.amount_cents)}</td>
+                          <td className="px-4 py-3 text-right">
+                            {retryable ? <RetryPaymentButton subscriptionId={s.id} /> : <span className="text-xs text-muted-foreground">—</span>}
+                          </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
