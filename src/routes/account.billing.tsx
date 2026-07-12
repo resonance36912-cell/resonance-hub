@@ -45,7 +45,7 @@ function BillingGate() {
 
   useEffect(() => {
     if (state === "anon") {
-      navigate({ to: "/login", search: { redirect: "/account/billing" } as never });
+      navigate({ to: ROUTES.login, search: { redirect: ROUTES.accountBilling } as never });
     }
   }, [state, navigate]);
 
