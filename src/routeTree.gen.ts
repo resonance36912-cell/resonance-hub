@@ -39,6 +39,7 @@ import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
+import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
@@ -219,6 +220,11 @@ const AdminEmailsRoute = AdminEmailsRouteImport.update({
 const AdminEmailDomainRoute = AdminEmailDomainRouteImport.update({
   id: '/admin/email-domain',
   path: '/admin/email-domain',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCreditsRoute = AdminCreditsRouteImport.update({
+  id: '/admin/credits',
+  path: '/admin/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
@@ -404,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
+  '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
@@ -466,6 +473,7 @@ export interface FileRoutesByTo {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
+  '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
@@ -529,6 +537,7 @@ export interface FileRoutesById {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
+  '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
@@ -593,6 +602,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
+    | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
@@ -655,6 +665,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
+    | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
@@ -717,6 +728,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
+    | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
@@ -780,6 +792,7 @@ export interface RootRouteChildren {
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
+  AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
@@ -1034,6 +1047,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/email-domain'
       fullPath: '/admin/email-domain'
       preLoaderRoute: typeof AdminEmailDomainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/credits': {
+      id: '/admin/credits'
+      path: '/admin/credits'
+      fullPath: '/admin/credits'
+      preLoaderRoute: typeof AdminCreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/ci-health': {
@@ -1292,6 +1312,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
+  AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
