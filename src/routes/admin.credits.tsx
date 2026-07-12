@@ -366,7 +366,22 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                       <div>{row.reason}</div>
                       {meta.note && <div className="text-xs text-muted-foreground">{meta.note}</div>}
                     </td>
-                    <td className="py-2 pr-3 text-xs font-mono">{row.pf_payment_id ?? "—"}</td>
+                    <td className="py-2 pr-3 text-xs font-mono">
+                      {row.pf_payment_id ? (
+                        <Link
+                          to="/account/invoices/by-payment/$pf"
+                          params={{ pf: row.pf_payment_id }}
+                          target="_blank"
+                          rel="noopener"
+                          className="text-primary underline"
+                          title="Open linked receipt"
+                        >
+                          {row.pf_payment_id}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="py-2 pr-3 text-xs">{meta.admin_email ?? "—"}</td>
                     <td className="py-2 pr-3 text-xs">
                       {isReversal ? (

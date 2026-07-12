@@ -60,6 +60,28 @@ export const getInvoiceById = createServerFn({ method: "GET" })
     return (row as unknown as InvoiceRow) ?? null;
   });
 
+export const findInvoiceByPfPaymentId = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { pfPaymentId: string }) => {
+    if (!data?.pfPaymentId || typeof data.pfPaymentId !== "string") {
+      throw new Error("pfPaymentId required");
+    }
+    return data;
+  })
+  .handler(async ({ context, data }): Promise<{ id: string } | null> => {
+    const { supabase } = context;
+    // RLS restricts rows to owner or admin.
+    const { data: row, error } = await supabase
+      .from("invoices" as never)
+      .select("id")
+      .eq("pf_payment_id", data.pfPaymentId)
+      .order("issued_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return (row as { id: string } | null) ?? null;
+  });
+
 export const listAllInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
