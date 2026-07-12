@@ -101,6 +101,7 @@ function AdminHome() {
     { to: ROUTES.adminEmails, label: "Email Queue", desc: "Transactional sends and delivery status." },
     { to: ROUTES.adminEmailDomain, label: "Email Domain", desc: "Sending domain configuration and DNS." },
     { to: ROUTES.adminAppSubmissions, label: "App Submissions", desc: "Review and publish community-submitted apps to the catalog." },
+    { to: ROUTES.adminGmailGithub, label: "GitHub Emails (Gmail)", desc: "Read GitHub failure & security emails from your Gmail inbox for triage." },
   ] as const;
 
   return (
