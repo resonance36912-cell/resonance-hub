@@ -69,7 +69,7 @@ export const ROUTES = {
   accountInvoices: routePath("/account/invoices"),
   accountSubscriptions: routePath("/account/subscriptions"),
 
-  admin: routePath("/admin"),
+  admin: routePath("/admin/"),
 
   adminAppSubmissions: routePath("/admin/app-submissions"),
   adminBilling: routePath("/admin/billing"),
