@@ -231,8 +231,16 @@ function AdjustForm({
   const [note, setNote] = useState("");
   const [ok, setOk] = useState<string | null>(null);
 
+  type AdjustInput = {
+    userId: string;
+    app: string;
+    delta: number;
+    reason: string;
+    pfPaymentId: string | null;
+    note: string | null;
+  };
   const mutation = useMutation({
-    mutationFn: (input: Parameters<typeof adjustFn>[0]["data"]) => adjustFn({ data: input }),
+    mutationFn: (input: AdjustInput) => adjustFn({ data: input }),
     onSuccess: (res) => {
       setOk(`Updated ${labelForApp(res.wallet.app)} → balance ${res.wallet.balance.toLocaleString()}`);
       setDelta("");
