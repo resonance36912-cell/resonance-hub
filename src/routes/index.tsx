@@ -1318,6 +1318,7 @@ function Index() {
             <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
             <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
             <Link to="/governance" className="hover:text-white transition-colors">Governance</Link>
+            <Link to="/changelog" className="hover:text-white transition-colors">Changelog</Link>
             <Link to="/governance" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
             <Link to="/governance" className="hover:text-white transition-colors">Terms</Link>
             <Link to="/governance" className="hover:text-white transition-colors">Refunds</Link>
