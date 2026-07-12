@@ -179,7 +179,11 @@ function UserPanel({
 function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWalletRow[] }) {
   const queryFn = useServerFn(queryUserLedger);
   const reverseFn = useServerFn(reverseCreditAdjustment);
+  const exportFn = useServerFn(exportUserLedger);
   const qc = useQueryClient();
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [appFilter, setAppFilter] = useState<string>("");
   const [pfFilter, setPfFilter] = useState<string>("");
   const [fromDate, setFromDate] = useState<string>("");
