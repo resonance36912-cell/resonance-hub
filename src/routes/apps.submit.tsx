@@ -276,8 +276,16 @@ function SubmitAppPage() {
             className={inputCls}
           />
         </Field>
+        {localSlugError ? (
+          <p className="-mt-3 text-xs text-red-700">{localSlugError}</p>
+        ) : localSlug.length >= 2 ? (
+          <p className="-mt-3 text-xs text-muted-foreground">
+            Catalog slug: <code>{localSlug}</code>
+            {checking ? " · checking…" : ""}
+          </p>
+        ) : null}
 
-        <Field label="App URL" required hint="Full https:// URL">
+        <Field label="App URL" required hint="Full https:// URL, real domain (no localhost or IPs)">
           <input
             required
             type="url"
@@ -288,6 +296,19 @@ function SubmitAppPage() {
             placeholder="https://your-app.example.com"
           />
         </Field>
+        {localUrlError ? (
+          <p className="-mt-3 text-xs text-red-700">{localUrlError}</p>
+        ) : avail?.normalizedUrl && avail.normalizedUrl !== form.url ? (
+          <p className="-mt-3 text-xs text-muted-foreground">
+            Will be saved as <code>{avail.normalizedUrl}</code>
+          </p>
+        ) : null}
+        {availError ? (
+          <p className="-mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            {availError}
+          </p>
+        ) : null}
+
 
         <Field label="Tagline" required hint="One line, 10–160 characters">
           <input
