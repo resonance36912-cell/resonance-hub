@@ -140,6 +140,80 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           return new Response("not validated", { status: 400 });
         }
 
+        // 3. Webhook dedup / idempotency claim.
+        //
+        // Only signature-valid + PayFast-server-validated requests reach this
+        // point, so we know it's a genuine PayFast delivery before we take a
+        // slot in webhook_events. The idempotency key is the strongest stable
+        // identifier PayFast gives us: pf_payment_id (recurring + one-off) →
+        // m_payment_id (our own reference) → hash of the raw body (last
+        // resort). Inserting first and letting the unique constraint on
+        // (provider, event_id) fail is race-safe: only one concurrent worker
+        // wins, all replays return the cached response without re-running the
+        // subscription upsert or email enqueue.
+        const payloadHash = createHash("sha256").update(rawBody).digest("hex");
+        const eventId = pfPaymentId || mPaymentId || `hash:${payloadHash}`;
+
+        const { data: claimed, error: claimErr } = await supabaseAdmin
+          .from("webhook_events")
+          .insert({
+            provider: "payfast",
+            event_id: eventId,
+            payload_hash: payloadHash,
+            metadata: {
+              sku,
+              user_id: userId,
+              payment_status: paymentStatus,
+              m_payment_id: mPaymentId,
+            },
+          })
+          .select("id")
+          .single();
+
+        if (claimErr && claimErr.code === "23505") {
+          // Duplicate delivery — look up the cached response and replay it.
+          const { data: prior } = await supabaseAdmin
+            .from("webhook_events")
+            .select("http_status,response_body,outcome")
+            .eq("provider", "payfast")
+            .eq("event_id", eventId)
+            .maybeSingle();
+
+          await logAttempt({
+            ...baseLog, signature_valid: true, server_validated: true,
+            outcome: "duplicate_webhook", http_status: prior?.http_status ?? 200,
+            error_message: `Replay of ${eventId}; prior outcome=${prior?.outcome ?? "unknown"}`,
+          });
+          return new Response(prior?.response_body ?? "ok", { status: prior?.http_status ?? 200 });
+        }
+        if (claimErr) {
+          // Claim insert failed for a non-dedup reason — fail closed so
+          // PayFast retries rather than silently dropping the event.
+          await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+            outcome: "dedup_claim_failed", http_status: 500, error_message: claimErr.message });
+          return new Response("dedup claim failed", { status: 500 });
+        }
+        const webhookRowId = claimed?.id ?? null;
+
+        // Helper: finalize the webhook_events row with the response we're
+        // about to return, so future replays get the same answer.
+        const finalize = async (outcome: string, status: number, body: string) => {
+          if (!webhookRowId) return;
+          try {
+            await supabaseAdmin
+              .from("webhook_events")
+              .update({
+                processed_at: new Date().toISOString(),
+                outcome,
+                http_status: status,
+                response_body: body,
+              })
+              .eq("id", webhookRowId);
+          } catch (err) {
+            console.error("Failed to finalize webhook_events row:", err);
+          }
+        };
+
         const def = sku ? SKU_CATALOG[sku] : undefined;
         if (!def) {
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
