@@ -9,7 +9,71 @@ Governance for all changes: [RCGF v1.0](https://reson8.life/governance).
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+Track upcoming work here before it ships. Move entries under a new dated
+version heading at release time and reset each subsection to
+`_Nothing yet._`. Keep bullets short, imperative, and user-visible; link
+to the PR or issue where useful.
+
+### Added
+
+_Nothing yet._
+
+<!--
+Examples:
+- New `/admin/refunds` dashboard for reconciling PayFast refund ITNs (#123).
+- ROP Phase 3 anomaly-detection ingest endpoint.
+- Additional ecosystem pass tier ("Enterprise").
+-->
+
+### Changed
+
+_Nothing yet._
+
+<!--
+Examples:
+- Move credit ledger CSV export to background job for >10k rows.
+- Rename `hub_apps.slug` to `hub_apps.app_id` (migration + spoke updates).
+-->
+
+### Deprecated
+
+_Nothing yet._
+
+<!--
+Examples:
+- Per-app monthly plans superseded by ecosystem passes; hidden from pricing pages.
+-->
+
+### Removed
+
+_Nothing yet._
+
+<!--
+Examples:
+- Legacy `/api/public/legacy-itn` endpoint retired after PayFast cutover.
+-->
+
+### Fixed
+
+_Nothing yet._
+
+<!--
+Examples:
+- `/admin/credits` reverse action now blocks double-reversal on rapid double-clicks.
+- Invoice PDF totals rounded to 2 decimals in ZAR locale.
+-->
+
+### Security
+
+_Nothing yet._
+
+<!--
+Examples:
+- Rotated PayFast merchant passphrase; ITN handler updated.
+- Tightened RLS on `public.plan_changes` to owner-only reads.
+- Bumped `undici` to patch CVE-YYYY-NNNNN.
+-->
+
 
 ## [0.1.0] — 2026-07-12
 
