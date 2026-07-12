@@ -319,8 +319,11 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           const priorTier = priorRow?.tier as string | undefined;
           const priorApp = priorRow?.app as string | undefined;
           let changeType: string;
-          if (nextStatus === "cancelled") {
+          if (isRefund) {
+            changeType = "refund";
+          } else if (nextStatus === "cancelled") {
             changeType = "cancel";
+
           } else if (!priorRow || priorRow.status !== "active") {
             changeType = "initial";
           } else if (priorTier === def.tier) {
