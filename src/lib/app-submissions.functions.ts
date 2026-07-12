@@ -221,7 +221,7 @@ export const reviewAppSubmission = createServerFn({ method: "POST" })
     }
 
     const now = new Date().toISOString();
-    const patch: Partial<AppSubmission> = {
+    const patch: Database["public"]["Tables"]["app_submissions"]["Update"] = {
       reviewed_by: context.userId,
       reviewed_at: now,
       review_notes: data.notes ?? null,
