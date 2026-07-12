@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   lookupCreditUser,
   adjustCredits,
+  queryUserLedger,
   type CreditUserLookup,
   type AdminWalletRow,
+  type AdminLedgerPage,
 } from "@/lib/admin-credits.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 
