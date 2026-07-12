@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "bun test scripts/lib/",
     "test:ci": "bun test scripts/lib/ --reporter=junit --reporter-outfile=./reports/junit.xml --coverage --coverage-reporter=lcov --coverage-dir=./reports/coverage",
     "format": "prettier --write .",
