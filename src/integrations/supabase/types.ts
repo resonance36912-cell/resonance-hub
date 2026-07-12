@@ -101,6 +101,89 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_ledger: {
+        Row: {
+          app: string
+          balance_after: number
+          created_at: string
+          delta: number
+          id: string
+          idempotency_key: string
+          metadata: Json
+          pf_payment_id: string | null
+          reason: string
+          sku: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          app: string
+          balance_after: number
+          created_at?: string
+          delta: number
+          id?: string
+          idempotency_key: string
+          metadata?: Json
+          pf_payment_id?: string | null
+          reason: string
+          sku?: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          app?: string
+          balance_after?: number
+          created_at?: string
+          delta?: number
+          id?: string
+          idempotency_key?: string
+          metadata?: Json
+          pf_payment_id?: string | null
+          reason?: string
+          sku?: string | null
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_ledger_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "credit_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_wallets: {
+        Row: {
+          app: string
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app?: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
