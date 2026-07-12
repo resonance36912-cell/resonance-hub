@@ -3,12 +3,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
   getMyBilling,
   labelForApp,
   formatZar,
   type MyBilling,
 } from "@/lib/billing-portal.functions";
+
 
 export const Route = createFileRoute("/account/billing")({
   head: () => ({
@@ -75,14 +77,20 @@ function BillingPortal() {
               Subscriptions, credits, and payment history for {data?.email ?? "your account"}.
             </p>
           </div>
-          <div className="flex gap-2 text-sm">
-            <Link to="/" className="text-primary underline">Back to Hub</Link>
-            <span className="text-muted-foreground">·</span>
-            <Link to="/account/subscriptions" className="text-primary underline">Manage subscriptions</Link>
-            <span className="text-muted-foreground">·</span>
-            <Link to="/pricing" className="text-primary underline">Plans</Link>
-          </div>
+          
+          <BackToHubHeader
+            className="flex gap-2 text-sm"
+            extra={
+              <>
+                <span className="text-muted-foreground">·</span>
+                <Link to="/account/subscriptions" className="text-primary underline">Manage subscriptions</Link>
+                <span className="text-muted-foreground">·</span>
+                <Link to="/pricing" className="text-primary underline">Plans</Link>
+              </>
+            }
+          />
         </header>
+
 
         {isLoading && <p className="text-muted-foreground">Loading…</p>}
         {error && (

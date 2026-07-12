@@ -3,12 +3,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
   getMyInvoices,
   formatMoney,
   type InvoiceRow,
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
+
 
 export const Route = createFileRoute("/account/invoices")({
   head: () => ({
@@ -118,12 +120,16 @@ function Shell({ children }: { children: React.ReactNode }) {
               Payment history and downloadable receipts across the ecosystem.
             </p>
           </div>
-          <nav className="flex gap-3 text-sm">
-            <Link to="/" className="text-primary underline">Back to Hub</Link>
-            <Link to="/account/billing" className="text-primary underline">Billing</Link>
-            <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
-          </nav>
+          <BackToHubHeader
+            extra={
+              <>
+                <Link to="/account/billing" className="text-primary underline">Billing</Link>
+                <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
+              </>
+            }
+          />
         </header>
+
         {children}
       </div>
     </div>
