@@ -832,6 +832,66 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_changes: {
+        Row: {
+          change_type: string
+          created_at: string
+          from_app: string | null
+          from_sub_id: string | null
+          from_tier: string | null
+          id: string
+          pf_payment_id: string | null
+          reason: string | null
+          to_app: string
+          to_sub_id: string | null
+          to_tier: string
+          user_id: string
+        }
+        Insert: {
+          change_type: string
+          created_at?: string
+          from_app?: string | null
+          from_sub_id?: string | null
+          from_tier?: string | null
+          id?: string
+          pf_payment_id?: string | null
+          reason?: string | null
+          to_app: string
+          to_sub_id?: string | null
+          to_tier: string
+          user_id: string
+        }
+        Update: {
+          change_type?: string
+          created_at?: string
+          from_app?: string | null
+          from_sub_id?: string | null
+          from_tier?: string | null
+          id?: string
+          pf_payment_id?: string | null
+          reason?: string | null
+          to_app?: string
+          to_sub_id?: string | null
+          to_tier?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_changes_from_sub_id_fkey"
+            columns: ["from_sub_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_changes_to_sub_id_fkey"
+            columns: ["to_sub_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_visits: {
         Row: {
           created_at: string
@@ -997,6 +1057,8 @@ export type Database = {
           payfast_payment_id: string | null
           payfast_token: string | null
           status: Database["public"]["Enums"]["subscription_status"]
+          superseded_at: string | null
+          superseded_by: string | null
           tier: Database["public"]["Enums"]["subscription_tier"]
           updated_at: string
           user_id: string
@@ -1013,6 +1075,8 @@ export type Database = {
           payfast_payment_id?: string | null
           payfast_token?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          superseded_at?: string | null
+          superseded_by?: string | null
           tier: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
           user_id: string
@@ -1029,11 +1093,21 @@ export type Database = {
           payfast_payment_id?: string | null
           payfast_token?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
+          superseded_at?: string | null
+          superseded_by?: string | null
           tier?: Database["public"]["Enums"]["subscription_tier"]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {
