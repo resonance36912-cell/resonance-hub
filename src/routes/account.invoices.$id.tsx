@@ -45,7 +45,7 @@ function ReceiptGate() {
   if (state === "checking") return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (state === "anon") return (
     <div className="p-8 text-sm">
-      <AppLink to={ROUTES.login} search={{ next: undefined }} className="text-primary underline">Sign in</AppLink> to view this receipt.
+      <AppLink to={ROUTES.login} search={{ next: "/" }} className="text-primary underline">Sign in</AppLink> to view this receipt.
     </div>
   );
   return <ReceiptPage id={id} />;

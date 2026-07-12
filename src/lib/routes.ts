@@ -71,7 +71,7 @@ export const ROUTES = {
 
   // The admin index registers as `/admin/` (with trailing slash) in the
   // generated route tree — that's the canonical path.
-  admin: routePath("/admin/"),
+  admin: routePath("/admin"),
   adminAppSubmissions: routePath("/admin/app-submissions"),
   adminBilling: routePath("/admin/billing"),
   adminCiHealth: routePath("/admin/ci-health"),
@@ -105,7 +105,7 @@ export const LINKS = {
   home: linkOptions({ to: ROUTES.home }),
   // `/login` declares `validateSearch: { next }`, so linkOptions must
   // supply a search object. `next: undefined` is a valid no-op payload.
-  login: linkOptions({ to: ROUTES.login, search: { next: undefined } }),
+  login: linkOptions({ to: ROUTES.login, search: { next: "/" } }),
   apps: linkOptions({ to: ROUTES.apps }),
   pricing: linkOptions({ to: ROUTES.pricing }),
   accountBilling: linkOptions({ to: ROUTES.accountBilling }),
