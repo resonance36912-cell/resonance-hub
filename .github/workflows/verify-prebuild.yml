@@ -142,8 +142,19 @@ jobs:
             ${{ runner.os }}-tsc-${{ hashFiles('tsconfig.json', 'bun.lock', 'bun.lockb') }}-
             ${{ runner.os }}-tsc-
 
-      - name: TypeScript typecheck
+      # `tsc --noEmit` is the primary guard against invalid route strings:
+      # TanStack Router types `<Link to>`, `navigate({ to })`, and
+      # `redirect({ to })` against the generated route registry, so a stale
+      # path like `/auth` (a real regression we fixed once) fails the build
+      # here. Non-blocking would defeat the purpose — keep this step hard.
+      - name: TypeScript typecheck (fails on invalid route strings)
         run: bun run typecheck
+
+      # Belt-and-braces: catch route strings that bypass the type system
+      # (plain `<a href>`, `window.location.href = ...`, template literals
+      # assembled outside a Link/navigate call).
+      - name: Verify hardcoded route strings resolve to real routes
+        run: bun run verify:route-strings
 
       # Lint has ~2400 preexisting issues in this repo — surface them without
       # blocking the pipeline until the backlog is cleaned up. Flip
