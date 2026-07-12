@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   listAppSubmissions,
   reviewAppSubmission,
+  listAppSubmissionAuditLog,
   type AppSubmission,
   type AppSubmissionStatus,
+  type AppSubmissionAuditEntry,
   submissionTimeline,
 } from "@/lib/app-submissions.functions";
 import { SubmissionTimeline } from "@/components/SubmissionTimeline";
