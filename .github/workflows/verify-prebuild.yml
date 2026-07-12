@@ -131,7 +131,7 @@ jobs:
         run: bunx prettier --check .
 
       - name: TypeScript typecheck
-        run: bunx tsgo --noEmit
+        run: bun run typecheck
 
       # Lint has ~2400 preexisting issues in this repo — surface them without
       # blocking the pipeline until the backlog is cleaned up. Flip
