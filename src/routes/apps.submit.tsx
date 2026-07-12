@@ -71,6 +71,11 @@ function SubmitAppPage() {
     contactEmail: "",
     accentColor: "",
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [shotFiles, setShotFiles] = useState<File[]>([]);
+  const [shotPreviews, setShotPreviews] = useState<string[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [avail, setAvail] = useState<SubmissionAvailability | null>(null);
   const [checking, setChecking] = useState(false);
 
