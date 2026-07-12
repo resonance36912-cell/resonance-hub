@@ -409,16 +409,33 @@ export const reviewAppSubmission = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true; submission?: AppSubmission }> => {
     const supabaseAdmin = await assertAdmin(context.userId);
 
+    const { data: prior } = await supabaseAdmin
+      .from("app_submissions")
+      .select("id,name,status,logo_path,screenshot_paths")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!prior) throw new Error("Submission not found");
+
+    const reviewerEmail =
+      (context.claims as { email?: string | null } | undefined)?.email ?? null;
+
+    const writeAudit = async (statusAfter: string | null) => {
+      await supabaseAdmin.from("app_submission_audit_log").insert({
+        submission_id: prior.id,
+        submission_name: prior.name,
+        action: data.action,
+        note: data.notes ?? null,
+        status_before: prior.status,
+        status_after: statusAfter,
+        reviewer_user_id: context.userId,
+        reviewer_email: reviewerEmail,
+      });
+    };
+
     if (data.action === "delete") {
-      // Best-effort: also remove any uploaded media
-      const { data: row } = await supabaseAdmin
-        .from("app_submissions")
-        .select("logo_path,screenshot_paths")
-        .eq("id", data.id)
-        .maybeSingle();
       const paths = [
-        ...(row?.logo_path ? [row.logo_path] : []),
-        ...((row?.screenshot_paths as string[] | null) ?? []),
+        ...(prior.logo_path ? [prior.logo_path] : []),
+        ...((prior.screenshot_paths as string[] | null) ?? []),
       ];
       if (paths.length > 0) {
         await supabaseAdmin.storage.from("app-submissions").remove(paths);
@@ -428,6 +445,7 @@ export const reviewAppSubmission = createServerFn({ method: "POST" })
         .delete()
         .eq("id", data.id);
       if (error) throw new Error(error.message);
+      await writeAudit(null);
       return { ok: true };
     }
 
@@ -455,5 +473,42 @@ export const reviewAppSubmission = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw new Error(error.message);
+    await writeAudit((row as { status: string }).status);
     return { ok: true, submission: row as AppSubmission };
+  });
+
+// -------- Admin: audit log --------
+
+export type AppSubmissionAuditEntry = {
+  id: string;
+  submission_id: string;
+  submission_name: string;
+  action: "approve" | "reject" | "publish" | "unpublish" | "delete";
+  note: string | null;
+  status_before: string | null;
+  status_after: string | null;
+  reviewer_user_id: string;
+  reviewer_email: string | null;
+  created_at: string;
+};
+
+const auditListSchema = z.object({
+  submissionId: z.string().uuid().optional().nullable(),
+  limit: z.number().int().min(1).max(500).default(100),
+});
+
+export const listAppSubmissionAuditLog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => auditListSchema.parse(d ?? {}))
+  .handler(async ({ data, context }): Promise<AppSubmissionAuditEntry[]> => {
+    const supabaseAdmin = await assertAdmin(context.userId);
+    let q = supabaseAdmin
+      .from("app_submission_audit_log")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
+    if (data.submissionId) q = q.eq("submission_id", data.submissionId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as AppSubmissionAuditEntry[];
   });
