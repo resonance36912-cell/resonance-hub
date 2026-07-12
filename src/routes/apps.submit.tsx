@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { submitAppSubmission } from "@/lib/app-submissions.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/apps/submit")({
   head: () => ({
@@ -24,6 +25,34 @@ export const Route = createFileRoute("/apps/submit")({
   component: SubmitAppPage,
 });
 
+const MAX_LOGO_MB = 2;
+const MAX_SHOT_MB = 5;
+const MAX_SHOTS = 4;
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
+
+function extFor(file: File): string {
+  const byName = file.name.split(".").pop()?.toLowerCase();
+  if (byName && /^(png|jpe?g|webp|gif|svg)$/.test(byName)) return byName === "jpeg" ? "jpg" : byName;
+  const map: Record<string, string> = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/webp": "webp",
+    "image/gif": "gif",
+    "image/svg+xml": "svg",
+  };
+  return map[file.type] ?? "png";
+}
+
+async function uploadImage(file: File): Promise<string> {
+  const id = crypto.randomUUID();
+  const path = `incoming/${id}.${extFor(file)}`;
+  const { error } = await supabase.storage
+    .from("app-submissions")
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (error) throw new Error(`Upload failed: ${error.message}`);
+  return path;
+}
+
 function SubmitAppPage() {
   const submitFn = useServerFn(submitAppSubmission);
   const [form, setForm] = useState({
@@ -35,10 +64,36 @@ function SubmitAppPage() {
     contactEmail: "",
     accentColor: "",
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [shotFiles, setShotFiles] = useState<File[]>([]);
+  const [shotPreviews, setShotPreviews] = useState<string[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const resetAll = () => {
+    setForm({
+      name: "",
+      url: "",
+      tagline: "",
+      description: "",
+      useCase: "",
+      contactEmail: "",
+      accentColor: "",
+    });
+    setLogoFile(null);
+    setLogoPreview(null);
+    setShotFiles([]);
+    setShotPreviews([]);
+    setFileError(null);
+  };
 
   const mut = useMutation({
-    mutationFn: async () =>
-      submitFn({
+    mutationFn: async () => {
+      let logoPath: string | null = null;
+      const screenshotPaths: string[] = [];
+      if (logoFile) logoPath = await uploadImage(logoFile);
+      for (const f of shotFiles) screenshotPaths.push(await uploadImage(f));
+      return submitFn({
         data: {
           name: form.name,
           url: form.url,
@@ -47,9 +102,60 @@ function SubmitAppPage() {
           useCase: form.useCase || null,
           contactEmail: form.contactEmail,
           accentColor: form.accentColor || null,
+          logoPath,
+          screenshotPaths,
         },
-      }),
+      });
+    },
   });
+
+  const onLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    const f = e.target.files?.[0] ?? null;
+    if (!f) {
+      setLogoFile(null);
+      setLogoPreview(null);
+      return;
+    }
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      setFileError("Logo must be PNG, JPEG, WebP, GIF, or SVG.");
+      return;
+    }
+    if (f.size > MAX_LOGO_MB * 1024 * 1024) {
+      setFileError(`Logo must be under ${MAX_LOGO_MB} MB.`);
+      return;
+    }
+    setLogoFile(f);
+    setLogoPreview(URL.createObjectURL(f));
+  };
+
+  const onShotsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    if (shotFiles.length + files.length > MAX_SHOTS) {
+      setFileError(`Up to ${MAX_SHOTS} screenshots allowed.`);
+      return;
+    }
+    for (const f of files) {
+      if (!ALLOWED_TYPES.includes(f.type)) {
+        setFileError("Screenshots must be PNG, JPEG, WebP, GIF, or SVG.");
+        return;
+      }
+      if (f.size > MAX_SHOT_MB * 1024 * 1024) {
+        setFileError(`Each screenshot must be under ${MAX_SHOT_MB} MB.`);
+        return;
+      }
+    }
+    setShotFiles((prev) => [...prev, ...files]);
+    setShotPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  };
+
+  const removeShot = (idx: number) => {
+    setShotFiles((prev) => prev.filter((_, i) => i !== idx));
+    setShotPreviews((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   if (mut.isSuccess) {
     return (
@@ -65,15 +171,7 @@ function SubmitAppPage() {
           <button
             onClick={() => {
               mut.reset();
-              setForm({
-                name: "",
-                url: "",
-                tagline: "",
-                description: "",
-                useCase: "",
-                contactEmail: "",
-                accentColor: "",
-              });
+              resetAll();
             }}
             className="mt-4 rounded-md border border-green-700 px-3 py-1.5 text-sm text-green-900 hover:bg-green-100"
           >
@@ -178,6 +276,74 @@ function SubmitAppPage() {
           />
         </Field>
 
+        <Field label="App logo" hint={`Optional. PNG/JPEG/WebP/SVG, up to ${MAX_LOGO_MB} MB. Square works best.`}>
+          <input
+            type="file"
+            accept={ALLOWED_TYPES.join(",")}
+            onChange={onLogoChange}
+            className="mt-1 block w-full text-sm"
+          />
+          {logoPreview ? (
+            <div className="mt-3 flex items-center gap-3">
+              <img
+                src={logoPreview}
+                alt="Logo preview"
+                className="h-16 w-16 rounded-md border border-border bg-background object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setLogoFile(null);
+                  setLogoPreview(null);
+                }}
+                className="text-xs text-muted-foreground underline"
+              >
+                Remove
+              </button>
+            </div>
+          ) : null}
+        </Field>
+
+        <Field
+          label="Screenshots"
+          hint={`Optional. Up to ${MAX_SHOTS} images, ${MAX_SHOT_MB} MB each.`}
+        >
+          <input
+            type="file"
+            accept={ALLOWED_TYPES.join(",")}
+            multiple
+            onChange={onShotsChange}
+            className="mt-1 block w-full text-sm"
+          />
+          {shotPreviews.length > 0 ? (
+            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {shotPreviews.map((src, i) => (
+                <div key={src} className="relative">
+                  <img
+                    src={src}
+                    alt={`Screenshot ${i + 1} preview`}
+                    className="h-24 w-full rounded-md border border-border object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeShot(i)}
+                    className="absolute right-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white"
+                    aria-label={`Remove screenshot ${i + 1}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </Field>
+
+        {fileError ? (
+          <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            {fileError}
+          </p>
+        ) : null}
+
         {mut.error ? (
           <p className="rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900">
             {(mut.error as Error).message}
@@ -187,7 +353,7 @@ function SubmitAppPage() {
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            disabled={mut.isPending}
+            disabled={mut.isPending || !!fileError}
             className="rounded-md bg-primary px-4 py-2 text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-60"
           >
             {mut.isPending ? "Submitting…" : "Submit for review"}
