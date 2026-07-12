@@ -48,6 +48,7 @@ function AdminBillingPage() {
             </p>
           </div>
           <div className="flex gap-3 text-sm">
+            <Link to="/admin/invoices" className="text-primary underline">Invoices</Link>
             <Link to="/admin/revenue" className="text-primary underline">Revenue & profit</Link>
             <Link to="/admin/payfast-audit" className="text-primary underline">PayFast audit</Link>
           </div>
