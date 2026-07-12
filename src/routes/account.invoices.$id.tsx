@@ -66,7 +66,10 @@ function ReceiptPage({ id }: { id: string }) {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
         <div className="flex items-center justify-between print:hidden">
-          <Link to="/account/invoices" className="text-sm text-primary underline">← Back to invoices</Link>
+          <div className="flex gap-4 text-sm">
+            <Link to="/" className="text-primary underline">Back to Hub</Link>
+            <Link to="/account/invoices" className="text-primary underline">← Back to invoices</Link>
+          </div>
           <div className="flex gap-3">
             <button
               onClick={() => window.print()}

@@ -119,6 +119,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           <nav className="flex gap-3 text-sm">
+            <Link to="/" className="text-primary underline">Back to Hub</Link>
             <Link to="/account/billing" className="text-primary underline">Billing</Link>
             <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
           </nav>
