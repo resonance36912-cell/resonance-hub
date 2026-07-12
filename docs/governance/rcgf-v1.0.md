@@ -3,8 +3,12 @@
 **Version:** 1.0
 **Effective Date:** 21 June 2026
 **Status:** Canonical — the governing constitutional standard for the Resonance ecosystem.
+**License:** Apache-2.0
+**Canonical Source:** https://github.com/resonance36912-cell/RCGF (`constitution/RCGF-v1.0.md`)
+**Reference Implementations:** https://github.com/resonance36912-cell/RCGF-Examples
 
 > The Universal Constitution for Human–AI Collaboration.
+> This file mirrors the upstream canonical spec; upstream is source of truth on conflict.
 
 ---
 

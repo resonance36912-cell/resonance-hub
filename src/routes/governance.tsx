@@ -1,5 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { RCGF_VERSION, RCGF_EFFECTIVE_DATE } from "@/lib/rcgf";
+import {
+  RCGF_VERSION,
+  RCGF_EFFECTIVE_DATE,
+  RCGF_LICENSE,
+  RCGF_REPO_URL,
+  RCGF_CANONICAL_URL,
+  RCGF_EXAMPLES_URL,
+} from "@/lib/rcgf";
 
 export const Route = createFileRoute("/governance")({
   head: () => ({
@@ -110,6 +117,52 @@ function GovernancePage() {
           <p className="font-mono text-sm text-white/70 leading-loose">
             Proposal → Evidence → Impact Assessment → Review → Approval → Version Increment → Change Log → Ecosystem Adoption
           </p>
+        </section>
+
+        <section className="mb-16 border-t border-white/10 pt-8">
+          <h2 className="text-xs font-mono uppercase tracking-widest text-white/50 mb-4">Canonical Source</h2>
+          <p className="text-white/75 leading-relaxed">
+            The authoritative RCGF specification, standards, prompts and machine-readable
+            schemas are published under {RCGF_LICENSE} at{" "}
+            <a href={RCGF_REPO_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+              resonance36912-cell/RCGF
+            </a>
+            . Reference implementations live at{" "}
+            <a href={RCGF_EXAMPLES_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+              RCGF-Examples
+            </a>
+            .
+          </p>
+          <ul className="mt-4 space-y-1 text-sm text-white/70">
+            <li>
+              →{" "}
+              <a href={RCGF_CANONICAL_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                Constitution v{RCGF_VERSION} (canonical markdown)
+              </a>
+            </li>
+            <li>
+              →{" "}
+              <a
+                href={`${RCGF_REPO_URL}/blob/main/prompts/Universal_System_Prompt.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white"
+              >
+                Universal AI System Prompt
+              </a>
+            </li>
+            <li>
+              →{" "}
+              <a
+                href={`${RCGF_REPO_URL}/blob/main/schemas/rcgf.json`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-white"
+              >
+                Machine-readable schema (JSON)
+              </a>
+            </li>
+          </ul>
         </section>
 
         <section className="mb-16 border-t border-white/10 pt-8">

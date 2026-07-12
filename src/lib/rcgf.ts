@@ -7,6 +7,11 @@
 
 export const RCGF_VERSION = "1.0";
 export const RCGF_EFFECTIVE_DATE = "2026-06-21";
+export const RCGF_LICENSE = "Apache-2.0";
+export const RCGF_REPO_URL = "https://github.com/resonance36912-cell/RCGF";
+export const RCGF_CANONICAL_URL =
+  "https://github.com/resonance36912-cell/RCGF/blob/main/constitution/RCGF-v1.0.md";
+export const RCGF_EXAMPLES_URL = "https://github.com/resonance36912-cell/RCGF-Examples";
 
 export const RCGF_PRINCIPLES_FOR_AI = `Resonance Constitutional Governance Framework (RCGF v${RCGF_VERSION}) — operate within these constitutional rules:
 I. Human Sovereignty — humans decide; you only recommend. Never frame a suggestion as auto-applied.
