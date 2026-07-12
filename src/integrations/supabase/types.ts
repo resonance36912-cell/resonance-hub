@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_submission_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          note: string | null
+          reviewer_email: string | null
+          reviewer_user_id: string
+          status_after: string | null
+          status_before: string | null
+          submission_id: string
+          submission_name: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          reviewer_email?: string | null
+          reviewer_user_id: string
+          status_after?: string | null
+          status_before?: string | null
+          submission_id: string
+          submission_name: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          reviewer_email?: string | null
+          reviewer_user_id?: string
+          status_after?: string | null
+          status_before?: string | null
+          submission_id?: string
+          submission_name?: string
+        }
+        Relationships: []
+      }
       app_submissions: {
         Row: {
           accent_color: string | null

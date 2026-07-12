@@ -6,8 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   listAppSubmissions,
   reviewAppSubmission,
+  listAppSubmissionAuditLog,
   type AppSubmission,
   type AppSubmissionStatus,
+  type AppSubmissionAuditEntry,
   submissionTimeline,
 } from "@/lib/app-submissions.functions";
 import { SubmissionTimeline } from "@/components/SubmissionTimeline";
@@ -53,7 +55,10 @@ function AdminAppSubmissions() {
       action: "approve" | "reject" | "publish" | "unpublish" | "delete";
       notes?: string;
     }) => reviewFn({ data: input }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-app-submissions"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-app-submissions"] });
+      qc.invalidateQueries({ queryKey: ["admin-app-submissions-audit"] });
+    },
   });
 
   const rows = (data ?? []) as AppSubmission[];
@@ -115,9 +120,95 @@ function AdminAppSubmissions() {
           {(mut.error as Error).message}
         </p>
       ) : null}
+
+      <AuditLogPanel />
     </main>
   );
 }
+
+function AuditLogPanel() {
+  const listAuditFn = useServerFn(listAppSubmissionAuditLog);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-app-submissions-audit"],
+    queryFn: () => listAuditFn({ data: { limit: 100 } }),
+    refetchOnWindowFocus: true,
+  });
+  const entries = (data ?? []) as AppSubmissionAuditEntry[];
+
+  return (
+    <section className="mt-12">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-xl font-semibold tracking-tight">Audit log</h2>
+        <p className="text-xs text-muted-foreground">
+          Last {entries.length} review actions
+        </p>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Every approve, reject, publish, unpublish, and delete action is recorded here
+        with the reviewer identity and note.
+      </p>
+
+      {isLoading ? (
+        <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
+      ) : error ? (
+        <p className="mt-4 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+          {(error as Error).message}
+        </p>
+      ) : entries.length === 0 ? (
+        <p className="mt-4 rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
+          No review actions recorded yet.
+        </p>
+      ) : (
+        <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2">When</th>
+                <th className="px-3 py-2">App</th>
+                <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">Transition</th>
+                <th className="px-3 py-2">Reviewer</th>
+                <th className="px-3 py-2">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((e) => (
+                <tr key={e.id} className="border-t border-border align-top">
+                  <td className="whitespace-nowrap px-3 py-2 text-xs text-muted-foreground">
+                    {new Date(e.created_at).toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2 font-medium">{e.submission_name}</td>
+                  <td className="px-3 py-2">
+                    <span className={`rounded-full border px-2 py-0.5 text-xs capitalize ${AUDIT_ACTION_STYLES[e.action]}`}>
+                      {e.action}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                    {e.status_before ?? "—"} → {e.status_after ?? "deleted"}
+                  </td>
+                  <td className="px-3 py-2 text-xs">
+                    {e.reviewer_email ?? e.reviewer_user_id}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                    {e.note ? <span className="whitespace-pre-wrap">{e.note}</span> : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+const AUDIT_ACTION_STYLES: Record<AppSubmissionAuditEntry["action"], string> = {
+  approve: "bg-blue-100 text-blue-900 border-blue-300",
+  reject: "bg-red-100 text-red-900 border-red-300",
+  publish: "bg-green-100 text-green-900 border-green-300",
+  unpublish: "bg-amber-100 text-amber-900 border-amber-300",
+  delete: "bg-muted text-muted-foreground border-border",
+};
 
 const STATUS_STYLES: Record<AppSubmissionStatus, string> = {
   pending: "bg-amber-100 text-amber-900 border-amber-300",
