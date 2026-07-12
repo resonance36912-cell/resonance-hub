@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ROUTES } from "@/lib/routes";
 
 // The `supabase.auth.oauth` namespace is beta and may not appear in generated
 // types. Narrow to just the three methods we use.
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) {
       const next = location.pathname + location.searchStr;
-      throw redirect({ to: "/login", search: { next } });
+      throw redirect({ to: ROUTES.login, search: { next } });
     }
   },
   loader: async ({ location }) => {

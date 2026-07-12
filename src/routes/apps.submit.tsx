@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
+import { ROUTES } from "@/lib/routes";
   submitAppSubmission,
   checkSubmissionAvailability,
   type SubmissionAvailability,
@@ -219,7 +220,7 @@ function SubmitAppPage() {
           <p className="mt-2 text-green-900/80">
             Thanks — we'll review your app and get back to you at{" "}
             <strong>{form.contactEmail}</strong>. Approved apps appear on the{" "}
-            <Link to="/apps" className="underline">apps catalog</Link>.
+            <Link to={ROUTES.apps} className="underline">apps catalog</Link>.
           </p>
           {submissionId ? (
             <p className="mt-3 text-sm text-green-900/80">
@@ -445,7 +446,7 @@ function SubmitAppPage() {
           >
             {mut.isPending ? "Submitting…" : "Submit for review"}
           </button>
-          <Link to="/apps" className="text-sm text-muted-foreground underline">
+          <Link to={ROUTES.apps} className="text-sm text-muted-foreground underline">
             Back to catalog
           </Link>
         </div>

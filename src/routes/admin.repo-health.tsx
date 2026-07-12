@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ROUTES } from "@/lib/routes";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
@@ -30,14 +31,14 @@ export const Route = createFileRoute("/admin/repo-health")({
   validateSearch: zodValidator(searchSchema),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: RepoHealthPage,
   ssr: false,
@@ -183,16 +184,16 @@ function RepoHealthPage() {
           </p>
         </div>
         <div className="flex gap-4 text-sm">
-          <Link to="/tools/issue-triage" className="underline text-muted-foreground">
+          <Link to={ROUTES.toolsIssueTriage} className="underline text-muted-foreground">
             Issue triage
           </Link>
-          <Link to="/tools/pr-status" className="underline text-muted-foreground">
+          <Link to={ROUTES.toolsPrStatus} className="underline text-muted-foreground">
             PR status
           </Link>
-          <Link to="/tools/releases" className="underline text-muted-foreground">
+          <Link to={ROUTES.toolsReleases} className="underline text-muted-foreground">
             Releases
           </Link>
-          <Link to="/" className="underline text-muted-foreground">
+          <Link to={ROUTES.home} className="underline text-muted-foreground">
             Back to Hub
           </Link>
         </div>
@@ -383,21 +384,21 @@ function RepoHealthPage() {
 
                   <div className="mt-3 flex flex-wrap gap-3 text-xs">
                     <Link
-                      to="/tools/issue-triage"
+                      to={ROUTES.toolsIssueTriage}
                       search={{ repos: r.repo }}
                       className="underline text-muted-foreground hover:text-foreground"
                     >
                       Triage issues →
                     </Link>
                     <Link
-                      to="/tools/pr-status"
+                      to={ROUTES.toolsPrStatus}
                       search={{ repos: r.repo }}
                       className="underline text-muted-foreground hover:text-foreground"
                     >
                       Review PRs →
                     </Link>
                     <Link
-                      to="/tools/releases"
+                      to={ROUTES.toolsReleases}
                       search={{ repos: r.repo }}
                       className="underline text-muted-foreground hover:text-foreground"
                     >

@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { listEntitlementChecks } from "@/lib/entitlement-admin.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/entitlement-diagnostics")({
   head: () => ({
@@ -13,14 +14,14 @@ export const Route = createFileRoute("/admin/entitlement-diagnostics")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: Page,
 });
@@ -47,7 +48,7 @@ function Page() {
             </p>
           </div>
           <Link
-            to="/admin"
+            to={ROUTES.admin}
             className="rounded-lg border border-border bg-card px-4 py-2 text-sm hover:bg-accent"
           >
             ← Admin home

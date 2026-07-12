@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import changelogSource from "../../CHANGELOG.md?raw";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/changelog")({
   head: () => ({
@@ -185,7 +186,7 @@ function ChangelogPage() {
       <header className="border-b border-white/5">
         <div className="mx-auto max-w-4xl px-6 py-16">
           <div className="mb-6 text-[10px] font-mono uppercase tracking-widest text-white/50">
-            <Link to="/" className="hover:text-white">
+            <Link to={ROUTES.home} className="hover:text-white">
               ← Back to Hub
             </Link>
           </div>
@@ -204,7 +205,7 @@ function ChangelogPage() {
               Keep a Changelog
             </a>
             . Governed by{" "}
-            <Link to="/governance" className="underline underline-offset-2 hover:text-white">
+            <Link to={ROUTES.governance} className="underline underline-offset-2 hover:text-white">
               RCGF v1.0
             </Link>
             .
@@ -310,10 +311,10 @@ function ChangelogPage() {
         <div className="mx-auto max-w-4xl px-6 py-10 text-[10px] font-mono uppercase tracking-widest text-white/50 flex flex-wrap gap-x-6 gap-y-2 justify-between">
           <span>© {new Date().getFullYear()} The Resonance</span>
           <div className="flex gap-6">
-            <Link to="/governance" className="hover:text-white">
+            <Link to={ROUTES.governance} className="hover:text-white">
               Governance
             </Link>
-            <Link to="/pricing" className="hover:text-white">
+            <Link to={ROUTES.pricing} className="hover:text-white">
               Pricing
             </Link>
             <a

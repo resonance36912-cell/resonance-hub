@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useMemo } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
+import { ROUTES } from "@/lib/routes";
   APP_REGISTRY,
   ECOSYSTEM_REGISTRY,
   type AppRegistryEntry,
@@ -169,7 +170,7 @@ function AppsCatalogPage() {
           </p>
         </div>
         <Link
-          to="/apps/submit"
+          to={ROUTES.appsSubmit}
           className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
         >
           Submit an app →

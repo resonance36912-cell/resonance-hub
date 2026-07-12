@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
+import { ROUTES } from "@/lib/routes";
   APP_META,
   getMySubscriptions,
   type AppKey,
@@ -291,7 +292,7 @@ function SubscriptionsGate() {
           userId: diagnostics.userId,
         });
       }
-      navigate({ to: "/", replace: true });
+      navigate({ to: ROUTES.home, replace: true });
     } else if (status === "authed") {
       log("gate_authed_render");
       if (!diagnostics.analyticsEmitted) {
@@ -452,7 +453,7 @@ function SubscriptionsPage() {
         <header className="mb-10">
           <div className="mb-6">
             <Link
-              to="/"
+              to={ROUTES.home}
               className="inline-flex items-center text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
             >
               ← Back to Hub
@@ -502,7 +503,7 @@ function SubscriptionsPage() {
                     </span>
                   ) : (
                     <Link
-                      to="/pricing"
+                      to={ROUTES.pricing}
                       className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition"
                     >
                       Upgrade — R1,499/mo
@@ -560,7 +561,7 @@ function SubscriptionsPage() {
                           </span>
                         ) : (
                           !coveredByBundle && (
-                            <Link to="/pricing" className="text-xs text-primary hover:underline">
+                            <Link to={ROUTES.pricing} className="text-xs text-primary hover:underline">
                               Upgrade
                             </Link>
                           )
@@ -622,7 +623,7 @@ function SubscriptionsPage() {
               <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
                 <p className="text-muted-foreground">No subscriptions yet.</p>
                 <Link
-                  to="/pricing"
+                  to={ROUTES.pricing}
                   className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
                 >
                   View pricing

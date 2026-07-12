@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listItnLogs } from "@/lib/itn-logs.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/webhooks")({
   head: () => ({
@@ -14,14 +15,14 @@ export const Route = createFileRoute("/admin/webhooks")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: "/admin/login" });
+    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
   },
   component: WebhooksPage,
 });

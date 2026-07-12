@@ -5,6 +5,7 @@ import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
 import {
+import { ROUTES } from "@/lib/routes";
   resolveCheckoutContext,
   primaryContinueHref,
   primaryContinueLabel,
@@ -54,8 +55,8 @@ function SuccessPage() {
 
   const secondaryTo =
     ctx.kind === "pack"
-      ? { to: "/pricing" as const, hash: "packs", label: "See more packs" }
-      : { to: "/account/subscriptions" as const, hash: undefined, label: "View subscriptions" };
+      ? { to: ROUTES.pricing as const, hash: "packs", label: "See more packs" }
+      : { to: ROUTES.accountSubscriptions as const, hash: undefined, label: "View subscriptions" };
 
   // Only subscription SKUs (pass or legacy_monthly) create rows in `subscriptions`
   // via the ITN handler. Packs are once-off and don't have an entitlement row.
@@ -103,7 +104,7 @@ function SuccessPage() {
       if (primaryIsExternal) {
         window.location.href = primaryHref;
       } else {
-        void navigate({ to: "/pricing", hash: ctx.pricingAnchor });
+        void navigate({ to: ROUTES.pricing, hash: ctx.pricingAnchor });
       }
     }, AUTO_REDIRECT_MS);
     return () => {
@@ -116,11 +117,11 @@ function SuccessPage() {
   return (
     <div className="min-h-screen text-foreground">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <Link to="/" className="inline-flex">
+        <Link to={ROUTES.home} className="inline-flex">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
         </Link>
         <Link
-          to="/"
+          to={ROUTES.home}
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
           ← Back to Hub
@@ -161,7 +162,7 @@ function SuccessPage() {
                 </a>
               ) : (
                 <Link
-                  to="/pricing"
+                  to={ROUTES.pricing}
                   hash={ctx.pricingAnchor}
                   className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
                 >
@@ -193,7 +194,7 @@ function SuccessPage() {
               PayFast confirmations usually land within seconds but can take a
               few minutes. This page won't grant access — it only reflects the
               verified webhook. Check{" "}
-              <Link to="/account/subscriptions" className="underline">
+              <Link to={ROUTES.accountSubscriptions} className="underline">
                 My Subscriptions
               </Link>{" "}
               in a minute, or contact support if it doesn't appear.

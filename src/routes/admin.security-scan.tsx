@@ -6,6 +6,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
+import { ROUTES } from "@/lib/routes";
   getSecurityScanReport,
   type AlertSeverity,
   type RepoSecurityScan,
@@ -36,14 +37,14 @@ export const Route = createFileRoute("/admin/security-scan")({
   validateSearch: zodValidator(searchSchema),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: SecurityScanPage,
   ssr: false,
@@ -315,13 +316,13 @@ function SecurityScanPage() {
           </p>
         </div>
         <div className="flex gap-4 text-sm">
-          <Link to="/admin/ci-health" className="underline text-muted-foreground">
+          <Link to={ROUTES.adminCiHealth} className="underline text-muted-foreground">
             CI health
           </Link>
-          <Link to="/admin/repo-health" className="underline text-muted-foreground">
+          <Link to={ROUTES.adminRepoHealth} className="underline text-muted-foreground">
             Repo health
           </Link>
-          <Link to="/" className="underline text-muted-foreground">
+          <Link to={ROUTES.home} className="underline text-muted-foreground">
             Back to Hub
           </Link>
         </div>

@@ -78,8 +78,8 @@ function BackLinks() {
       linkClassName="underline"
       extra={
         <>
-          <Link to="/account/invoices" className="underline">All invoices</Link>
-          <Link to="/account/billing" className="underline">Billing</Link>
+          <Link to={ROUTES.accountInvoices} className="underline">All invoices</Link>
+          <Link to={ROUTES.accountBilling} className="underline">Billing</Link>
         </>
       }
     />

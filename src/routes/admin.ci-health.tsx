@@ -6,6 +6,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
+import { ROUTES } from "@/lib/routes";
   getCiHealth,
   getRunDetails,
   type RepoCiHealth,
@@ -95,14 +96,14 @@ export const Route = createFileRoute("/admin/ci-health")({
   validateSearch: zodValidator(searchSchema),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: CiHealthPage,
   ssr: false,
@@ -474,16 +475,16 @@ function CiHealthPage() {
           </p>
         </div>
         <div className="flex gap-4 text-sm">
-          <Link to="/admin/repo-health" className="underline text-muted-foreground">
+          <Link to={ROUTES.adminRepoHealth} className="underline text-muted-foreground">
             Repo health
           </Link>
-          <Link to="/tools/pr-status" className="underline text-muted-foreground">
+          <Link to={ROUTES.toolsPrStatus} className="underline text-muted-foreground">
             PR status
           </Link>
-          <Link to="/tools/releases" className="underline text-muted-foreground">
+          <Link to={ROUTES.toolsReleases} className="underline text-muted-foreground">
             Releases
           </Link>
-          <Link to="/" className="underline text-muted-foreground">
+          <Link to={ROUTES.home} className="underline text-muted-foreground">
             Back to Hub
           </Link>
         </div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
+import { ROUTES } from "@/lib/routes";
   getInvoiceById,
   formatMoney,
   type InvoiceRow,
@@ -43,7 +44,7 @@ function ReceiptGate() {
   if (state === "checking") return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (state === "anon") return (
     <div className="p-8 text-sm">
-      <Link to="/login" className="text-primary underline">Sign in</Link> to view this receipt.
+      <Link to={ROUTES.login} className="text-primary underline">Sign in</Link> to view this receipt.
     </div>
   );
   return <ReceiptPage id={id} />;
@@ -70,7 +71,7 @@ function ReceiptPage({ id }: { id: string }) {
         <div className="flex items-center justify-between print:hidden">
           <BackToHubHeader
             className="flex gap-4 text-sm"
-            extra={<Link to="/account/invoices" className="text-primary underline">← Back to invoices</Link>}
+            extra={<Link to={ROUTES.accountInvoices} className="text-primary underline">← Back to invoices</Link>}
           />
 
           <div className="flex gap-3">

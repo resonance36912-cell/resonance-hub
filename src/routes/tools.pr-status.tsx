@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+import { ROUTES } from "@/lib/routes";
   Select,
   SelectContent,
   SelectItem,
@@ -33,14 +34,14 @@ export const Route = createFileRoute("/tools/pr-status")({
   validateSearch: zodValidator(searchSchema),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: PrStatus,
   ssr: false,
@@ -149,7 +150,7 @@ function PrStatus() {
             Open pull requests with review state and age, grouped by repository.
           </p>
         </div>
-        <Link to="/" className="text-sm underline text-muted-foreground">
+        <Link to={ROUTES.home} className="text-sm underline text-muted-foreground">
           Back to Hub
         </Link>
       </div>

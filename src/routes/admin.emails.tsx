@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listEmailSends } from "@/lib/email-sends.functions";
 import { sendTestSubscriptionEmail } from "@/lib/test-email.functions";
+import { ROUTES } from "@/lib/routes";
 
 
 export const Route = createFileRoute("/admin/emails")({
@@ -16,14 +17,14 @@ export const Route = createFileRoute("/admin/emails")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: "/admin/login" });
+    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
   },
   component: EmailsAdminPage,
 });
@@ -104,11 +105,11 @@ function EmailsAdminPage() {
             <h1 className="mt-2 text-3xl font-semibold">Email Delivery</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Subscription confirmation email attempts, deduped by <code>pf_payment_id</code>.{" "}
-              <Link to="/admin/webhooks" className="text-primary hover:underline">
+              <Link to={ROUTES.adminWebhooks} className="text-primary hover:underline">
                 View ITN webhook logs →
               </Link>
               {" · "}
-              <Link to="/admin/email-domain" className="text-primary hover:underline">
+              <Link to={ROUTES.adminEmailDomain} className="text-primary hover:underline">
                 Sender domain verification →
               </Link>
             </p>

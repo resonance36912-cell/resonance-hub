@@ -84,9 +84,9 @@ function BillingPortal() {
             extra={
               <>
                 <span className="text-muted-foreground">·</span>
-                <Link to="/account/subscriptions" className="text-primary underline">Manage subscriptions</Link>
+                <Link to={ROUTES.accountSubscriptions} className="text-primary underline">Manage subscriptions</Link>
                 <span className="text-muted-foreground">·</span>
-                <Link to="/pricing" className="text-primary underline">Plans</Link>
+                <Link to={ROUTES.pricing} className="text-primary underline">Plans</Link>
               </>
             }
           />
@@ -123,7 +123,7 @@ function SubscriptionsCard({ data }: { data: MyBilling }) {
         <span className="text-xs text-muted-foreground">{active.length} active</span>
       </div>
       {data.subscriptions.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No subscriptions yet. <Link to="/pricing" className="underline">Browse plans</Link>.</p>
+        <p className="text-sm text-muted-foreground">No subscriptions yet. <Link to={ROUTES.pricing} className="underline">Browse plans</Link>.</p>
       ) : (
         <div className="space-y-2">
           {[...active, ...other].map((s) => (
@@ -176,7 +176,7 @@ function ReceiptsCard({ data }: { data: MyBilling }) {
     <section className="rounded-lg border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Payment history</h2>
-        <Link to="/account/invoices" className="text-sm text-primary underline">All invoices →</Link>
+        <Link to={ROUTES.accountInvoices} className="text-sm text-primary underline">All invoices →</Link>
       </div>
       {data.receipts.length === 0 ? (
         <p className="text-sm text-muted-foreground">No verified payments yet.</p>

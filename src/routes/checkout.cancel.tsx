@@ -3,6 +3,7 @@ import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
 import {
+import { ROUTES } from "@/lib/routes";
   resolveCheckoutContext,
   primaryContinueHref,
   primaryContinueLabel,
@@ -48,11 +49,11 @@ function CancelPage() {
   return (
     <div className="min-h-screen text-foreground">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <Link to="/" className="inline-flex">
+        <Link to={ROUTES.home} className="inline-flex">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
         </Link>
         <Link
-          to="/"
+          to={ROUTES.home}
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
           ← Back to Hub
@@ -66,7 +67,7 @@ function CancelPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              to="/checkout"
+              to={ROUTES.checkout}
               search={retrySearch}
               className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
             >
@@ -81,7 +82,7 @@ function CancelPage() {
               </a>
             ) : (
               <Link
-                to="/pricing"
+                to={ROUTES.pricing}
                 hash={ctx.pricingAnchor}
                 className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
               >

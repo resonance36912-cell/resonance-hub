@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
+import { ROUTES } from "@/lib/routes";
   getMyInvoices,
   formatMoney,
   type InvoiceRow,
@@ -39,7 +40,7 @@ function InvoicesGate() {
   if (state === "anon") return (
     <Shell>
       <p className="text-sm">
-        <Link to="/login" className="text-primary underline">Sign in</Link> to view your invoices.
+        <Link to={ROUTES.login} className="text-primary underline">Sign in</Link> to view your invoices.
       </p>
     </Shell>
   );
@@ -123,8 +124,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <BackToHubHeader
             extra={
               <>
-                <Link to="/account/billing" className="text-primary underline">Billing</Link>
-                <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
+                <Link to={ROUTES.accountBilling} className="text-primary underline">Billing</Link>
+                <Link to={ROUTES.accountSubscriptions} className="text-primary underline">Subscriptions</Link>
               </>
             }
           />

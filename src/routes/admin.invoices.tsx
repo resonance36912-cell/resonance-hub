@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
+import { ROUTES } from "@/lib/routes";
   listAllInvoices,
   formatMoney,
   type InvoiceRow,
@@ -20,14 +21,14 @@ export const Route = createFileRoute("/admin/invoices")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: "/admin/login" });
+    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
   },
   component: AdminInvoicesPage,
 });
@@ -73,8 +74,8 @@ function AdminInvoicesPage() {
             </p>
           </div>
           <nav className="flex gap-3 text-sm">
-            <Link to="/admin/billing" className="text-primary underline">Billing</Link>
-            <Link to="/admin/payfast-audit" className="text-primary underline">PayFast audit</Link>
+            <Link to={ROUTES.adminBilling} className="text-primary underline">Billing</Link>
+            <Link to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</Link>
           </nav>
         </header>
 

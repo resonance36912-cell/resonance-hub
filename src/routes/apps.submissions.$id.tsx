@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { SubmissionTimeline } from "@/components/SubmissionTimeline";
 import {
+import { ROUTES } from "@/lib/routes";
   getSubmissionStatus,
   type AppSubmissionStatus,
 } from "@/lib/app-submissions.functions";
@@ -42,7 +43,7 @@ function SubmissionStatusPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Submission status</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Bookmark this page to check on your submission. Approved apps appear on the{" "}
-          <Link to="/apps" className="underline">catalog</Link>.
+          <Link to={ROUTES.apps} className="underline">catalog</Link>.
         </p>
       </header>
 
