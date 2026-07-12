@@ -7,26 +7,38 @@ import {
   RCGF_CANONICAL_URL,
   RCGF_EXAMPLES_URL,
 } from "@/lib/rcgf";
+import { getRequestOrigin } from "@/lib/origin.functions";
 
 export const Route = createFileRoute("/governance")({
-  head: () => ({
-    meta: [
-      { title: "Resonance Constitutional Governance Framework v1.0 — The Resonance" },
-      {
-        name: "description",
-        content:
-          "The RCGF is the universal constitutional standard for human–AI collaboration across the Resonance ecosystem: truth, transparency, sovereignty, accountability and continuous improvement.",
-      },
-      { property: "og:title", content: "Resonance Constitutional Governance Framework v1.0" },
-      {
-        property: "og:description",
-        content:
-          "The universal constitution for human–AI collaboration across the Resonance ecosystem. Human sovereignty remains the final authority.",
-      },
-    ],
-  }),
+  loader: async () => ({ origin: await getRequestOrigin() }),
+  head: ({ loaderData }) => {
+    const origin = loaderData?.origin ?? "https://reson8.life";
+    const title = "Resonance Constitutional Governance Framework v1.0 — The Resonance";
+    const description =
+      "The RCGF is the universal constitutional standard for human–AI collaboration across the Resonance ecosystem: truth, transparency, sovereignty, accountability and continuous improvement.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: "Resonance Constitutional Governance Framework v1.0" },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: `${origin}/governance` },
+        { property: "og:image", content: `${origin}/og-logo.png` },
+        { property: "og:image:alt", content: "The Resonance logo" },
+        { property: "og:site_name", content: "The Resonance" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: "RCGF v1.0 — Resonance Constitutional Governance Framework" },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: `${origin}/og-logo.png` },
+        { name: "twitter:image:alt", content: "The Resonance logo" },
+      ],
+      links: [{ rel: "canonical", href: `${origin}/governance` }],
+    };
+  },
   component: GovernancePage,
 });
+
 
 const ARTICLES: Array<{ no: string; title: string; body: string }> = [
   { no: "I", title: "Human Sovereignty", body: "Humans retain ultimate authority. AI informs and assists; humans decide." },
