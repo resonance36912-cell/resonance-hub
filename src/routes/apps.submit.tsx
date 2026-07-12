@@ -158,6 +158,7 @@ function SubmitAppPage() {
   };
 
   if (mut.isSuccess) {
+    const submissionId = mut.data?.id;
     return (
       <main className="mx-auto max-w-2xl p-6">
         <BackToHubHeader />
@@ -168,6 +169,19 @@ function SubmitAppPage() {
             <strong>{form.contactEmail}</strong>. Approved apps appear on the{" "}
             <Link to="/apps" className="underline">apps catalog</Link>.
           </p>
+          {submissionId ? (
+            <p className="mt-3 text-sm text-green-900/80">
+              Track review progress:{" "}
+              <Link
+                to="/apps/submissions/$id"
+                params={{ id: submissionId }}
+                className="font-medium underline"
+              >
+                View submission status
+              </Link>
+              . Bookmark that link — it shows the timeline as your submission is reviewed and published.
+            </p>
+          ) : null}
           <button
             onClick={() => {
               mut.reset();
