@@ -1,3 +1,4 @@
+// @no-back-to-hub redirect route
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/legal/governance")({

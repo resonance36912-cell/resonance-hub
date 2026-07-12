@@ -1,3 +1,4 @@
+// @no-back-to-hub authenticated account area with its own nav
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
