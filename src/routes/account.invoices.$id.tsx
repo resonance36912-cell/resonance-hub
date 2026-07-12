@@ -43,7 +43,7 @@ function ReceiptGate() {
   if (state === "checking") return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (state === "anon") return (
     <div className="p-8 text-sm">
-      <Link to="/auth" className="text-primary underline">Sign in</Link> to view this receipt.
+      <Link to="/login" className="text-primary underline">Sign in</Link> to view this receipt.
     </div>
   );
   return <ReceiptPage id={id} />;
