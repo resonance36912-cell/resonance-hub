@@ -78,6 +78,7 @@ export const ROUTES = {
   adminCredits: routePath("/admin/credits"),
   adminEmailDomain: routePath("/admin/email-domain"),
   adminEmails: routePath("/admin/emails"),
+  adminGmailGithub: routePath("/admin/gmail-github"),
   adminEntitlementDiagnostics: routePath("/admin/entitlement-diagnostics"),
   adminInvoices: routePath("/admin/invoices"),
   adminLogin: routePath("/admin/login"),

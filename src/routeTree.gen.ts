@@ -42,6 +42,7 @@ import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
+import { Route as AdminGmailGithubRouteImport } from './routes/admin.gmail-github'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
@@ -243,6 +244,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminInvoicesRoute = AdminInvoicesRouteImport.update({
   id: '/admin/invoices',
   path: '/admin/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGmailGithubRoute = AdminGmailGithubRouteImport.update({
+  id: '/admin/gmail-github',
+  path: '/admin/gmail-github',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEntitlementDiagnosticsRoute =
@@ -474,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/gmail-github': typeof AdminGmailGithubRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
@@ -546,6 +553,7 @@ export interface FileRoutesByTo {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/gmail-github': typeof AdminGmailGithubRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
@@ -619,6 +627,7 @@ export interface FileRoutesById {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/gmail-github': typeof AdminGmailGithubRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
@@ -693,6 +702,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/gmail-github'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
@@ -765,6 +775,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/gmail-github'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
@@ -837,6 +848,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/gmail-github'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
@@ -910,6 +922,7 @@ export interface RootRouteChildren {
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
+  AdminGmailGithubRoute: typeof AdminGmailGithubRoute
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
@@ -1183,6 +1196,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/invoices'
       fullPath: '/admin/invoices'
       preLoaderRoute: typeof AdminInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/gmail-github': {
+      id: '/admin/gmail-github'
+      path: '/admin/gmail-github'
+      fullPath: '/admin/gmail-github'
+      preLoaderRoute: typeof AdminGmailGithubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/entitlement-diagnostics': {
@@ -1513,6 +1533,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
+  AdminGmailGithubRoute: AdminGmailGithubRoute,
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
