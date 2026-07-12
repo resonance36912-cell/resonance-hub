@@ -88,6 +88,33 @@ async function signPaths(paths: string[]): Promise<string[]> {
 export const submitAppSubmission = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitSchema.parse(d))
   .handler(async ({ data }): Promise<{ id: string }> => {
+    // Authoritative URL + uniqueness checks (client-side hints are advisory).
+    const urlCheck = validateAppUrl(data.url);
+    if (!urlCheck.ok) throw new Error(urlCheck.reason);
+    const slug = slugify(data.name);
+    if (slug.length < 2) throw new Error("App name must contain letters or numbers.");
+    if (isReservedSlug(slug)) throw new Error(`"${slug}" is a reserved slug. Try a different name.`);
+    if (isReservedHost(urlCheck.host)) throw new Error(`${urlCheck.host} is already used by a Resonance app.`);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: dupErr } = await supabaseAdmin
+      .from("app_submissions")
+      .select("id,name,url,status")
+      .in("status", ["pending", "approved", "published"]);
+    if (dupErr) throw new Error(dupErr.message);
+    for (const row of existing ?? []) {
+      if (slugify(row.name) === slug) {
+        throw new Error(`An app named "${row.name}" is already submitted.`);
+      }
+      try {
+        if (normalizeHost(new URL(row.url).hostname) === urlCheck.host) {
+          throw new Error(`${urlCheck.host} has already been submitted.`);
+        }
+      } catch {
+        /* skip malformed legacy rows */
+      }
+    }
+
     const supabase = createClient<Database>(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PUBLISHABLE_KEY!,
@@ -97,7 +124,7 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
       .from("app_submissions")
       .insert({
         name: data.name,
-        url: data.url,
+        url: urlCheck.normalizedUrl,
         tagline: data.tagline,
         description: data.description ?? null,
         use_case: data.useCase ?? null,
@@ -111,6 +138,87 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { id: row.id };
   });
+
+// -------- Public: pre-submit availability check --------
+
+const availabilitySchema = z.object({
+  name: z.string().trim().max(80).optional().default(""),
+  url: z.string().trim().max(500).optional().default(""),
+});
+
+export type SubmissionAvailability = {
+  slug: string;
+  host: string | null;
+  normalizedUrl: string | null;
+  urlError: string | null;
+  slugTaken: boolean;
+  slugReserved: boolean;
+  hostTaken: boolean;
+  hostReserved: boolean;
+  conflictWith?: { name: string; url: string } | null;
+};
+
+export const checkSubmissionAvailability = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => availabilitySchema.parse(d))
+  .handler(async ({ data }): Promise<SubmissionAvailability> => {
+    const slug = slugify(data.name ?? "");
+    let host: string | null = null;
+    let normalizedUrl: string | null = null;
+    let urlError: string | null = null;
+    if (data.url && data.url.trim()) {
+      const urlCheck = validateAppUrl(data.url);
+      if (urlCheck.ok) {
+        host = urlCheck.host;
+        normalizedUrl = urlCheck.normalizedUrl;
+      } else {
+        urlError = urlCheck.reason;
+      }
+    }
+    const slugReserved = slug.length >= 2 && isReservedSlug(slug);
+    const hostReserved = !!host && isReservedHost(host);
+
+    let slugTaken = false;
+    let hostTaken = false;
+    let conflictWith: { name: string; url: string } | null = null;
+
+    if ((slug.length >= 2 && !slugReserved) || (host && !hostReserved)) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: rows } = await supabaseAdmin
+        .from("app_submissions")
+        .select("name,url,status")
+        .in("status", ["pending", "approved", "published"]);
+      for (const r of rows ?? []) {
+        const rSlug = slugify(r.name);
+        let rHost: string | null = null;
+        try {
+          rHost = normalizeHost(new URL(r.url).hostname);
+        } catch {
+          /* ignore */
+        }
+        if (slug.length >= 2 && rSlug === slug) {
+          slugTaken = true;
+          conflictWith = { name: r.name, url: r.url };
+        }
+        if (host && rHost === host) {
+          hostTaken = true;
+          conflictWith = conflictWith ?? { name: r.name, url: r.url };
+        }
+      }
+    }
+
+    return {
+      slug,
+      host,
+      normalizedUrl,
+      urlError,
+      slugTaken,
+      slugReserved,
+      hostTaken,
+      hostReserved,
+      conflictWith,
+    };
+  });
+
 
 // -------- Public: list published --------
 
