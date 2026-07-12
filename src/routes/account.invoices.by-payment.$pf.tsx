@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { findInvoiceByPfPaymentId } from "@/lib/invoices.functions";
+import { ROUTES } from "@/lib/routes";
 
 
 export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.login });
   },
   component: ByPaymentPage,
 });
