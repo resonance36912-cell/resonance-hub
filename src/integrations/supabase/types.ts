@@ -21,11 +21,13 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          logo_path: string | null
           name: string
           published_at: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          screenshot_paths: string[]
           status: string
           submitter_user_id: string | null
           tagline: string
@@ -39,11 +41,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          logo_path?: string | null
           name: string
           published_at?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          screenshot_paths?: string[]
           status?: string
           submitter_user_id?: string | null
           tagline: string
@@ -57,11 +61,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          logo_path?: string | null
           name?: string
           published_at?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          screenshot_paths?: string[]
           status?: string
           submitter_user_id?: string | null
           tagline?: string
