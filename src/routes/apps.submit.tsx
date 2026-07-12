@@ -1,10 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
-import { submitAppSubmission } from "@/lib/app-submissions.functions";
+import {
+  submitAppSubmission,
+  checkSubmissionAvailability,
+  type SubmissionAvailability,
+} from "@/lib/app-submissions.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { slugify, validateAppUrl } from "@/lib/app-submission-validation";
+
 
 export const Route = createFileRoute("/apps/submit")({
   head: () => ({
@@ -55,6 +61,7 @@ async function uploadImage(file: File): Promise<string> {
 
 function SubmitAppPage() {
   const submitFn = useServerFn(submitAppSubmission);
+  const checkFn = useServerFn(checkSubmissionAvailability);
   const [form, setForm] = useState({
     name: "",
     url: "",
@@ -69,6 +76,51 @@ function SubmitAppPage() {
   const [shotFiles, setShotFiles] = useState<File[]>([]);
   const [shotPreviews, setShotPreviews] = useState<string[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [avail, setAvail] = useState<SubmissionAvailability | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const urlLocal = form.url.trim() ? validateAppUrl(form.url) : null;
+  const localUrlError = urlLocal && !urlLocal.ok ? urlLocal.reason : null;
+  const localSlug = slugify(form.name);
+  const localSlugError =
+    form.name.trim().length >= 2 && localSlug.length < 2
+      ? "App name must contain letters or numbers."
+      : null;
+
+  // Debounced availability check against server (uniqueness + reserved sets).
+  useEffect(() => {
+    const name = form.name.trim();
+    const url = form.url.trim();
+    if (name.length < 2 && !url) {
+      setAvail(null);
+      return;
+    }
+    if (localUrlError) {
+      setAvail(null);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setChecking(true);
+      try {
+        const result = await checkFn({ data: { name, url } });
+        setAvail(result);
+      } catch {
+        setAvail(null);
+      } finally {
+        setChecking(false);
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [form.name, form.url, localUrlError, checkFn]);
+
+  const availError =
+    (avail?.slugReserved && `"${avail.slug}" is a reserved slug — try a different name.`) ||
+    (avail?.hostReserved && `${avail.host} is already used by a Resonance app.`) ||
+    (avail?.slugTaken && `An app named "${avail.conflictWith?.name}" is already submitted.`) ||
+    (avail?.hostTaken && `${avail.host} has already been submitted.`) ||
+    null;
+
+
 
   const resetAll = () => {
     setForm({
@@ -224,8 +276,16 @@ function SubmitAppPage() {
             className={inputCls}
           />
         </Field>
+        {localSlugError ? (
+          <p className="-mt-3 text-xs text-red-700">{localSlugError}</p>
+        ) : localSlug.length >= 2 ? (
+          <p className="-mt-3 text-xs text-muted-foreground">
+            Catalog slug: <code>{localSlug}</code>
+            {checking ? " · checking…" : ""}
+          </p>
+        ) : null}
 
-        <Field label="App URL" required hint="Full https:// URL">
+        <Field label="App URL" required hint="Full https:// URL, real domain (no localhost or IPs)">
           <input
             required
             type="url"
@@ -236,6 +296,19 @@ function SubmitAppPage() {
             placeholder="https://your-app.example.com"
           />
         </Field>
+        {localUrlError ? (
+          <p className="-mt-3 text-xs text-red-700">{localUrlError}</p>
+        ) : avail?.normalizedUrl && avail.normalizedUrl !== form.url ? (
+          <p className="-mt-3 text-xs text-muted-foreground">
+            Will be saved as <code>{avail.normalizedUrl}</code>
+          </p>
+        ) : null}
+        {availError ? (
+          <p className="-mt-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            {availError}
+          </p>
+        ) : null}
+
 
         <Field label="Tagline" required hint="One line, 10–160 characters">
           <input
@@ -367,7 +440,7 @@ function SubmitAppPage() {
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            disabled={mut.isPending || !!fileError}
+            disabled={mut.isPending || !!fileError || !!localUrlError || !!localSlugError || !!availError || checking}
             className="rounded-md bg-primary px-4 py-2 text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-60"
           >
             {mut.isPending ? "Submitting…" : "Submit for review"}
