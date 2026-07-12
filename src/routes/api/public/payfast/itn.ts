@@ -244,7 +244,28 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // Monthly-only billing. See note on SKU_CATALOG above.
         periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-        const { error } = await supabaseAdmin
+        // Snapshot prior subscription for this (user, app) so we can classify
+        // the plan change (upgrade / downgrade / sidegrade / initial) and log
+        // it after the upsert. Tier rank order mirrors SKU_CATALOG pricing.
+        const TIER_RANK: Record<string, number> = {
+          free: 0,
+          starter: 1,
+          creator: 2,
+          creator_pass: 3,
+          pro: 4,
+          studio_pass: 5,
+          business: 6,
+          all_access: 7,
+        };
+
+        const { data: priorRow } = await supabaseAdmin
+          .from("subscriptions")
+          .select("id,app,tier,status")
+          .eq("user_id", userId)
+          .eq("app", def.app as never)
+          .maybeSingle();
+
+        const { data: upserted, error } = await supabaseAdmin
           .from("subscriptions")
           .upsert(
             {
@@ -259,9 +280,14 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
               billing_cycle: def.cycle,
               current_period_end: nextStatus === "active" ? periodEnd.toISOString() : null,
               cancelled_at: nextStatus === "cancelled" ? new Date().toISOString() : null,
+              // Clear supersession when a plan re-activates.
+              superseded_by: null as never,
+              superseded_at: null as never,
             },
             { onConflict: "user_id,app" },
-          );
+          )
+          .select("id")
+          .single();
 
         if (error) {
           // Leave webhook_events without processed_at so PayFast can retry
@@ -275,6 +301,88 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             outcome: "db_error", http_status: 500, error_message: error.message });
           return new Response("db error", { status: 500 });
         }
+
+        const newSubId = (upserted as { id: string } | null)?.id ?? null;
+
+        // Classify + record the plan change (only for terminal states we care
+        // about — active or cancelled — to avoid noisy `pending` rows).
+        if (nextStatus === "active" || nextStatus === "cancelled") {
+          const priorTier = priorRow?.tier as string | undefined;
+          const priorApp = priorRow?.app as string | undefined;
+          let changeType: string;
+          if (nextStatus === "cancelled") {
+            changeType = "cancel";
+          } else if (!priorRow || priorRow.status !== "active") {
+            changeType = "initial";
+          } else if (priorTier === def.tier) {
+            changeType = "sidegrade";
+          } else {
+            const before = TIER_RANK[priorTier ?? "free"] ?? 0;
+            const after = TIER_RANK[def.tier] ?? 0;
+            changeType = after > before ? "upgrade" : after < before ? "downgrade" : "sidegrade";
+          }
+
+          try {
+            await supabaseAdmin.from("plan_changes" as never).insert({
+              user_id: userId,
+              from_sub_id: priorRow?.id ?? null,
+              to_sub_id: newSubId,
+              from_app: priorApp ?? null,
+              from_tier: priorTier ?? null,
+              to_app: def.app,
+              to_tier: def.tier,
+              change_type: changeType,
+              reason: `payfast_itn:${paymentStatus}`,
+              pf_payment_id: pfPaymentId,
+            } as never);
+          } catch (err) {
+            console.error("plan_changes insert failed (non-fatal):", err);
+          }
+        }
+
+        // Ecosystem-pass supersession: when an `all_access` bundle activates,
+        // mark this user's other active per-app subs as cancelled + supersede
+        // pointer so the entitlement resolver stops double-counting. The
+        // bundle now covers those apps at its own tier, and users no longer
+        // pay for per-app subs they've replaced. Existing PayFast recurring
+        // tokens on those per-app subs must still be cancelled out-of-band
+        // by the user or admin; this only fixes DB truth.
+        if (nextStatus === "active" && def.app === "all_access" && newSubId) {
+          try {
+            const nowIso = new Date().toISOString();
+            const { data: superseded } = await supabaseAdmin
+              .from("subscriptions")
+              .update({
+                status: "cancelled" as never,
+                cancelled_at: nowIso,
+                superseded_by: newSubId as never,
+                superseded_at: nowIso as never,
+              })
+              .eq("user_id", userId)
+              .eq("status", "active" as never)
+              .neq("app", "all_access" as never)
+              .select("id,app,tier");
+
+            for (const row of (superseded as Array<{ id: string; app: string; tier: string }> | null) ?? []) {
+              await supabaseAdmin.from("plan_changes" as never).insert({
+                user_id: userId,
+                from_sub_id: row.id,
+                to_sub_id: newSubId,
+                from_app: row.app,
+                from_tier: row.tier,
+                to_app: def.app,
+                to_tier: def.tier,
+                change_type: "supersede",
+                reason: `superseded_by_bundle:${def.tier}`,
+                pf_payment_id: pfPaymentId,
+              } as never);
+            }
+          } catch (err) {
+            console.error("supersede sweep failed (non-fatal):", err);
+          }
+        }
+
+
 
         // Idempotent confirmation-email enqueue (only for active subscriptions with a payment id)
         if (nextStatus === "active" && pfPaymentId) {
