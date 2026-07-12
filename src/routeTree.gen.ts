@@ -33,6 +33,7 @@ import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe
 import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminSecurityScanRouteImport } from './routes/admin.security-scan'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
@@ -47,6 +48,7 @@ import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domai
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
+import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
@@ -197,6 +199,11 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   path: '/cancel',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const AppsSubmitRoute = AppsSubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => AppsRoute,
+} as any)
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
   path: '/admin/webhooks',
@@ -266,6 +273,11 @@ const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
 const AdminBillingRoute = AdminBillingRouteImport.update({
   id: '/admin/billing',
   path: '/admin/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAppSubmissionsRoute = AdminAppSubmissionsRouteImport.update({
+  id: '/admin/app-submissions',
+  path: '/admin/app-submissions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
@@ -433,7 +445,7 @@ const ApiPublicGenerateCreativeStudioPosterRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/apps': typeof AppsRoute
+  '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
@@ -449,6 +461,7 @@ export interface FileRoutesByFullPath {
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/credits': typeof AdminCreditsRoute
@@ -463,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/admin/rop': typeof AdminRopRoute
   '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
@@ -502,7 +516,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/apps': typeof AppsRoute
+  '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
@@ -518,6 +532,7 @@ export interface FileRoutesByTo {
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/credits': typeof AdminCreditsRoute
@@ -532,6 +547,7 @@ export interface FileRoutesByTo {
   '/admin/rop': typeof AdminRopRoute
   '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
@@ -572,7 +588,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/apps': typeof AppsRoute
+  '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
@@ -588,6 +604,7 @@ export interface FileRoutesById {
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/credits': typeof AdminCreditsRoute
@@ -602,6 +619,7 @@ export interface FileRoutesById {
   '/admin/rop': typeof AdminRopRoute
   '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
@@ -659,6 +677,7 @@ export interface FileRouteTypes {
     | '/account/debug'
     | '/account/invoices'
     | '/account/subscriptions'
+    | '/admin/app-submissions'
     | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/credits'
@@ -673,6 +692,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/security-scan'
     | '/admin/webhooks'
+    | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
@@ -728,6 +748,7 @@ export interface FileRouteTypes {
     | '/account/debug'
     | '/account/invoices'
     | '/account/subscriptions'
+    | '/admin/app-submissions'
     | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/credits'
@@ -742,6 +763,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/security-scan'
     | '/admin/webhooks'
+    | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
@@ -797,6 +819,7 @@ export interface FileRouteTypes {
     | '/account/debug'
     | '/account/invoices'
     | '/account/subscriptions'
+    | '/admin/app-submissions'
     | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/credits'
@@ -811,6 +834,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/security-scan'
     | '/admin/webhooks'
+    | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
@@ -851,7 +875,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppsRoute: typeof AppsRoute
+  AppsRoute: typeof AppsRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   GovernanceRoute: typeof GovernanceRoute
@@ -867,6 +891,7 @@ export interface RootRouteChildren {
   AccountDebugRoute: typeof AccountDebugRoute
   AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
@@ -1085,6 +1110,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCancelRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/apps/submit': {
+      id: '/apps/submit'
+      path: '/submit'
+      fullPath: '/apps/submit'
+      preLoaderRoute: typeof AppsSubmitRouteImport
+      parentRoute: typeof AppsRoute
+    }
     '/admin/webhooks': {
       id: '/admin/webhooks'
       path: '/admin/webhooks'
@@ -1181,6 +1213,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/billing'
       fullPath: '/admin/billing'
       preLoaderRoute: typeof AdminBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/app-submissions': {
+      id: '/admin/app-submissions'
+      path: '/admin/app-submissions'
+      fullPath: '/admin/app-submissions'
+      preLoaderRoute: typeof AdminAppSubmissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/subscriptions': {
@@ -1389,6 +1428,16 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppsRouteChildren {
+  AppsSubmitRoute: typeof AppsSubmitRoute
+}
+
+const AppsRouteChildren: AppsRouteChildren = {
+  AppsSubmitRoute: AppsSubmitRoute,
+}
+
+const AppsRouteWithChildren = AppsRoute._addFileChildren(AppsRouteChildren)
+
 interface CheckoutRouteChildren {
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
@@ -1419,7 +1468,7 @@ const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppsRoute: AppsRoute,
+  AppsRoute: AppsRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   GovernanceRoute: GovernanceRoute,
@@ -1436,6 +1485,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountDebugRoute: AccountDebugRoute,
   AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
   AdminCreditsRoute: AdminCreditsRoute,

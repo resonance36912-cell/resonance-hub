@@ -98,6 +98,7 @@ function AdminHome() {
     { to: "/admin/rop", label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
     { to: "/admin/emails", label: "Email Queue", desc: "Transactional sends and delivery status." },
     { to: "/admin/email-domain", label: "Email Domain", desc: "Sending domain configuration and DNS." },
+    { to: "/admin/app-submissions", label: "App Submissions", desc: "Review and publish community-submitted apps to the catalog." },
   ] as const;
 
   return (

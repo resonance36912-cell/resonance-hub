@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo } from "react";
@@ -9,6 +11,7 @@ import {
   type AppRegistryEntry,
   type EcosystemEntry,
 } from "@/lib/app-registry";
+import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
@@ -115,22 +118,58 @@ function filterTiles(tiles: Tile[], q: string): Tile[] {
 function AppsCatalogPage() {
   const { q } = Route.useSearch();
   const navigate = Route.useNavigate();
+  const listPublishedFn = useServerFn(listPublishedSubmissions);
+
+  const publishedQ = useQuery({
+    queryKey: ["published-app-submissions"],
+    queryFn: () => listPublishedFn(),
+    staleTime: 60_000,
+  });
+
+  const communityTiles: Tile[] = useMemo(
+    () =>
+      (publishedQ.data ?? []).map((s) => ({
+        key: `community:${s.id}`,
+        label: s.name,
+        url: s.url,
+        status: "live" as const,
+        tagline: s.tagline,
+        useCase: s.use_case ?? undefined,
+        accentColor: s.accent_color ?? undefined,
+        badge: "Community",
+        external: true,
+        paid: false,
+      })),
+    [publishedQ.data],
+  );
 
   const filteredPaid = useMemo(() => filterTiles(paidTiles, q), [q]);
   const filteredEcosystem = useMemo(() => filterTiles(ecosystemTiles, q), [q]);
+  const filteredCommunity = useMemo(() => filterTiles(communityTiles, q), [communityTiles, q]);
   const filteredUpcoming = useMemo(() => filterTiles(upcomingTiles, q), [q]);
   const totalMatches =
-    filteredPaid.length + filteredEcosystem.length + filteredUpcoming.length;
+    filteredPaid.length +
+    filteredEcosystem.length +
+    filteredCommunity.length +
+    filteredUpcoming.length;
 
   return (
     <main className="mx-auto max-w-6xl p-6">
       <BackToHubHeader />
-      <header className="mt-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Resonance Apps</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          Every app in the Resonance ecosystem. Paid apps share a single account,
-          billing spine, and All-Access pass on <a href="https://reson8.life" className="text-primary underline">reson8.life</a>.
-        </p>
+      <header className="mt-4 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Resonance Apps</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Every app in the Resonance ecosystem. Paid apps share a single account,
+            billing spine, and All-Access pass on <a href="https://reson8.life" className="text-primary underline">reson8.life</a>.
+          </p>
+        </div>
+        <Link
+          to="/apps/submit"
+          className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
+        >
+          Submit an app →
+        </Link>
       </header>
 
       <div className="mt-6">
@@ -172,6 +211,19 @@ function AppsCatalogPage() {
         emptyMessage="No ecosystem entries match your search."
       />
 
+      {communityTiles.length > 0 || q ? (
+        <Section
+          title="Community apps"
+          subtitle="Community-submitted apps that have been reviewed and published."
+          tiles={filteredCommunity}
+          emptyMessage={
+            publishedQ.isLoading
+              ? "Loading community apps…"
+              : "No community apps yet — be the first to submit one."
+          }
+        />
+      ) : null}
+
       <Section
         title="Upcoming"
         subtitle="What's next on the Resonance roadmap."
@@ -181,6 +233,7 @@ function AppsCatalogPage() {
     </main>
   );
 }
+
 
 function Section({
   title,
