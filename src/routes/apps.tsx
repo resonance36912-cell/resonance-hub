@@ -145,7 +145,7 @@ function AppsCatalogPage() {
           onChange={(e) => {
             const value = e.target.value;
             navigate({
-              search: (prev) => ({ ...prev, q: value }),
+              search: { q: value },
               replace: true,
             });
           }}
