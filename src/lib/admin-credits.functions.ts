@@ -19,6 +19,12 @@ export type AdminWalletRow = {
   updated_at: string;
 };
 
+export type LedgerMeta = {
+  admin_user_id: string | null;
+  admin_email: string | null;
+  note: string | null;
+};
+
 export type AdminLedgerRow = {
   id: string;
   app: string;
@@ -27,7 +33,7 @@ export type AdminLedgerRow = {
   reason: string;
   sku: string | null;
   pf_payment_id: string | null;
-  metadata: Record<string, unknown>;
+  metadata: LedgerMeta;
   created_at: string;
 };
 
