@@ -9,6 +9,7 @@ import {
   type AppKey,
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
+import { retryPayfastLaunch } from "@/lib/checkout.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 
