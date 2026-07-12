@@ -1,10 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
-import { submitAppSubmission } from "@/lib/app-submissions.functions";
+import {
+  submitAppSubmission,
+  checkSubmissionAvailability,
+  type SubmissionAvailability,
+} from "@/lib/app-submissions.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { slugify, validateAppUrl } from "@/lib/app-submission-validation";
+
 
 export const Route = createFileRoute("/apps/submit")({
   head: () => ({
