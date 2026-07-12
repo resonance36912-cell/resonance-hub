@@ -433,9 +433,11 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           }
         }
 
-        await finalize(`subscription_${nextStatus}`, 200, "ok");
+        const outcomeTag = isRefund ? "subscription_refunded" : `subscription_${nextStatus}`;
+        await finalize(outcomeTag, 200, "ok");
         await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
-          outcome: `subscription_${nextStatus}`, http_status: 200 });
+          outcome: outcomeTag, http_status: 200 });
+
         return new Response("ok", { status: 200 });
 
       },
