@@ -72,7 +72,7 @@ async function signPaths(paths: string[]): Promise<string[]> {
     .from("app-submissions")
     .createSignedUrls(paths, SIGNED_URL_TTL_SEC);
   if (error) return [];
-  return (data ?? []).map((d) => d.signedUrl).filter(Boolean);
+  return (data ?? []).map((d) => d.signedUrl ?? "");
 }
 
 // -------- Public: submit --------
