@@ -680,3 +680,69 @@ function AdjustForm({
     </section>
   );
 }
+
+function csvEscape(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  const s = typeof v === "string" ? v : typeof v === "object" ? JSON.stringify(v) : String(v);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function buildLedgerCsv(rows: AdminLedgerRow[]): string {
+  const header = [
+    "created_at",
+    "id",
+    "app",
+    "delta",
+    "balance_after",
+    "reason",
+    "sku",
+    "pf_payment_id",
+    "admin_email",
+    "admin_user_id",
+    "note",
+    "reverses_ledger_id",
+    "metadata_json",
+  ];
+  const lines = [header.join(",")];
+  for (const r of rows) {
+    const meta = (r.metadata ?? {}) as {
+      admin_email?: string | null;
+      admin_user_id?: string | null;
+      note?: string | null;
+      reverses_ledger_id?: string | null;
+    };
+    lines.push(
+      [
+        r.created_at,
+        r.id,
+        r.app,
+        r.delta,
+        r.balance_after,
+        r.reason,
+        r.sku,
+        r.pf_payment_id,
+        meta.admin_email ?? null,
+        meta.admin_user_id ?? null,
+        meta.note ?? null,
+        meta.reverses_ledger_id ?? null,
+        r.metadata,
+      ]
+        .map(csvEscape)
+        .join(","),
+    );
+  }
+  // Prepend UTF-8 BOM so Excel opens with correct encoding
+  return "\uFEFF" + lines.join("\r\n") + "\r\n";
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
