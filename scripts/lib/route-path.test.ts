@@ -20,7 +20,7 @@ describe("routePath()", () => {
     expect(routePath("/login")).toBe("/login");
     expect(routePath("/pricing")).toBe("/pricing");
     expect(routePath("/account/billing")).toBe("/account/billing");
-    expect(routePath("/admin/")).toBe("/admin/");
+    expect(routePath("/admin")).toBe("/admin");
   });
 
   it("preserves the literal type of the input (identity generic)", () => {
@@ -48,6 +48,8 @@ describe("routePath()", () => {
 
     // @ts-expect-error — "/auth" is not a registered route (regression guard)
     routePath("/auth");
+    // @ts-expect-error — canonical admin URL has no trailing slash
+    routePath("/admin/");
     // @ts-expect-error — arbitrary string is not assignable to RoutePath
     routePath("/definitely-not-a-route");
     // @ts-expect-error — typo of a real route
