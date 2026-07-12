@@ -112,11 +112,11 @@ async def main() -> int:
                     f"(window.__navMarker={nav_marker!r}); AppLink should do client-side nav"
                 )
 
-            # Route-mounted content check.
-            body_text = await page.locator("body").inner_text()
-            if hop["marker"] not in body_text:
+            # Route-mounted content check via <title> (unique per route).
+            title = await page.title()
+            if hop["title_contains"] not in title:
                 failures.append(
-                    f"hop '{hop['link_name']}': destination body missing marker '{hop['marker']}'"
+                    f"hop '{hop['link_name']}': title {title!r} missing '{hop['title_contains']}'"
                 )
 
             await page.screenshot(path=str(SCREENSHOTS / f"{i}_{hop['link_name']}.png"))
