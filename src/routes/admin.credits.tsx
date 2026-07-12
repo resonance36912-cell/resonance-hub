@@ -7,6 +7,7 @@ import {
   lookupCreditUser,
   adjustCredits,
   queryUserLedger,
+  reverseCreditAdjustment,
   type CreditUserLookup,
   type AdminWalletRow,
   type AdminLedgerPage,
