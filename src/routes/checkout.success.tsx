@@ -55,8 +55,8 @@ function SuccessPage() {
 
   const secondaryTo =
     ctx.kind === "pack"
-      ? { to: ROUTES.pricing as const, hash: "packs", label: "See more packs" }
-      : { to: ROUTES.accountSubscriptions as const, hash: undefined, label: "View subscriptions" };
+      ? { to: ROUTES.pricing, hash: "packs", label: "See more packs" }
+      : { to: ROUTES.accountSubscriptions, hash: undefined, label: "View subscriptions" };
 
   // Only subscription SKUs (pass or legacy_monthly) create rows in `subscriptions`
   // via the ITN handler. Packs are once-off and don't have an entitlement row.
