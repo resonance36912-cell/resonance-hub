@@ -117,7 +117,7 @@ function scanFile(file: string, matchers: RegExp[]): Hit[] {
     re.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = re.exec(src)) !== null) {
-      const path = m[1];
+      const path = normalizePath(m[1]);
       if (ALLOWLIST_EXACT.has(path)) continue;
       if (ALLOWLIST_PREFIXES.some((p) => path.startsWith(p))) continue;
       if (matchers.some((r) => r.test(path))) continue;
