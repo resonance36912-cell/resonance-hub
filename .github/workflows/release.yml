@@ -66,15 +66,13 @@ jobs:
           NEW_DATE: ${{ steps.version.outputs.date }}
         run: |
           python3 <<'PY'
-          import os, re, pathlib, sys
+          import os, re, pathlib, sys, textwrap
 
           version = os.environ["NEW_VERSION"]
           date = os.environ["NEW_DATE"]
           path = pathlib.Path("CHANGELOG.md")
           text = path.read_text()
 
-          # Find the [Unreleased] section: from its heading up to the next top-level
-          # version heading (## [x.y.z]) or end of file.
           pattern = re.compile(
               r"(##\s*\[Unreleased\][^\n]*\n)(.*?)(?=\n##\s*\[\d|\Z)",
               re.DOTALL,
@@ -86,58 +84,55 @@ jobs:
 
           unreleased_body = m.group(2).strip("\n")
 
-          # Reject empty releases — every subsection is still the "_Nothing yet._"
-          # placeholder and there are no real bullets.
           non_placeholder = re.sub(r"_Nothing yet\._", "", unreleased_body)
           non_placeholder = re.sub(r"<!--.*?-->", "", non_placeholder, flags=re.DOTALL)
           if not re.search(r"^\s*-\s+\S", non_placeholder, re.MULTILINE):
               print("::error::[Unreleased] has no real entries — nothing to release.")
               sys.exit(1)
 
-          fresh_unreleased = """## [Unreleased]
+          fresh_unreleased = textwrap.dedent("""\
+              ## [Unreleased]
 
-Track upcoming work here before it ships. Move entries under a new dated
-version heading at release time and reset each subsection to
-`_Nothing yet._`.
+              Track upcoming work here before it ships. Move entries under a new dated
+              version heading at release time and reset each subsection to
+              `_Nothing yet._`.
 
-### Added
+              ### Added
 
-_Nothing yet._
+              _Nothing yet._
 
-### Changed
+              ### Changed
 
-_Nothing yet._
+              _Nothing yet._
 
-### Deprecated
+              ### Deprecated
 
-_Nothing yet._
+              _Nothing yet._
 
-### Removed
+              ### Removed
 
-_Nothing yet._
+              _Nothing yet._
 
-### Fixed
+              ### Fixed
 
-_Nothing yet._
+              _Nothing yet._
 
-### Security
+              ### Security
 
-_Nothing yet._
+              _Nothing yet._
 
-"""
+              """)
 
           new_heading = f"## [{version}] \u2014 {date}\n"
           replacement = fresh_unreleased + new_heading + unreleased_body.rstrip() + "\n"
           new_text = text[: m.start()] + replacement + text[m.end():]
 
-          # Refresh the compare/tag link footer if present.
           repo = os.environ.get("GITHUB_REPOSITORY", "resonance36912-cell/resonance-hub")
           new_text = re.sub(
               r"\[Unreleased\]:\s*https://github\.com/[^\s]+/compare/[^\s]+",
               f"[Unreleased]: https://github.com/{repo}/compare/v{version}...HEAD",
               new_text,
           )
-          # Add a link reference for the new version if a link footer exists.
           if re.search(r"^\[\d[^\]]*\]:\s*https://github\.com/", new_text, re.MULTILINE):
               new_link = f"[{version}]: https://github.com/{repo}/releases/tag/v{version}"
               if new_link not in new_text:
