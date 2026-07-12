@@ -394,6 +394,55 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           }
         }
 
+        // Invoice / receipt record — one row per COMPLETE or REFUND event.
+        // Unique on (provider, pf_payment_id) so duplicate ITN replays no-op.
+        if (pfPaymentId && (paymentStatus === "COMPLETE" || isRefund)) {
+          try {
+            const invoiceStatus = isRefund ? "refunded" : "paid";
+            const { data: recipientRec } = await supabaseAdmin.auth.admin.getUserById(userId);
+            const recipient = recipientRec?.user?.email ?? null;
+
+            // Human-readable number from a dedicated sequence.
+            const { data: seqRow } = await supabaseAdmin
+              .rpc("nextval" as never, { seq: "public.invoice_number_seq" } as never)
+              .single();
+            let numeric: number | null = null;
+            if (typeof seqRow === "number") numeric = seqRow;
+            else if (seqRow && typeof (seqRow as { nextval?: number }).nextval === "number") {
+              numeric = (seqRow as { nextval: number }).nextval;
+            }
+            const invoiceNumber = `INV-${String(numeric ?? Date.now()).padStart(6, "0")}`;
+
+            const { error: invErr } = await supabaseAdmin
+              .from("invoices" as never)
+              .upsert(
+                {
+                  user_id: userId,
+                  subscription_id: newSubId,
+                  number: invoiceNumber,
+                  sku,
+                  app: def.app,
+                  tier: def.tier,
+                  billing_cycle: def.cycle,
+                  amount_cents: def.amountCents,
+                  currency: "ZAR",
+                  status: invoiceStatus,
+                  recipient_email: recipient,
+                  pf_payment_id: pfPaymentId,
+                  m_payment_id: mPaymentId,
+                  provider: "payfast",
+                  issued_at: new Date().toISOString(),
+                  refunded_at: isRefund ? new Date().toISOString() : null,
+                  metadata: { payment_status: paymentStatus, source: "payfast_itn" },
+                } as never,
+                { onConflict: "provider,pf_payment_id" },
+              );
+            if (invErr) console.error("invoice upsert failed (non-fatal):", invErr);
+          } catch (err) {
+            console.error("invoice write failed (non-fatal):", err);
+          }
+        }
+
 
 
         // Idempotent confirmation-email enqueue (only for active subscriptions with a payment id)
