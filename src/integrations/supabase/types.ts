@@ -709,6 +709,86 @@ export type Database = {
         }
         Relationships: []
       }
+      invoices: {
+        Row: {
+          amount_cents: number
+          app: string | null
+          billing_cycle: string | null
+          created_at: string
+          currency: string
+          id: string
+          issued_at: string
+          m_payment_id: string | null
+          metadata: Json
+          number: string
+          pdf_path: string | null
+          pf_payment_id: string | null
+          provider: string
+          recipient_email: string | null
+          refunded_at: string | null
+          sku: string | null
+          status: string
+          subscription_id: string | null
+          tier: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          app?: string | null
+          billing_cycle?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          issued_at?: string
+          m_payment_id?: string | null
+          metadata?: Json
+          number: string
+          pdf_path?: string | null
+          pf_payment_id?: string | null
+          provider?: string
+          recipient_email?: string | null
+          refunded_at?: string | null
+          sku?: string | null
+          status: string
+          subscription_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          app?: string | null
+          billing_cycle?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          issued_at?: string
+          m_payment_id?: string | null
+          metadata?: Json
+          number?: string
+          pdf_path?: string | null
+          pf_payment_id?: string | null
+          provider?: string
+          recipient_email?: string | null
+          refunded_at?: string | null
+          sku?: string | null
+          status?: string
+          subscription_id?: string | null
+          tier?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string

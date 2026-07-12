@@ -35,18 +35,21 @@ import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
+import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
+import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -197,6 +200,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
   path: '/admin/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminInvoicesRoute = AdminInvoicesRouteImport.update({
+  id: '/admin/invoices',
+  path: '/admin/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminEntitlementDiagnosticsRoute =
   AdminEntitlementDiagnosticsRouteImport.update({
     id: '/admin/entitlement-diagnostics',
@@ -226,6 +234,11 @@ const AdminBillingRoute = AdminBillingRouteImport.update({
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountInvoicesRoute = AccountInvoicesRouteImport.update({
+  id: '/account/invoices',
+  path: '/account/invoices',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountDebugRoute = AccountDebugRouteImport.update({
@@ -259,6 +272,11 @@ const ApiPublicEntitlementRoute = ApiPublicEntitlementRouteImport.update({
   id: '/api/public/entitlement',
   path: '/api/public/entitlement',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AccountInvoicesIdRoute = AccountInvoicesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AccountInvoicesRoute,
 } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
@@ -382,12 +400,14 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/repo-health': typeof AdminRepoHealthRoute
@@ -409,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
@@ -441,12 +462,14 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/repo-health': typeof AdminRepoHealthRoute
@@ -468,6 +491,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
@@ -501,12 +525,14 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/repo-health': typeof AdminRepoHealthRoute
@@ -528,6 +554,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
@@ -562,12 +589,14 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
+    | '/account/invoices'
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/repo-health'
@@ -589,6 +618,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
@@ -621,12 +651,14 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
+    | '/account/invoices'
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/repo-health'
@@ -648,6 +680,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
@@ -680,12 +713,14 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
+    | '/account/invoices'
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/repo-health'
@@ -707,6 +742,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/api/public/analytics/auth-gate'
@@ -740,12 +776,14 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
+  AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
+  AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminRepoHealthRoute: typeof AdminRepoHealthRoute
@@ -970,6 +1008,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/invoices': {
+      id: '/admin/invoices'
+      path: '/admin/invoices'
+      fullPath: '/admin/invoices'
+      preLoaderRoute: typeof AdminInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/entitlement-diagnostics': {
       id: '/admin/entitlement-diagnostics'
       path: '/admin/entitlement-diagnostics'
@@ -1010,6 +1055,13 @@ declare module '@tanstack/react-router' {
       path: '/account/subscriptions'
       fullPath: '/account/subscriptions'
       preLoaderRoute: typeof AccountSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/invoices': {
+      id: '/account/invoices'
+      path: '/account/invoices'
+      fullPath: '/account/invoices'
+      preLoaderRoute: typeof AccountInvoicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account/debug': {
@@ -1053,6 +1105,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/entitlement'
       preLoaderRoute: typeof ApiPublicEntitlementRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/account/invoices/$id': {
+      id: '/account/invoices/$id'
+      path: '/$id'
+      fullPath: '/account/invoices/$id'
+      preLoaderRoute: typeof AccountInvoicesIdRouteImport
+      parentRoute: typeof AccountInvoicesRoute
     }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
@@ -1204,6 +1263,18 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
   CheckoutRouteChildren,
 )
 
+interface AccountInvoicesRouteChildren {
+  AccountInvoicesIdRoute: typeof AccountInvoicesIdRoute
+}
+
+const AccountInvoicesRouteChildren: AccountInvoicesRouteChildren = {
+  AccountInvoicesIdRoute: AccountInvoicesIdRoute,
+}
+
+const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
+  AccountInvoicesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
@@ -1217,12 +1288,14 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
+  AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
+  AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminRepoHealthRoute: AdminRepoHealthRoute,
