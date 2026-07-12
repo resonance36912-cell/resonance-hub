@@ -168,49 +168,217 @@ function UserPanel({
         )}
       </section>
 
-      <section className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold mb-4">Ledger (latest 100)</h2>
-        {data.ledger.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No ledger activity.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-muted-foreground border-b">
-                  <th className="py-2 pr-3">When</th>
-                  <th className="py-2 pr-3">App</th>
-                  <th className="py-2 pr-3">Δ</th>
-                  <th className="py-2 pr-3">Balance</th>
-                  <th className="py-2 pr-3">Reason</th>
-                  <th className="py-2 pr-3">PF payment</th>
-                  <th className="py-2 pr-3">Admin</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.ledger.map((row) => {
-                  const meta = row.metadata as { admin_email?: string; note?: string | null };
-                  return (
-                    <tr key={row.id} className="border-b last:border-0 align-top">
-                      <td className="py-2 pr-3 whitespace-nowrap">{new Date(row.created_at).toLocaleString()}</td>
-                      <td className="py-2 pr-3">{labelForApp(row.app)}</td>
-                      <td className={`py-2 pr-3 font-mono ${row.delta >= 0 ? "text-emerald-500" : "text-destructive"}`}>
-                        {row.delta > 0 ? "+" : ""}{row.delta}
-                      </td>
-                      <td className="py-2 pr-3 font-mono">{row.balance_after}</td>
-                      <td className="py-2 pr-3">
-                        <div>{row.reason}</div>
-                        {meta.note && <div className="text-xs text-muted-foreground">{meta.note}</div>}
-                      </td>
-                      <td className="py-2 pr-3 text-xs font-mono">{row.pf_payment_id ?? "—"}</td>
-                      <td className="py-2 pr-3 text-xs">{meta.admin_email ?? "—"}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <LedgerPanel userId={user.id} wallets={data.wallets} />
+    </div>
+  );
+}
+
+function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWalletRow[] }) {
+  const queryFn = useServerFn(queryUserLedger);
+  const [appFilter, setAppFilter] = useState<string>("");
+  const [pfFilter, setPfFilter] = useState<string>("");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  // Applied filters (updated on submit / clear) so typing doesn't spam requests.
+  const [applied, setApplied] = useState<{
+    app: string; pf: string; from: string; to: string;
+  }>({ app: "", pf: "", from: "", to: "" });
+
+  const toIso = (d: string, endOfDay = false) => {
+    if (!d) return null;
+    const dt = new Date(endOfDay ? `${d}T23:59:59.999Z` : `${d}T00:00:00.000Z`);
+    return isNaN(dt.getTime()) ? null : dt.toISOString();
+  };
+
+  const ledgerQ = useQuery<AdminLedgerPage>({
+    queryKey: ["admin-credit-ledger", userId, applied, page, pageSize],
+    queryFn: () =>
+      queryFn({
+        data: {
+          userId,
+          app: applied.app || null,
+          pfPaymentId: applied.pf || null,
+          from: toIso(applied.from),
+          to: toIso(applied.to, true),
+          page,
+          pageSize,
+        },
+      }),
+    placeholderData: (prev) => prev,
+  });
+
+  const total = ledgerQ.data?.total ?? 0;
+  const rows = ledgerQ.data?.rows ?? [];
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const walletApps = Array.from(new Set(wallets.map((w) => w.app)));
+
+  return (
+    <section className="rounded-lg border bg-card p-6 space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 className="text-lg font-semibold">Ledger</h2>
+        <p className="text-xs text-muted-foreground">
+          {ledgerQ.isFetching ? "Loading…" : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
+        </p>
+      </div>
+
+      <form
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setPage(1);
+          setApplied({ app: appFilter, pf: pfFilter.trim(), from: fromDate, to: toDate });
+        }}
+      >
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">App</label>
+          <select
+            value={appFilter}
+            onChange={(e) => setAppFilter(e.target.value)}
+            className="w-full rounded border bg-background px-3 py-2 text-sm"
+          >
+            <option value="">All apps</option>
+            {walletApps.map((a) => (
+              <option key={a} value={a}>{labelForApp(a)} ({a})</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">PF payment id</label>
+          <input
+            type="text"
+            value={pfFilter}
+            onChange={(e) => setPfFilter(e.target.value)}
+            placeholder="pf_payment_id"
+            className="w-full rounded border bg-background px-3 py-2 text-sm font-mono"
+          />
+        </div>
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">From</label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="w-full rounded border bg-background px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">To</label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="w-full rounded border bg-background px-3 py-2 text-sm"
+          />
+        </div>
+        <div className="flex items-end gap-2">
+          <button
+            type="submit"
+            className="rounded bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
+          >
+            Apply
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAppFilter(""); setPfFilter(""); setFromDate(""); setToDate("");
+              setApplied({ app: "", pf: "", from: "", to: "" });
+              setPage(1);
+            }}
+            className="rounded border px-3 py-2 text-sm"
+          >
+            Clear
+          </button>
+        </div>
+      </form>
+
+      {ledgerQ.error && (
+        <div className="rounded border border-destructive/40 bg-destructive/10 p-3 text-sm">
+          {(ledgerQ.error as Error).message}
+        </div>
+      )}
+
+      {rows.length === 0 && !ledgerQ.isFetching ? (
+        <p className="text-sm text-muted-foreground">No ledger activity for these filters.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground border-b">
+                <th className="py-2 pr-3">When</th>
+                <th className="py-2 pr-3">App</th>
+                <th className="py-2 pr-3">Δ</th>
+                <th className="py-2 pr-3">Balance</th>
+                <th className="py-2 pr-3">Reason</th>
+                <th className="py-2 pr-3">PF payment</th>
+                <th className="py-2 pr-3">Admin</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => {
+                const meta = row.metadata as { admin_email?: string; note?: string | null };
+                return (
+                  <tr key={row.id} className="border-b last:border-0 align-top">
+                    <td className="py-2 pr-3 whitespace-nowrap">{new Date(row.created_at).toLocaleString()}</td>
+                    <td className="py-2 pr-3">{labelForApp(row.app)}</td>
+                    <td className={`py-2 pr-3 font-mono ${row.delta >= 0 ? "text-emerald-500" : "text-destructive"}`}>
+                      {row.delta > 0 ? "+" : ""}{row.delta}
+                    </td>
+                    <td className="py-2 pr-3 font-mono">{row.balance_after}</td>
+                    <td className="py-2 pr-3">
+                      <div>{row.reason}</div>
+                      {meta.note && <div className="text-xs text-muted-foreground">{meta.note}</div>}
+                    </td>
+                    <td className="py-2 pr-3 text-xs font-mono">{row.pf_payment_id ?? "—"}</td>
+                    <td className="py-2 pr-3 text-xs">{meta.admin_email ?? "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t">
+        <div className="flex items-center gap-2 text-sm">
+          <label className="text-xs uppercase tracking-wide text-muted-foreground">Per page</label>
+          <select
+            value={pageSize}
+            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+            className="rounded border bg-background px-2 py-1 text-sm"
+          >
+            {[10, 25, 50, 100, 200].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex items-center gap-2 text-sm">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1 || ledgerQ.isFetching}
+            className="rounded border px-3 py-1 disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span className="font-mono text-xs">
+            Page {page} / {totalPages}
+          </span>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page >= totalPages || ledgerQ.isFetching}
+            className="rounded border px-3 py-1 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
     </div>
   );
 }
