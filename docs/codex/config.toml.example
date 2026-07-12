@@ -1,0 +1,17 @@
+# Copy to ~/.codex/config.toml (user-global) or <repo>/.codex/config.toml (repo-local).
+# Codex CLI reads both; repo-local wins for that project.
+
+# ---- Reson8 Hub MCP -------------------------------------------------------
+# OAuth-protected. First call opens the browser for consent; tokens cached in ~/.codex/.
+[mcp_servers.reson8_hub]
+transport = "http"
+url = "https://reson8.life/mcp"
+
+# ---- Project defaults -----------------------------------------------------
+# Follow AGENTS.md at the repo root for house rules.
+[project]
+instructions_file = "AGENTS.md"
+
+# Codex should prefer bun over npm/yarn/pnpm across the group.
+[shell]
+package_manager = "bun"
