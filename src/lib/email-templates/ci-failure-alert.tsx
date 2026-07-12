@@ -1,5 +1,4 @@
 
-import { AppLink } from "@/components/AppLink";import {
   Body,
   Container,
   Head,
@@ -69,9 +68,9 @@ const CiFailureAlertEmail = ({
             <Section key={`${f.repo}-${f.html_url}`} style={card}>
               <Text style={cardRepo}>{f.repo}</Text>
               <Text style={cardWorkflow}>
-                <AppLink href={f.html_url} style={cardLink}>
+                <Link href={f.html_url} style={cardLink}>
                   {f.workflow_name}
-                </AppLink>{' '}
+                </Link>{' '}
                 <span style={cardBadge}>{f.conclusion}</span>
               </Text>
               <Text style={cardMeta}>
@@ -86,16 +85,16 @@ const CiFailureAlertEmail = ({
           ))}
 
           <Section style={{ marginTop: 24 }}>
-            <AppLink href={dashboardUrl} style={cta}>
+            <Link href={dashboardUrl} style={cta}>
               Open CI Health dashboard
-            </AppLink>
+            </Link>
           </Section>
 
           <Hr style={hr} />
           <Text style={footer}>
             You're receiving this because you enabled CI failure alerts for the
             Resonance Hub monitored repositories. Manage the watchlist and
-            recipient in <AppLink href={dashboardUrl} style={cardLink}>/admin/ci-health</AppLink>.
+            recipient in <Link href={dashboardUrl} style={cardLink}>/admin/ci-health</Link>.
           </Text>
         </Container>
       </Body>
