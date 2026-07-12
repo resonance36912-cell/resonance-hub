@@ -7,6 +7,7 @@ import {
   lookupCreditUser,
   adjustCredits,
   queryUserLedger,
+  reverseCreditAdjustment,
   type CreditUserLookup,
   type AdminWalletRow,
   type AdminLedgerPage,
@@ -175,14 +176,16 @@ function UserPanel({
 
 function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWalletRow[] }) {
   const queryFn = useServerFn(queryUserLedger);
+  const reverseFn = useServerFn(reverseCreditAdjustment);
+  const qc = useQueryClient();
   const [appFilter, setAppFilter] = useState<string>("");
   const [pfFilter, setPfFilter] = useState<string>("");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [reverseError, setReverseError] = useState<string | null>(null);
 
-  // Applied filters (updated on submit / clear) so typing doesn't spam requests.
   const [applied, setApplied] = useState<{
     app: string; pf: string; from: string; to: string;
   }>({ app: "", pf: "", from: "", to: "" });
@@ -210,10 +213,27 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
     placeholderData: (prev) => prev,
   });
 
+  const reverseM = useMutation({
+    mutationFn: (ledgerId: string) => reverseFn({ data: { ledgerId } }),
+    onSuccess: () => {
+      setReverseError(null);
+      qc.invalidateQueries({ queryKey: ["admin-credit-ledger", userId] });
+      qc.invalidateQueries({ queryKey: ["admin-credit-lookup"] });
+    },
+    onError: (e) => setReverseError((e as Error).message),
+  });
+
   const total = ledgerQ.data?.total ?? 0;
   const rows = ledgerQ.data?.rows ?? [];
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const walletApps = Array.from(new Set(wallets.map((w) => w.app)));
+
+  // Set of ledger ids that already have a reversal within the current page.
+  const reversedIds = new Set(
+    rows
+      .map((r) => (r.metadata as { reverses_ledger_id?: string }).reverses_ledger_id)
+      .filter((v): v is string => typeof v === "string"),
+  );
 
   return (
     <section className="rounded-lg border bg-card p-6 space-y-4">
@@ -300,6 +320,12 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
         </div>
       )}
 
+      {reverseError && (
+        <div className="rounded border border-destructive/40 bg-destructive/10 p-3 text-sm">
+          {reverseError}
+        </div>
+      )}
+
       {rows.length === 0 && !ledgerQ.isFetching ? (
         <p className="text-sm text-muted-foreground">No ledger activity for these filters.</p>
       ) : (
@@ -314,11 +340,20 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                 <th className="py-2 pr-3">Reason</th>
                 <th className="py-2 pr-3">PF payment</th>
                 <th className="py-2 pr-3">Admin</th>
+                <th className="py-2 pr-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => {
-                const meta = row.metadata as { admin_email?: string; note?: string | null };
+                const meta = row.metadata as {
+                  admin_email?: string;
+                  note?: string | null;
+                  reverses_ledger_id?: string;
+                };
+                const isReversal = typeof meta.reverses_ledger_id === "string";
+                const alreadyReversed = reversedIds.has(row.id);
+                const canReverse = !isReversal && !alreadyReversed && row.delta !== 0;
+                const pending = reverseM.isPending && reverseM.variables === row.id;
                 return (
                   <tr key={row.id} className="border-b last:border-0 align-top">
                     <td className="py-2 pr-3 whitespace-nowrap">{new Date(row.created_at).toLocaleString()}</td>
@@ -333,6 +368,32 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                     </td>
                     <td className="py-2 pr-3 text-xs font-mono">{row.pf_payment_id ?? "—"}</td>
                     <td className="py-2 pr-3 text-xs">{meta.admin_email ?? "—"}</td>
+                    <td className="py-2 pr-3 text-xs">
+                      {isReversal ? (
+                        <span className="text-muted-foreground">reversal</span>
+                      ) : alreadyReversed ? (
+                        <span className="text-muted-foreground">reversed</span>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={!canReverse || pending}
+                          onClick={() => {
+                            const msg =
+                              `Reverse this entry?\n\n` +
+                              `${row.delta > 0 ? "+" : ""}${row.delta} on ${labelForApp(row.app)}\n` +
+                              `Reason: ${row.reason}\n\n` +
+                              `A compensating entry of ${-row.delta} will be written.`;
+                            if (window.confirm(msg)) {
+                              setReverseError(null);
+                              reverseM.mutate(row.id);
+                            }
+                          }}
+                          className="rounded border px-2 py-1 hover:bg-accent disabled:opacity-50"
+                        >
+                          {pending ? "Reversing…" : "Reverse"}
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

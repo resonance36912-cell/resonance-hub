@@ -278,3 +278,115 @@ export const queryUserLedger = createServerFn({ method: "POST" })
       pageSize,
     };
   });
+
+// -----------------------------------------------------------------------------
+// Reverse an existing ledger entry (compensating entry)
+// -----------------------------------------------------------------------------
+
+const reverseSchema = z.object({
+  ledgerId: z.string().uuid(),
+  note: z.string().trim().max(1000).optional().nullable(),
+});
+
+export const reverseCreditAdjustment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => reverseSchema.parse(d))
+  .handler(async ({ data, context }): Promise<AdjustCreditsResult> => {
+    const supabaseAdmin = await assertAdmin(context.userId);
+
+    // Load the original ledger row
+    const { data: original, error: origErr } = await supabaseAdmin
+      .from("credit_ledger")
+      .select("id,user_id,wallet_id,app,delta,reason,pf_payment_id,metadata")
+      .eq("id", data.ledgerId)
+      .maybeSingle();
+    if (origErr) throw new Error(origErr.message);
+    if (!original) throw new Error("Ledger entry not found");
+
+    const origMeta = (original.metadata ?? {}) as Record<string, unknown>;
+    if (typeof origMeta.reverses_ledger_id === "string") {
+      throw new Error("Cannot reverse a reversal entry");
+    }
+
+    // Check if already reversed (via marker in metadata on any child row)
+    const { data: existingReversal, error: exErr } = await supabaseAdmin
+      .from("credit_ledger")
+      .select("id")
+      .eq("user_id", original.user_id)
+      .contains("metadata", { reverses_ledger_id: original.id })
+      .maybeSingle();
+    if (exErr) throw new Error(exErr.message);
+    if (existingReversal) throw new Error("This entry has already been reversed");
+
+    const compensatingDelta = -Number(original.delta);
+    if (compensatingDelta === 0) throw new Error("Nothing to reverse (delta is zero)");
+
+    // Load wallet
+    const { data: wallet, error: walletErr } = await supabaseAdmin
+      .from("credit_wallets")
+      .select("id,balance")
+      .eq("id", original.wallet_id)
+      .maybeSingle();
+    if (walletErr) throw new Error(walletErr.message);
+    if (!wallet) throw new Error("Wallet no longer exists");
+
+    const currentBalance = Number(wallet.balance);
+    const newBalance = currentBalance + compensatingDelta;
+    if (newBalance < 0) {
+      throw new Error(
+        `Cannot reverse: would leave wallet at ${newBalance} (current ${currentBalance})`,
+      );
+    }
+
+    const { data: updated, error: updateErr } = await supabaseAdmin
+      .from("credit_wallets")
+      .update({ balance: newBalance })
+      .eq("id", wallet.id)
+      .select("id,app,balance,currency,updated_at")
+      .single();
+    if (updateErr) throw new Error(updateErr.message);
+
+    const idempotencyKey = `reverse:${original.id}`;
+    const metadata = {
+      admin_user_id: context.userId,
+      admin_email: (context.claims as { email?: string } | null)?.email ?? null,
+      note: data.note ?? null,
+      reverses_ledger_id: original.id,
+      original_reason: original.reason,
+    };
+
+    const { data: ledger, error: ledgerErr } = await supabaseAdmin
+      .from("credit_ledger")
+      .insert({
+        wallet_id: original.wallet_id,
+        user_id: original.user_id,
+        app: original.app,
+        delta: compensatingDelta,
+        balance_after: newBalance,
+        reason: `admin_reversal: reverses ${original.id}`,
+        pf_payment_id: original.pf_payment_id,
+        idempotency_key: idempotencyKey,
+        metadata,
+      })
+      .select("id,app,delta,balance_after,reason,sku,pf_payment_id,metadata,created_at")
+      .single();
+    if (ledgerErr) {
+      // Roll back wallet update; if idempotency key hit, surface a friendly error
+      await supabaseAdmin
+        .from("credit_wallets")
+        .update({ balance: currentBalance })
+        .eq("id", wallet.id);
+      if (/duplicate key|idempotency/i.test(ledgerErr.message)) {
+        throw new Error("This entry has already been reversed");
+      }
+      throw new Error(`Reversal ledger write failed: ${ledgerErr.message}`);
+    }
+
+    return {
+      wallet: updated as AdminWalletRow,
+      ledger: {
+        ...ledger,
+        metadata: (ledger.metadata ?? {}) as Record<string, unknown>,
+      } as AdminLedgerRow,
+    };
+  });
