@@ -279,6 +279,52 @@ export const queryUserLedger = createServerFn({ method: "POST" })
     };
   });
 
+// Export (all matching rows for current filters, capped for safety)
+const ledgerExportSchema = z.object({
+  userId: z.string().uuid(),
+  app: z.string().trim().max(64).optional().nullable(),
+  pfPaymentId: z.string().trim().max(64).optional().nullable(),
+  from: z.string().datetime().optional().nullable(),
+  to: z.string().datetime().optional().nullable(),
+});
+
+const LEDGER_EXPORT_CAP = 10000;
+
+export type AdminLedgerExport = {
+  rows: AdminLedgerRow[];
+  capped: boolean;
+  cap: number;
+};
+
+export const exportUserLedger = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ledgerExportSchema.parse(d))
+  .handler(async ({ data, context }): Promise<AdminLedgerExport> => {
+    const supabaseAdmin = await assertAdmin(context.userId);
+    const { userId, app, pfPaymentId, from, to } = data;
+
+    let q = supabaseAdmin
+      .from("credit_ledger")
+      .select("id,app,delta,balance_after,reason,sku,pf_payment_id,metadata,created_at")
+      .eq("user_id", userId);
+    if (app && app.trim()) q = q.eq("app", app.trim());
+    if (pfPaymentId && pfPaymentId.trim()) q = q.eq("pf_payment_id", pfPaymentId.trim());
+    if (from) q = q.gte("created_at", from);
+    if (to) q = q.lte("created_at", to);
+
+    const { data: rows, error } = await q
+      .order("created_at", { ascending: false })
+      .limit(LEDGER_EXPORT_CAP + 1);
+    if (error) throw new Error(error.message);
+
+    const all = (rows ?? []).map((r) => ({
+      ...r,
+      metadata: (r.metadata ?? {}) as Record<string, unknown>,
+    })) as AdminLedgerRow[];
+    const capped = all.length > LEDGER_EXPORT_CAP;
+    return { rows: capped ? all.slice(0, LEDGER_EXPORT_CAP) : all, capped, cap: LEDGER_EXPORT_CAP };
+  });
+
 // -----------------------------------------------------------------------------
 // Reverse an existing ledger entry (compensating entry)
 // -----------------------------------------------------------------------------
