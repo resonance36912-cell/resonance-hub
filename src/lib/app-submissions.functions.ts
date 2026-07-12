@@ -116,7 +116,7 @@ export const listPublishedSubmissions = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("app_submissions")
       .select(
-        "id,name,url,tagline,description,use_case,contact_email,accent_color,submitter_user_id,status,review_notes,reviewed_by,reviewed_at,published_at,created_at,updated_at,logo_path,screenshot_paths",
+        "id,name,url,tagline,description,use_case,accent_color,status,review_notes,reviewed_at,published_at,created_at,updated_at,logo_path,screenshot_paths",
       )
       .eq("status", "published")
       .order("published_at", { ascending: false })
