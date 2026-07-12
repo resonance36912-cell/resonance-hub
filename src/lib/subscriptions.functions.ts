@@ -36,7 +36,7 @@ export const getMySubscriptions = createServerFn({ method: "GET" })
 
     const { data, error } = await supabase
       .from("subscriptions")
-      .select("app,tier,status,billing_cycle,amount_cents,currency,current_period_end,cancelled_at,updated_at")
+      .select("id,app,tier,status,billing_cycle,amount_cents,currency,current_period_end,cancelled_at,updated_at")
       .eq("user_id", userId)
       .order("updated_at", { ascending: false });
 
