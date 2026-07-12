@@ -55,7 +55,10 @@ function AdminAppSubmissions() {
       action: "approve" | "reject" | "publish" | "unpublish" | "delete";
       notes?: string;
     }) => reviewFn({ data: input }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-app-submissions"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-app-submissions"] });
+      qc.invalidateQueries({ queryKey: ["admin-app-submissions-audit"] });
+    },
   });
 
   const rows = (data ?? []) as AppSubmission[];
