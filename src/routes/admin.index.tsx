@@ -90,6 +90,8 @@ function AdminHome() {
 
   const sections = [
     { to: "/admin/revenue", label: "Revenue & Profit", desc: "Per-subscription revenue, costs, and profit." },
+    { to: "/admin/billing", label: "Billing Overview", desc: "Cross-app subscriptions, wallets, and ledger activity." },
+    { to: "/admin/credits", label: "Credit Adjustments", desc: "Add or subtract subscription credits with a full audit trail." },
     { to: "/admin/payfast-audit", label: "PayFast Audit", desc: "Launch ↔ ITN trace and amount reconciliation." },
     { to: "/admin/webhooks", label: "Raw ITN Log", desc: "Every ITN webhook received from PayFast." },
     { to: "/admin/entitlement-diagnostics", label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
