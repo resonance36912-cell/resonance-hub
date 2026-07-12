@@ -1,4 +1,3 @@
-// @no-back-to-hub authenticated account area with its own nav
 import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -77,6 +76,8 @@ function BillingPortal() {
             </p>
           </div>
           <div className="flex gap-2 text-sm">
+            <Link to="/" className="text-primary underline">Back to Hub</Link>
+            <span className="text-muted-foreground">·</span>
             <Link to="/account/subscriptions" className="text-primary underline">Manage subscriptions</Link>
             <span className="text-muted-foreground">·</span>
             <Link to="/pricing" className="text-primary underline">Plans</Link>

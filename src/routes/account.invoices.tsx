@@ -1,4 +1,3 @@
-// @no-back-to-hub authenticated account area with its own nav
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -120,6 +119,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           <nav className="flex gap-3 text-sm">
+            <Link to="/" className="text-primary underline">Back to Hub</Link>
             <Link to="/account/billing" className="text-primary underline">Billing</Link>
             <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
           </nav>

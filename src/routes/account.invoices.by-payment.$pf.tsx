@@ -1,4 +1,3 @@
-// @no-back-to-hub authenticated account area with its own nav
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -72,6 +71,7 @@ function ByPaymentPage() {
 function BackLinks() {
   return (
     <div className="flex gap-4 text-sm">
+      <Link to="/" className="underline">Back to Hub</Link>
       <Link to="/account/invoices" className="underline">All invoices</Link>
       <Link to="/account/billing" className="underline">Billing</Link>
     </div>
