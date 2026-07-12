@@ -216,16 +216,19 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
 
         const def = sku ? SKU_CATALOG[sku] : undefined;
         if (!def) {
+          await finalize("unknown_sku", 400, "unknown sku");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
           return new Response("unknown sku", { status: 400 });
         }
         if (!userId) {
+          await finalize("missing_user", 400, "missing user");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
           return new Response("missing user", { status: 400 });
         }
         if (grossCents !== def.amountCents) {
+          await finalize("amount_mismatch", 400, "amount mismatch");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "amount_mismatch", http_status: 400,
             error_message: `Got ${grossCents}, expected ${def.amountCents}` });
@@ -261,6 +264,13 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           );
 
         if (error) {
+          // Leave webhook_events without processed_at so PayFast can retry
+          // and this handler will re-attempt the upsert (subscriptions upsert
+          // is idempotent on (user_id, app)). Delete the claim so the retry
+          // re-enters the pipeline instead of hitting the dedup short-circuit.
+          if (webhookRowId) {
+            await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
+          }
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "db_error", http_status: 500, error_message: error.message });
           return new Response("db error", { status: 500 });
@@ -303,6 +313,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           }
         }
 
+        await finalize(`subscription_${nextStatus}`, 200, "ok");
         await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
           outcome: `subscription_${nextStatus}`, http_status: 200 });
         return new Response("ok", { status: 200 });
