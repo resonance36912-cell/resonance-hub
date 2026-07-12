@@ -9,6 +9,7 @@ export type AppKey =
   | "all_access";
 
 export type SubscriptionRow = {
+  id: string;
   app: AppKey;
   tier: string;
   status: "pending" | "active" | "past_due" | "cancelled";
