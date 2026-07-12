@@ -113,10 +113,18 @@ async def main() -> int:
                 )
 
             # Route-mounted content check via <title> (unique per route).
-            title = await page.title()
-            if hop["title_contains"] not in title:
+            # Use auto-waiting `expect` because TanStack's head() applies the
+            # new title asynchronously after client-side navigation.
+            import re
+            try:
+                await expect(page).to_have_title(
+                    re.compile(re.escape(hop["title_contains"]), re.IGNORECASE),
+                    timeout=5000,
+                )
+            except AssertionError:
+                actual = await page.title()
                 failures.append(
-                    f"hop '{hop['link_name']}': title {title!r} missing '{hop['title_contains']}'"
+                    f"hop '{hop['link_name']}': title {actual!r} missing '{hop['title_contains']}'"
                 )
 
             await page.screenshot(path=str(SCREENSHOTS / f"{i}_{hop['link_name']}.png"))
