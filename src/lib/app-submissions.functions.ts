@@ -27,9 +27,15 @@ export type AppSubmission = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  logo_path: string | null;
+  screenshot_paths: string[];
+  // Signed URLs (populated on public list)
+  logo_url?: string | null;
+  screenshot_urls?: string[];
 };
 
 const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const STORAGE_PATH = /^incoming\/[A-Za-z0-9._\-/]+\.(png|jpg|jpeg|webp|gif|svg)$/i;
 
 const submitSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -39,7 +45,11 @@ const submitSchema = z.object({
   useCase: z.string().trim().max(160).optional().nullable(),
   contactEmail: z.string().trim().email().max(320),
   accentColor: z.string().trim().regex(HEX_COLOR).optional().nullable(),
+  logoPath: z.string().trim().regex(STORAGE_PATH).max(500).optional().nullable(),
+  screenshotPaths: z.array(z.string().trim().regex(STORAGE_PATH).max(500)).max(6).optional().default([]),
 });
+
+const SIGNED_URL_TTL_SEC = 60 * 60 * 24 * 7; // 7 days
 
 async function assertAdmin(userId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -54,12 +64,22 @@ async function assertAdmin(userId: string) {
   return supabaseAdmin;
 }
 
+async function signPaths(paths: string[]): Promise<string[]> {
+  if (paths.length === 0) return [];
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .storage
+    .from("app-submissions")
+    .createSignedUrls(paths, SIGNED_URL_TTL_SEC);
+  if (error) return [];
+  return (data ?? []).map((d) => d.signedUrl ?? "");
+}
+
 // -------- Public: submit --------
 
 export const submitAppSubmission = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => submitSchema.parse(d))
   .handler(async ({ data }): Promise<{ id: string }> => {
-    // Use publishable client so the anon INSERT policy applies.
     const supabase = createClient<Database>(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PUBLISHABLE_KEY!,
@@ -75,6 +95,8 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
         use_case: data.useCase ?? null,
         contact_email: data.contactEmail,
         accent_color: data.accentColor ?? null,
+        logo_path: data.logoPath ?? null,
+        screenshot_paths: data.screenshotPaths ?? [],
       })
       .select("id")
       .single();
@@ -94,13 +116,32 @@ export const listPublishedSubmissions = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("app_submissions")
       .select(
-        "id,name,url,tagline,description,use_case,contact_email,accent_color,submitter_user_id,status,review_notes,reviewed_by,reviewed_at,published_at,created_at,updated_at",
+        "id,name,url,tagline,description,use_case,contact_email,accent_color,submitter_user_id,status,review_notes,reviewed_by,reviewed_at,published_at,created_at,updated_at,logo_path,screenshot_paths",
       )
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return (data ?? []) as AppSubmission[];
+    const rows = (data ?? []) as AppSubmission[];
+
+    // Collect all paths in one signing pass
+    const allPaths: string[] = [];
+    for (const r of rows) {
+      if (r.logo_path) allPaths.push(r.logo_path);
+      for (const p of r.screenshot_paths ?? []) allPaths.push(p);
+    }
+    const signed = await signPaths(allPaths);
+    const map = new Map<string, string>();
+    let i = 0;
+    for (const p of allPaths) {
+      const s = signed[i++];
+      if (s) map.set(p, s);
+    }
+    for (const r of rows) {
+      r.logo_url = r.logo_path ? map.get(r.logo_path) ?? null : null;
+      r.screenshot_urls = (r.screenshot_paths ?? []).map((p) => map.get(p)).filter(Boolean) as string[];
+    }
+    return rows;
   });
 
 // -------- Admin: list --------
@@ -123,7 +164,24 @@ export const listAppSubmissions = createServerFn({ method: "POST" })
     if (data.status !== "all") q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return (rows ?? []) as AppSubmission[];
+    const list = (rows ?? []) as AppSubmission[];
+    const allPaths: string[] = [];
+    for (const r of list) {
+      if (r.logo_path) allPaths.push(r.logo_path);
+      for (const p of r.screenshot_paths ?? []) allPaths.push(p);
+    }
+    const signed = await signPaths(allPaths);
+    const map = new Map<string, string>();
+    let i = 0;
+    for (const p of allPaths) {
+      const s = signed[i++];
+      if (s) map.set(p, s);
+    }
+    for (const r of list) {
+      r.logo_url = r.logo_path ? map.get(r.logo_path) ?? null : null;
+      r.screenshot_urls = (r.screenshot_paths ?? []).map((p) => map.get(p)).filter(Boolean) as string[];
+    }
+    return list;
   });
 
 // -------- Admin: review (approve / reject / publish / unpublish) --------
@@ -141,6 +199,19 @@ export const reviewAppSubmission = createServerFn({ method: "POST" })
     const supabaseAdmin = await assertAdmin(context.userId);
 
     if (data.action === "delete") {
+      // Best-effort: also remove any uploaded media
+      const { data: row } = await supabaseAdmin
+        .from("app_submissions")
+        .select("logo_path,screenshot_paths")
+        .eq("id", data.id)
+        .maybeSingle();
+      const paths = [
+        ...(row?.logo_path ? [row.logo_path] : []),
+        ...((row?.screenshot_paths as string[] | null) ?? []),
+      ];
+      if (paths.length > 0) {
+        await supabaseAdmin.storage.from("app-submissions").remove(paths);
+      }
       const { error } = await supabaseAdmin
         .from("app_submissions")
         .delete()
@@ -150,7 +221,7 @@ export const reviewAppSubmission = createServerFn({ method: "POST" })
     }
 
     const now = new Date().toISOString();
-    const patch: Partial<AppSubmission> = {
+    const patch: Database["public"]["Tables"]["app_submissions"]["Update"] = {
       reviewed_by: context.userId,
       reviewed_at: now,
       review_notes: data.notes ?? null,

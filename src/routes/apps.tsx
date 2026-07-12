@@ -28,6 +28,8 @@ type Tile = {
   badge?: string;
   external: boolean;
   paid: boolean;
+  logoUrl?: string | null;
+  screenshotUrls?: string[];
 };
 
 const paidTiles: Tile[] = Object.values(APP_REGISTRY)
@@ -139,6 +141,8 @@ function AppsCatalogPage() {
         badge: "Community",
         external: true,
         paid: false,
+        logoUrl: s.logo_url ?? null,
+        screenshotUrls: s.screenshot_urls ?? [],
       })),
     [publishedQ.data],
   );
@@ -272,43 +276,69 @@ function Section({
 
 function TileCard({ tile }: { tile: Tile }) {
   const external = tile.external;
+  const shots = tile.screenshotUrls ?? [];
   return (
     <a
       href={tile.url}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="group flex h-full flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary"
     >
-      <div
-        aria-hidden
-        className="h-1 w-12 rounded-full"
-        style={{ backgroundColor: tile.accentColor ?? "hsl(var(--muted-foreground))" }}
-      />
-      <div className="mt-3 flex items-start justify-between gap-3">
-        <h3 className="text-lg font-semibold leading-tight group-hover:text-primary">
-          {tile.label}
-        </h3>
-        <span
-          className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[tile.status]}`}
-        >
-          {tile.badge ?? STATUS_LABELS[tile.status]}
-        </span>
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{tile.tagline}</p>
-      {tile.useCase ? (
-        <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
-          {tile.useCase}
-        </p>
+      {shots.length > 0 ? (
+        <div className="grid aspect-[16/9] w-full grid-cols-2 gap-px bg-border">
+          {shots.slice(0, 4).map((src, i) => (
+            <img
+              key={src}
+              src={src}
+              alt={`${tile.label} screenshot ${i + 1}`}
+              loading="lazy"
+              className={`h-full w-full object-cover ${shots.length === 1 ? "col-span-2" : ""}`}
+            />
+          ))}
+        </div>
       ) : null}
-      <div className="mt-auto pt-4 text-sm">
-        <span className="text-primary underline underline-offset-2">
-          {external ? "Open app" : "Learn more"} →
-        </span>
-        {external ? (
-          <span className="ml-2 text-xs text-muted-foreground">
-            {new URL(tile.url).hostname.replace(/^www\./, "")}
+      <div className="flex flex-1 flex-col p-5">
+        <div
+          aria-hidden
+          className="h-1 w-12 rounded-full"
+          style={{ backgroundColor: tile.accentColor ?? "hsl(var(--muted-foreground))" }}
+        />
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {tile.logoUrl ? (
+              <img
+                src={tile.logoUrl}
+                alt={`${tile.label} logo`}
+                loading="lazy"
+                className="h-10 w-10 shrink-0 rounded-md border border-border bg-background object-contain"
+              />
+            ) : null}
+            <h3 className="truncate text-lg font-semibold leading-tight group-hover:text-primary">
+              {tile.label}
+            </h3>
+          </div>
+          <span
+            className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[tile.status]}`}
+          >
+            {tile.badge ?? STATUS_LABELS[tile.status]}
           </span>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">{tile.tagline}</p>
+        {tile.useCase ? (
+          <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
+            {tile.useCase}
+          </p>
         ) : null}
+        <div className="mt-auto pt-4 text-sm">
+          <span className="text-primary underline underline-offset-2">
+            {external ? "Open app" : "Learn more"} →
+          </span>
+          {external ? (
+            <span className="ml-2 text-xs text-muted-foreground">
+              {new URL(tile.url).hostname.replace(/^www\./, "")}
+            </span>
+          ) : null}
+        </div>
       </div>
     </a>
   );
