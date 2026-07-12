@@ -52,6 +52,9 @@ jobs:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Don't gate the whole workflow on gitleaks — license/quota hiccups on
+    # the action shouldn't block security-events uploads from CodeQL/Semgrep.
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -60,8 +63,9 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # No license required for public repos. For private repos add
-          # GITLEAKS_LICENSE in repo secrets and uncomment:
+          # No license required for public repos or personal private repos.
+          # For organization private repos add GITLEAKS_LICENSE in repo secrets
+          # and uncomment:
           # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
           GITLEAKS_ENABLE_SUMMARY: "true"
