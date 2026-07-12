@@ -130,6 +130,18 @@ jobs:
         continue-on-error: true
         run: bunx prettier --check .
 
+      # Cache tsc's incremental build info. Restored across runs so unchanged
+      # files skip re-checking. Key includes tsconfig + lockfile hash so a
+      # config or dependency change invalidates the cache automatically.
+      - name: Cache TypeScript build info
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/tsc
+          key: ${{ runner.os }}-tsc-${{ hashFiles('tsconfig.json', 'bun.lock', 'bun.lockb') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-tsc-${{ hashFiles('tsconfig.json', 'bun.lock', 'bun.lockb') }}-
+            ${{ runner.os }}-tsc-
+
       - name: TypeScript typecheck
         run: bun run typecheck
 
