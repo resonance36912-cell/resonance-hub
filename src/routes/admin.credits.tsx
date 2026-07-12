@@ -379,9 +379,6 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
     </section>
   );
 }
-    </div>
-  );
-}
 
 function AdjustForm({
   userId,
