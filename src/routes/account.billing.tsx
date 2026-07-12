@@ -10,6 +10,7 @@ import {
   formatZar,
   type MyBilling,
 } from "@/lib/billing-portal.functions";
+import { ROUTES } from "@/lib/routes";
 
 
 export const Route = createFileRoute("/account/billing")({
@@ -45,7 +46,7 @@ function BillingGate() {
 
   useEffect(() => {
     if (state === "anon") {
-      navigate({ to: "/login", search: { redirect: "/account/billing" } as never });
+      navigate({ to: ROUTES.login, search: { redirect: ROUTES.accountBilling } as never });
     }
   }, [state, navigate]);
 
