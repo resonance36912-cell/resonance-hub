@@ -1,4 +1,3 @@
-// @no-back-to-hub authenticated account area with its own nav
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
