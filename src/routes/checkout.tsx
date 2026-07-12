@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import {
 } from "@/lib/checkout.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const SearchSchema = z.object({
   app: z.string().optional(),
@@ -104,27 +105,27 @@ function CheckoutPage() {
         ) : (
           <p className="text-sm text-white/70 mb-6">
             Sign in from the{" "}
-            <Link to={ROUTES.home} className="underline hover:text-white">
+            <AppLink to={ROUTES.home} className="underline hover:text-white">
               Hub home
-            </Link>{" "}
+            </AppLink>{" "}
             to join the pack waitlist automatically.
           </p>
         )}
 
         <div className="flex gap-3">
-          <Link
+          <AppLink
             to={ROUTES.pricing}
             className="px-5 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
           >
             ← Back to packs
-          </Link>
-          <Link
+          </AppLink>
+          <AppLink
             to={ROUTES.pricing}
             hash="passes"
             className="px-5 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest"
           >
             See ecosystem passes →
-          </Link>
+          </AppLink>
         </div>
       </Shell>
     );
@@ -137,12 +138,12 @@ function CheckoutPage() {
         <p className="text-white/70 mb-6">
           We couldn&apos;t match that plan. Pick one from the pricing page.
         </p>
-        <Link
+        <AppLink
           to={ROUTES.pricing}
           className="inline-block px-5 py-2.5 rounded-full bg-gradient-brand text-white font-bold text-sm"
         >
           View pricing
-        </Link>
+        </AppLink>
       </Shell>
     );
   }
@@ -166,9 +167,9 @@ function CheckoutPage() {
           <div className="mt-4 rounded-xl border border-white/15 bg-white/[0.04] p-3 text-xs text-white/70 leading-relaxed">
             This is a retired per-app monthly plan. New signups should choose an ecosystem pass or
             a once-off pack from the{" "}
-            <Link to={ROUTES.pricing} className="underline hover:text-white">
+            <AppLink to={ROUTES.pricing} className="underline hover:text-white">
               pricing page
-            </Link>
+            </AppLink>
             . Existing subscribers can continue renewing here.
           </div>
         )}
@@ -208,15 +209,15 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen text-foreground">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <Link to={ROUTES.home} className="flex items-center gap-2.5 min-w-0">
+        <AppLink to={ROUTES.home} className="flex items-center gap-2.5 min-w-0">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
-        </Link>
-        <Link
+        </AppLink>
+        <AppLink
           to={ROUTES.home}
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
           ← Back to Hub
-        </Link>
+        </AppLink>
       </nav>
       <main className="pt-28 pb-24 px-6 max-w-xl mx-auto">
         <div className="rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl p-8">
@@ -280,12 +281,12 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
             <button onClick={start} className="text-xs underline">
               Retry
             </button>
-            <Link to={ROUTES.pricing} className="text-xs underline">
+            <AppLink to={ROUTES.pricing} className="text-xs underline">
               Back to pricing
-            </Link>
-            <Link to={ROUTES.home} className="text-xs underline">
+            </AppLink>
+            <AppLink to={ROUTES.home} className="text-xs underline">
               Back to Hub
-            </Link>
+            </AppLink>
           </div>
         </div>
       )}
@@ -312,9 +313,9 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
             >
               Retry now
             </button>
-            <Link to={ROUTES.pricing} className="underline">
+            <AppLink to={ROUTES.pricing} className="underline">
               Back to pricing
-            </Link>
+            </AppLink>
           </div>
         </div>
       )}

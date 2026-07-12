@@ -1,9 +1,10 @@
-import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
@@ -191,7 +192,7 @@ function AdminLoginPage() {
               : (mode === "signin" ? "Sign in" : "Create admin account")}
           </button>
           <p className="text-center text-xs text-muted-foreground">
-            <Link to={ROUTES.home} className="hover:underline">← Back to site</Link>
+            <AppLink to={ROUTES.home} className="hover:underline">← Back to site</AppLink>
           </p>
         </form>
       </div>

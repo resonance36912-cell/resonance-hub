@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ import {
   type MyBilling,
 } from "@/lib/billing-portal.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 
 export const Route = createFileRoute("/account/billing")({
@@ -84,9 +85,9 @@ function BillingPortal() {
             extra={
               <>
                 <span className="text-muted-foreground">·</span>
-                <Link to={ROUTES.accountSubscriptions} className="text-primary underline">Manage subscriptions</Link>
+                <AppLink to={ROUTES.accountSubscriptions} className="text-primary underline">Manage subscriptions</AppLink>
                 <span className="text-muted-foreground">·</span>
-                <Link to={ROUTES.pricing} className="text-primary underline">Plans</Link>
+                <AppLink to={ROUTES.pricing} className="text-primary underline">Plans</AppLink>
               </>
             }
           />
@@ -123,7 +124,7 @@ function SubscriptionsCard({ data }: { data: MyBilling }) {
         <span className="text-xs text-muted-foreground">{active.length} active</span>
       </div>
       {data.subscriptions.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No subscriptions yet. <Link to={ROUTES.pricing} className="underline">Browse plans</Link>.</p>
+        <p className="text-sm text-muted-foreground">No subscriptions yet. <AppLink to={ROUTES.pricing} className="underline">Browse plans</AppLink>.</p>
       ) : (
         <div className="space-y-2">
           {[...active, ...other].map((s) => (
@@ -176,7 +177,7 @@ function ReceiptsCard({ data }: { data: MyBilling }) {
     <section className="rounded-lg border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Payment history</h2>
-        <Link to={ROUTES.accountInvoices} className="text-sm text-primary underline">All invoices →</Link>
+        <AppLink to={ROUTES.accountInvoices} className="text-sm text-primary underline">All invoices →</AppLink>
       </div>
       {data.receipts.length === 0 ? (
         <p className="text-sm text-muted-foreground">No verified payments yet.</p>

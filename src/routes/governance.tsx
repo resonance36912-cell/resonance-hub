@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   RCGF_VERSION,
   RCGF_EFFECTIVE_DATE,
@@ -9,6 +9,7 @@ import {
 } from "@/lib/rcgf";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/governance")({
   loader: async () => ({ origin: await getRequestOrigin() }),
@@ -67,7 +68,7 @@ function GovernancePage() {
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-6 py-20">
         <nav className="mb-12 text-[10px] font-mono uppercase tracking-widest text-white/50">
-          <Link to={ROUTES.home} className="hover:text-white">← Back to Hub</Link>
+          <AppLink to={ROUTES.home} className="hover:text-white">← Back to Hub</AppLink>
         </nav>
 
         <header className="mb-16">

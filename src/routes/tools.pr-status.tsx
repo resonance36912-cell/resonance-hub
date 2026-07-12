@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
@@ -150,9 +151,9 @@ function PrStatus() {
             Open pull requests with review state and age, grouped by repository.
           </p>
         </div>
-        <Link to={ROUTES.home} className="text-sm underline text-muted-foreground">
+        <AppLink to={ROUTES.home} className="text-sm underline text-muted-foreground">
           Back to Hub
-        </Link>
+        </AppLink>
       </div>
 
       <Card className="mb-6">

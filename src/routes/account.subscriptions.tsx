@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { retryPayfastLaunch } from "@/lib/checkout.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
@@ -452,12 +453,12 @@ function SubscriptionsPage() {
       <div className="mx-auto max-w-5xl px-6 py-12">
         <header className="mb-10">
           <div className="mb-6">
-            <Link
+            <AppLink
               to={ROUTES.home}
               className="inline-flex items-center text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
             >
               ← Back to Hub
-            </Link>
+            </AppLink>
           </div>
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">My Account</p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Subscriptions</h1>
@@ -502,12 +503,12 @@ function SubscriptionsPage() {
                       Active · {formatPrice(bundle!.amount_cents)}/mo
                     </span>
                   ) : (
-                    <Link
+                    <AppLink
                       to={ROUTES.pricing}
                       className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition"
                     >
                       Upgrade — R1,499/mo
-                    </Link>
+                    </AppLink>
                   )}
                 </div>
               </div>
@@ -561,9 +562,9 @@ function SubscriptionsPage() {
                           </span>
                         ) : (
                           !coveredByBundle && (
-                            <Link to={ROUTES.pricing} className="text-xs text-primary hover:underline">
+                            <AppLink to={ROUTES.pricing} className="text-xs text-primary hover:underline">
                               Upgrade
-                            </Link>
+                            </AppLink>
                           )
                         )}
                       </div>
@@ -622,12 +623,12 @@ function SubscriptionsPage() {
             {subs.length === 0 && (
               <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
                 <p className="text-muted-foreground">No subscriptions yet.</p>
-                <Link
+                <AppLink
                   to={ROUTES.pricing}
                   className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
                 >
                   View pricing
-                </Link>
+                </AppLink>
               </div>
             )}
           </>

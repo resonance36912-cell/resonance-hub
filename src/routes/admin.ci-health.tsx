@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
 type SortOrder = (typeof SORT_OPTIONS)[number];
@@ -475,18 +476,18 @@ function CiHealthPage() {
           </p>
         </div>
         <div className="flex gap-4 text-sm">
-          <Link to={ROUTES.adminRepoHealth} className="underline text-muted-foreground">
+          <AppLink to={ROUTES.adminRepoHealth} className="underline text-muted-foreground">
             Repo health
-          </Link>
-          <Link to={ROUTES.toolsPrStatus} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.toolsPrStatus} className="underline text-muted-foreground">
             PR status
-          </Link>
-          <Link to={ROUTES.toolsReleases} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.toolsReleases} className="underline text-muted-foreground">
             Releases
-          </Link>
-          <Link to={ROUTES.home} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.home} className="underline text-muted-foreground">
             Back to Hub
-          </Link>
+          </AppLink>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -16,6 +16,7 @@ import {
 } from "@/lib/admin-credits.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/credits")({
   head: () => ({
@@ -71,8 +72,8 @@ function AdminCreditsPage() {
             </p>
           </div>
           <div className="flex gap-3 text-sm">
-            <Link to={ROUTES.adminBilling} className="text-primary underline">Billing overview</Link>
-            <Link to={ROUTES.adminInvoices} className="text-primary underline">Invoices</Link>
+            <AppLink to={ROUTES.adminBilling} className="text-primary underline">Billing overview</AppLink>
+            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">Invoices</AppLink>
           </div>
         </header>
 
@@ -432,7 +433,7 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                     </td>
                     <td className="py-2 pr-3 text-xs font-mono">
                       {row.pf_payment_id ? (
-                        <Link
+                        <AppLink
                           to="/account/invoices/by-payment/$pf"
                           params={{ pf: row.pf_payment_id }}
                           target="_blank"
@@ -441,7 +442,7 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                           title="Open linked receipt"
                         >
                           {row.pf_payment_id}
-                        </Link>
+                        </AppLink>
                       ) : (
                         "—"
                       )}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/checkout-return";
 import { getVerifiedPurchase, type VerifiedPurchase } from "@/lib/verify-purchase.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const Search = z.object({
   sku: z.string().optional(),
@@ -117,15 +118,15 @@ function SuccessPage() {
   return (
     <div className="min-h-screen text-foreground">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <Link to={ROUTES.home} className="inline-flex">
+        <AppLink to={ROUTES.home} className="inline-flex">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
-        </Link>
-        <Link
+        </AppLink>
+        <AppLink
           to={ROUTES.home}
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
           ← Back to Hub
-        </Link>
+        </AppLink>
       </nav>
       <main className="pt-32 pb-24 px-6 max-w-xl mx-auto text-center">
         <div
@@ -161,31 +162,31 @@ function SuccessPage() {
                   {primaryLabel}
                 </a>
               ) : (
-                <Link
+                <AppLink
                   to={ROUTES.pricing}
                   hash={ctx.pricingAnchor}
                   className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
                 >
                   {primaryLabel}
-                </Link>
+                </AppLink>
               )
             ) : (
-              <Link
+              <AppLink
                 to={secondaryTo.to}
                 hash={secondaryTo.hash}
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
               >
                 {secondaryTo.label}
-              </Link>
+              </AppLink>
             )}
             {phase === "verified" && (
-              <Link
+              <AppLink
                 to={secondaryTo.to}
                 hash={secondaryTo.hash}
                 className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
               >
                 {secondaryTo.label}
-              </Link>
+              </AppLink>
             )}
           </div>
 
@@ -194,9 +195,9 @@ function SuccessPage() {
               PayFast confirmations usually land within seconds but can take a
               few minutes. This page won't grant access — it only reflects the
               verified webhook. Check{" "}
-              <Link to={ROUTES.accountSubscriptions} className="underline">
+              <AppLink to={ROUTES.accountSubscriptions} className="underline">
                 My Subscriptions
-              </Link>{" "}
+              </AppLink>{" "}
               in a minute, or contact support if it doesn't appear.
             </p>
           )}

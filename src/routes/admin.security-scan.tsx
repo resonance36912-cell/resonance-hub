@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
@@ -316,15 +317,15 @@ function SecurityScanPage() {
           </p>
         </div>
         <div className="flex gap-4 text-sm">
-          <Link to={ROUTES.adminCiHealth} className="underline text-muted-foreground">
+          <AppLink to={ROUTES.adminCiHealth} className="underline text-muted-foreground">
             CI health
-          </Link>
-          <Link to={ROUTES.adminRepoHealth} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.adminRepoHealth} className="underline text-muted-foreground">
             Repo health
-          </Link>
-          <Link to={ROUTES.home} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.home} className="underline text-muted-foreground">
             Back to Hub
-          </Link>
+          </AppLink>
         </div>
       </div>
 

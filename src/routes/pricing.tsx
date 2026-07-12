@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { PACK_CATALOG } from "@/lib/checkout.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/pricing")({
   loader: async () => ({ origin: await getRequestOrigin() }),
@@ -128,15 +129,15 @@ function PricingPage() {
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <Link to={ROUTES.home} className="flex items-center gap-2.5 min-w-0">
+        <AppLink to={ROUTES.home} className="flex items-center gap-2.5 min-w-0">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
-        </Link>
-        <Link
+        </AppLink>
+        <AppLink
           to={ROUTES.home}
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
           ← Back to Hub
-        </Link>
+        </AppLink>
       </nav>
 
       <main className="pt-28 pb-24 px-6 max-w-7xl mx-auto">

@@ -1,10 +1,11 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { findInvoiceByPfPaymentId } from "@/lib/invoices.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 
 export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
@@ -51,9 +52,9 @@ function ByPaymentPage() {
     return (
       <main className="mx-auto max-w-2xl px-6 py-16 space-y-4">
         <p className="text-sm text-muted-foreground">Redirecting to receipt…</p>
-        <Link to="/account/invoices/$id" params={{ id: data.id }} className="underline">
+        <AppLink to="/account/invoices/$id" params={{ id: data.id }} className="underline">
           Open receipt
-        </Link>
+        </AppLink>
       </main>
     );
   }
@@ -78,8 +79,8 @@ function BackLinks() {
       linkClassName="underline"
       extra={
         <>
-          <Link to={ROUTES.accountInvoices} className="underline">All invoices</Link>
-          <Link to={ROUTES.accountBilling} className="underline">Billing</Link>
+          <AppLink to={ROUTES.accountInvoices} className="underline">All invoices</AppLink>
+          <AppLink to={ROUTES.accountBilling} className="underline">Billing</AppLink>
         </>
       }
     />

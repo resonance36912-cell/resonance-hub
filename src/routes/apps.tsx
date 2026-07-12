@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/app-registry";
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
@@ -169,12 +170,12 @@ function AppsCatalogPage() {
             billing spine, and All-Access pass on <a href="https://reson8.life" className="text-primary underline">reson8.life</a>.
           </p>
         </div>
-        <Link
+        <AppLink
           to={ROUTES.appsSubmit}
           className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
         >
           Submit an app →
-        </Link>
+        </AppLink>
       </header>
 
       <div className="mt-6">

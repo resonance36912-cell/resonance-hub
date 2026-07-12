@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import {
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { StatusPill } from "./account.invoices";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/invoices")({
   head: () => ({
@@ -74,8 +75,8 @@ function AdminInvoicesPage() {
             </p>
           </div>
           <nav className="flex gap-3 text-sm">
-            <Link to={ROUTES.adminBilling} className="text-primary underline">Billing</Link>
-            <Link to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</Link>
+            <AppLink to={ROUTES.adminBilling} className="text-primary underline">Billing</AppLink>
+            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</AppLink>
           </nav>
         </header>
 
@@ -174,9 +175,9 @@ function AdminInvoicesPage() {
                     <td className="py-2 px-3"><StatusPill status={row.status} /></td>
                     <td className="py-2 px-3 font-mono text-xs">{row.pf_payment_id ?? "—"}</td>
                     <td className="py-2 px-3">
-                      <Link to="/account/invoices/$id" params={{ id: row.id }} className="text-primary underline">
+                      <AppLink to="/account/invoices/$id" params={{ id: row.id }} className="text-primary underline">
                         View
-                      </Link>
+                      </AppLink>
                     </td>
                   </tr>
                 ))}

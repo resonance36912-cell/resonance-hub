@@ -1,12 +1,13 @@
 // @no-back-to-hub internal noindex debug page for auth-gate diagnostics
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
   readAuthGateEvents,
   clearAuthGateEvents,
   type AuthGateRecord,
 } from "@/lib/auth-gate-debug";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/account/debug")({
   head: () => ({
@@ -54,12 +55,12 @@ function AuthGateDebugPage() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-6 flex items-center gap-3">
-          <Link
+          <AppLink
             to={ROUTES.accountSubscriptions}
             className="inline-flex items-center text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
           >
             ← Subscriptions
-          </Link>
+          </AppLink>
           <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Internal</span>
         </div>
 
@@ -106,9 +107,9 @@ function AuthGateDebugPage() {
           {events.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
               No events recorded yet. Visit{" "}
-              <Link to={ROUTES.accountSubscriptions} className="text-primary hover:underline">
+              <AppLink to={ROUTES.accountSubscriptions} className="text-primary hover:underline">
                 /account/subscriptions
-              </Link>{" "}
+              </AppLink>{" "}
               to generate some.
             </div>
           ) : (
