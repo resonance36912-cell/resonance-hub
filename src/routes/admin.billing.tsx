@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import {
   type AdminBillingSummary,
 } from "@/lib/billing-portal.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/billing")({
   head: () => ({
@@ -49,10 +50,10 @@ function AdminBillingPage() {
             </p>
           </div>
           <div className="flex gap-3 text-sm">
-            <Link to={ROUTES.adminInvoices} className="text-primary underline">Invoices</Link>
-            <Link to={ROUTES.adminCredits} className="text-primary underline">Credit adjustments</Link>
-            <Link to={ROUTES.adminRevenue} className="text-primary underline">Revenue & profit</Link>
-            <Link to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</Link>
+            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">Invoices</AppLink>
+            <AppLink to={ROUTES.adminCredits} className="text-primary underline">Credit adjustments</AppLink>
+            <AppLink to={ROUTES.adminRevenue} className="text-primary underline">Revenue & profit</AppLink>
+            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</AppLink>
           </div>
         </header>
 

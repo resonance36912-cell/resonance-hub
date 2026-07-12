@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import {
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { StatusPill } from "./account.invoices";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 
 export const Route = createFileRoute("/account/invoices/$id")({
@@ -44,7 +45,7 @@ function ReceiptGate() {
   if (state === "checking") return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (state === "anon") return (
     <div className="p-8 text-sm">
-      <Link to={ROUTES.login} search={{ next: undefined }} className="text-primary underline">Sign in</Link> to view this receipt.
+      <AppLink to={ROUTES.login} search={{ next: "/" }} className="text-primary underline">Sign in</AppLink> to view this receipt.
     </div>
   );
   return <ReceiptPage id={id} />;
@@ -71,7 +72,7 @@ function ReceiptPage({ id }: { id: string }) {
         <div className="flex items-center justify-between print:hidden">
           <BackToHubHeader
             className="flex gap-4 text-sm"
-            extra={<Link to={ROUTES.accountInvoices} className="text-primary underline">← Back to invoices</Link>}
+            extra={<AppLink to={ROUTES.accountInvoices} className="text-primary underline">← Back to invoices</AppLink>}
           />
 
           <div className="flex gap-3">

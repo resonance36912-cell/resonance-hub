@@ -1,10 +1,11 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listPayfastAudit, type AuditTrace } from "@/lib/payfast-audit.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/payfast-audit")({
   head: () => ({
@@ -75,9 +76,9 @@ function AuditPage() {
               amount accepted.
             </p>
             <div className="mt-2 text-xs text-muted-foreground">
-              <Link to={ROUTES.adminWebhooks} className="hover:underline text-primary">
+              <AppLink to={ROUTES.adminWebhooks} className="hover:underline text-primary">
                 ← Raw ITN log
-              </Link>
+              </AppLink>
             </div>
           </div>
           <div className="flex items-center gap-2">

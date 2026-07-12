@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
@@ -8,6 +8,7 @@ import {
   primaryContinueLabel,
 } from "@/lib/checkout-return";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const Search = z.object({
   sku: z.string().optional(),
@@ -49,15 +50,15 @@ function CancelPage() {
   return (
     <div className="min-h-screen text-foreground">
       <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
-        <Link to={ROUTES.home} className="inline-flex">
+        <AppLink to={ROUTES.home} className="inline-flex">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
-        </Link>
-        <Link
+        </AppLink>
+        <AppLink
           to={ROUTES.home}
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
           ← Back to Hub
-        </Link>
+        </AppLink>
       </nav>
       <main className="pt-32 pb-24 px-6 max-w-xl mx-auto text-center">
         <div className="rounded-3xl border border-white/10 bg-card/60 backdrop-blur-xl p-10">
@@ -66,13 +67,13 @@ function CancelPage() {
             No charge was made for {ctx.label}. You can try again whenever you&apos;re ready.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
+            <AppLink
               to={ROUTES.checkout}
               search={retrySearch}
               className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
             >
               Try again
-            </Link>
+            </AppLink>
             {secondaryIsExternal ? (
               <a
                 href={secondaryHref}
@@ -81,13 +82,13 @@ function CancelPage() {
                 {secondaryLabel}
               </a>
             ) : (
-              <Link
+              <AppLink
                 to={ROUTES.pricing}
                 hash={ctx.pricingAnchor}
                 className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
               >
                 {secondaryLabel}
-              </Link>
+              </AppLink>
             )}
           </div>
         </div>

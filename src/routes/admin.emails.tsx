@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listEmailSends } from "@/lib/email-sends.functions";
 import { sendTestSubscriptionEmail } from "@/lib/test-email.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 
 export const Route = createFileRoute("/admin/emails")({
@@ -105,13 +106,13 @@ function EmailsAdminPage() {
             <h1 className="mt-2 text-3xl font-semibold">Email Delivery</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Subscription confirmation email attempts, deduped by <code>pf_payment_id</code>.{" "}
-              <Link to={ROUTES.adminWebhooks} className="text-primary hover:underline">
+              <AppLink to={ROUTES.adminWebhooks} className="text-primary hover:underline">
                 View ITN webhook logs →
-              </Link>
+              </AppLink>
               {" · "}
-              <Link to={ROUTES.adminEmailDomain} className="text-primary hover:underline">
+              <AppLink to={ROUTES.adminEmailDomain} className="text-primary hover:underline">
                 Sender domain verification →
-              </Link>
+              </AppLink>
             </p>
 
           </div>

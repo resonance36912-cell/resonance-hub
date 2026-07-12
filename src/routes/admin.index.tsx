@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -7,6 +7,7 @@ import { listAllSubscriptions, type AdminSubRow } from "@/lib/admin-revenue.func
 import { getVisitStats } from "@/lib/visits.functions";
 import { listPayfastAudit } from "@/lib/payfast-audit.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -339,14 +340,14 @@ function AdminHome() {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {sections.map((s) => (
-              <Link
+              <AppLink
                 key={s.to}
                 to={s.to}
                 className="block rounded-xl border border-border bg-card p-5 hover:bg-accent/40 transition"
               >
                 <p className="font-semibold">{s.label}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{s.desc}</p>
-              </Link>
+              </AppLink>
             ))}
           </div>
         </section>

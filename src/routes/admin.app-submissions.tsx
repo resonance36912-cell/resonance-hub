@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,6 +14,7 @@ import {
 } from "@/lib/app-submissions.functions";
 import { SubmissionTimeline } from "@/components/SubmissionTimeline";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/app-submissions")({
   head: () => ({
@@ -71,10 +72,10 @@ function AdminAppSubmissions() {
           <h1 className="text-3xl font-semibold tracking-tight">App submissions</h1>
           <p className="mt-1 text-muted-foreground">
             Review community-submitted apps. Publish to add them to the{" "}
-            <Link to={ROUTES.apps} className="underline">catalog</Link>.
+            <AppLink to={ROUTES.apps} className="underline">catalog</AppLink>.
           </p>
         </div>
-        <Link to={ROUTES.admin} className="text-sm underline">← Admin home</Link>
+        <AppLink to={ROUTES.admin} className="text-sm underline">← Admin home</AppLink>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -280,14 +281,14 @@ function SubmissionCard({
           <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Status timeline
           </h3>
-          <Link
+          <AppLink
             to="/apps/submissions/$id"
             params={{ id: s.id }}
             target="_blank"
             className="text-[11px] text-muted-foreground underline"
           >
             Public view ↗
-          </Link>
+          </AppLink>
         </div>
         <div className="mt-2">
           <SubmissionTimeline events={submissionTimeline(s)} compact />

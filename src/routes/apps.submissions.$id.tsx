@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
@@ -8,6 +8,7 @@ import {
   type AppSubmissionStatus,
 } from "@/lib/app-submissions.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/apps/submissions/$id")({
   head: () => ({
@@ -43,7 +44,7 @@ function SubmissionStatusPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Submission status</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Bookmark this page to check on your submission. Approved apps appear on the{" "}
-          <Link to={ROUTES.apps} className="underline">catalog</Link>.
+          <AppLink to={ROUTES.apps} className="underline">catalog</AppLink>.
         </p>
       </header>
 

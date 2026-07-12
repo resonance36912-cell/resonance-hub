@@ -1,9 +1,10 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { checkEmailDomain, type RecordCheck } from "@/lib/email-domain.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/email-domain")({
   head: () => ({
@@ -55,9 +56,9 @@ function EmailDomainPage() {
               </code>
               . These records prove that PayFast subscription emails are
               authorized to be sent from your domain.{" "}
-              <Link to={ROUTES.adminEmails} className="text-primary hover:underline">
+              <AppLink to={ROUTES.adminEmails} className="text-primary hover:underline">
                 Back to delivery log →
-              </Link>
+              </AppLink>
             </p>
           </div>
           <button

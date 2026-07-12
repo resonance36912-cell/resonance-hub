@@ -1,9 +1,10 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { listEntitlementChecks } from "@/lib/entitlement-admin.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/entitlement-diagnostics")({
   head: () => ({
@@ -47,12 +48,12 @@ function Page() {
               Last 50 entitlement checks across all spoke apps. Refreshes every 15s.
             </p>
           </div>
-          <Link
+          <AppLink
             to={ROUTES.admin}
             className="rounded-lg border border-border bg-card px-4 py-2 text-sm hover:bg-accent"
           >
             ← Admin home
-          </Link>
+          </AppLink>
         </div>
 
         {isLoading && <p className="text-muted-foreground">Loading…</p>}

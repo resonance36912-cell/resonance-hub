@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
@@ -184,18 +185,18 @@ function RepoHealthPage() {
           </p>
         </div>
         <div className="flex gap-4 text-sm">
-          <Link to={ROUTES.toolsIssueTriage} className="underline text-muted-foreground">
+          <AppLink to={ROUTES.toolsIssueTriage} className="underline text-muted-foreground">
             Issue triage
-          </Link>
-          <Link to={ROUTES.toolsPrStatus} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.toolsPrStatus} className="underline text-muted-foreground">
             PR status
-          </Link>
-          <Link to={ROUTES.toolsReleases} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.toolsReleases} className="underline text-muted-foreground">
             Releases
-          </Link>
-          <Link to={ROUTES.home} className="underline text-muted-foreground">
+          </AppLink>
+          <AppLink to={ROUTES.home} className="underline text-muted-foreground">
             Back to Hub
-          </Link>
+          </AppLink>
         </div>
       </div>
 
@@ -383,27 +384,27 @@ function RepoHealthPage() {
                   )}
 
                   <div className="mt-3 flex flex-wrap gap-3 text-xs">
-                    <Link
+                    <AppLink
                       to={ROUTES.toolsIssueTriage}
                       search={{ repos: r.repo }}
                       className="underline text-muted-foreground hover:text-foreground"
                     >
                       Triage issues →
-                    </Link>
-                    <Link
+                    </AppLink>
+                    <AppLink
                       to={ROUTES.toolsPrStatus}
                       search={{ repos: r.repo }}
                       className="underline text-muted-foreground hover:text-foreground"
                     >
                       Review PRs →
-                    </Link>
-                    <Link
+                    </AppLink>
+                    <AppLink
                       to={ROUTES.toolsReleases}
                       search={{ repos: r.repo }}
                       className="underline text-muted-foreground hover:text-foreground"
                     >
                       View releases →
-                    </Link>
+                    </AppLink>
                     {r.latest_run && (
                       <a
                         href={r.latest_run.html_url}

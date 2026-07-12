@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import changelogSource from "../../CHANGELOG.md?raw";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/changelog")({
   head: () => ({
@@ -186,9 +187,9 @@ function ChangelogPage() {
       <header className="border-b border-white/5">
         <div className="mx-auto max-w-4xl px-6 py-16">
           <div className="mb-6 text-[10px] font-mono uppercase tracking-widest text-white/50">
-            <Link to={ROUTES.home} className="hover:text-white">
+            <AppLink to={ROUTES.home} className="hover:text-white">
               ← Back to Hub
-            </Link>
+            </AppLink>
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">
             Changelog
@@ -205,9 +206,9 @@ function ChangelogPage() {
               Keep a Changelog
             </a>
             . Governed by{" "}
-            <Link to={ROUTES.governance} className="underline underline-offset-2 hover:text-white">
+            <AppLink to={ROUTES.governance} className="underline underline-offset-2 hover:text-white">
               RCGF v1.0
-            </Link>
+            </AppLink>
             .
           </p>
           <div className="mt-6 flex flex-wrap gap-3 text-[10px] font-mono uppercase tracking-widest">
@@ -311,12 +312,12 @@ function ChangelogPage() {
         <div className="mx-auto max-w-4xl px-6 py-10 text-[10px] font-mono uppercase tracking-widest text-white/50 flex flex-wrap gap-x-6 gap-y-2 justify-between">
           <span>© {new Date().getFullYear()} The Resonance</span>
           <div className="flex gap-6">
-            <Link to={ROUTES.governance} className="hover:text-white">
+            <AppLink to={ROUTES.governance} className="hover:text-white">
               Governance
-            </Link>
-            <Link to={ROUTES.pricing} className="hover:text-white">
+            </AppLink>
+            <AppLink to={ROUTES.pricing} className="hover:text-white">
               Pricing
-            </Link>
+            </AppLink>
             <a
               href={`${REPO}/blob/main/CHANGELOG.md`}
               target="_blank"

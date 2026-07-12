@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { slugify, validateAppUrl } from "@/lib/app-submission-validation";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 
 export const Route = createFileRoute("/apps/submit")({
@@ -220,18 +221,18 @@ function SubmitAppPage() {
           <p className="mt-2 text-green-900/80">
             Thanks — we'll review your app and get back to you at{" "}
             <strong>{form.contactEmail}</strong>. Approved apps appear on the{" "}
-            <Link to={ROUTES.apps} className="underline">apps catalog</Link>.
+            <AppLink to={ROUTES.apps} className="underline">apps catalog</AppLink>.
           </p>
           {submissionId ? (
             <p className="mt-3 text-sm text-green-900/80">
               Track review progress:{" "}
-              <Link
+              <AppLink
                 to="/apps/submissions/$id"
                 params={{ id: submissionId }}
                 className="font-medium underline"
               >
                 View submission status
-              </Link>
+              </AppLink>
               . Bookmark that link — it shows the timeline as your submission is reviewed and published.
             </p>
           ) : null}
@@ -446,9 +447,9 @@ function SubmitAppPage() {
           >
             {mut.isPending ? "Submitting…" : "Submit for review"}
           </button>
-          <Link to={ROUTES.apps} className="text-sm text-muted-foreground underline">
+          <AppLink to={ROUTES.apps} className="text-sm text-muted-foreground underline">
             Back to catalog
-          </Link>
+          </AppLink>
         </div>
       </form>
     </main>

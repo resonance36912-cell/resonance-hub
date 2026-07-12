@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 
 export const Route = createFileRoute("/account/invoices")({
@@ -40,7 +41,7 @@ function InvoicesGate() {
   if (state === "anon") return (
     <Shell>
       <p className="text-sm">
-        <Link to={ROUTES.login} search={{ next: undefined }} className="text-primary underline">Sign in</Link> to view your invoices.
+        <AppLink to={ROUTES.login} search={{ next: "/" }} className="text-primary underline">Sign in</AppLink> to view your invoices.
       </p>
     </Shell>
   );
@@ -92,13 +93,13 @@ function InvoicesPage() {
                   <td className="py-2 px-3 font-mono">{formatMoney(row.amount_cents, row.currency)}</td>
                   <td className="py-2 px-3"><StatusPill status={row.status} /></td>
                   <td className="py-2 px-3">
-                    <Link
+                    <AppLink
                       to="/account/invoices/$id"
                       params={{ id: row.id }}
                       className="text-primary underline"
                     >
                       View
-                    </Link>
+                    </AppLink>
                   </td>
                 </tr>
               ))}
@@ -124,8 +125,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <BackToHubHeader
             extra={
               <>
-                <Link to={ROUTES.accountBilling} className="text-primary underline">Billing</Link>
-                <Link to={ROUTES.accountSubscriptions} className="text-primary underline">Subscriptions</Link>
+                <AppLink to={ROUTES.accountBilling} className="text-primary underline">Billing</AppLink>
+                <AppLink to={ROUTES.accountSubscriptions} className="text-primary underline">Subscriptions</AppLink>
               </>
             }
           />

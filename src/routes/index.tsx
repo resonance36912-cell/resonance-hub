@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ROUTES } from "@/lib/routes";
+import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -624,13 +625,13 @@ function Index() {
                 {l.label}
               </a>
             ))}
-            <Link
+            <AppLink
               to={ROUTES.pricing}
               onClick={() => setMobileMenuOpen(false)}
               className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white"
             >
               Pricing
-            </Link>
+            </AppLink>
           </div>
         )}
       </nav>
@@ -667,12 +668,12 @@ function Index() {
               >
                 Explore apps
               </a>
-              <Link
+              <AppLink
                 to={ROUTES.pricing}
                 className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
                 View pricing
-              </Link>
+              </AppLink>
             </div>
           </div>
           <div className="md:pl-4">
@@ -1025,12 +1026,12 @@ function Index() {
               tools every month.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link
+              <AppLink
                 to={ROUTES.pricing}
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-xs uppercase tracking-widest shadow-[0_0_40px_-10px_hsl(295_90%_60%/0.8)]"
               >
                 View full pricing →
-              </Link>
+              </AppLink>
               <a href="#bundles" className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest">
                 See ecosystem passes
               </a>
@@ -1278,9 +1279,9 @@ function Index() {
             <p className="mt-4 text-[11px] text-white/65 max-w-md mx-auto">
               We store your email to send occasional updates about new Resonance apps and pilots. No
               spam, unsubscribe anytime. See our{" "}
-              <Link to={ROUTES.governance} className="underline hover:text-white">
+              <AppLink to={ROUTES.governance} className="underline hover:text-white">
                 governance policy
-              </Link>{" "}
+              </AppLink>{" "}
               for how we handle data (POPIA-conscious).
             </p>
             {joinMsg && (
@@ -1314,15 +1315,15 @@ function Index() {
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
             <a href="/#apps" className="hover:text-white transition-colors">Apps</a>
-            <Link to={ROUTES.pricing} className="hover:text-white transition-colors">Pricing</Link>
+            <AppLink to={ROUTES.pricing} className="hover:text-white transition-colors">Pricing</AppLink>
             <a href="/#updates" className="hover:text-white transition-colors">Updates</a>
             <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
             <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
-            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Governance</Link>
-            <Link to={ROUTES.changelog} className="hover:text-white transition-colors">Changelog</Link>
-            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
-            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Terms</Link>
-            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Refunds</Link>
+            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Governance</AppLink>
+            <AppLink to={ROUTES.changelog} className="hover:text-white transition-colors">Changelog</AppLink>
+            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Privacy &amp; POPIA</AppLink>
+            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Terms</AppLink>
+            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Refunds</AppLink>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Support</a>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Contact</a>
 
@@ -1490,7 +1491,7 @@ function UpdatesGrid() {
                   {external ? (
                     <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
                   ) : (
-                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
+                    <AppLink to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</AppLink>
                   )}
                   {hasMore && (
                     <button
@@ -1549,9 +1550,9 @@ function UpdatesGrid() {
                               {l.label} ↗
                             </a>
                           ) : (
-                            <Link to={l.href} onClick={() => setOpenIndex(null)} className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
+                            <AppLink to={l.href} onClick={() => setOpenIndex(null)} className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
                               {l.label} →
-                            </Link>
+                            </AppLink>
                           )}
                         </li>
                       );
@@ -1571,13 +1572,13 @@ function UpdatesGrid() {
                     {active.cta} ↗
                   </a>
                 ) : (
-                  <Link
+                  <AppLink
                     to={active.href}
                     onClick={() => setOpenIndex(null)}
                     className="px-4 py-2 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
                   >
                     {active.cta} →
-                  </Link>
+                  </AppLink>
                 )}
               </div>
             </>
