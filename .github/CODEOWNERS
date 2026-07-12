@@ -1,0 +1,26 @@
+# Default owner for everything in the repo
+*                                       @resonance36912-cell
+
+# Billing + payments (PayFast ITN, invoices, credits, subscriptions)
+/src/routes/api/public/payfast/         @resonance36912-cell
+/src/lib/verify-purchase.functions.ts   @resonance36912-cell
+/src/lib/admin-credits.functions.ts     @resonance36912-cell
+/src/routes/admin.billing*.tsx          @resonance36912-cell
+/src/routes/admin.credits*.tsx          @resonance36912-cell
+/src/routes/admin.invoices*.tsx         @resonance36912-cell
+/src/routes/account.billing*.tsx        @resonance36912-cell
+/src/routes/account.invoices*.tsx       @resonance36912-cell
+/src/routes/account.subscriptions.tsx   @resonance36912-cell
+
+# Governance (RCGF)
+/src/routes/governance.tsx              @resonance36912-cell
+/src/routes/rcgf.tsx                    @resonance36912-cell
+/src/routes/legal.governance.tsx        @resonance36912-cell
+/src/lib/rcgf.ts                        @resonance36912-cell
+/docs/governance/                       @resonance36912-cell
+
+# Security-sensitive areas
+/src/lib/rop/cron-auth.server.ts        @resonance36912-cell
+/src/integrations/supabase/             @resonance36912-cell
+/.github/workflows/                     @resonance36912-cell
+/scripts/verify-security-invariants.ts  @resonance36912-cell
