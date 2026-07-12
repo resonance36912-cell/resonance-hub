@@ -56,6 +56,7 @@ import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as AppsSubmissionsIdRouteImport } from './routes/apps.submissions.$id'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
 import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -317,6 +318,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppsSubmissionsIdRoute = AppsSubmissionsIdRouteImport.update({
+  id: '/submissions/$id',
+  path: '/submissions/$id',
+  getParentRoute: () => AppsRoute,
+} as any)
 const ApiPublicEntitlementRoute = ApiPublicEntitlementRouteImport.update({
   id: '/api/public/entitlement',
   path: '/api/public/entitlement',
@@ -494,6 +500,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
+  '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
@@ -565,6 +572,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
+  '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
@@ -637,6 +645,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
+  '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
@@ -710,6 +719,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
+    | '/apps/submissions/$id'
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
@@ -781,6 +791,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
+    | '/apps/submissions/$id'
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
@@ -852,6 +863,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
+    | '/apps/submissions/$id'
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
@@ -1271,6 +1283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apps/submissions/$id': {
+      id: '/apps/submissions/$id'
+      path: '/submissions/$id'
+      fullPath: '/apps/submissions/$id'
+      preLoaderRoute: typeof AppsSubmissionsIdRouteImport
+      parentRoute: typeof AppsRoute
+    }
     '/api/public/entitlement': {
       id: '/api/public/entitlement'
       path: '/api/public/entitlement'
@@ -1430,10 +1449,12 @@ declare module '@tanstack/react-router' {
 
 interface AppsRouteChildren {
   AppsSubmitRoute: typeof AppsSubmitRoute
+  AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
 }
 
 const AppsRouteChildren: AppsRouteChildren = {
   AppsSubmitRoute: AppsSubmitRoute,
+  AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
 }
 
 const AppsRouteWithChildren = AppsRoute._addFileChildren(AppsRouteChildren)

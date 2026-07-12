@@ -8,7 +8,9 @@ import {
   reviewAppSubmission,
   type AppSubmission,
   type AppSubmissionStatus,
+  submissionTimeline,
 } from "@/lib/app-submissions.functions";
+import { SubmissionTimeline } from "@/components/SubmissionTimeline";
 
 export const Route = createFileRoute("/admin/app-submissions")({
   head: () => ({
@@ -181,7 +183,27 @@ function SubmissionCard({
         </div>
       </div>
 
+      <div className="mt-4 rounded-md border border-dashed border-border p-3">
+        <div className="flex items-baseline justify-between gap-2">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Status timeline
+          </h3>
+          <Link
+            to="/apps/submissions/$id"
+            params={{ id: s.id }}
+            target="_blank"
+            className="text-[11px] text-muted-foreground underline"
+          >
+            Public view ↗
+          </Link>
+        </div>
+        <div className="mt-2">
+          <SubmissionTimeline events={submissionTimeline(s)} compact />
+        </div>
+      </div>
+
       <div className="mt-4">
+
         <label className="block text-xs font-medium text-muted-foreground">
           Review notes (optional, saved with the action)
         </label>

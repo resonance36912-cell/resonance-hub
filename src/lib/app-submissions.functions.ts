@@ -144,6 +144,101 @@ export const listPublishedSubmissions = createServerFn({ method: "GET" })
     return rows;
   });
 
+// -------- Public: status timeline by id --------
+
+export type SubmissionStatusEvent = {
+  key: "submitted" | "reviewed" | "approved" | "rejected" | "published" | "unpublished" | "updated";
+  label: string;
+  at: string;
+  note?: string | null;
+};
+
+export type SubmissionStatusView = {
+  id: string;
+  name: string;
+  url: string;
+  status: AppSubmissionStatus;
+  created_at: string;
+  reviewed_at: string | null;
+  published_at: string | null;
+  updated_at: string;
+  review_notes: string | null;
+  timeline: SubmissionStatusEvent[];
+};
+
+function buildTimeline(row: {
+  status: AppSubmissionStatus;
+  created_at: string;
+  reviewed_at: string | null;
+  published_at: string | null;
+  updated_at: string;
+  review_notes: string | null;
+}): SubmissionStatusEvent[] {
+  const events: SubmissionStatusEvent[] = [
+    { key: "submitted", label: "Submitted", at: row.created_at },
+  ];
+  if (row.reviewed_at) {
+    events.push({
+      key: "reviewed",
+      label: "Reviewed",
+      at: row.reviewed_at,
+      note: row.review_notes,
+    });
+    if (row.status === "approved") {
+      events.push({ key: "approved", label: "Approved", at: row.reviewed_at });
+    } else if (row.status === "rejected") {
+      events.push({ key: "rejected", label: "Rejected", at: row.reviewed_at });
+    }
+  }
+  if (row.published_at) {
+    events.push({ key: "published", label: "Published", at: row.published_at });
+    if (row.status !== "published") {
+      events.push({ key: "unpublished", label: "Unpublished", at: row.updated_at });
+    }
+  }
+  // Sort chronologically, stable
+  events.sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
+  return events;
+}
+
+export function submissionTimeline(row: {
+  status: AppSubmissionStatus;
+  created_at: string;
+  reviewed_at: string | null;
+  published_at: string | null;
+  updated_at: string;
+  review_notes: string | null;
+}): SubmissionStatusEvent[] {
+  return buildTimeline(row);
+}
+
+const statusSchema = z.object({ id: z.string().uuid() });
+
+export const getSubmissionStatus = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => statusSchema.parse(d))
+  .handler(async ({ data }): Promise<SubmissionStatusView | null> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("app_submissions")
+      .select("id,name,url,status,created_at,reviewed_at,published_at,updated_at,review_notes")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) return null;
+    const r = row as {
+      id: string;
+      name: string;
+      url: string;
+      status: AppSubmissionStatus;
+      created_at: string;
+      reviewed_at: string | null;
+      published_at: string | null;
+      updated_at: string;
+      review_notes: string | null;
+    };
+    return { ...r, timeline: buildTimeline(r) };
+  });
+
 // -------- Admin: list --------
 
 const listSchema = z.object({
