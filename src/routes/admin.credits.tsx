@@ -176,14 +176,16 @@ function UserPanel({
 
 function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWalletRow[] }) {
   const queryFn = useServerFn(queryUserLedger);
+  const reverseFn = useServerFn(reverseCreditAdjustment);
+  const qc = useQueryClient();
   const [appFilter, setAppFilter] = useState<string>("");
   const [pfFilter, setPfFilter] = useState<string>("");
   const [fromDate, setFromDate] = useState<string>("");
   const [toDate, setToDate] = useState<string>("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [reverseError, setReverseError] = useState<string | null>(null);
 
-  // Applied filters (updated on submit / clear) so typing doesn't spam requests.
   const [applied, setApplied] = useState<{
     app: string; pf: string; from: string; to: string;
   }>({ app: "", pf: "", from: "", to: "" });
@@ -211,10 +213,27 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
     placeholderData: (prev) => prev,
   });
 
+  const reverseM = useMutation({
+    mutationFn: (ledgerId: string) => reverseFn({ data: { ledgerId } }),
+    onSuccess: () => {
+      setReverseError(null);
+      qc.invalidateQueries({ queryKey: ["admin-credit-ledger", userId] });
+      qc.invalidateQueries({ queryKey: ["admin-credit-lookup"] });
+    },
+    onError: (e) => setReverseError((e as Error).message),
+  });
+
   const total = ledgerQ.data?.total ?? 0;
   const rows = ledgerQ.data?.rows ?? [];
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const walletApps = Array.from(new Set(wallets.map((w) => w.app)));
+
+  // Set of ledger ids that already have a reversal within the current page.
+  const reversedIds = new Set(
+    rows
+      .map((r) => (r.metadata as { reverses_ledger_id?: string }).reverses_ledger_id)
+      .filter((v): v is string => typeof v === "string"),
+  );
 
   return (
     <section className="rounded-lg border bg-card p-6 space-y-4">
