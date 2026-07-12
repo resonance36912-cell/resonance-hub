@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_submissions: {
+        Row: {
+          accent_color: string | null
+          contact_email: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          published_at: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submitter_user_id: string | null
+          tagline: string
+          updated_at: string
+          url: string
+          use_case: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          contact_email: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          published_at?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_user_id?: string | null
+          tagline: string
+          updated_at?: string
+          url: string
+          use_case?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          contact_email?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          published_at?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submitter_user_id?: string | null
+          tagline?: string
+          updated_at?: string
+          url?: string
+          use_case?: string | null
+        }
+        Relationships: []
+      }
       ci_alert_config: {
         Row: {
           default_branch_only: boolean
