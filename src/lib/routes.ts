@@ -69,8 +69,9 @@ export const ROUTES = {
   accountInvoices: routePath("/account/invoices"),
   accountSubscriptions: routePath("/account/subscriptions"),
 
-  // Admin
-  admin: routePath("/admin"),
+  // The admin index registers as `/admin/` (with trailing slash) in the
+  // generated route tree — that's the canonical path.
+  admin: routePath("/admin/"),
   adminAppSubmissions: routePath("/admin/app-submissions"),
   adminBilling: routePath("/admin/billing"),
   adminCiHealth: routePath("/admin/ci-health"),
