@@ -71,6 +71,7 @@ function ByPaymentPage() {
 function BackLinks() {
   return (
     <div className="flex gap-4 text-sm">
+      <Link to="/" className="underline">Back to Hub</Link>
       <Link to="/account/invoices" className="underline">All invoices</Link>
       <Link to="/account/billing" className="underline">Billing</Link>
     </div>
