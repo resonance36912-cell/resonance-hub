@@ -89,13 +89,25 @@ interface Hit {
   context: string;
 }
 
+// Capture absolute paths inside string/template literals. We include `$` so
+// TanStack `$param` segments survive; `${...}` interpolations in template
+// literals are normalized below before matching.
+const PATH_CHARS = String.raw`[^"'\`?#\s]*`;
 const SCAN_PATTERNS: RegExp[] = [
-  /\bhref\s*=\s*["'`](\/[^"'`?#\s${}]*)/g,
-  /\bto\s*=\s*["'`](\/[^"'`?#\s${}]*)/g,
-  /\bto\s*:\s*["'`](\/[^"'`?#\s${}]*)/g,
-  /\bnavigate\s*\(\s*["'`](\/[^"'`?#\s${}]*)/g,
-  /window\.location\.(?:href|assign|replace)\s*(?:=|\()\s*["'`](\/[^"'`?#\s${}]*)/g,
+  new RegExp(String.raw`\bhref\s*=\s*["'\`](\/${PATH_CHARS})`, "g"),
+  new RegExp(String.raw`\bto\s*=\s*\{?\s*["'\`](\/${PATH_CHARS})`, "g"),
+  new RegExp(String.raw`\bto\s*:\s*["'\`](\/${PATH_CHARS})`, "g"),
+  new RegExp(String.raw`\bnavigate\s*\(\s*["'\`](\/${PATH_CHARS})`, "g"),
+  new RegExp(
+    String.raw`window\.location\.(?:href|assign|replace)\s*(?:=|\()\s*["'\`](\/${PATH_CHARS})`,
+    "g",
+  ),
 ];
+
+function normalizePath(raw: string): string {
+  // Template-literal `${expr}` → `$x` (opaque single-segment param).
+  return raw.replace(/\$\{[^}]*\}/g, "$x");
+}
 
 function scanFile(file: string, matchers: RegExp[]): Hit[] {
   const src = readFileSync(file, "utf8");
