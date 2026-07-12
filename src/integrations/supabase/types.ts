@@ -1377,60 +1377,7 @@ export type Database = {
       }
     }
     Views: {
-      app_submissions_public: {
-        Row: {
-          accent_color: string | null
-          created_at: string | null
-          description: string | null
-          id: string | null
-          logo_path: string | null
-          name: string | null
-          published_at: string | null
-          review_notes: string | null
-          reviewed_at: string | null
-          screenshot_paths: string[] | null
-          status: string | null
-          tagline: string | null
-          updated_at: string | null
-          url: string | null
-          use_case: string | null
-        }
-        Insert: {
-          accent_color?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          logo_path?: string | null
-          name?: string | null
-          published_at?: string | null
-          review_notes?: string | null
-          reviewed_at?: string | null
-          screenshot_paths?: string[] | null
-          status?: string | null
-          tagline?: string | null
-          updated_at?: string | null
-          url?: string | null
-          use_case?: string | null
-        }
-        Update: {
-          accent_color?: string | null
-          created_at?: string | null
-          description?: string | null
-          id?: string | null
-          logo_path?: string | null
-          name?: string | null
-          published_at?: string | null
-          review_notes?: string | null
-          reviewed_at?: string | null
-          screenshot_paths?: string[] | null
-          status?: string | null
-          tagline?: string | null
-          updated_at?: string | null
-          url?: string | null
-          use_case?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       delete_email: {
