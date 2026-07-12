@@ -141,6 +141,8 @@ function AppsCatalogPage() {
         badge: "Community",
         external: true,
         paid: false,
+        logoUrl: s.logo_url ?? null,
+        screenshotUrls: s.screenshot_urls ?? [],
       })),
     [publishedQ.data],
   );
