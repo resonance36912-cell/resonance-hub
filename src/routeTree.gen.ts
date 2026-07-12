@@ -39,6 +39,7 @@ import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
+import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
@@ -217,6 +218,11 @@ const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
   path: '/admin/ci-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminBillingRoute = AdminBillingRouteImport.update({
+  id: '/admin/billing',
+  path: '/admin/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -554,6 +563,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -612,6 +622,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -670,6 +681,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -729,6 +741,7 @@ export interface RootRouteChildren {
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -985,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/billing': {
+      id: '/admin/billing'
+      path: '/admin/billing'
+      fullPath: '/admin/billing'
+      preLoaderRoute: typeof AdminBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/subscriptions': {
       id: '/account/subscriptions'
       path: '/account/subscriptions'
@@ -1198,6 +1218,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
