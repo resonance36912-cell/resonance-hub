@@ -8,9 +8,11 @@ import {
   adjustCredits,
   queryUserLedger,
   reverseCreditAdjustment,
+  exportUserLedger,
   type CreditUserLookup,
   type AdminWalletRow,
   type AdminLedgerPage,
+  type AdminLedgerRow,
 } from "@/lib/admin-credits.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 
@@ -177,7 +179,11 @@ function UserPanel({
 function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWalletRow[] }) {
   const queryFn = useServerFn(queryUserLedger);
   const reverseFn = useServerFn(reverseCreditAdjustment);
+  const exportFn = useServerFn(exportUserLedger);
   const qc = useQueryClient();
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
   const [appFilter, setAppFilter] = useState<string>("");
   const [pfFilter, setPfFilter] = useState<string>("");
   const [fromDate, setFromDate] = useState<string>("");
@@ -235,14 +241,71 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
       .filter((v): v is string => typeof v === "string"),
   );
 
+  const handleExport = async () => {
+    setExportError(null);
+    setExportNotice(null);
+    setExportBusy(true);
+    try {
+      const res = await exportFn({
+        data: {
+          userId,
+          app: applied.app || null,
+          pfPaymentId: applied.pf || null,
+          from: toIso(applied.from),
+          to: toIso(applied.to, true),
+        },
+      });
+      if (res.rows.length === 0) {
+        setExportNotice("No rows to export for these filters.");
+        return;
+      }
+      const csv = buildLedgerCsv(res.rows);
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filenameParts = ["credit-ledger", userId.slice(0, 8)];
+      if (applied.app) filenameParts.push(applied.app);
+      if (applied.pf) filenameParts.push(`pf-${applied.pf}`);
+      filenameParts.push(stamp);
+      downloadCsv(`${filenameParts.join("_")}.csv`, csv);
+      if (res.capped) {
+        setExportNotice(
+          `Export capped at ${res.cap.toLocaleString()} rows. Narrow the date range or filters to export the rest.`,
+        );
+      } else {
+        setExportNotice(`Exported ${res.rows.length.toLocaleString()} row${res.rows.length === 1 ? "" : "s"}.`);
+      }
+    } catch (e) {
+      setExportError((e as Error).message);
+    } finally {
+      setExportBusy(false);
+    }
+  };
+
   return (
     <section className="rounded-lg border bg-card p-6 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-lg font-semibold">Ledger</h2>
-        <p className="text-xs text-muted-foreground">
-          {ledgerQ.isFetching ? "Loading…" : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-muted-foreground">
+            {ledgerQ.isFetching ? "Loading…" : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
+          </p>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exportBusy || total === 0}
+            className="rounded border px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
+            title="Download all ledger rows matching the current filters as CSV"
+          >
+            {exportBusy ? "Exporting…" : "Export CSV"}
+          </button>
+        </div>
       </div>
+
+      {exportError && (
+        <div className="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs">{exportError}</div>
+      )}
+      {exportNotice && (
+        <div className="rounded border border-border/60 bg-muted p-2 text-xs">{exportNotice}</div>
+      )}
 
       <form
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
@@ -616,4 +679,70 @@ function AdjustForm({
       </form>
     </section>
   );
+}
+
+function csvEscape(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  const s = typeof v === "string" ? v : typeof v === "object" ? JSON.stringify(v) : String(v);
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function buildLedgerCsv(rows: AdminLedgerRow[]): string {
+  const header = [
+    "created_at",
+    "id",
+    "app",
+    "delta",
+    "balance_after",
+    "reason",
+    "sku",
+    "pf_payment_id",
+    "admin_email",
+    "admin_user_id",
+    "note",
+    "reverses_ledger_id",
+    "metadata_json",
+  ];
+  const lines = [header.join(",")];
+  for (const r of rows) {
+    const meta = (r.metadata ?? {}) as {
+      admin_email?: string | null;
+      admin_user_id?: string | null;
+      note?: string | null;
+      reverses_ledger_id?: string | null;
+    };
+    lines.push(
+      [
+        r.created_at,
+        r.id,
+        r.app,
+        r.delta,
+        r.balance_after,
+        r.reason,
+        r.sku,
+        r.pf_payment_id,
+        meta.admin_email ?? null,
+        meta.admin_user_id ?? null,
+        meta.note ?? null,
+        meta.reverses_ledger_id ?? null,
+        r.metadata,
+      ]
+        .map(csvEscape)
+        .join(","),
+    );
+  }
+  // Prepend UTF-8 BOM so Excel opens with correct encoding
+  return "\uFEFF" + lines.join("\r\n") + "\r\n";
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
