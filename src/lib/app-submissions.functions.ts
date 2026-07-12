@@ -3,6 +3,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  slugify,
+  validateAppUrl,
+  isReservedSlug,
+  isReservedHost,
+  normalizeHost,
+} from "@/lib/app-submission-validation";
+
 
 // -----------------------------------------------------------------------------
 // App submissions — public submit + admin review workflow
