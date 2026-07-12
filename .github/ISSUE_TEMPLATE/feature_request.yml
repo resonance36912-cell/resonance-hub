@@ -1,0 +1,75 @@
+name: Feature request
+description: Propose a new capability or enhancement for the Resonance Hub.
+title: "[feat]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Features that touch billing, entitlements, or governance must align with RCGF v1.0 (https://reson8.life/governance). If in doubt, open a Discussion first.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / user need
+      description: What can't a user do today? Who is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should the hub do? Include the surface (route, admin page, API, spoke integration).
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Billing / PayFast
+        - Entitlements / passes / packs
+        - Credits / ledger
+        - Invoices
+        - ROP telemetry
+        - Admin dashboards
+        - MCP / agent integrations
+        - Spoke app (Creative Studio / ePublisher / SyncVision / YouTube Optimizer)
+        - Public site / pricing
+        - Governance / docs
+        - CI / tooling
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Bullet list of observable behaviours that mean this is done.
+      placeholder: |
+        - [ ] Admin can ...
+        - [ ] Ledger records ...
+        - [ ] CI check ...
+    validations:
+      required: true
+  - type: dropdown
+    id: rcgf
+    attributes:
+      label: RCGF alignment
+      description: Does this affect governance, billing authority, or user entitlements?
+      options:
+        - No — cosmetic / dev tooling only
+        - Yes — I have reviewed RCGF v1.0 and this is consistent
+        - Unsure — needs governance review
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight
+      options:
+        - label: I searched existing issues and discussions and this is not a duplicate.
+          required: true
