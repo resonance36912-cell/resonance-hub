@@ -219,3 +219,62 @@ export const adjustCredits = createServerFn({ method: "POST" })
       } as AdminLedgerRow,
     };
   });
+
+// -----------------------------------------------------------------------------
+// Filtered / paginated ledger query
+// -----------------------------------------------------------------------------
+
+const ledgerQuerySchema = z.object({
+  userId: z.string().uuid(),
+  app: z.string().trim().max(64).optional().nullable(),
+  pfPaymentId: z.string().trim().max(64).optional().nullable(),
+  from: z.string().datetime().optional().nullable(),
+  to: z.string().datetime().optional().nullable(),
+  page: z.number().int().min(1).max(1000).default(1),
+  pageSize: z.number().int().min(1).max(200).default(25),
+});
+
+export type AdminLedgerPage = {
+  rows: AdminLedgerRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
+export const queryUserLedger = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ledgerQuerySchema.parse(d))
+  .handler(async ({ data, context }): Promise<AdminLedgerPage> => {
+    const supabaseAdmin = await assertAdmin(context.userId);
+    const { userId, app, pfPaymentId, from, to, page, pageSize } = data;
+
+    let q = supabaseAdmin
+      .from("credit_ledger")
+      .select("id,app,delta,balance_after,reason,sku,pf_payment_id,metadata,created_at", {
+        count: "exact",
+      })
+      .eq("user_id", userId);
+
+    if (app && app.trim()) q = q.eq("app", app.trim());
+    if (pfPaymentId && pfPaymentId.trim()) q = q.eq("pf_payment_id", pfPaymentId.trim());
+    if (from) q = q.gte("created_at", from);
+    if (to) q = q.lte("created_at", to);
+
+    const fromIdx = (page - 1) * pageSize;
+    const toIdx = fromIdx + pageSize - 1;
+
+    const { data: rows, count, error } = await q
+      .order("created_at", { ascending: false })
+      .range(fromIdx, toIdx);
+    if (error) throw new Error(error.message);
+
+    return {
+      rows: (rows ?? []).map((r) => ({
+        ...r,
+        metadata: (r.metadata ?? {}) as Record<string, unknown>,
+      })) as AdminLedgerRow[],
+      total: count ?? 0,
+      page,
+      pageSize,
+    };
+  });
