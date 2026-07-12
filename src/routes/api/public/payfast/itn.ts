@@ -235,14 +235,23 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           return new Response("amount mismatch", { status: 400 });
         }
 
+        // PayFast payment_status values we care about:
+        //   COMPLETE  → activate
+        //   CANCELLED → user or admin cancelled the recurring token
+        //   REFUND    → funds returned; revoke immediately (no grace period)
+        //   FAILED    → renewal failed; treat as past_due until retried
+        //   anything else → pending
+        const isRefund = paymentStatus === "REFUND" || paymentStatus === "REFUNDED";
         const nextStatus =
           paymentStatus === "COMPLETE" ? "active" :
           paymentStatus === "CANCELLED" ? "cancelled" :
+          isRefund ? "cancelled" :
           paymentStatus === "FAILED" ? "past_due" : "pending";
 
         const periodEnd = new Date();
         // Monthly-only billing. See note on SKU_CATALOG above.
         periodEnd.setMonth(periodEnd.getMonth() + 1);
+
 
         // Snapshot prior subscription for this (user, app) so we can classify
         // the plan change (upgrade / downgrade / sidegrade / initial) and log
