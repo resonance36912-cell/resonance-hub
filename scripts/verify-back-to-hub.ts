@@ -92,12 +92,22 @@ for (const path of walk(ROUTES_DIR)) {
     continue;
   }
 
+  // Files that render the shared <BackToHubHeader /> component satisfy the
+  // requirement automatically — the component itself contains the canonical
+  // link + label.
+  const usesSharedHeader =
+    /\bBackToHubHeader\b/.test(src) &&
+    /from\s+["'][^"']*components\/BackToHubHeader["']/.test(src);
+
   const reasons: string[] = [];
-  if (!REQUIRED_TARGET.test(src)) reasons.push(`missing link target to "/"`);
-  if (!REQUIRED_LABEL.test(src)) reasons.push(`missing "Back to Hub" label`);
+  if (!usesSharedHeader) {
+    if (!REQUIRED_TARGET.test(src)) reasons.push(`missing link target to "/"`);
+    if (!REQUIRED_LABEL.test(src)) reasons.push(`missing "Back to Hub" label`);
+  }
 
   if (reasons.length > 0) failures.push({ file: rel, reasons });
   else checked.push(rel);
+
 }
 
 const line = (s: string) => `  ${s}`;
