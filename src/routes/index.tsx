@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -624,7 +625,7 @@ function Index() {
               </a>
             ))}
             <Link
-              to="/pricing"
+              to={ROUTES.pricing}
               onClick={() => setMobileMenuOpen(false)}
               className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white"
             >
@@ -667,7 +668,7 @@ function Index() {
                 Explore apps
               </a>
               <Link
-                to="/pricing"
+                to={ROUTES.pricing}
                 className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
                 View pricing
@@ -1025,7 +1026,7 @@ function Index() {
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
-                to="/pricing"
+                to={ROUTES.pricing}
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-xs uppercase tracking-widest shadow-[0_0_40px_-10px_hsl(295_90%_60%/0.8)]"
               >
                 View full pricing →
@@ -1277,7 +1278,7 @@ function Index() {
             <p className="mt-4 text-[11px] text-white/65 max-w-md mx-auto">
               We store your email to send occasional updates about new Resonance apps and pilots. No
               spam, unsubscribe anytime. See our{" "}
-              <Link to="/governance" className="underline hover:text-white">
+              <Link to={ROUTES.governance} className="underline hover:text-white">
                 governance policy
               </Link>{" "}
               for how we handle data (POPIA-conscious).
@@ -1313,15 +1314,15 @@ function Index() {
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
             <a href="/#apps" className="hover:text-white transition-colors">Apps</a>
-            <Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link>
+            <Link to={ROUTES.pricing} className="hover:text-white transition-colors">Pricing</Link>
             <a href="/#updates" className="hover:text-white transition-colors">Updates</a>
             <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
             <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
-            <Link to="/governance" className="hover:text-white transition-colors">Governance</Link>
-            <Link to="/changelog" className="hover:text-white transition-colors">Changelog</Link>
-            <Link to="/governance" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
-            <Link to="/governance" className="hover:text-white transition-colors">Terms</Link>
-            <Link to="/governance" className="hover:text-white transition-colors">Refunds</Link>
+            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Governance</Link>
+            <Link to={ROUTES.changelog} className="hover:text-white transition-colors">Changelog</Link>
+            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
+            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Terms</Link>
+            <Link to={ROUTES.governance} className="hover:text-white transition-colors">Refunds</Link>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Support</a>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Contact</a>
 

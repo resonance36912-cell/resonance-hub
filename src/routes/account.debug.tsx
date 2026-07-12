@@ -6,6 +6,7 @@ import {
   clearAuthGateEvents,
   type AuthGateRecord,
 } from "@/lib/auth-gate-debug";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/account/debug")({
   head: () => ({
@@ -54,7 +55,7 @@ function AuthGateDebugPage() {
       <div className="mx-auto max-w-4xl px-6 py-12">
         <div className="mb-6 flex items-center gap-3">
           <Link
-            to="/account/subscriptions"
+            to={ROUTES.accountSubscriptions}
             className="inline-flex items-center text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
           >
             ← Subscriptions
@@ -105,7 +106,7 @@ function AuthGateDebugPage() {
           {events.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
               No events recorded yet. Visit{" "}
-              <Link to="/account/subscriptions" className="text-primary hover:underline">
+              <Link to={ROUTES.accountSubscriptions} className="text-primary hover:underline">
                 /account/subscriptions
               </Link>{" "}
               to generate some.

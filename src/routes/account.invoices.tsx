@@ -10,6 +10,7 @@ import {
   type InvoiceRow,
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
+import { ROUTES } from "@/lib/routes";
 
 
 export const Route = createFileRoute("/account/invoices")({
@@ -39,7 +40,7 @@ function InvoicesGate() {
   if (state === "anon") return (
     <Shell>
       <p className="text-sm">
-        <Link to="/login" className="text-primary underline">Sign in</Link> to view your invoices.
+        <Link to={ROUTES.login} search={{ next: undefined }} className="text-primary underline">Sign in</Link> to view your invoices.
       </p>
     </Shell>
   );
@@ -123,8 +124,8 @@ function Shell({ children }: { children: React.ReactNode }) {
           <BackToHubHeader
             extra={
               <>
-                <Link to="/account/billing" className="text-primary underline">Billing</Link>
-                <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
+                <Link to={ROUTES.accountBilling} className="text-primary underline">Billing</Link>
+                <Link to={ROUTES.accountSubscriptions} className="text-primary underline">Subscriptions</Link>
               </>
             }
           />

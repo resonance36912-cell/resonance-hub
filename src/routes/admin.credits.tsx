@@ -15,6 +15,7 @@ import {
   type AdminLedgerRow,
 } from "@/lib/admin-credits.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/credits")({
   head: () => ({
@@ -25,14 +26,14 @@ export const Route = createFileRoute("/admin/credits")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: AdminCreditsPage,
 });
@@ -70,8 +71,8 @@ function AdminCreditsPage() {
             </p>
           </div>
           <div className="flex gap-3 text-sm">
-            <Link to="/admin/billing" className="text-primary underline">Billing overview</Link>
-            <Link to="/admin/invoices" className="text-primary underline">Invoices</Link>
+            <Link to={ROUTES.adminBilling} className="text-primary underline">Billing overview</Link>
+            <Link to={ROUTES.adminInvoices} className="text-primary underline">Invoices</Link>
           </div>
         </header>
 

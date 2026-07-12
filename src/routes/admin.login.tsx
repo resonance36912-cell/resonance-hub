@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/admin/login")({
         .eq("user_id", data.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      if (role) throw redirect({ to: "/admin" });
+      if (role) throw redirect({ to: ROUTES.admin });
     }
   },
   component: AdminLoginPage,
@@ -55,7 +56,7 @@ function AdminLoginPage() {
       .eq("role", "admin")
       .maybeSingle();
     if (role) {
-      navigate({ to: "/admin" });
+      navigate({ to: ROUTES.admin });
     } else {
       setError("This account does not have admin access. Ask an existing admin to grant the role.");
     }
@@ -190,7 +191,7 @@ function AdminLoginPage() {
               : (mode === "signin" ? "Sign in" : "Create admin account")}
           </button>
           <p className="text-center text-xs text-muted-foreground">
-            <Link to="/" className="hover:underline">← Back to site</Link>
+            <Link to={ROUTES.home} className="hover:underline">← Back to site</Link>
           </p>
         </form>
       </div>

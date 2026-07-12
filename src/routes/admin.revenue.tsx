@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { listAllSubscriptions, upsertSkuCost, type AdminSubRow } from "@/lib/admin-revenue.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/revenue")({
   head: () => ({
@@ -14,14 +15,14 @@ export const Route = createFileRoute("/admin/revenue")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: "/admin/login" });
+    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
   },
   component: RevenuePage,
 });

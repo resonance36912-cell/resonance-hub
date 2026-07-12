@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ROUTES } from "@/lib/routes";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
@@ -41,14 +42,14 @@ export const Route = createFileRoute("/tools/releases")({
   validateSearch: zodValidator(searchSchema),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: ReleaseFeed,
   ssr: false,
@@ -161,7 +162,7 @@ function ReleaseFeed() {
             Recent releases across your repos with associated workflow run results.
           </p>
         </div>
-        <Link to="/" className="text-sm underline text-muted-foreground">
+        <Link to={ROUTES.home} className="text-sm underline text-muted-foreground">
           Back to Hub
         </Link>
       </div>

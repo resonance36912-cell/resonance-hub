@@ -8,6 +8,7 @@ import {
   RCGF_EXAMPLES_URL,
 } from "@/lib/rcgf";
 import { getRequestOrigin } from "@/lib/origin.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/governance")({
   loader: async () => ({ origin: await getRequestOrigin() }),
@@ -66,7 +67,7 @@ function GovernancePage() {
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-6 py-20">
         <nav className="mb-12 text-[10px] font-mono uppercase tracking-widest text-white/50">
-          <Link to="/" className="hover:text-white">← Back to Hub</Link>
+          <Link to={ROUTES.home} className="hover:text-white">← Back to Hub</Link>
         </nav>
 
         <header className="mb-16">

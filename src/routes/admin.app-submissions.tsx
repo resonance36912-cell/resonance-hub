@@ -13,6 +13,7 @@ import {
   submissionTimeline,
 } from "@/lib/app-submissions.functions";
 import { SubmissionTimeline } from "@/components/SubmissionTimeline";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/app-submissions")({
   head: () => ({
@@ -23,14 +24,14 @@ export const Route = createFileRoute("/admin/app-submissions")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
+    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
+    if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
   component: AdminAppSubmissions,
 });
@@ -70,10 +71,10 @@ function AdminAppSubmissions() {
           <h1 className="text-3xl font-semibold tracking-tight">App submissions</h1>
           <p className="mt-1 text-muted-foreground">
             Review community-submitted apps. Publish to add them to the{" "}
-            <Link to="/apps" className="underline">catalog</Link>.
+            <Link to={ROUTES.apps} className="underline">catalog</Link>.
           </p>
         </div>
-        <Link to="/admin" className="text-sm underline">← Admin home</Link>
+        <Link to={ROUTES.admin} className="text-sm underline">← Admin home</Link>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">

@@ -23,29 +23,75 @@ export type RoutePath = keyof RegisteredRouter["routesByPath"];
 export const routePath = <T extends RoutePath>(path: T): T => path;
 
 /**
- * Named route constants. Prefer these over string literals.
- * Add entries here as new routes are introduced.
+ * Named route constants. One entry per static (non-parameterized) route
+ * registered on the app router. Auto-audited by
+ * `scripts/verify-route-strings.ts` — adding a new route in `src/routes/`
+ * should trigger a follow-up here.
+ *
+ * Dynamic routes (`/foo/$id`) are intentionally NOT here: they require
+ * `<Link to="..." params={{ ... }}>` at the call site so TanStack can
+ * type-check `params`. Use string literals for those.
  */
 export const ROUTES = {
   home: routePath("/"),
-  login: routePath("/login"),
+
+  // Marketing / info
   apps: routePath("/apps"),
   appsSubmit: routePath("/apps/submit"),
-  pricing: routePath("/pricing"),
   changelog: routePath("/changelog"),
   governance: routePath("/governance"),
+  legalGovernance: routePath("/legal/governance"),
+  login: routePath("/login"),
+  mcp: routePath("/mcp"),
+  pricing: routePath("/pricing"),
+  rcgf: routePath("/rcgf"),
   security: routePath("/security"),
+  sitemapXml: routePath("/sitemap.xml"),
+  updatesPreview: routePath("/updates/preview"),
+
+  // Per-app pricing anchors
+  creativeStudioPricing: routePath("/creative-studio/pricing"),
+  epublisherPricing: routePath("/epublisher/pricing"),
+  syncVisionPricing: routePath("/sync-vision/pricing"),
+  youtubeOptimizerPricing: routePath("/youtube-optimizer/pricing"),
+
+  // Checkout
   checkout: routePath("/checkout"),
   checkoutSuccess: routePath("/checkout/success"),
   checkoutCancel: routePath("/checkout/cancel"),
+
+  // Email
+  emailUnsubscribe: routePath("/email/unsubscribe"),
+
+  // Account (user)
   accountBilling: routePath("/account/billing"),
-  accountSubscriptions: routePath("/account/subscriptions"),
+  accountDebug: routePath("/account/debug"),
   accountInvoices: routePath("/account/invoices"),
-  adminIndex: routePath("/admin"),
-  adminLogin: routePath("/admin/login"),
+  accountSubscriptions: routePath("/account/subscriptions"),
+
+  // The admin index registers as `/admin/` (with trailing slash) in the
+  // generated route tree — that's the canonical path.
+  admin: routePath("/admin/"),
+  adminAppSubmissions: routePath("/admin/app-submissions"),
   adminBilling: routePath("/admin/billing"),
-  adminInvoices: routePath("/admin/invoices"),
+  adminCiHealth: routePath("/admin/ci-health"),
   adminCredits: routePath("/admin/credits"),
+  adminEmailDomain: routePath("/admin/email-domain"),
+  adminEmails: routePath("/admin/emails"),
+  adminEntitlementDiagnostics: routePath("/admin/entitlement-diagnostics"),
+  adminInvoices: routePath("/admin/invoices"),
+  adminLogin: routePath("/admin/login"),
+  adminPayfastAudit: routePath("/admin/payfast-audit"),
+  adminRepoHealth: routePath("/admin/repo-health"),
+  adminRevenue: routePath("/admin/revenue"),
+  adminRop: routePath("/admin/rop"),
+  adminSecurityScan: routePath("/admin/security-scan"),
+  adminWebhooks: routePath("/admin/webhooks"),
+
+  // Internal tools
+  toolsIssueTriage: routePath("/tools/issue-triage"),
+  toolsPrStatus: routePath("/tools/pr-status"),
+  toolsReleases: routePath("/tools/releases"),
 } as const satisfies Record<string, RoutePath>;
 
 /**
@@ -57,12 +103,14 @@ export const ROUTES = {
  */
 export const LINKS = {
   home: linkOptions({ to: ROUTES.home }),
-  login: linkOptions({ to: ROUTES.login }),
+  // `/login` declares `validateSearch: { next }`, so linkOptions must
+  // supply a search object. `next: undefined` is a valid no-op payload.
+  login: linkOptions({ to: ROUTES.login, search: { next: undefined } }),
   apps: linkOptions({ to: ROUTES.apps }),
   pricing: linkOptions({ to: ROUTES.pricing }),
   accountBilling: linkOptions({ to: ROUTES.accountBilling }),
   accountSubscriptions: linkOptions({ to: ROUTES.accountSubscriptions }),
   accountInvoices: linkOptions({ to: ROUTES.accountInvoices }),
-  adminIndex: linkOptions({ to: ROUTES.adminIndex }),
+  admin: linkOptions({ to: ROUTES.admin }),
   adminLogin: linkOptions({ to: ROUTES.adminLogin }),
 } as const;

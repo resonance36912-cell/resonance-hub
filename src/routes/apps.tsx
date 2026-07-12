@@ -12,6 +12,7 @@ import {
   type EcosystemEntry,
 } from "@/lib/app-registry";
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
+import { ROUTES } from "@/lib/routes";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
@@ -169,7 +170,7 @@ function AppsCatalogPage() {
           </p>
         </div>
         <Link
-          to="/apps/submit"
+          to={ROUTES.appsSubmit}
           className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
         >
           Submit an app →

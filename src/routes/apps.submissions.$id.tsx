@@ -7,6 +7,7 @@ import {
   getSubmissionStatus,
   type AppSubmissionStatus,
 } from "@/lib/app-submissions.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/apps/submissions/$id")({
   head: () => ({
@@ -42,7 +43,7 @@ function SubmissionStatusPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Submission status</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Bookmark this page to check on your submission. Approved apps appear on the{" "}
-          <Link to="/apps" className="underline">catalog</Link>.
+          <Link to={ROUTES.apps} className="underline">catalog</Link>.
         </p>
       </header>
 

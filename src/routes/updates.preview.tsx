@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { ROUTES } from "@/lib/routes";
 
 type UpdateLink = { label: string; href: string };
 type UpdateItem = {
@@ -108,7 +109,7 @@ function FeedPreview() {
               served by the RSS &amp; Atom feeds.
             </p>
           </div>
-          <Link to="/" className="text-xs font-mono uppercase tracking-[0.2em] text-white/70 hover:text-white">
+          <Link to={ROUTES.home} className="text-xs font-mono uppercase tracking-[0.2em] text-white/70 hover:text-white">
             ← Back to Hub
           </Link>
         </div>
