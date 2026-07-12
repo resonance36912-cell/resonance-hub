@@ -39,7 +39,7 @@ const SKIP_PREFIXES = ["admin."];
 const SKIP_DIRS = new Set(["api", "email", "lovable"]);
 
 const OPT_OUT_MARKER = "@no-back-to-hub";
-const REQUIRED_TARGET = /(?:to|href)\s*=\s*["']\/["']/;
+const REQUIRED_TARGET = /(?:to|href)\s*=\s*(?:["']\/["']|\{ROUTES\.home\})/;
 const REQUIRED_LABEL = /Back to Hub/;
 
 function* walk(dir: string): Generator<string> {
