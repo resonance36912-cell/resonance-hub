@@ -28,6 +28,8 @@ type Tile = {
   badge?: string;
   external: boolean;
   paid: boolean;
+  logoUrl?: string | null;
+  screenshotUrls?: string[];
 };
 
 const paidTiles: Tile[] = Object.values(APP_REGISTRY)
