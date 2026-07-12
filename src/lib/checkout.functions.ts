@@ -128,82 +128,139 @@ export type PayfastLaunch = {
   label: string;
 };
 
+async function buildLaunch(
+  userId: string,
+  email: string,
+  def: SkuDef,
+  returnToInput: string | undefined,
+  origin: { proto: string; host: string; sourceIp: string | null; userAgent: string | null },
+  meta: { retryOfSubscriptionId?: string } = {},
+): Promise<PayfastLaunch> {
+  const merchantId = process.env.PAYFAST_MERCHANT_ID ?? "";
+  const merchantKey = process.env.PAYFAST_MERCHANT_KEY ?? "";
+  const passphrase = process.env.PAYFAST_PASSPHRASE ?? "";
+  if (!merchantId || !merchantKey) {
+    throw new Error("PayFast credentials are not configured");
+  }
+  const sandbox = merchantId === "10000100";
+  const action = sandbox
+    ? "https://sandbox.payfast.co.za/eng/process"
+    : "https://www.payfast.co.za/eng/process";
+
+  const originUrl = `${origin.proto}://${origin.host}`;
+  const returnTo = returnToInput ?? `${originUrl}/account/subscriptions`;
+  const amount = (def.amountCents / 100).toFixed(2);
+
+  const fields: Record<string, string> = {
+    merchant_id: merchantId,
+    merchant_key: merchantKey,
+    return_url: `${originUrl}/checkout/success?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
+    cancel_url: `${originUrl}/checkout/cancel?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
+    notify_url: `${originUrl}/api/public/payfast/itn`,
+    m_payment_id: `${userId}:${def.sku}:${Date.now()}`,
+    amount,
+    item_name: def.sku,
+    item_description: def.label,
+    custom_str1: userId,
+    custom_str2: def.sku,
+    ...(meta.retryOfSubscriptionId ? { custom_str3: `retry:${meta.retryOfSubscriptionId}` } : {}),
+    ...(email ? { email_address: email } : {}),
+  };
+  fields.signature = buildSignature(fields, passphrase);
+
+  console.log(JSON.stringify({
+    event: meta.retryOfSubscriptionId ? "payfast_launch_retry" : "payfast_launch",
+    user_id: userId,
+    sku: def.sku,
+    amount_cents: def.amountCents,
+    amount_zar: amount,
+    m_payment_id: fields.m_payment_id,
+    sandbox,
+    source_ip: origin.sourceIp,
+    retry_of: meta.retryOfSubscriptionId ?? null,
+  }));
+
+  try {
+    await supabaseAdmin.from("payfast_launch_logs").insert({
+      user_id: userId,
+      sku: def.sku,
+      m_payment_id: fields.m_payment_id,
+      amount_cents: def.amountCents,
+      currency: "ZAR",
+      action_url: action,
+      sandbox,
+      source_ip: origin.sourceIp,
+      user_agent: origin.userAgent,
+      return_to: returnTo,
+    });
+  } catch (err) {
+    console.error("Failed to write payfast_launch_logs:", err);
+  }
+
+  return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label };
+}
+
+function requestOrigin() {
+  const req = getRequest();
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  const host = req.headers.get("host")!;
+  return {
+    proto,
+    host,
+    sourceIp: req.headers.get("x-forwarded-for") ?? null,
+    userAgent: req.headers.get("user-agent") ?? null,
+  };
+}
+
 export const createPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
     const def = SKU_CATALOG[data.sku];
     if (!def) throw new Error(`Unknown SKU: ${data.sku}`);
+    const email = (context.claims as { email?: string } | null)?.email ?? "";
+    return buildLaunch(context.userId, email, def, data.returnTo, requestOrigin());
+  });
 
-    const merchantId = process.env.PAYFAST_MERCHANT_ID ?? "";
-    const merchantKey = process.env.PAYFAST_MERCHANT_KEY ?? "";
-    const passphrase = process.env.PAYFAST_PASSPHRASE ?? "";
-    if (!merchantId || !merchantKey) {
-      throw new Error("PayFast credentials are not configured");
+const RetryInput = z.object({
+  subscriptionId: z.string().uuid(),
+  returnTo: z
+    .string()
+    .url()
+    .refine(isAllowedReturnTo, { message: "returnTo must point to a known Resonance app origin" })
+    .optional(),
+});
+
+/**
+ * Re-run PayFast launch creation for a user's own pending / past_due / cancelled
+ * subscription. Verifies ownership + non-active status, derives the SKU from the
+ * subscription's app/tier/billing_cycle, and returns a fresh signed launch
+ * payload so the client can auto-submit the PayFast form. The original
+ * subscription row is not mutated — ITN will upsert on payment success.
+ */
+export const retryPayfastLaunch = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => RetryInput.parse(input))
+  .handler(async ({ data, context }): Promise<PayfastLaunch> => {
+    const { supabase, userId } = context;
+    const { data: sub, error } = await supabase
+      .from("subscriptions")
+      .select("id, user_id, app, tier, billing_cycle, status")
+      .eq("id", data.subscriptionId)
+      .maybeSingle();
+    if (error) throw new Error(`Lookup failed: ${error.message}`);
+    if (!sub || sub.user_id !== userId) throw new Error("Subscription not found");
+    if (sub.status === "active") {
+      throw new Error("Subscription is already active — nothing to retry");
     }
-    const sandbox = merchantId === "10000100";
-    const action = sandbox
-      ? "https://sandbox.payfast.co.za/eng/process"
-      : "https://www.payfast.co.za/eng/process";
 
-    const req = getRequest();
-    const proto = req.headers.get("x-forwarded-proto") ?? "https";
-    const host = req.headers.get("host")!;
-    const origin = `${proto}://${host}`;
-
-    const returnTo = data.returnTo ?? `${origin}/account/subscriptions`;
-    const amount = (def.amountCents / 100).toFixed(2);
+    const key = `${sub.app}:${sub.tier}:${sub.billing_cycle}`;
+    const def = SKU_CATALOG[key];
+    if (!def) throw new Error(`No SKU available to retry (${key})`);
 
     const email = (context.claims as { email?: string } | null)?.email ?? "";
-
-    const fields: Record<string, string> = {
-      merchant_id: merchantId,
-      merchant_key: merchantKey,
-      return_url: `${origin}/checkout/success?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
-      cancel_url: `${origin}/checkout/cancel?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
-      notify_url: `${origin}/api/public/payfast/itn`,
-      m_payment_id: `${context.userId}:${def.sku}:${Date.now()}`,
-      amount,
-      item_name: def.sku,
-      item_description: def.label,
-      custom_str1: context.userId,
-      custom_str2: def.sku,
-      ...(email ? { email_address: email } : {}),
-    };
-
-    fields.signature = buildSignature(fields, passphrase);
-
-    // Structured launch log: console + audit table
-    const sourceIp = req.headers.get("x-forwarded-for") ?? null;
-    const userAgent = req.headers.get("user-agent") ?? null;
-
-    console.log(JSON.stringify({
-      event: "payfast_launch",
-      user_id: context.userId,
-      sku: def.sku,
-      amount_cents: def.amountCents,
-      amount_zar: amount,
-      m_payment_id: fields.m_payment_id,
-      sandbox,
-      source_ip: sourceIp,
-    }));
-
-    try {
-      await supabaseAdmin.from("payfast_launch_logs").insert({
-        user_id: context.userId,
-        sku: def.sku,
-        m_payment_id: fields.m_payment_id,
-        amount_cents: def.amountCents,
-        currency: "ZAR",
-        action_url: action,
-        sandbox,
-        source_ip: sourceIp,
-        user_agent: userAgent,
-        return_to: returnTo,
-      });
-    } catch (err) {
-      console.error("Failed to write payfast_launch_logs:", err);
-    }
-
-    return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label };
+    return buildLaunch(userId, email, def, data.returnTo, requestOrigin(), {
+      retryOfSubscriptionId: sub.id,
+    });
   });
+

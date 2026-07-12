@@ -9,6 +9,7 @@ import {
   type AppKey,
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
+import { retryPayfastLaunch } from "@/lib/checkout.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 
@@ -349,6 +350,50 @@ function formatPrice(cents: number) {
   return `R${(cents / 100).toFixed(2)}`;
 }
 
+function RetryPaymentButton({ subscriptionId }: { subscriptionId: string }) {
+  const retry = useServerFn(retryPayfastLaunch);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function onClick() {
+    setLoading(true);
+    setErr(null);
+    try {
+      const payload = await retry({ data: { subscriptionId } });
+      // Build and auto-submit a hidden PayFast form to redirect.
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = payload.action;
+      form.style.display = "none";
+      for (const [k, v] of Object.entries(payload.fields)) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = k;
+        input.value = v;
+        form.appendChild(input);
+      }
+      document.body.appendChild(form);
+      form.submit();
+    } catch (e) {
+      setErr((e as Error).message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={onClick}
+        disabled={loading}
+        className="rounded border border-primary/40 bg-primary/10 px-2 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
+      >
+        {loading ? "Redirecting…" : "Retry payment"}
+      </button>
+      {err && <span className="text-[10px] text-red-400 max-w-[160px] text-right">{err}</span>}
+    </div>
+  );
+}
+
 function SubscriptionsPage() {
   const fetchSubs = useServerFn(getMySubscriptions);
   const { data, isLoading, error } = useQuery({
@@ -543,10 +588,13 @@ function SubscriptionsPage() {
                         <th className="px-4 py-3">Cycle</th>
                         <th className="px-4 py-3">Renews</th>
                         <th className="px-4 py-3 text-right">Amount</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {subs.map((s) => (
+                      {subs.map((s) => {
+                        const retryable = s.status === "pending" || s.status === "past_due" || s.status === "cancelled";
+                        return (
                         <tr key={`${s.app}-${s.updated_at}`} className="border-t border-border">
                           <td className="px-4 py-3">{APP_META[s.app as AppKey]?.label ?? s.app}</td>
                           <td className="px-4 py-3 capitalize">{s.tier}</td>
@@ -558,8 +606,12 @@ function SubscriptionsPage() {
                           <td className="px-4 py-3 capitalize">{s.billing_cycle}</td>
                           <td className="px-4 py-3 text-xs">{formatDate(s.current_period_end)}</td>
                           <td className="px-4 py-3 text-right font-mono text-xs">{formatPrice(s.amount_cents)}</td>
+                          <td className="px-4 py-3 text-right">
+                            {retryable ? <RetryPaymentButton subscriptionId={s.id} /> : <span className="text-xs text-muted-foreground">—</span>}
+                          </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
