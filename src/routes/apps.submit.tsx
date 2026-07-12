@@ -61,6 +61,7 @@ async function uploadImage(file: File): Promise<string> {
 
 function SubmitAppPage() {
   const submitFn = useServerFn(submitAppSubmission);
+  const checkFn = useServerFn(checkSubmissionAvailability);
   const [form, setForm] = useState({
     name: "",
     url: "",
@@ -70,11 +71,51 @@ function SubmitAppPage() {
     contactEmail: "",
     accentColor: "",
   });
-  const [logoFile, setLogoFile] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [shotFiles, setShotFiles] = useState<File[]>([]);
-  const [shotPreviews, setShotPreviews] = useState<string[]>([]);
-  const [fileError, setFileError] = useState<string | null>(null);
+  const [avail, setAvail] = useState<SubmissionAvailability | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const urlLocal = form.url.trim() ? validateAppUrl(form.url) : null;
+  const localUrlError = urlLocal && !urlLocal.ok ? urlLocal.reason : null;
+  const localSlug = slugify(form.name);
+  const localSlugError =
+    form.name.trim().length >= 2 && localSlug.length < 2
+      ? "App name must contain letters or numbers."
+      : null;
+
+  // Debounced availability check against server (uniqueness + reserved sets).
+  useEffect(() => {
+    const name = form.name.trim();
+    const url = form.url.trim();
+    if (name.length < 2 && !url) {
+      setAvail(null);
+      return;
+    }
+    if (localUrlError) {
+      setAvail(null);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      setChecking(true);
+      try {
+        const result = await checkFn({ data: { name, url } });
+        setAvail(result);
+      } catch {
+        setAvail(null);
+      } finally {
+        setChecking(false);
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [form.name, form.url, localUrlError, checkFn]);
+
+  const availError =
+    (avail?.slugReserved && `"${avail.slug}" is a reserved slug — try a different name.`) ||
+    (avail?.hostReserved && `${avail.host} is already used by a Resonance app.`) ||
+    (avail?.slugTaken && `An app named "${avail.conflictWith?.name}" is already submitted.`) ||
+    (avail?.hostTaken && `${avail.host} has already been submitted.`) ||
+    null;
+
+
 
   const resetAll = () => {
     setForm({
