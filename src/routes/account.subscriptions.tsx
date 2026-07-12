@@ -4,7 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-import { ROUTES } from "@/lib/routes";
   APP_META,
   getMySubscriptions,
   type AppKey,
@@ -13,6 +12,7 @@ import { ROUTES } from "@/lib/routes";
 import { retryPayfastLaunch } from "@/lib/checkout.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({

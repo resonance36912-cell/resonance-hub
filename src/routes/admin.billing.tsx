@@ -3,11 +3,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-import { ROUTES } from "@/lib/routes";
   getAdminBilling,
   labelForApp,
   type AdminBillingSummary,
 } from "@/lib/billing-portal.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/billing")({
   head: () => ({

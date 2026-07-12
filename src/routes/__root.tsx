@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-import { ROUTES } from "@/lib/routes";
   Outlet,
   Link,
   createRootRouteWithContext,
@@ -11,6 +10,7 @@ import { ROUTES } from "@/lib/routes";
 
 import appCss from "../styles.css?url";
 import { VisitTracker } from "@/components/VisitTracker";
+import { ROUTES } from "@/lib/routes";
 
 function NotFoundComponent() {
   return (

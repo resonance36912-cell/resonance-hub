@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-import { ROUTES } from "@/lib/routes";
   readAuthGateEvents,
   clearAuthGateEvents,
   type AuthGateRecord,
 } from "@/lib/auth-gate-debug";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/account/debug")({
   head: () => ({

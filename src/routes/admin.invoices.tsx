@@ -4,13 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-import { ROUTES } from "@/lib/routes";
   listAllInvoices,
   formatMoney,
   type InvoiceRow,
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { StatusPill } from "./account.invoices";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/invoices")({
   head: () => ({

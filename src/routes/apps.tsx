@@ -6,13 +6,13 @@ import { z } from "zod";
 import { useMemo } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
-import { ROUTES } from "@/lib/routes";
   APP_REGISTRY,
   ECOSYSTEM_REGISTRY,
   type AppRegistryEntry,
   type EcosystemEntry,
 } from "@/lib/app-registry";
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
+import { ROUTES } from "@/lib/routes";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),

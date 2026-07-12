@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-import { ROUTES } from "@/lib/routes";
   RCGF_VERSION,
   RCGF_EFFECTIVE_DATE,
   RCGF_LICENSE,
@@ -9,6 +8,7 @@ import { ROUTES } from "@/lib/routes";
   RCGF_EXAMPLES_URL,
 } from "@/lib/rcgf";
 import { getRequestOrigin } from "@/lib/origin.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/governance")({
   loader: async () => ({ origin: await getRequestOrigin() }),

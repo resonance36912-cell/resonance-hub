@@ -3,11 +3,11 @@ import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
 import {
-import { ROUTES } from "@/lib/routes";
   resolveCheckoutContext,
   primaryContinueHref,
   primaryContinueLabel,
 } from "@/lib/checkout-return";
+import { ROUTES } from "@/lib/routes";
 
 const Search = z.object({
   sku: z.string().optional(),

@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { SubmissionTimeline } from "@/components/SubmissionTimeline";
 import {
-import { ROUTES } from "@/lib/routes";
   getSubmissionStatus,
   type AppSubmissionStatus,
 } from "@/lib/app-submissions.functions";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/apps/submissions/$id")({
   head: () => ({

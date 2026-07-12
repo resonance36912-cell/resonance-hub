@@ -4,13 +4,13 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
-import { ROUTES } from "@/lib/routes";
   submitAppSubmission,
   checkSubmissionAvailability,
   type SubmissionAvailability,
 } from "@/lib/app-submissions.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { slugify, validateAppUrl } from "@/lib/app-submission-validation";
+import { ROUTES } from "@/lib/routes";
 
 
 export const Route = createFileRoute("/apps/submit")({

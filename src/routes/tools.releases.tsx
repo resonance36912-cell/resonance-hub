@@ -6,7 +6,6 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
-import { ROUTES } from "@/lib/routes";
   listRecentReleases,
   type GhRelease,
   type WorkflowRunSummary,
@@ -22,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ROUTES } from "@/lib/routes";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),

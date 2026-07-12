@@ -12,13 +12,13 @@ import logoPodcast from "@/assets/logo-podcast.png";
 import logoCareerCompass from "@/assets/logo-career-compass.png";
 import logoYouTubeOptimizer from "@/assets/logo-youtube-optimizer.png";
 import {
-import { ROUTES } from "@/lib/routes";
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/")({
   loader: async () => {

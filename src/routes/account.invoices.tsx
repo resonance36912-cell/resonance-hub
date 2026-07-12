@@ -5,12 +5,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
-import { ROUTES } from "@/lib/routes";
   getMyInvoices,
   formatMoney,
   type InvoiceRow,
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
+import { ROUTES } from "@/lib/routes";
 
 
 export const Route = createFileRoute("/account/invoices")({

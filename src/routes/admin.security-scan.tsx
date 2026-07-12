@@ -6,7 +6,6 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import {
-import { ROUTES } from "@/lib/routes";
   getSecurityScanReport,
   type AlertSeverity,
   type RepoSecurityScan,
@@ -16,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ROUTES } from "@/lib/routes";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
