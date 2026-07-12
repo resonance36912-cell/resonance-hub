@@ -163,7 +163,10 @@ function WalletsCard({ data }: { data: MyBilling }) {
 function ReceiptsCard({ data }: { data: MyBilling }) {
   return (
     <section className="rounded-lg border bg-card p-6">
-      <h2 className="text-xl font-semibold mb-4">Payment history</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Payment history</h2>
+        <Link to="/account/invoices" className="text-sm text-primary underline">All invoices →</Link>
+      </div>
       {data.receipts.length === 0 ? (
         <p className="text-sm text-muted-foreground">No verified payments yet.</p>
       ) : (
