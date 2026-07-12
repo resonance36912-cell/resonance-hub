@@ -16,7 +16,7 @@ export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
   }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.login });
+    if (error || !data.user) throw redirect({ to: ROUTES.login, search: { next: undefined } });
   },
   component: ByPaymentPage,
 });
