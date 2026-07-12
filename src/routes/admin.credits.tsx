@@ -241,14 +241,71 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
       .filter((v): v is string => typeof v === "string"),
   );
 
+  const handleExport = async () => {
+    setExportError(null);
+    setExportNotice(null);
+    setExportBusy(true);
+    try {
+      const res = await exportFn({
+        data: {
+          userId,
+          app: applied.app || null,
+          pfPaymentId: applied.pf || null,
+          from: toIso(applied.from),
+          to: toIso(applied.to, true),
+        },
+      });
+      if (res.rows.length === 0) {
+        setExportNotice("No rows to export for these filters.");
+        return;
+      }
+      const csv = buildLedgerCsv(res.rows);
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filenameParts = ["credit-ledger", userId.slice(0, 8)];
+      if (applied.app) filenameParts.push(applied.app);
+      if (applied.pf) filenameParts.push(`pf-${applied.pf}`);
+      filenameParts.push(stamp);
+      downloadCsv(`${filenameParts.join("_")}.csv`, csv);
+      if (res.capped) {
+        setExportNotice(
+          `Export capped at ${res.cap.toLocaleString()} rows. Narrow the date range or filters to export the rest.`,
+        );
+      } else {
+        setExportNotice(`Exported ${res.rows.length.toLocaleString()} row${res.rows.length === 1 ? "" : "s"}.`);
+      }
+    } catch (e) {
+      setExportError((e as Error).message);
+    } finally {
+      setExportBusy(false);
+    }
+  };
+
   return (
     <section className="rounded-lg border bg-card p-6 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h2 className="text-lg font-semibold">Ledger</h2>
-        <p className="text-xs text-muted-foreground">
-          {ledgerQ.isFetching ? "Loading…" : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-muted-foreground">
+            {ledgerQ.isFetching ? "Loading…" : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
+          </p>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exportBusy || total === 0}
+            className="rounded border px-3 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
+            title="Download all ledger rows matching the current filters as CSV"
+          >
+            {exportBusy ? "Exporting…" : "Export CSV"}
+          </button>
+        </div>
       </div>
+
+      {exportError && (
+        <div className="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs">{exportError}</div>
+      )}
+      {exportNotice && (
+        <div className="rounded border border-border/60 bg-muted p-2 text-xs">{exportNotice}</div>
+      )}
 
       <form
         className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
