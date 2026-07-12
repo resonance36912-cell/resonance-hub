@@ -186,7 +186,7 @@ function ChangelogPage() {
         <div className="mx-auto max-w-4xl px-6 py-16">
           <div className="mb-6 text-[10px] font-mono uppercase tracking-widest text-white/50">
             <Link to="/" className="hover:text-white">
-              ← Reson8.life
+              ← Back to Hub
             </Link>
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">
