@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
@@ -23,6 +24,7 @@ import { Route as ToolsReleasesRouteImport } from './routes/tools.releases'
 import { Route as ToolsPrStatusRouteImport } from './routes/tools.pr-status'
 import { Route as ToolsIssueTriageRouteImport } from './routes/tools.issue-triage'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
+import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
@@ -75,6 +77,11 @@ import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './rou
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RcgfRoute = RcgfRouteImport.update({
+  id: '/rcgf',
+  path: '/rcgf',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -140,6 +147,11 @@ const ToolsIssueTriageRoute = ToolsIssueTriageRouteImport.update({
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   id: '/sync-vision/pricing',
   path: '/sync-vision/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalGovernanceRoute = LegalGovernanceRouteImport.update({
+  id: '/legal/governance',
+  path: '/legal/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EpublisherPricingRoute = EpublisherPricingRouteImport.update({
@@ -408,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
+  '/rcgf': typeof RcgfRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -434,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/tools/pr-status': typeof ToolsPrStatusRoute
@@ -472,6 +486,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
+  '/rcgf': typeof RcgfRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -498,6 +513,7 @@ export interface FileRoutesByTo {
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/tools/pr-status': typeof ToolsPrStatusRoute
@@ -537,6 +553,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
+  '/rcgf': typeof RcgfRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -563,6 +580,7 @@ export interface FileRoutesById {
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/issue-triage': typeof ToolsIssueTriageRoute
   '/tools/pr-status': typeof ToolsPrStatusRoute
@@ -603,6 +621,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/pricing'
+    | '/rcgf'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -629,6 +648,7 @@ export interface FileRouteTypes {
     | '/creative-studio/pricing'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
+    | '/legal/governance'
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
     | '/tools/pr-status'
@@ -667,6 +687,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/pricing'
+    | '/rcgf'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -693,6 +714,7 @@ export interface FileRouteTypes {
     | '/creative-studio/pricing'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
+    | '/legal/governance'
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
     | '/tools/pr-status'
@@ -731,6 +753,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mcp'
     | '/pricing'
+    | '/rcgf'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -757,6 +780,7 @@ export interface FileRouteTypes {
     | '/creative-studio/pricing'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
+    | '/legal/governance'
     | '/sync-vision/pricing'
     | '/tools/issue-triage'
     | '/tools/pr-status'
@@ -796,6 +820,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
+  RcgfRoute: typeof RcgfRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -820,6 +845,7 @@ export interface RootRouteChildren {
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
+  LegalGovernanceRoute: typeof LegalGovernanceRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   ToolsIssueTriageRoute: typeof ToolsIssueTriageRoute
   ToolsPrStatusRoute: typeof ToolsPrStatusRoute
@@ -857,6 +883,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rcgf': {
+      id: '/rcgf'
+      path: '/rcgf'
+      fullPath: '/rcgf'
+      preLoaderRoute: typeof RcgfRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -948,6 +981,13 @@ declare module '@tanstack/react-router' {
       path: '/sync-vision/pricing'
       fullPath: '/sync-vision/pricing'
       preLoaderRoute: typeof SyncVisionPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/governance': {
+      id: '/legal/governance'
+      path: '/legal/governance'
+      fullPath: '/legal/governance'
+      preLoaderRoute: typeof LegalGovernanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/epublisher/pricing': {
@@ -1324,6 +1364,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
+  RcgfRoute: RcgfRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
@@ -1349,6 +1390,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
+  LegalGovernanceRoute: LegalGovernanceRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
   ToolsIssueTriageRoute: ToolsIssueTriageRoute,
   ToolsPrStatusRoute: ToolsPrStatusRoute,
