@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useMemo } from "react";
@@ -9,6 +11,7 @@ import {
   type AppRegistryEntry,
   type EcosystemEntry,
 } from "@/lib/app-registry";
+import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
