@@ -52,8 +52,8 @@ describe("routePath()", () => {
     routePath("/definitely-not-a-route");
     // @ts-expect-error — typo of a real route
     routePath("/pricin");
-    // @ts-expect-error — trailing slash mismatch (canonical is "/admin/")
-    routePath("/admin");
+    // @ts-expect-error — leading-slash-less path is not a RoutePath
+    routePath("pricing");
     // @ts-expect-error — empty string is not a route
     routePath("");
     // @ts-expect-error — bare `string` (not a literal) is not narrowable to RoutePath
