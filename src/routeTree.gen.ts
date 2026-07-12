@@ -67,6 +67,7 @@ import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './r
 import { Route as ApiPublicHooksCiFailureAlertsRouteImport } from './routes/api/public/hooks/ci-failure-alerts'
 import { Route as ApiPublicFormsCreateIssueRouteImport } from './routes/api/public/forms/create-issue'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
+import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
 import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
 import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
@@ -375,6 +376,12 @@ const ApiPublicAnalyticsAuthGateRoute =
     path: '/api/public/analytics/auth-gate',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AccountInvoicesByPaymentPfRoute =
+  AccountInvoicesByPaymentPfRouteImport.update({
+    id: '/by-payment/$pf',
+    path: '/by-payment/$pf',
+    getParentRoute: () => AccountInvoicesRoute,
+  } as any)
 const ApiPublicRopCronMeasureOutcomesRoute =
   ApiPublicRopCronMeasureOutcomesRouteImport.update({
     id: '/api/public/rop/cron/measure-outcomes',
@@ -439,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
@@ -502,6 +510,7 @@ export interface FileRoutesByTo {
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
@@ -566,6 +575,7 @@ export interface FileRoutesById {
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
@@ -631,6 +641,7 @@ export interface FileRouteTypes {
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
+    | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
     | '/api/public/hooks/ci-failure-alerts'
@@ -694,6 +705,7 @@ export interface FileRouteTypes {
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
+    | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
     | '/api/public/hooks/ci-failure-alerts'
@@ -757,6 +769,7 @@ export interface FileRouteTypes {
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
+    | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
     | '/api/public/hooks/ci-failure-alerts'
@@ -1245,6 +1258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAnalyticsAuthGateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/invoices/by-payment/$pf': {
+      id: '/account/invoices/by-payment/$pf'
+      path: '/by-payment/$pf'
+      fullPath: '/account/invoices/by-payment/$pf'
+      preLoaderRoute: typeof AccountInvoicesByPaymentPfRouteImport
+      parentRoute: typeof AccountInvoicesRoute
+    }
     '/api/public/rop/cron/measure-outcomes': {
       id: '/api/public/rop/cron/measure-outcomes'
       path: '/api/public/rop/cron/measure-outcomes'
@@ -1285,10 +1305,12 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 
 interface AccountInvoicesRouteChildren {
   AccountInvoicesIdRoute: typeof AccountInvoicesIdRoute
+  AccountInvoicesByPaymentPfRoute: typeof AccountInvoicesByPaymentPfRoute
 }
 
 const AccountInvoicesRouteChildren: AccountInvoicesRouteChildren = {
   AccountInvoicesIdRoute: AccountInvoicesIdRoute,
+  AccountInvoicesByPaymentPfRoute: AccountInvoicesByPaymentPfRoute,
 }
 
 const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
