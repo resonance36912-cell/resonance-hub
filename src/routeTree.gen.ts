@@ -39,8 +39,10 @@ import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
+import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
+import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -216,6 +218,11 @@ const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
   path: '/admin/ci-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminBillingRoute = AdminBillingRouteImport.update({
+  id: '/admin/billing',
+  path: '/admin/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
@@ -224,6 +231,11 @@ const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
 const AccountDebugRoute = AccountDebugRouteImport.update({
   id: '/account/debug',
   path: '/account/debug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountBillingRoute = AccountBillingRouteImport.update({
+  id: '/account/billing',
+  path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
@@ -368,8 +380,10 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -425,8 +439,10 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -483,8 +499,10 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -542,8 +560,10 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/account/billing'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -599,8 +619,10 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/account/billing'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -656,8 +678,10 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/account/billing'
     | '/account/debug'
     | '/account/subscriptions'
+    | '/admin/billing'
     | '/admin/ci-health'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -714,8 +738,10 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -972,6 +998,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/billing': {
+      id: '/admin/billing'
+      path: '/admin/billing'
+      fullPath: '/admin/billing'
+      preLoaderRoute: typeof AdminBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/subscriptions': {
       id: '/account/subscriptions'
       path: '/account/subscriptions'
@@ -984,6 +1017,13 @@ declare module '@tanstack/react-router' {
       path: '/account/debug'
       fullPath: '/account/debug'
       preLoaderRoute: typeof AccountDebugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/billing': {
+      id: '/account/billing'
+      path: '/account/billing'
+      fullPath: '/account/billing'
+      preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.well-known/oauth-protected-resource': {
@@ -1175,8 +1215,10 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
