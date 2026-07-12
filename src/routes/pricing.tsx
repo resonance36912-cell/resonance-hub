@@ -1,26 +1,38 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PACK_CATALOG } from "@/lib/checkout.functions";
+import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/pricing")({
-  head: () => ({
-    meta: [
-      { title: "Pricing — The Resonance Hub" },
-      {
-        name: "description",
-        content:
-          "Individual Resonance apps use once-off credit and project packs. Optional monthly ecosystem passes bundle multiple tools for creators and teams. ZAR · PayFast.",
-      },
-      { property: "og:title", content: "Pricing — The Resonance Hub" },
-      {
-        property: "og:description",
-        content:
-          "Once-off app packs and optional monthly ecosystem passes. No individual app subscriptions.",
-      },
-    ],
-  }),
+  loader: async () => ({ origin: await getRequestOrigin() }),
+  head: ({ loaderData }) => {
+    const origin = loaderData?.origin ?? "https://reson8.life";
+    const title = "Pricing — The Resonance Hub";
+    const description =
+      "Once-off app packs and optional monthly ecosystem passes for Creative Studio, ePublisher, Sync Vision and YouTube Optimizer. ZAR · PayFast.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { property: "og:url", content: `${origin}/pricing` },
+        { property: "og:image", content: `${origin}/og-logo.png` },
+        { property: "og:image:alt", content: "The Resonance logo" },
+        { property: "og:site_name", content: "The Resonance" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: `${origin}/og-logo.png` },
+        { name: "twitter:image:alt", content: "The Resonance logo" },
+      ],
+      links: [{ rel: "canonical", href: `${origin}/pricing` }],
+    };
+  },
   component: PricingPage,
 });
+
 
 export const APP_META: Record<string, { name: string; accent: string; anchor: string; visit: string; visitLabel: string }> = {
   epublisher: {
