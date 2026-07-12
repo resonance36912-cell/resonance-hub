@@ -35,10 +35,14 @@ SCREENSHOTS.mkdir(parents=True, exist_ok=True)
 # assert the resulting pathname + a marker string only that route renders.
 # Footer links are used because they exist on every marketing page and are
 # rendered by <AppLink>, giving us clean end-to-end coverage.
+# Each hop clicks a footer AppLink (stable across marketing rewrites) and
+# asserts pathname + a route-unique `<title>` substring. We check <title>
+# instead of body text because each route sets a distinct title via head(),
+# whereas words like "Pricing" appear in the footer of every page.
 HOPS = [
-    {"link_name": "Pricing", "expected_path": "/pricing", "marker": "Pricing"},
-    {"link_name": "Governance", "expected_path": "/governance", "marker": "Governance"},
-    {"link_name": "Changelog", "expected_path": "/changelog", "marker": "Changelog"},
+    {"link_name": "Pricing", "expected_path": "/pricing", "title_contains": "Pricing"},
+    {"link_name": "Governance", "expected_path": "/governance", "title_contains": "Governance"},
+    {"link_name": "Changelog", "expected_path": "/changelog", "title_contains": "Changelog"},
 ]
 
 
