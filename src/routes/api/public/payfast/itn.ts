@@ -402,16 +402,8 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             const { data: recipientRec } = await supabaseAdmin.auth.admin.getUserById(userId);
             const recipient = recipientRec?.user?.email ?? null;
 
-            // Human-readable number from a dedicated sequence.
-            const { data: seqRow } = await supabaseAdmin
-              .rpc("nextval" as never, { seq: "public.invoice_number_seq" } as never)
-              .single();
-            let numeric: number | null = null;
-            if (typeof seqRow === "number") numeric = seqRow;
-            else if (seqRow && typeof (seqRow as { nextval?: number }).nextval === "number") {
-              numeric = (seqRow as { nextval: number }).nextval;
-            }
-            const invoiceNumber = `INV-${String(numeric ?? Date.now()).padStart(6, "0")}`;
+            // Human-readable number keyed off the unique PayFast payment id.
+            const invoiceNumber = `INV-${pfPaymentId}`;
 
             const { error: invErr } = await supabaseAdmin
               .from("invoices" as never)
