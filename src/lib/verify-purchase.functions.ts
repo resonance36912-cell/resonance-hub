@@ -46,7 +46,7 @@ export const getVerifiedPurchase = createServerFn({ method: "POST" })
       .from("subscriptions")
       .select("app,tier,status,current_period_end,updated_at")
       .eq("user_id", userId)
-      .eq("app", def.app)
+      .eq("app", def.app as never)
       .order("updated_at", { ascending: false })
       .limit(1);
 
