@@ -41,6 +41,7 @@ import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domai
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
+import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -228,6 +229,11 @@ const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   path: '/account/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountInvoicesRoute = AccountInvoicesRouteImport.update({
+  id: '/account/invoices',
+  path: '/account/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountDebugRoute = AccountDebugRouteImport.update({
   id: '/account/debug',
   path: '/account/debug',
@@ -382,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
@@ -441,6 +448,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
@@ -501,6 +509,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
@@ -562,6 +571,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
+    | '/account/invoices'
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
@@ -621,6 +631,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
+    | '/account/invoices'
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
@@ -680,6 +691,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
+    | '/account/invoices'
     | '/account/subscriptions'
     | '/admin/billing'
     | '/admin/ci-health'
@@ -740,6 +752,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
+  AccountInvoicesRoute: typeof AccountInvoicesRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
@@ -1012,6 +1025,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/invoices': {
+      id: '/account/invoices'
+      path: '/account/invoices'
+      fullPath: '/account/invoices'
+      preLoaderRoute: typeof AccountInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/debug': {
       id: '/account/debug'
       path: '/account/debug'
@@ -1217,6 +1237,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
+  AccountInvoicesRoute: AccountInvoicesRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
