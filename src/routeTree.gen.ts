@@ -18,6 +18,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
@@ -119,6 +120,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const ChangelogRoute = ChangelogRouteImport.update({
   id: '/changelog',
   path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsRoute = AppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -427,6 +433,7 @@ const ApiPublicGenerateCreativeStudioPosterRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
@@ -495,6 +502,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
@@ -564,6 +572,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
@@ -634,6 +643,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/apps'
     | '/changelog'
     | '/checkout'
     | '/governance'
@@ -702,6 +712,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/apps'
     | '/changelog'
     | '/checkout'
     | '/governance'
@@ -770,6 +781,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/apps'
     | '/changelog'
     | '/checkout'
     | '/governance'
@@ -839,6 +851,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppsRoute: typeof AppsRoute
   ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   GovernanceRoute: typeof GovernanceRoute
@@ -965,6 +978,13 @@ declare module '@tanstack/react-router' {
       path: '/changelog'
       fullPath: '/changelog'
       preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps': {
+      id: '/apps'
+      path: '/apps'
+      fullPath: '/apps'
+      preLoaderRoute: typeof AppsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1399,6 +1419,7 @@ const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppsRoute: AppsRoute,
   ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   GovernanceRoute: GovernanceRoute,
