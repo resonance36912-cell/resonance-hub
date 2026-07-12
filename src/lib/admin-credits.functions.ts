@@ -182,7 +182,7 @@ export const adjustCredits = createServerFn({ method: "POST" })
 
     // Insert ledger row (audit)
     const idempotencyKey = `admin:${context.userId}:${Date.now()}:${crypto.randomUUID()}`;
-    const metadata: Record<string, unknown> = {
+    const metadata: LedgerMeta = {
       admin_user_id: context.userId,
       admin_email: (context.claims as { email?: string } | null)?.email ?? null,
       note: note ?? null,
