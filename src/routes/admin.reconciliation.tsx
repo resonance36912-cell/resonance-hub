@@ -59,6 +59,8 @@ function ReconciliationPage() {
   const orphanS = useServerFn(listOrphanSubscriptions);
   const stale = useServerFn(listStaleReservations);
   const unposted = useServerFn(listUnpostedItns);
+  const legacySubs = useServerFn(listLegacySubscriptions);
+  const legacyItns = useServerFn(listLegacyItns);
 
   const summaryQ = useQuery<ReconSummary>({
     queryKey: ["recon", "summary"],
@@ -70,6 +72,8 @@ function ReconciliationPage() {
   const orphanSQ = useQuery({ queryKey: ["recon", "orphan-subscriptions"], queryFn: () => orphanS() });
   const staleQ = useQuery({ queryKey: ["recon", "stale-reservations"], queryFn: () => stale() });
   const unpostedQ = useQuery({ queryKey: ["recon", "unposted-itns"], queryFn: () => unposted() });
+  const legacySubsQ = useQuery({ queryKey: ["recon", "legacy-subs"], queryFn: () => legacySubs() });
+  const legacyItnsQ = useQuery({ queryKey: ["recon", "legacy-itns"], queryFn: () => legacyItns() });
 
   const s = summaryQ.data;
 
