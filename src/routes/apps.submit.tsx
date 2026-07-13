@@ -51,14 +51,15 @@ function extFor(file: File): string {
   return map[file.type] ?? "png";
 }
 
-async function uploadImage(file: File): Promise<string> {
-  const id = crypto.randomUUID();
-  const path = `incoming/${id}.${extFor(file)}`;
-  const { error } = await supabase.storage
-    .from("app-submissions")
-    .upload(path, file, { contentType: file.type, upsert: false });
-  if (error) throw new Error(`Upload failed: ${error.message}`);
-  return path;
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
 }
 
 function SubmitAppPage() {
