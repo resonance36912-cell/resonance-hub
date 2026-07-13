@@ -282,7 +282,7 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
     }
 
     const key = `${sub.app}:${sub.tier}:${sub.billing_cycle}`;
-    const def = SKU_CATALOG[key];
+    const def = await resolveSkuDefFromDb(key);
     if (!def) throw new Error(`No SKU available to retry (${key})`);
 
     const email = (context.claims as { email?: string } | null)?.email ?? "";
