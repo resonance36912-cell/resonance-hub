@@ -59,15 +59,19 @@ export const Route = createFileRoute("/api/public/usage/reserve")({
         if (auth instanceof Response) return auth;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin.rpc("reserve_credits", {
+        const rpcArgs: Record<string, unknown> = {
           _user_id: auth.userId,
           _app: body.app,
           _amount: body.amount,
           _reason: body.reason,
-          _sku: body.sku ?? null,
           _idempotency_key: body.idempotencyKey,
           _metadata: body.metadata ?? {},
-        });
+        };
+        if (body.sku !== undefined) rpcArgs._sku = body.sku;
+        const { data, error } = await supabaseAdmin.rpc(
+          "reserve_credits",
+          rpcArgs as never,
+        );
 
         if (error) {
           const msg = error.message || "";
