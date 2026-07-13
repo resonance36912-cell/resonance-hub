@@ -702,6 +702,109 @@ export type Database = {
         }
         Relationships: []
       }
+      governance_events: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          article_ref: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          note: string | null
+          proposal_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          article_ref?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          note?: string | null
+          proposal_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          article_ref?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          note?: string | null
+          proposal_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_events_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "governance_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      governance_proposals: {
+        Row: {
+          article_ref: string | null
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          id: string
+          metadata: Json
+          proposed_by: string
+          rationale: string | null
+          status: Database["public"]["Enums"]["governance_proposal_status"]
+          summary: string
+          superseded_by: string | null
+          title: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          article_ref?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          metadata?: Json
+          proposed_by: string
+          rationale?: string | null
+          status?: Database["public"]["Enums"]["governance_proposal_status"]
+          summary: string
+          superseded_by?: string | null
+          title: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          article_ref?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          id?: string
+          metadata?: Json
+          proposed_by?: string
+          rationale?: string | null
+          status?: Database["public"]["Enums"]["governance_proposal_status"]
+          summary?: string
+          superseded_by?: string | null
+          title?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_proposals_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "governance_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hub_app_access: {
         Row: {
           app_id: string
@@ -2103,6 +2206,13 @@ export type Database = {
       consent_purpose: "essential" | "analytics" | "marketing" | "ai_training"
       dsr_kind: "export" | "erasure" | "rectification"
       dsr_status: "pending" | "in_progress" | "completed" | "rejected"
+      governance_proposal_status:
+        | "draft"
+        | "review"
+        | "approved"
+        | "rejected"
+        | "superseded"
+        | "withdrawn"
       hub_app_role: "hub_admin" | "app_owner"
       hub_outcome_verdict: "improved" | "neutral" | "regressed" | "inconclusive"
       hub_suggestion_source: "rule" | "ai" | "cross_app" | "manual"
@@ -2285,6 +2395,14 @@ export const Constants = {
       consent_purpose: ["essential", "analytics", "marketing", "ai_training"],
       dsr_kind: ["export", "erasure", "rectification"],
       dsr_status: ["pending", "in_progress", "completed", "rejected"],
+      governance_proposal_status: [
+        "draft",
+        "review",
+        "approved",
+        "rejected",
+        "superseded",
+        "withdrawn",
+      ],
       hub_app_role: ["hub_admin", "app_owner"],
       hub_outcome_verdict: ["improved", "neutral", "regressed", "inconclusive"],
       hub_suggestion_source: ["rule", "ai", "cross_app", "manual"],
