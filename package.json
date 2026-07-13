@@ -30,7 +30,6 @@
     "verify:checkout-links": "bun run scripts/verify-checkout-links.ts",
     "test:checkout-links": "bun test scripts/lib/checkout-link-verify.test.ts",
     "verify:transparency-copy": "bun run scripts/verify-transparency-copy.ts",
-    "verify:discernment-usage": "bun run scripts/verify-discernment-usage.ts",
     "report:discernment-usage": "bun run scripts/report-discernment-usage.ts",
     "verify:pricing-packs": "bun run scripts/verify-pricing-packs.ts",
     "test:pricing-packs": "bun test scripts/lib/pricing-packs-verify.test.ts",
