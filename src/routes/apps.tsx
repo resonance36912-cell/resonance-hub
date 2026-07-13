@@ -166,8 +166,8 @@ function AppsCatalogPage() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Resonance Apps</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Every app in the Resonance ecosystem. Paid apps share a single account,
-            billing spine, and All-Access pass on <a href="https://reson8.life" className="text-primary underline">reson8.life</a>.
+            Every app in the Resonance ecosystem. Paid apps share one Hub billing account today,
+            with unified app login on the roadmap and All-Access passes on <a href="https://reson8.life" className="text-primary underline">reson8.life</a>.
           </p>
         </div>
         <AppLink
