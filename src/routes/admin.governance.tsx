@@ -104,7 +104,7 @@ function AdminGovernancePage() {
               await refetch();
               router.invalidate();
             }}
-            fetchEvents={() => listEvents({ data: { proposal_id: p.id } })}
+            fetchEvents={() => listEvents({ data: { proposal_id: p.id } }) as Promise<GovernanceEvent[]>}
           />
         ))}
         {!isLoading && rows.length === 0 && (
