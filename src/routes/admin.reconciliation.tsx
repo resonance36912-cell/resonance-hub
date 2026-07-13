@@ -204,6 +204,47 @@ function ReconciliationPage() {
           ])}
         />
       </Panel>
+
+      <Panel
+        title="Legacy subscriptions (Stage 10)"
+        description="Active/past_due/pending subscriptions with no product_id — written by a legacy spoke checkout that predates Stage 3. Must trend to zero before decommissioning that spoke."
+        loading={legacySubsQ.isLoading}
+        error={legacySubsQ.error}
+        empty={(legacySubsQ.data ?? []).length === 0}
+      >
+        <Table
+          headers={["Subscription", "User", "App", "Tier", "Status", "Reason", "Period end"]}
+          rows={(legacySubsQ.data ?? []).map((r) => [
+            <code key="s" className="text-xs">{r.subscription_id.slice(0, 8)}</code>,
+            <code key="u" className="text-xs">{r.user_id.slice(0, 8)}</code>,
+            r.app,
+            r.tier,
+            r.status,
+            r.reason,
+            fmtDate(r.current_period_end),
+          ])}
+        />
+      </Panel>
+
+      <Panel
+        title="Legacy PayFast SKUs (Stage 10)"
+        description="COMPLETE ITNs in the last 30 days whose SKU is not in the hub's product catalog. Any row means a spoke is still driving billing through a SKU the hub no longer recognises."
+        loading={legacyItnsQ.isLoading}
+        error={legacyItnsQ.error}
+        empty={(legacyItnsQ.data ?? []).length === 0}
+      >
+        <Table
+          headers={["ITN", "Received", "PF payment", "SKU", "Amount", "User"]}
+          rows={(legacyItnsQ.data ?? []).map((r) => [
+            <code key="i" className="text-xs">{r.itn_id.slice(0, 8)}</code>,
+            fmtDate(r.received_at),
+            <code key="p" className="text-xs">{r.pf_payment_id ?? "—"}</code>,
+            <span key="k" className="font-mono text-red-600">{r.sku}</span>,
+            zar(r.amount_cents),
+            <code key="u" className="text-xs">{r.user_id?.slice(0, 8) ?? "—"}</code>,
+          ])}
+        />
+      </Panel>
     </main>
   );
 }
