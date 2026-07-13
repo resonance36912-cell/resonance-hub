@@ -74,7 +74,7 @@ export const listLegacyItns = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<LegacyItnRow[]> => {
     await requireAdmin(context as any);
-    const skus = await knownSkus();
+    const skus = await knownProductKeys();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since = new Date(Date.now() - 30 * 24 * 3600_000).toISOString();
     const { data, error } = await supabaseAdmin
