@@ -10,10 +10,10 @@
  * The `RoutePath` type is derived from the generated router registry, so it
  * automatically stays in sync with the files under `src/routes/`.
  */
-import { linkOptions, type RegisteredRouter } from "@tanstack/react-router";
+import { linkOptions, type RegisteredRouter, type RouteToPath } from "@tanstack/react-router";
 
-/** Union of every valid route path registered on the app router. */
-export type RoutePath = keyof RegisteredRouter["routesByPath"];
+/** Union of every valid navigation target registered on the app router. */
+export type RoutePath = RouteToPath<RegisteredRouter>;
 
 /**
  * Compile-time guard: any string passed here must be a real route path.
