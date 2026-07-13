@@ -73,6 +73,7 @@ import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicHooksGithubRouteImport } from './routes/api/public/hooks/github'
 import { Route as ApiPublicHooksCiFailureAlertsRouteImport } from './routes/api/public/hooks/ci-failure-alerts'
 import { Route as ApiPublicFormsCreateIssueRouteImport } from './routes/api/public/forms/create-issue'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
@@ -412,6 +413,11 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksGithubRoute = ApiPublicHooksGithubRouteImport.update({
+  id: '/api/public/hooks/github',
+  path: '/api/public/hooks/github',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksCiFailureAlertsRoute =
   ApiPublicHooksCiFailureAlertsRouteImport.update({
     id: '/api/public/hooks/ci-failure-alerts',
@@ -513,6 +519,7 @@ export interface FileRoutesByFullPath {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
+  '/api/public/hooks/github': typeof ApiPublicHooksGithubRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -586,6 +593,7 @@ export interface FileRoutesByTo {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
+  '/api/public/hooks/github': typeof ApiPublicHooksGithubRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -660,6 +668,7 @@ export interface FileRoutesById {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
   '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
+  '/api/public/hooks/github': typeof ApiPublicHooksGithubRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -735,6 +744,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
     | '/api/public/hooks/ci-failure-alerts'
+    | '/api/public/hooks/github'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -808,6 +818,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
     | '/api/public/hooks/ci-failure-alerts'
+    | '/api/public/hooks/github'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -881,6 +892,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/forms/create-issue'
     | '/api/public/hooks/ci-failure-alerts'
+    | '/api/public/hooks/github'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -949,6 +961,7 @@ export interface RootRouteChildren {
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicFormsCreateIssueRoute: typeof ApiPublicFormsCreateIssueRoute
   ApiPublicHooksCiFailureAlertsRoute: typeof ApiPublicHooksCiFailureAlertsRoute
+  ApiPublicHooksGithubRoute: typeof ApiPublicHooksGithubRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
@@ -1415,6 +1428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/github': {
+      id: '/api/public/hooks/github'
+      path: '/api/public/hooks/github'
+      fullPath: '/api/public/hooks/github'
+      preLoaderRoute: typeof ApiPublicHooksGithubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/ci-failure-alerts': {
       id: '/api/public/hooks/ci-failure-alerts'
       path: '/api/public/hooks/ci-failure-alerts'
@@ -1560,6 +1580,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicFormsCreateIssueRoute: ApiPublicFormsCreateIssueRoute,
   ApiPublicHooksCiFailureAlertsRoute: ApiPublicHooksCiFailureAlertsRoute,
+  ApiPublicHooksGithubRoute: ApiPublicHooksGithubRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
