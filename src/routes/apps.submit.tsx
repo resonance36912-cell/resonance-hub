@@ -6,9 +6,9 @@ import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
   submitAppSubmission,
   checkSubmissionAvailability,
+  uploadSubmissionAsset,
   type SubmissionAvailability,
 } from "@/lib/app-submissions.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { slugify, validateAppUrl } from "@/lib/app-submission-validation";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
