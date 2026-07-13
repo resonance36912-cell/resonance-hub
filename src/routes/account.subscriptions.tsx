@@ -10,6 +10,11 @@ import {
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
 import { retryPayfastLaunch } from "@/lib/checkout.functions";
+import {
+  cancelSubscriptionAtPeriodEnd,
+  reactivateSubscription,
+} from "@/lib/subscriptions.functions";
+import { useQueryClient } from "@tanstack/react-query";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 import { ROUTES } from "@/lib/routes";
@@ -396,6 +401,52 @@ function RetryPaymentButton({ subscriptionId }: { subscriptionId: string }) {
   );
 }
 
+function CancelReactivateButton({ sub }: { sub: SubscriptionRow }) {
+  const cancel = useServerFn(cancelSubscriptionAtPeriodEnd);
+  const reactivate = useServerFn(reactivateSubscription);
+  const qc = useQueryClient();
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const pendingCancel = sub.cancel_at_period_end && sub.status !== "cancelled";
+  const label = loading
+    ? "Working…"
+    : pendingCancel
+    ? "Keep subscription"
+    : "Cancel at period end";
+
+  async function onClick() {
+    if (!confirm(pendingCancel
+      ? "Resume automatic renewal for this subscription?"
+      : "Cancel at end of paid period? You keep access until then."
+    )) return;
+    setLoading(true);
+    setErr(null);
+    try {
+      const fn = pendingCancel ? reactivate : cancel;
+      await fn({ data: { subscriptionId: sub.id } });
+      await qc.invalidateQueries({ queryKey: ["my-subscriptions"] });
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={onClick}
+        disabled={loading}
+        className="rounded border border-border bg-transparent px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60"
+      >
+        {label}
+      </button>
+      {err && <span className="text-[10px] text-red-400 max-w-[160px] text-right">{err}</span>}
+    </div>
+  );
+}
+
 function SubscriptionsPage() {
   const fetchSubs = useServerFn(getMySubscriptions);
   const { data, isLoading, error } = useQuery({
@@ -596,6 +647,7 @@ function SubscriptionsPage() {
                     <tbody>
                       {subs.map((s) => {
                         const retryable = s.status === "pending" || s.status === "past_due" || s.status === "cancelled";
+                        const cancellable = s.status === "active" || s.status === "past_due";
                         return (
                         <tr key={`${s.app}-${s.updated_at}`} className="border-t border-border">
                           <td className="px-4 py-3">{APP_META[s.app as AppKey]?.label ?? s.app}</td>
@@ -604,12 +656,26 @@ function SubscriptionsPage() {
                             <span className={`inline-block rounded border px-2 py-0.5 text-xs capitalize ${statusBadge(s.status)}`}>
                               {s.status.replace("_", " ")}
                             </span>
+                            {s.cancel_at_period_end && s.status !== "cancelled" && (
+                              <div className="mt-1 text-[10px] text-amber-400">
+                                Ends {formatDate(s.current_period_end)}
+                              </div>
+                            )}
+                            {s.status === "past_due" && s.grace_period_ends_at && (
+                              <div className="mt-1 text-[10px] text-red-400">
+                                Grace until {formatDate(s.grace_period_ends_at)}
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-3 capitalize">{s.billing_cycle}</td>
                           <td className="px-4 py-3 text-xs">{formatDate(s.current_period_end)}</td>
                           <td className="px-4 py-3 text-right font-mono text-xs">{formatPrice(s.amount_cents)}</td>
                           <td className="px-4 py-3 text-right">
-                            {retryable ? <RetryPaymentButton subscriptionId={s.id} /> : <span className="text-xs text-muted-foreground">—</span>}
+                            <div className="flex flex-col items-end gap-2">
+                              {retryable && <RetryPaymentButton subscriptionId={s.id} />}
+                              {cancellable && <CancelReactivateButton sub={s} />}
+                              {!retryable && !cancellable && <span className="text-xs text-muted-foreground">—</span>}
+                            </div>
                           </td>
                         </tr>
                         );
