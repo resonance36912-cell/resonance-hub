@@ -1,0 +1,106 @@
+name: Billing change (PayFast / credits / entitlements)
+description: Any change to checkout, PayFast ITN handling, credit wallet, invoices, refunds, or entitlement grants.
+title: "[Billing] <short summary>"
+labels: ["billing", "needs-review", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Billing changes require extra review under RCGF v1.0. Fill in every section — incomplete
+        billing issues will be closed and asked to re-file.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Billing area
+      options:
+        - Checkout / launch (`/checkout`, `verifyPurchase`)
+        - PayFast ITN webhook (`/api/public/payfast/itn`)
+        - Credit wallet / ledger
+        - Invoices / receipts
+        - Refunds / revocation
+        - Plan upgrade / downgrade / supersession
+        - Admin credit adjustments (`/admin/credits`)
+        - Retry-failed-payment flow
+    validations:
+      required: true
+
+  - type: dropdown
+    id: change_type
+    attributes:
+      label: Change type
+      options:
+        - Bug fix
+        - New feature
+        - Refactor (no behaviour change)
+        - Security hardening
+        - Configuration only (SKU, price, tier)
+    validations:
+      required: true
+
+  - type: textarea
+    id: money_movement
+    attributes:
+      label: Money / credit movement affected
+      description: Describe every path where money or credits move. Include direction and actor.
+      placeholder: |
+        - User pays R99 → PayFast → ITN → grant `creator` entitlement + 500 credits
+        - Refund ITN → revoke entitlement, clear period_end, log to `plan_changes`
+    validations:
+      required: true
+
+  - type: textarea
+    id: idempotency
+    attributes:
+      label: Idempotency & audit
+      description: How is double-processing prevented? Which audit tables are written?
+      placeholder: |
+        - `webhook_events(delivery_id)` unique — dedupes retried ITNs
+        - `credit_ledger` row per grant/debit with `metadata.reason`
+        - `plan_changes` row for every entitlement transition
+    validations:
+      required: true
+
+  - type: textarea
+    id: skus
+    attributes:
+      label: SKUs / entitlements touched
+      description: List every SKU, pass, or entitlement key affected.
+      placeholder: |
+        - creator.monthly, studio.monthly
+        - pack.epublisher.credits-100
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-merge checklist
+      options:
+        - label: PayFast signature verified with `timingSafeEqual` (if webhook touched)
+          required: false
+        - label: `webhook_events` idempotency key present on every ingest path
+          required: true
+        - label: All credit changes go through the ledger — no direct wallet writes
+          required: true
+        - label: Refund path revokes entitlement AND clears `period_end`
+          required: false
+        - label: Admin actions require audit note + role check (`has_role`)
+          required: false
+        - label: Test added under `scripts/lib/` or `tests/` covering the new path
+          required: true
+        - label: `bun run prebuild` and `bun run test:ci` green
+          required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+      description: How do we back this out safely if it misbehaves in production?
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context (links to PayFast dashboard, invoices, users affected)
