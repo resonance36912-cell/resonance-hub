@@ -170,6 +170,27 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
       }
     }
 
+    // Best-effort attach submitter_user_id when the caller is authenticated,
+    // so the owner-SELECT policy can surface pending rows back to them.
+    let submitterUserId: string | null = null;
+    try {
+      const { getRequest } = await import("@tanstack/react-start/server");
+      const req = getRequest();
+      const authHeader = req?.headers?.get("authorization") ?? null;
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice(7);
+        const authed = createClient<Database>(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_PUBLISHABLE_KEY!,
+          { auth: { persistSession: false, autoRefreshToken: false } },
+        );
+        const { data: claims } = await authed.auth.getClaims(token);
+        if (claims?.claims?.sub) submitterUserId = claims.claims.sub;
+      }
+    } catch {
+      /* anonymous submitter is fine */
+    }
+
     const supabase = createClient<Database>(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PUBLISHABLE_KEY!,
@@ -187,6 +208,7 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
         accent_color: data.accentColor ?? null,
         logo_path: data.logoPath ?? null,
         screenshot_paths: data.screenshotPaths ?? [],
+        submitter_user_id: submitterUserId,
       })
       .select("id")
       .single();
