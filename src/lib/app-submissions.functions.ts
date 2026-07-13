@@ -83,6 +83,61 @@ async function signPaths(paths: string[]): Promise<string[]> {
   return (data ?? []).map((d) => d.signedUrl ?? "");
 }
 
+// -------- Public: upload asset (server-mediated, validated) --------
+
+const ALLOWED_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+]);
+const MIME_EXT: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/svg+xml": "svg",
+};
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB hard cap
+
+const uploadSchema = z.object({
+  kind: z.enum(["logo", "screenshot"]),
+  contentType: z.string(),
+  // base64-encoded file bytes (no data: prefix)
+  dataBase64: z.string().min(1).max(8 * 1024 * 1024), // ~6MB base64 payload
+});
+
+export const uploadSubmissionAsset = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => uploadSchema.parse(d))
+  .handler(async ({ data }): Promise<{ path: string }> => {
+    if (!ALLOWED_MIME.has(data.contentType)) {
+      throw new Error("Unsupported file type.");
+    }
+    const maxBytes = data.kind === "logo" ? 2 * 1024 * 1024 : MAX_UPLOAD_BYTES;
+    const bytes = Buffer.from(data.dataBase64, "base64");
+    if (bytes.length === 0) throw new Error("Empty file.");
+    if (bytes.length > maxBytes) {
+      throw new Error(
+        `File exceeds ${Math.floor(maxBytes / 1024 / 1024)} MB limit.`,
+      );
+    }
+
+    const ext = MIME_EXT[data.contentType] ?? "png";
+    const id = crypto.randomUUID();
+    const path = `incoming/${id}.${ext}`;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.storage
+      .from("app-submissions")
+      .upload(path, bytes, {
+        contentType: data.contentType,
+        upsert: false,
+      });
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+    return { path };
+  });
+
 // -------- Public: submit --------
 
 export const submitAppSubmission = createServerFn({ method: "POST" })
