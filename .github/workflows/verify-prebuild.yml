@@ -156,6 +156,16 @@ jobs:
       - name: Verify hardcoded route strings resolve to real routes
         run: bun run verify:route-strings
 
+      # Parity tests: every ROUTES constant and LINKS preset in src/lib/routes.ts
+      # must match a `fullPath` in src/routeTree.gen.ts exactly (no trailing
+      # slashes, no duplicates, no drift). Hard-fails the build on regression.
+      - name: Verify ROUTES/LINKS ↔ router registry parity
+        run: |
+          bun test \
+            scripts/lib/route-path.test.ts \
+            scripts/lib/route-registry.test.ts \
+            scripts/lib/app-link.test.tsx
+
       # Lint has ~2400 preexisting issues in this repo — surface them without
       # blocking the pipeline until the backlog is cleaned up. Flip
       # continue-on-error to false to enforce.
