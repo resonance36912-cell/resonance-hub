@@ -20,6 +20,8 @@ export const PROPOSAL_STATUSES = [
 ] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
+type Json = string | number | boolean | null | { [k: string]: Json } | Json[];
+
 export type Proposal = {
   id: string;
   title: string;
@@ -33,7 +35,7 @@ export type Proposal = {
   decided_at: string | null;
   decision_note: string | null;
   superseded_by: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Json;
   created_at: string;
   updated_at: string;
 };
@@ -45,7 +47,7 @@ export type GovernanceEvent = {
   actor_user_id: string | null;
   article_ref: string | null;
   note: string | null;
-  metadata: Record<string, unknown>;
+  metadata: Json;
   created_at: string;
 };
 
