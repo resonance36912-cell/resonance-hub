@@ -6,9 +6,9 @@ import { BackToHubHeader } from "@/components/BackToHubHeader";
 import {
   submitAppSubmission,
   checkSubmissionAvailability,
+  uploadSubmissionAsset,
   type SubmissionAvailability,
 } from "@/lib/app-submissions.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { slugify, validateAppUrl } from "@/lib/app-submission-validation";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
@@ -38,32 +38,28 @@ const MAX_SHOT_MB = 5;
 const MAX_SHOTS = 4;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
 
-function extFor(file: File): string {
-  const byName = file.name.split(".").pop()?.toLowerCase();
-  if (byName && /^(png|jpe?g|webp|gif|svg)$/.test(byName)) return byName === "jpeg" ? "jpg" : byName;
-  const map: Record<string, string> = {
-    "image/png": "png",
-    "image/jpeg": "jpg",
-    "image/webp": "webp",
-    "image/gif": "gif",
-    "image/svg+xml": "svg",
-  };
-  return map[file.type] ?? "png";
-}
-
-async function uploadImage(file: File): Promise<string> {
-  const id = crypto.randomUUID();
-  const path = `incoming/${id}.${extFor(file)}`;
-  const { error } = await supabase.storage
-    .from("app-submissions")
-    .upload(path, file, { contentType: file.type, upsert: false });
-  if (error) throw new Error(`Upload failed: ${error.message}`);
-  return path;
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
 }
 
 function SubmitAppPage() {
   const submitFn = useServerFn(submitAppSubmission);
   const checkFn = useServerFn(checkSubmissionAvailability);
+  const uploadFn = useServerFn(uploadSubmissionAsset);
+  const uploadImage = async (file: File, kind: "logo" | "screenshot") => {
+    const dataBase64 = await fileToBase64(file);
+    const { path } = await uploadFn({
+      data: { kind, contentType: file.type, dataBase64 },
+    });
+    return path;
+  };
   const [form, setForm] = useState({
     name: "",
     url: "",
@@ -145,8 +141,8 @@ function SubmitAppPage() {
     mutationFn: async () => {
       let logoPath: string | null = null;
       const screenshotPaths: string[] = [];
-      if (logoFile) logoPath = await uploadImage(logoFile);
-      for (const f of shotFiles) screenshotPaths.push(await uploadImage(f));
+      if (logoFile) logoPath = await uploadImage(logoFile, "logo");
+      for (const f of shotFiles) screenshotPaths.push(await uploadImage(f, "screenshot"));
       return submitFn({
         data: {
           name: form.name,

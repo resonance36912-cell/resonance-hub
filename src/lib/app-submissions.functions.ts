@@ -83,6 +83,61 @@ async function signPaths(paths: string[]): Promise<string[]> {
   return (data ?? []).map((d) => d.signedUrl ?? "");
 }
 
+// -------- Public: upload asset (server-mediated, validated) --------
+
+const ALLOWED_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/svg+xml",
+]);
+const MIME_EXT: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/svg+xml": "svg",
+};
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB hard cap
+
+const uploadSchema = z.object({
+  kind: z.enum(["logo", "screenshot"]),
+  contentType: z.string(),
+  // base64-encoded file bytes (no data: prefix)
+  dataBase64: z.string().min(1).max(8 * 1024 * 1024), // ~6MB base64 payload
+});
+
+export const uploadSubmissionAsset = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => uploadSchema.parse(d))
+  .handler(async ({ data }): Promise<{ path: string }> => {
+    if (!ALLOWED_MIME.has(data.contentType)) {
+      throw new Error("Unsupported file type.");
+    }
+    const maxBytes = data.kind === "logo" ? 2 * 1024 * 1024 : MAX_UPLOAD_BYTES;
+    const bytes = Buffer.from(data.dataBase64, "base64");
+    if (bytes.length === 0) throw new Error("Empty file.");
+    if (bytes.length > maxBytes) {
+      throw new Error(
+        `File exceeds ${Math.floor(maxBytes / 1024 / 1024)} MB limit.`,
+      );
+    }
+
+    const ext = MIME_EXT[data.contentType] ?? "png";
+    const id = crypto.randomUUID();
+    const path = `incoming/${id}.${ext}`;
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.storage
+      .from("app-submissions")
+      .upload(path, bytes, {
+        contentType: data.contentType,
+        upsert: false,
+      });
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+    return { path };
+  });
+
 // -------- Public: submit --------
 
 export const submitAppSubmission = createServerFn({ method: "POST" })
@@ -115,6 +170,27 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
       }
     }
 
+    // Best-effort attach submitter_user_id when the caller is authenticated,
+    // so the owner-SELECT policy can surface pending rows back to them.
+    let submitterUserId: string | null = null;
+    try {
+      const { getRequest } = await import("@tanstack/react-start/server");
+      const req = getRequest();
+      const authHeader = req?.headers?.get("authorization") ?? null;
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.slice(7);
+        const authed = createClient<Database>(
+          process.env.SUPABASE_URL!,
+          process.env.SUPABASE_PUBLISHABLE_KEY!,
+          { auth: { persistSession: false, autoRefreshToken: false } },
+        );
+        const { data: claims } = await authed.auth.getClaims(token);
+        if (claims?.claims?.sub) submitterUserId = claims.claims.sub;
+      }
+    } catch {
+      /* anonymous submitter is fine */
+    }
+
     const supabase = createClient<Database>(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PUBLISHABLE_KEY!,
@@ -132,6 +208,7 @@ export const submitAppSubmission = createServerFn({ method: "POST" })
         accent_color: data.accentColor ?? null,
         logo_path: data.logoPath ?? null,
         screenshot_paths: data.screenshotPaths ?? [],
+        submitter_user_id: submitterUserId,
       })
       .select("id")
       .single();
