@@ -93,6 +93,7 @@ export const ROUTES = {
   adminEmailDomain: routePath("/admin/email-domain"),
   adminEmails: routePath("/admin/emails"),
   adminEntitlementDiagnostics: routePath("/admin/entitlement-diagnostics"),
+  adminGovernance: routePath("/admin/governance"),
   adminInvoices: routePath("/admin/invoices"),
   adminLogin: routePath("/admin/login"),
   adminPayfastAudit: routePath("/admin/payfast-audit"),
