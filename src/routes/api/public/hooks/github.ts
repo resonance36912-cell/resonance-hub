@@ -221,7 +221,7 @@ type EventRow = {
   dispatched_workflows?: string[];
   dispatch_error?: string | null;
   http_status: number;
-  raw_payload: unknown;
+  raw_payload: any;
 };
 
 async function logEvent(row: EventRow) {
