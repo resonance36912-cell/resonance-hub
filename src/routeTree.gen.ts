@@ -34,6 +34,7 @@ import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
@@ -201,6 +202,11 @@ const AdminRopRoute = AdminRopRouteImport.update({
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
+  id: '/admin/reconciliation',
+  path: '/admin/reconciliation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
@@ -463,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -533,6 +540,7 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -604,6 +612,7 @@ export interface FileRoutesById {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -676,6 +685,7 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
     | '/admin/webhooks'
@@ -746,6 +756,7 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
     | '/admin/webhooks'
@@ -816,6 +827,7 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
     | '/admin/webhooks'
@@ -887,6 +899,7 @@ export interface RootRouteChildren {
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
+  AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
@@ -1098,6 +1111,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reconciliation': {
+      id: '/admin/reconciliation'
+      path: '/admin/reconciliation'
+      fullPath: '/admin/reconciliation'
+      preLoaderRoute: typeof AdminReconciliationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/payfast-audit': {
@@ -1485,6 +1505,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
+  AdminReconciliationRoute: AdminReconciliationRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
