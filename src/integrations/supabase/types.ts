@@ -2131,6 +2131,73 @@ export type Database = {
           read_ct: number
         }[]
       }
+      recon_orphan_entitlements: {
+        Args: never
+        Returns: {
+          application_key: string
+          entitlement_id: string
+          granted_at: string
+          source_ref: string
+          tier: string
+          user_id: string
+        }[]
+      }
+      recon_orphan_subscriptions: {
+        Args: never
+        Returns: {
+          app: string
+          current_period_end: string
+          status: string
+          subscription_id: string
+          tier: string
+          user_id: string
+        }[]
+      }
+      recon_stale_reservations: {
+        Args: never
+        Returns: {
+          age_seconds: number
+          amount: number
+          app: string
+          expires_at: string
+          reason: string
+          reservation_id: string
+          user_id: string
+        }[]
+      }
+      recon_summary: {
+        Args: never
+        Returns: {
+          orphan_entitlements_count: number
+          orphan_subscriptions_count: number
+          stale_reservations_count: number
+          unposted_itns_count: number
+          wallet_drift_count: number
+        }[]
+      }
+      recon_unposted_itns: {
+        Args: never
+        Returns: {
+          amount_cents: number
+          itn_id: string
+          payment_status: string
+          pf_payment_id: string
+          received_at: string
+          sku: string
+          user_id: string
+        }[]
+      }
+      recon_wallet_drift: {
+        Args: never
+        Returns: {
+          app: string
+          drift: number
+          ledger_balance: number
+          recorded_balance: number
+          user_id: string
+          wallet_id: string
+        }[]
+      }
       release_reservation: {
         Args: { _reason?: string; _reservation_id: string }
         Returns: {
