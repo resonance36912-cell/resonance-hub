@@ -14,8 +14,8 @@ export type LegacySubRow = {
   user_id: string;
   app: string;
   tier: string;
-  sku: string | null;
   status: string;
+  reason: string;
   current_period_end: string | null;
 };
 
@@ -28,46 +28,47 @@ export type LegacyItnRow = {
   user_id: string | null;
 };
 
-async function requireAdmin(context: { supabase: ReturnType<typeof Object>; userId: string }) {
-  const { data: isAdmin } = await (context.supabase as any).rpc("has_role", {
+async function requireAdmin(context: { supabase: any; userId: string }) {
+  const { data: isAdmin } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
     _role: "admin",
   });
   if (!isAdmin) throw new Error("Forbidden");
 }
 
-async function knownSkus(): Promise<Set<string>> {
+async function knownProductKeys(): Promise<Set<string>> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin.from("products").select("sku");
+  const { data, error } = await supabaseAdmin.from("products").select("product_key");
   if (error) throw new Error(error.message);
-  return new Set((data ?? []).map((r) => r.sku as string));
+  return new Set((data ?? []).map((r) => r.product_key as string));
 }
 
 export const listLegacySubscriptions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<LegacySubRow[]> => {
     await requireAdmin(context as any);
-    const skus = await knownSkus();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Active / past_due / pending subs with no product_id mapping — these
+    // were written by legacy spoke checkout paths and predate Stage 3.
     const { data, error } = await supabaseAdmin
       .from("subscriptions")
-      .select("id, user_id, app, tier, sku, status, current_period_end")
-      .in("status", ["active", "trialing", "past_due"])
+      .select("id, user_id, app, tier, status, product_id, current_period_end")
+      .in("status", ["active", "past_due", "pending"])
+      .is("product_id", null)
       .order("current_period_end", { ascending: true, nullsFirst: true })
       .limit(500);
     if (error) throw new Error(error.message);
-    return (data ?? [])
-      .filter((r: any) => !r.sku || !skus.has(r.sku))
-      .map((r: any) => ({
-        subscription_id: r.id,
-        user_id: r.user_id,
-        app: r.app,
-        tier: r.tier,
-        sku: r.sku,
-        status: r.status,
-        current_period_end: r.current_period_end,
-      }));
+    return (data ?? []).map((r) => ({
+      subscription_id: r.id,
+      user_id: r.user_id,
+      app: r.app as string,
+      tier: r.tier as string,
+      status: r.status as string,
+      reason: "no product_id (pre-Stage 3)",
+      current_period_end: r.current_period_end,
+    }));
   });
+
 
 export const listLegacyItns = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
