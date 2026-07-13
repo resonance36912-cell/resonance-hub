@@ -10,6 +10,11 @@ import {
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
 import { retryPayfastLaunch } from "@/lib/checkout.functions";
+import {
+  cancelSubscriptionAtPeriodEnd,
+  reactivateSubscription,
+} from "@/lib/subscriptions.functions";
+import { useQueryClient } from "@tanstack/react-query";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 import { ROUTES } from "@/lib/routes";
