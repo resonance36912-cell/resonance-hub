@@ -71,7 +71,6 @@ function unwrap<T>(res: { data: T | null; error: { message: string } | null }): 
 export const getReconSummary = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ReconSummary> => {
-    // @ts-expect-error — recon_* RPCs land in generated types after next codegen
     const res = await context.supabase.rpc("recon_summary");
     const rows = unwrap(res as { data: ReconSummary[] | null; error: { message: string } | null });
     return (
@@ -88,7 +87,6 @@ export const getReconSummary = createServerFn({ method: "GET" })
 export const listWalletDrift = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<WalletDriftRow[]> => {
-    // @ts-expect-error — see getReconSummary
     const res = await context.supabase.rpc("recon_wallet_drift");
     return unwrap(res as { data: WalletDriftRow[] | null; error: { message: string } | null });
   });
@@ -96,7 +94,6 @@ export const listWalletDrift = createServerFn({ method: "GET" })
 export const listOrphanEntitlements = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<OrphanEntitlementRow[]> => {
-    // @ts-expect-error — see getReconSummary
     const res = await context.supabase.rpc("recon_orphan_entitlements");
     return unwrap(res as { data: OrphanEntitlementRow[] | null; error: { message: string } | null });
   });
@@ -104,7 +101,6 @@ export const listOrphanEntitlements = createServerFn({ method: "GET" })
 export const listOrphanSubscriptions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<OrphanSubscriptionRow[]> => {
-    // @ts-expect-error — see getReconSummary
     const res = await context.supabase.rpc("recon_orphan_subscriptions");
     return unwrap(res as { data: OrphanSubscriptionRow[] | null; error: { message: string } | null });
   });
@@ -112,7 +108,6 @@ export const listOrphanSubscriptions = createServerFn({ method: "GET" })
 export const listStaleReservations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<StaleReservationRow[]> => {
-    // @ts-expect-error — see getReconSummary
     const res = await context.supabase.rpc("recon_stale_reservations");
     return unwrap(res as { data: StaleReservationRow[] | null; error: { message: string } | null });
   });
@@ -120,7 +115,6 @@ export const listStaleReservations = createServerFn({ method: "GET" })
 export const listUnpostedItns = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<UnpostedItnRow[]> => {
-    // @ts-expect-error — see getReconSummary
     const res = await context.supabase.rpc("recon_unposted_itns");
     return unwrap(res as { data: UnpostedItnRow[] | null; error: { message: string } | null });
   });
