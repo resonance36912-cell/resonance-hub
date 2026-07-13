@@ -1,12 +1,11 @@
 /**
  * Ensures every `ROUTES` constant and `LINKS` preset in `src/lib/routes.ts`
- * corresponds byte-for-byte to a real navigation path registered in
+ * corresponds byte-for-byte to a real `to` navigation path registered in
  * `src/routeTree.gen.ts`.
  *
- * This closes the gap between the compile-time `RoutePath` union (which
- * accepts multiple aliases like "/admin" AND "/admin/") and the actual
- * `fullPath` values the router matches. A stale ROUTES entry — the
- * "/admin/" regression — would fail here immediately.
+ * This closes the gap between route `fullPath` values like "/admin/" and
+ * canonical navigation `to` values like "/admin". A stale ROUTES entry —
+ * the "/admin/" regression — fails here immediately.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,35 +14,34 @@ import { LINKS, ROUTES } from "../../src/lib/routes";
 
 const ROUTE_TREE = join(process.cwd(), "src/routeTree.gen.ts");
 
-function loadRegistry(): { fullPaths: Set<string>; canonical: Set<string> } {
+function loadRegistry(): { fullPaths: Set<string>; toPaths: Set<string> } {
   const src = readFileSync(ROUTE_TREE, "utf8");
   const fullPaths = new Set<string>();
   for (const m of src.matchAll(/fullPath:\s*'(\/[^']*)'/g)) fullPaths.add(m[1]);
-  // Canonical URL == fullPath without a trailing slash (except root).
-  const canonical = new Set<string>();
-  for (const p of fullPaths) {
-    canonical.add(p === "/" ? p : p.replace(/\/$/, ""));
+  const toPaths = new Set<string>();
+  const byToBlock = src.match(/export interface FileRoutesByTo \{([\s\S]*?)\n\}/)?.[1] ?? "";
+  for (const m of byToBlock.matchAll(/^\s*'(\/[^']*)':\s*typeof\s+\w+/gm)) {
+    toPaths.add(m[1]);
   }
-  return { fullPaths, canonical };
+  return { fullPaths, toPaths };
 }
 
-const { fullPaths, canonical } = loadRegistry();
+const { fullPaths, toPaths } = loadRegistry();
 
 describe("ROUTES ↔ router registry parity", () => {
   it("registry loaded at least one path", () => {
     expect(fullPaths.size).toBeGreaterThan(0);
+    expect(toPaths.size).toBeGreaterThan(0);
   });
 
-  it("every ROUTES value matches a registered navigation path exactly", () => {
+  it("every ROUTES value matches a registered `to` path exactly", () => {
     const mismatches: Array<{ name: string; value: string; hint: string }> = [];
     for (const [name, value] of Object.entries(ROUTES)) {
-      // A ROUTES entry is valid iff it equals a `fullPath` from the router,
-      // OR is the canonical (no-trailing-slash) form of one.
-      if (fullPaths.has(value) || canonical.has(value)) continue;
+      if (toPaths.has(value)) continue;
       // Suggest the closest known form to make failures actionable.
       const suggestion =
-        [...fullPaths].find((p) => p.replace(/\/$/, "") === value) ??
-        [...canonical].find((p) => p === value.replace(/\/$/, "")) ??
+        [...toPaths].find((p) => p.replace(/\/$/, "") === value.replace(/\/$/, "")) ??
+        [...fullPaths].find((p) => p.replace(/\/$/, "") === value.replace(/\/$/, "")) ??
         "(no close match)";
       mismatches.push({ name, value, hint: suggestion });
     }
@@ -52,7 +50,7 @@ describe("ROUTES ↔ router registry parity", () => {
         .map((m) => `  ROUTES.${m.name} = "${m.value}"  →  did you mean "${m.hint}"?`)
         .join("\n");
       throw new Error(
-        `ROUTES entries not registered in src/routeTree.gen.ts:\n${detail}`,
+        `ROUTES entries not registered in FileRoutesByTo:\n${detail}`,
       );
     }
   });
@@ -77,7 +75,7 @@ describe("ROUTES ↔ router registry parity", () => {
 });
 
 describe("LINKS ↔ router registry parity", () => {
-  it("every LINKS preset targets a registered navigation path", () => {
+  it("every LINKS preset targets a registered `to` path", () => {
     const mismatches: Array<{ name: string; to: unknown }> = [];
     for (const [name, preset] of Object.entries(LINKS)) {
       const to = (preset as { to?: unknown }).to;
@@ -85,7 +83,7 @@ describe("LINKS ↔ router registry parity", () => {
         mismatches.push({ name, to });
         continue;
       }
-      if (!fullPaths.has(to) && !canonical.has(to)) {
+      if (!toPaths.has(to)) {
         mismatches.push({ name, to });
       }
     }
@@ -94,7 +92,7 @@ describe("LINKS ↔ router registry parity", () => {
         .map((m) => `  LINKS.${m.name}.to = ${JSON.stringify(m.to)}`)
         .join("\n");
       throw new Error(
-        `LINKS presets not registered in src/routeTree.gen.ts:\n${detail}`,
+        `LINKS presets not registered in FileRoutesByTo:\n${detail}`,
       );
     }
   });

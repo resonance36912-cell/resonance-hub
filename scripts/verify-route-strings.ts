@@ -11,8 +11,8 @@
  * before hitting the router bypass that check.
  *
  * This script:
- *   1. Parses `src/routeTree.gen.ts` for the full set of registered route
- *      paths (including `$param` and `$` splat segments).
+ *   1. Parses `src/routeTree.gen.ts` for the full set of registered `to`
+ *      navigation paths (including `$param` and `$` splat segments).
  *   2. Scans `src/` for internal-looking absolute paths in JSX `href=`,
  *      `to=`, `navigate("/...")`, `redirect({ to: "/..." })`, and
  *      `window.location.*` assignments.
@@ -48,11 +48,12 @@ const ALLOWLIST_EXACT = new Set<string>(["/", "//"]);
 function loadRoutePatterns(): string[] {
   const src = readFileSync(ROUTE_TREE, "utf8");
   const patterns = new Set<string>();
-  // `fullPath: '/...'` — canonical URL for each route.
-  for (const m of src.matchAll(/fullPath:\s*'(\/[^']*)'/g)) patterns.add(m[1]);
-  // `'/...': typeof ...Route` — keys in the FileRoutesByFullPath map.
-  for (const m of src.matchAll(/^\s*'(\/[^']*)':\s*typeof\s+\w+Route/gm))
+  // `FileRoutesByTo` is the router's canonical navigation registry. It uses
+  // "/admin" for the index route where `fullPath` is "/admin/".
+  const byToBlock = src.match(/export interface FileRoutesByTo \{([\s\S]*?)\n\}/)?.[1] ?? "";
+  for (const m of byToBlock.matchAll(/^\s*'(\/[^']*)':\s*typeof\s+\w+Route/gm)) {
     patterns.add(m[1]);
+  }
   patterns.add("/");
   return [...patterns];
 }
