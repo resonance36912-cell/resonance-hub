@@ -1,0 +1,116 @@
+name: Resonance App (new / change / removal)
+description: Submit or modify a spoke app in the Resonance catalog (`/apps`, `SKU_CATALOG`, `PACK_CATALOG`, app registry).
+title: "[App] <app name>: <short summary>"
+labels: ["resonance-app", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for anything that touches the app catalog, an ecosystem pass, a pack, or a spoke's
+        tier gates. For a brand-new app submission you can also use the public form at `/apps/submit` — this
+        issue is for maintainer-tracked catalog work.
+
+  - type: dropdown
+    id: change_type
+    attributes:
+      label: Change type
+      options:
+        - New app (add to catalog)
+        - Update existing app (metadata, pricing, tier)
+        - Remove / sunset app
+        - Ecosystem pass change (Creator / Studio / Business)
+        - Pack change (`PACK_CATALOG`)
+    validations:
+      required: true
+
+  - type: input
+    id: app_slug
+    attributes:
+      label: App slug
+      description: Kebab-case, matches `SKU_CATALOG` / app registry (e.g. `creative-studio`, `epublisher`).
+      placeholder: creative-studio
+    validations:
+      required: true
+
+  - type: input
+    id: app_name
+    attributes:
+      label: App display name
+      placeholder: Creative Studio
+    validations:
+      required: true
+
+  - type: input
+    id: app_domain
+    attributes:
+      label: Live domain / URL
+      placeholder: https://creative-studio.reson8.life
+    validations:
+      required: true
+
+  - type: input
+    id: repo_slug
+    attributes:
+      label: Source repository (`owner/repo`)
+      placeholder: resonance36912-cell/creative-studio
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Required tier / access
+      options:
+        - Free
+        - Creator pass
+        - Studio pass
+        - Business pass
+        - Per-app subscription only
+        - Pack (once-off)
+    validations:
+      required: true
+
+  - type: textarea
+    id: sku_changes
+    attributes:
+      label: SKU / pricing changes
+      description: List every SKU touched (per-app subs, pack SKUs, pass SKUs) with current → new price in ZAR. Leave blank if not a pricing change.
+      placeholder: |
+        - creative-studio.pro.monthly: R99 → R119
+        - pack.creative-studio.credits-500: new @ R149
+    validations:
+      required: false
+
+  - type: textarea
+    id: tier_gates
+    attributes:
+      label: Server-side tier gates
+      description: Confirm every generator endpoint uses `requireTier` (or the hub proxy). List endpoints touched.
+      placeholder: |
+        - POST /api/generate/poster — requireTier("creator")
+        - POST /api/generate/video  — requireTier("studio")
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-merge checklist
+      options:
+        - label: Slug is unique across `SKU_CATALOG` and app registry
+          required: true
+        - label: Domain resolves and has a working `Back to Hub` header
+          required: true
+        - label: `ALL_ACCESS_GRANTS` display logic reviewed (not used for gating)
+          required: true
+        - label: Checkout links are relative `/checkout?app=<slug>&plan=<sku>` (covered by `verify:checkout-links`)
+          required: true
+        - label: If pack: `PACK_CATALOG` entry added, credit wallet grants configured
+          required: false
+        - label: If pass change: supersession rules in `plan_changes` reviewed
+          required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
