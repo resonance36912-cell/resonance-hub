@@ -65,6 +65,14 @@ async function fileToBase64(file: File): Promise<string> {
 function SubmitAppPage() {
   const submitFn = useServerFn(submitAppSubmission);
   const checkFn = useServerFn(checkSubmissionAvailability);
+  const uploadFn = useServerFn(uploadSubmissionAsset);
+  const uploadImage = async (file: File, kind: "logo" | "screenshot") => {
+    const dataBase64 = await fileToBase64(file);
+    const { path } = await uploadFn({
+      data: { kind, contentType: file.type, dataBase64 },
+    });
+    return path;
+  };
   const [form, setForm] = useState({
     name: "",
     url: "",
