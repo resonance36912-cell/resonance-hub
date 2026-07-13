@@ -221,6 +221,45 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_records: {
+        Row: {
+          created_at: string
+          decision: Database["public"]["Enums"]["consent_decision"]
+          id: string
+          ip_address: unknown
+          metadata: Json
+          policy_version: string | null
+          purpose: Database["public"]["Enums"]["consent_purpose"]
+          source: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          decision: Database["public"]["Enums"]["consent_decision"]
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          policy_version?: string | null
+          purpose: Database["public"]["Enums"]["consent_purpose"]
+          source?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          decision?: Database["public"]["Enums"]["consent_decision"]
+          id?: string
+          ip_address?: unknown
+          metadata?: Json
+          policy_version?: string | null
+          purpose?: Database["public"]["Enums"]["consent_purpose"]
+          source?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       credit_ledger: {
         Row: {
           app: string
@@ -371,6 +410,54 @@ export type Database = {
           created_at?: string
           currency?: string
           id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      data_subject_requests: {
+        Row: {
+          admin_note: string | null
+          artifact_expires_at: string | null
+          artifact_url: string | null
+          completed_at: string | null
+          handled_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["dsr_kind"]
+          metadata: Json
+          reason: string | null
+          requested_at: string
+          status: Database["public"]["Enums"]["dsr_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          artifact_expires_at?: string | null
+          artifact_url?: string | null
+          completed_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["dsr_kind"]
+          metadata?: Json
+          reason?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["dsr_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          artifact_expires_at?: string | null
+          artifact_url?: string | null
+          completed_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["dsr_kind"]
+          metadata?: Json
+          reason?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["dsr_status"]
           updated_at?: string
           user_id?: string
         }
@@ -1336,6 +1423,30 @@ export type Database = {
           },
         ]
       }
+      privacy_policy_versions: {
+        Row: {
+          created_at: string
+          effective_at: string
+          summary: string
+          url: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          effective_at?: string
+          summary: string
+          url: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          effective_at?: string
+          summary?: string
+          url?: string
+          version?: string
+        }
+        Relationships: []
+      }
       product_application_rules: {
         Row: {
           access_level: string
@@ -1817,7 +1928,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      consent_current: {
+        Row: {
+          created_at: string | null
+          decision: Database["public"]["Enums"]["consent_decision"] | null
+          policy_version: string | null
+          purpose: Database["public"]["Enums"]["consent_purpose"] | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       complete_reservation: {
@@ -1979,6 +2099,10 @@ export type Database = {
         | "institutional_manager"
         | "viewer"
       application_status: "active" | "beta" | "hidden" | "retired"
+      consent_decision: "granted" | "withdrawn"
+      consent_purpose: "essential" | "analytics" | "marketing" | "ai_training"
+      dsr_kind: "export" | "erasure" | "rectification"
+      dsr_status: "pending" | "in_progress" | "completed" | "rejected"
       hub_app_role: "hub_admin" | "app_owner"
       hub_outcome_verdict: "improved" | "neutral" | "regressed" | "inconclusive"
       hub_suggestion_source: "rule" | "ai" | "cross_app" | "manual"
@@ -2157,6 +2281,10 @@ export const Constants = {
         "viewer",
       ],
       application_status: ["active", "beta", "hidden", "retired"],
+      consent_decision: ["granted", "withdrawn"],
+      consent_purpose: ["essential", "analytics", "marketing", "ai_training"],
+      dsr_kind: ["export", "erasure", "rectification"],
+      dsr_status: ["pending", "in_progress", "completed", "rejected"],
       hub_app_role: ["hub_admin", "app_owner"],
       hub_outcome_verdict: ["improved", "neutral", "regressed", "inconclusive"],
       hub_suggestion_source: ["rule", "ai", "cross_app", "manual"],
