@@ -97,6 +97,7 @@ function AdminHome() {
     { to: ROUTES.adminPayfastAudit, label: "PayFast Audit", desc: "Launch ↔ ITN trace and amount reconciliation." },
     { to: ROUTES.adminWebhooks, label: "Raw ITN Log", desc: "Every ITN webhook received from PayFast." },
     { to: ROUTES.adminEntitlementDiagnostics, label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
+    { to: ROUTES.adminReconciliation, label: "Reconciliation", desc: "Wallet drift, orphan entitlements/subs, stale reservations, unposted ITNs." },
     { to: ROUTES.adminRop, label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
     { to: ROUTES.adminEmails, label: "Email Queue", desc: "Transactional sends and delivery status." },
     { to: ROUTES.adminEmailDomain, label: "Email Domain", desc: "Sending domain configuration and DNS." },
