@@ -55,6 +55,7 @@ export const ROUTES = {
   appsSubmit: routePath("/apps/submit"),
   changelog: routePath("/changelog"),
   governance: routePath("/governance"),
+  governanceLog: routePath("/governance/log"),
   legalGovernance: routePath("/legal/governance"),
   login: routePath("/login"),
   mcp: routePath("/mcp"),
