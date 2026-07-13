@@ -43,6 +43,7 @@ import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
+import { Route as AccountPrivacyRouteImport } from './routes/account.privacy'
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
@@ -246,6 +247,11 @@ const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   path: '/account/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountPrivacyRoute = AccountPrivacyRouteImport.update({
+  id: '/account/privacy',
+  path: '/account/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountInvoicesRoute = AccountInvoicesRouteImport.update({
   id: '/account/invoices',
   path: '/account/invoices',
@@ -433,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
+  '/account/privacy': typeof AccountPrivacyRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -500,6 +507,7 @@ export interface FileRoutesByTo {
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
+  '/account/privacy': typeof AccountPrivacyRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -568,6 +576,7 @@ export interface FileRoutesById {
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
+  '/account/privacy': typeof AccountPrivacyRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
@@ -637,6 +646,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
+    | '/account/privacy'
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
@@ -704,6 +714,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
+    | '/account/privacy'
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
@@ -771,6 +782,7 @@ export interface FileRouteTypes {
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
+    | '/account/privacy'
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
@@ -839,6 +851,7 @@ export interface RootRouteChildren {
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
+  AccountPrivacyRoute: typeof AccountPrivacyRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
@@ -1125,6 +1138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account/privacy': {
+      id: '/account/privacy'
+      path: '/account/privacy'
+      fullPath: '/account/privacy'
+      preLoaderRoute: typeof AccountPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/invoices': {
       id: '/account/invoices'
       path: '/account/invoices'
@@ -1402,6 +1422,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
+  AccountPrivacyRoute: AccountPrivacyRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
