@@ -282,7 +282,7 @@ function PrivacyPage() {
         <ConsentHistory rows={historyQ.data ?? []} />
 
         <div className="mt-8 text-xs text-muted-foreground">
-          Full details: <AppLink to={ROUTES.legalGovernance ?? "/legal/governance"} className="underline hover:text-foreground">privacy &amp; governance policy</AppLink>.
+          Full details: <AppLink to={ROUTES.legalGovernance} className="underline hover:text-foreground">privacy &amp; governance policy</AppLink>.
         </div>
       </div>
     </div>
