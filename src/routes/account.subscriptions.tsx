@@ -401,6 +401,52 @@ function RetryPaymentButton({ subscriptionId }: { subscriptionId: string }) {
   );
 }
 
+function CancelReactivateButton({ sub }: { sub: SubscriptionRow }) {
+  const cancel = useServerFn(cancelSubscriptionAtPeriodEnd);
+  const reactivate = useServerFn(reactivateSubscription);
+  const qc = useQueryClient();
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const pendingCancel = sub.cancel_at_period_end && sub.status !== "cancelled";
+  const label = loading
+    ? "Working…"
+    : pendingCancel
+    ? "Keep subscription"
+    : "Cancel at period end";
+
+  async function onClick() {
+    if (!confirm(pendingCancel
+      ? "Resume automatic renewal for this subscription?"
+      : "Cancel at end of paid period? You keep access until then."
+    )) return;
+    setLoading(true);
+    setErr(null);
+    try {
+      const fn = pendingCancel ? reactivate : cancel;
+      await fn({ data: { subscriptionId: sub.id } });
+      await qc.invalidateQueries({ queryKey: ["my-subscriptions"] });
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={onClick}
+        disabled={loading}
+        className="rounded border border-border bg-transparent px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60"
+      >
+        {label}
+      </button>
+      {err && <span className="text-[10px] text-red-400 max-w-[160px] text-right">{err}</span>}
+    </div>
+  );
+}
+
 function SubscriptionsPage() {
   const fetchSubs = useServerFn(getMySubscriptions);
   const { data, isLoading, error } = useQuery({
