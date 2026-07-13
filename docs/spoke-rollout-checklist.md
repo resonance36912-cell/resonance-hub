@@ -70,9 +70,14 @@ write across projects. Update the status table at the bottom on every PR.
   credits, model failure → release, network failure → release.
 
 ### 8. Decommission
-- Drop legacy spoke-local billing tables in a final migration.
-- Delete any obsolete env vars from the spoke's secret store.
-- Update the status table below.
+Follow [`spoke-decommission-playbook.md`](./spoke-decommission-playbook.md)
+end-to-end. Summary:
+- Delete spoke billing routes / libs / types.
+- Drop spoke-local billing tables in a final migration.
+- Remove PayFast + service-role secrets from the spoke.
+- Vendor [`snippets/verify-no-legacy-billing.ts`](./snippets/verify-no-legacy-billing.ts) into the spoke's `prebuild`.
+- Flip the **Legacy dropped** column below to ✅ in the same PR.
+- Hub `/admin/reconciliation` → **Legacy SKUs** panel must stay at zero for the spoke's `app`.
 
 ---
 
