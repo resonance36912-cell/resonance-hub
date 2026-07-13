@@ -82,6 +82,7 @@ export const ROUTES = {
   accountDebug: routePath("/account/debug"),
   accountInvoices: routePath("/account/invoices"),
   accountSubscriptions: routePath("/account/subscriptions"),
+  accountPrivacy: routePath("/account/privacy"),
 
   admin: routePath("/admin"),
 
