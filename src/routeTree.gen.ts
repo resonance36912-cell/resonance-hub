@@ -57,6 +57,10 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicUsageWalletRouteImport } from './routes/api/public/usage/wallet'
+import { Route as ApiPublicUsageReserveRouteImport } from './routes/api/public/usage/reserve'
+import { Route as ApiPublicUsageReleaseRouteImport } from './routes/api/public/usage/release'
+import { Route as ApiPublicUsageCompleteRouteImport } from './routes/api/public/usage/complete'
 import { Route as ApiPublicUpdatesRssRouteImport } from './routes/api/public/updates/rss'
 import { Route as ApiPublicUpdatesAtomRouteImport } from './routes/api/public/updates/atom'
 import { Route as ApiPublicRopPullBroadcastsRouteImport } from './routes/api/public/rop/pull-broadcasts'
@@ -318,6 +322,26 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicUsageWalletRoute = ApiPublicUsageWalletRouteImport.update({
+  id: '/api/public/usage/wallet',
+  path: '/api/public/usage/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicUsageReserveRoute = ApiPublicUsageReserveRouteImport.update({
+  id: '/api/public/usage/reserve',
+  path: '/api/public/usage/reserve',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicUsageReleaseRoute = ApiPublicUsageReleaseRouteImport.update({
+  id: '/api/public/usage/release',
+  path: '/api/public/usage/release',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicUsageCompleteRoute = ApiPublicUsageCompleteRouteImport.update({
+  id: '/api/public/usage/complete',
+  path: '/api/public/usage/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicUpdatesRssRoute = ApiPublicUpdatesRssRouteImport.update({
   id: '/api/public/updates/rss',
   path: '/api/public/updates/rss',
@@ -449,6 +473,10 @@ export interface FileRoutesByFullPath {
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/public/usage/complete': typeof ApiPublicUsageCompleteRoute
+  '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
+  '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
+  '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -512,6 +540,10 @@ export interface FileRoutesByTo {
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/public/usage/complete': typeof ApiPublicUsageCompleteRoute
+  '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
+  '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
+  '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -576,6 +608,10 @@ export interface FileRoutesById {
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/public/usage/complete': typeof ApiPublicUsageCompleteRoute
+  '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
+  '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
+  '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -641,6 +677,10 @@ export interface FileRouteTypes {
     | '/api/public/rop/pull-broadcasts'
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
+    | '/api/public/usage/complete'
+    | '/api/public/usage/release'
+    | '/api/public/usage/reserve'
+    | '/api/public/usage/wallet'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -704,6 +744,10 @@ export interface FileRouteTypes {
     | '/api/public/rop/pull-broadcasts'
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
+    | '/api/public/usage/complete'
+    | '/api/public/usage/release'
+    | '/api/public/usage/reserve'
+    | '/api/public/usage/wallet'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -767,6 +811,10 @@ export interface FileRouteTypes {
     | '/api/public/rop/pull-broadcasts'
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
+    | '/api/public/usage/complete'
+    | '/api/public/usage/release'
+    | '/api/public/usage/reserve'
+    | '/api/public/usage/wallet'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -825,6 +873,10 @@ export interface RootRouteChildren {
   ApiPublicRopPullBroadcastsRoute: typeof ApiPublicRopPullBroadcastsRoute
   ApiPublicUpdatesAtomRoute: typeof ApiPublicUpdatesAtomRoute
   ApiPublicUpdatesRssRoute: typeof ApiPublicUpdatesRssRoute
+  ApiPublicUsageCompleteRoute: typeof ApiPublicUsageCompleteRoute
+  ApiPublicUsageReleaseRoute: typeof ApiPublicUsageReleaseRoute
+  ApiPublicUsageReserveRoute: typeof ApiPublicUsageReserveRoute
+  ApiPublicUsageWalletRoute: typeof ApiPublicUsageWalletRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1171,6 +1223,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/usage/wallet': {
+      id: '/api/public/usage/wallet'
+      path: '/api/public/usage/wallet'
+      fullPath: '/api/public/usage/wallet'
+      preLoaderRoute: typeof ApiPublicUsageWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/reserve': {
+      id: '/api/public/usage/reserve'
+      path: '/api/public/usage/reserve'
+      fullPath: '/api/public/usage/reserve'
+      preLoaderRoute: typeof ApiPublicUsageReserveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/release': {
+      id: '/api/public/usage/release'
+      path: '/api/public/usage/release'
+      fullPath: '/api/public/usage/release'
+      preLoaderRoute: typeof ApiPublicUsageReleaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/complete': {
+      id: '/api/public/usage/complete'
+      path: '/api/public/usage/complete'
+      fullPath: '/api/public/usage/complete'
+      preLoaderRoute: typeof ApiPublicUsageCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/updates/rss': {
       id: '/api/public/updates/rss'
       path: '/api/public/updates/rss'
@@ -1357,6 +1437,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
   ApiPublicUpdatesAtomRoute: ApiPublicUpdatesAtomRoute,
   ApiPublicUpdatesRssRoute: ApiPublicUpdatesRssRoute,
+  ApiPublicUsageCompleteRoute: ApiPublicUsageCompleteRoute,
+  ApiPublicUsageReleaseRoute: ApiPublicUsageReleaseRoute,
+  ApiPublicUsageReserveRoute: ApiPublicUsageReserveRoute,
+  ApiPublicUsageWalletRoute: ApiPublicUsageWalletRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
