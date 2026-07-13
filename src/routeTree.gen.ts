@@ -24,6 +24,7 @@ import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-op
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
 import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
+import { Route as GovernanceLogRouteImport } from './routes/governance.log'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
@@ -36,6 +37,7 @@ import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
+import { Route as AdminGovernanceRouteImport } from './routes/admin.governance'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
@@ -151,6 +153,11 @@ const LegalGovernanceRoute = LegalGovernanceRouteImport.update({
   path: '/legal/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GovernanceLogRoute = GovernanceLogRouteImport.update({
+  id: '/log',
+  path: '/log',
+  getParentRoute: () => GovernanceRoute,
+} as any)
 const EpublisherPricingRoute = EpublisherPricingRouteImport.update({
   id: '/epublisher/pricing',
   path: '/epublisher/pricing',
@@ -209,6 +216,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminInvoicesRoute = AdminInvoicesRouteImport.update({
   id: '/admin/invoices',
   path: '/admin/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGovernanceRoute = AdminGovernanceRouteImport.update({
+  id: '/admin/governance',
+  path: '/admin/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEntitlementDiagnosticsRoute =
@@ -428,7 +440,7 @@ export interface FileRoutesByFullPath {
   '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
-  '/governance': typeof GovernanceRoute
+  '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
@@ -447,6 +459,7 @@ export interface FileRoutesByFullPath {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/governance': typeof AdminGovernanceRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
@@ -459,6 +472,7 @@ export interface FileRoutesByFullPath {
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -496,7 +510,7 @@ export interface FileRoutesByTo {
   '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
-  '/governance': typeof GovernanceRoute
+  '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
@@ -515,6 +529,7 @@ export interface FileRoutesByTo {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/governance': typeof AdminGovernanceRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
@@ -527,6 +542,7 @@ export interface FileRoutesByTo {
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -565,7 +581,7 @@ export interface FileRoutesById {
   '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
-  '/governance': typeof GovernanceRoute
+  '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
@@ -584,6 +600,7 @@ export interface FileRoutesById {
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/governance': typeof AdminGovernanceRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
@@ -596,6 +613,7 @@ export interface FileRoutesById {
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -654,6 +672,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/governance'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
@@ -666,6 +685,7 @@ export interface FileRouteTypes {
     | '/creative-studio/pricing'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
+    | '/governance/log'
     | '/legal/governance'
     | '/sync-vision/pricing'
     | '/updates/preview'
@@ -722,6 +742,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/governance'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
@@ -734,6 +755,7 @@ export interface FileRouteTypes {
     | '/creative-studio/pricing'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
+    | '/governance/log'
     | '/legal/governance'
     | '/sync-vision/pricing'
     | '/updates/preview'
@@ -790,6 +812,7 @@ export interface FileRouteTypes {
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
+    | '/admin/governance'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
@@ -802,6 +825,7 @@ export interface FileRouteTypes {
     | '/creative-studio/pricing'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
+    | '/governance/log'
     | '/legal/governance'
     | '/sync-vision/pricing'
     | '/updates/preview'
@@ -840,7 +864,7 @@ export interface RootRouteChildren {
   AppsRoute: typeof AppsRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
-  GovernanceRoute: typeof GovernanceRoute
+  GovernanceRoute: typeof GovernanceRouteWithChildren
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
@@ -859,6 +883,7 @@ export interface RootRouteChildren {
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
+  AdminGovernanceRoute: typeof AdminGovernanceRoute
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
@@ -1005,6 +1030,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalGovernanceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/governance/log': {
+      id: '/governance/log'
+      path: '/log'
+      fullPath: '/governance/log'
+      preLoaderRoute: typeof GovernanceLogRouteImport
+      parentRoute: typeof GovernanceRoute
+    }
     '/epublisher/pricing': {
       id: '/epublisher/pricing'
       path: '/epublisher/pricing'
@@ -1087,6 +1119,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/invoices'
       fullPath: '/admin/invoices'
       preLoaderRoute: typeof AdminInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/governance': {
+      id: '/admin/governance'
+      path: '/admin/governance'
+      fullPath: '/admin/governance'
+      preLoaderRoute: typeof AdminGovernanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/entitlement-diagnostics': {
@@ -1391,6 +1430,18 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
   CheckoutRouteChildren,
 )
 
+interface GovernanceRouteChildren {
+  GovernanceLogRoute: typeof GovernanceLogRoute
+}
+
+const GovernanceRouteChildren: GovernanceRouteChildren = {
+  GovernanceLogRoute: GovernanceLogRoute,
+}
+
+const GovernanceRouteWithChildren = GovernanceRoute._addFileChildren(
+  GovernanceRouteChildren,
+)
+
 interface AccountInvoicesRouteChildren {
   AccountInvoicesIdRoute: typeof AccountInvoicesIdRoute
   AccountInvoicesByPaymentPfRoute: typeof AccountInvoicesByPaymentPfRoute
@@ -1410,7 +1461,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppsRoute: AppsRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
-  GovernanceRoute: GovernanceRoute,
+  GovernanceRoute: GovernanceRouteWithChildren,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
@@ -1430,6 +1481,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
+  AdminGovernanceRoute: AdminGovernanceRoute,
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
