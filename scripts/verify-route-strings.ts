@@ -120,10 +120,21 @@ function scanFile(file: string, matchers: RegExp[]): Hit[] {
       const path = normalizePath(m[1]);
       if (ALLOWLIST_EXACT.has(path)) continue;
       if (ALLOWLIST_PREFIXES.some((p) => path.startsWith(p))) continue;
-      if (matchers.some((r) => r.test(path))) continue;
-      // Compute line number.
       const upto = src.slice(0, m.index).split("\n");
       const line = upto.length;
+      // Normalization rule: internal route strings must NOT end with "/"
+      // (except the root). A trailing slash here — e.g. "/admin/" — is what
+      // let the "/admin/" literal leak back into the route union previously.
+      if (path !== "/" && path.endsWith("/")) {
+        hits.push({
+          file: relative(REPO_ROOT, file),
+          line,
+          path,
+          context: `[trailing slash] ${(lines[line - 1] ?? "").trim().slice(0, 150)}`,
+        });
+        continue;
+      }
+      if (matchers.some((r) => r.test(path))) continue;
       hits.push({
         file: relative(REPO_ROOT, file),
         line,

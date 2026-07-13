@@ -17,11 +17,25 @@ import type { RouteToPath } from "@tanstack/router-core";
 export type RoutePath = RouteToPath<RegisteredRouter>;
 
 /**
- * Compile-time guard: any string passed here must be a real route path.
- * Use inline when a plain string is required (e.g. building a `redirect`
- * search param or a `Response.redirect(...)` URL).
+ * Reject trailing-slash literals (except the root "/") at the type level so
+ * mistakes like "/admin/" never re-enter the route union. Pairs with the
+ * runtime check in `scripts/verify-route-strings.ts`.
  */
-export const routePath = <T extends RoutePath>(path: T): T => path;
+export type NoTrailingSlash<T> = T extends "/"
+  ? T
+  : T extends `${string}/`
+    ? never
+    : T;
+
+/**
+ * Compile-time guard: any string passed here must be a real route path AND
+ * must not carry a trailing slash (except the root "/"). Use inline when a
+ * plain string is required (e.g. building a `redirect` search param or a
+ * `Response.redirect(...)` URL).
+ */
+export const routePath = <T extends RoutePath>(
+  path: T & NoTrailingSlash<T>,
+): T => path;
 
 /**
  * Named route constants. One entry per static (non-parameterized) route
