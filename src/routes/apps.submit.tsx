@@ -38,19 +38,6 @@ const MAX_SHOT_MB = 5;
 const MAX_SHOTS = 4;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
 
-function extFor(file: File): string {
-  const byName = file.name.split(".").pop()?.toLowerCase();
-  if (byName && /^(png|jpe?g|webp|gif|svg)$/.test(byName)) return byName === "jpeg" ? "jpg" : byName;
-  const map: Record<string, string> = {
-    "image/png": "png",
-    "image/jpeg": "jpg",
-    "image/webp": "webp",
-    "image/gif": "gif",
-    "image/svg+xml": "svg",
-  };
-  return map[file.type] ?? "png";
-}
-
 async function fileToBase64(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
   const bytes = new Uint8Array(buf);
