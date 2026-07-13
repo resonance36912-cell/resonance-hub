@@ -154,8 +154,8 @@ function SubmitAppPage() {
     mutationFn: async () => {
       let logoPath: string | null = null;
       const screenshotPaths: string[] = [];
-      if (logoFile) logoPath = await uploadImage(logoFile);
-      for (const f of shotFiles) screenshotPaths.push(await uploadImage(f));
+      if (logoFile) logoPath = await uploadImage(logoFile, "logo");
+      for (const f of shotFiles) screenshotPaths.push(await uploadImage(f, "screenshot"));
       return submitFn({
         data: {
           name: form.name,
