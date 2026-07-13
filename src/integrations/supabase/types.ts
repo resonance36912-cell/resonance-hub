@@ -433,60 +433,6 @@ export type Database = {
         }
         Relationships: []
       }
-      github_webhook_events: {
-        Row: {
-          action: string | null
-          delivery_id: string
-          dispatch_error: string | null
-          dispatched_workflows: string[]
-          event: string
-          head_sha: string | null
-          http_status: number
-          id: string
-          pr_number: number | null
-          raw_payload: Json
-          received_at: string
-          ref: string | null
-          repo: string | null
-          sender: string | null
-          signature_valid: boolean
-        }
-        Insert: {
-          action?: string | null
-          delivery_id: string
-          dispatch_error?: string | null
-          dispatched_workflows?: string[]
-          event: string
-          head_sha?: string | null
-          http_status: number
-          id?: string
-          pr_number?: number | null
-          raw_payload: Json
-          received_at?: string
-          ref?: string | null
-          repo?: string | null
-          sender?: string | null
-          signature_valid: boolean
-        }
-        Update: {
-          action?: string | null
-          delivery_id?: string
-          dispatch_error?: string | null
-          dispatched_workflows?: string[]
-          event?: string
-          head_sha?: string | null
-          http_status?: number
-          id?: string
-          pr_number?: number | null
-          raw_payload?: Json
-          received_at?: string
-          ref?: string | null
-          repo?: string | null
-          sender?: string | null
-          signature_valid?: boolean
-        }
-        Relationships: []
-      }
       hub_app_access: {
         Row: {
           app_id: string

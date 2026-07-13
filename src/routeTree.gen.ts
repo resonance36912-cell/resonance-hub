@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SecurityRouteImport } from './routes/security'
 import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -23,9 +22,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
-import { Route as ToolsReleasesRouteImport } from './routes/tools.releases'
-import { Route as ToolsPrStatusRouteImport } from './routes/tools.pr-status'
-import { Route as ToolsIssueTriageRouteImport } from './routes/tools.issue-triage'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
 import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
@@ -35,19 +31,15 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
-import { Route as AdminSecurityScanRouteImport } from './routes/admin.security-scan'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
-import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
-import { Route as AdminGmailGithubRouteImport } from './routes/admin.gmail-github'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
-import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
@@ -73,9 +65,6 @@ import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
-import { Route as ApiPublicHooksGithubRouteImport } from './routes/api/public/hooks/github'
-import { Route as ApiPublicHooksCiFailureAlertsRouteImport } from './routes/api/public/hooks/ci-failure-alerts'
-import { Route as ApiPublicFormsCreateIssueRouteImport } from './routes/api/public/forms/create-issue'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
@@ -85,11 +74,6 @@ import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './rou
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SecurityRoute = SecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RcgfRoute = RcgfRouteImport.update({
@@ -152,21 +136,6 @@ const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
   path: '/updates/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ToolsReleasesRoute = ToolsReleasesRouteImport.update({
-  id: '/tools/releases',
-  path: '/tools/releases',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ToolsPrStatusRoute = ToolsPrStatusRouteImport.update({
-  id: '/tools/pr-status',
-  path: '/tools/pr-status',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ToolsIssueTriageRoute = ToolsIssueTriageRouteImport.update({
-  id: '/tools/issue-triage',
-  path: '/tools/issue-triage',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   id: '/sync-vision/pricing',
   path: '/sync-vision/pricing',
@@ -212,11 +181,6 @@ const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   path: '/admin/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSecurityScanRoute = AdminSecurityScanRouteImport.update({
-  id: '/admin/security-scan',
-  path: '/admin/security-scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRopRoute = AdminRopRouteImport.update({
   id: '/admin/rop',
   path: '/admin/rop',
@@ -225,11 +189,6 @@ const AdminRopRoute = AdminRopRouteImport.update({
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRepoHealthRoute = AdminRepoHealthRouteImport.update({
-  id: '/admin/repo-health',
-  path: '/admin/repo-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
@@ -245,11 +204,6 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminInvoicesRoute = AdminInvoicesRouteImport.update({
   id: '/admin/invoices',
   path: '/admin/invoices',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminGmailGithubRoute = AdminGmailGithubRouteImport.update({
-  id: '/admin/gmail-github',
-  path: '/admin/gmail-github',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEntitlementDiagnosticsRoute =
@@ -271,11 +225,6 @@ const AdminEmailDomainRoute = AdminEmailDomainRouteImport.update({
 const AdminCreditsRoute = AdminCreditsRouteImport.update({
   id: '/admin/credits',
   path: '/admin/credits',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
-  id: '/admin/ci-health',
-  path: '/admin/ci-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
@@ -413,23 +362,6 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksGithubRoute = ApiPublicHooksGithubRouteImport.update({
-  id: '/api/public/hooks/github',
-  path: '/api/public/hooks/github',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicHooksCiFailureAlertsRoute =
-  ApiPublicHooksCiFailureAlertsRouteImport.update({
-    id: '/api/public/hooks/ci-failure-alerts',
-    path: '/api/public/hooks/ci-failure-alerts',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicFormsCreateIssueRoute =
-  ApiPublicFormsCreateIssueRouteImport.update({
-    id: '/api/public/forms/create-issue',
-    path: '/api/public/forms/create-issue',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicAnalyticsAuthGateRouteImport.update({
     id: '/api/public/analytics/auth-gate',
@@ -471,7 +403,6 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
-  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -481,19 +412,15 @@ export interface FileRoutesByFullPath {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
-  '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
-  '/admin/gmail-github': typeof AdminGmailGithubRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
-  '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
-  '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -503,9 +430,6 @@ export interface FileRoutesByFullPath {
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/issue-triage': typeof ToolsIssueTriageRoute
-  '/tools/pr-status': typeof ToolsPrStatusRoute
-  '/tools/releases': typeof ToolsReleasesRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -517,9 +441,6 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
-  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
-  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
-  '/api/public/hooks/github': typeof ApiPublicHooksGithubRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -545,7 +466,6 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
-  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -555,19 +475,15 @@ export interface FileRoutesByTo {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
-  '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
-  '/admin/gmail-github': typeof AdminGmailGithubRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
-  '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
-  '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -577,9 +493,6 @@ export interface FileRoutesByTo {
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/issue-triage': typeof ToolsIssueTriageRoute
-  '/tools/pr-status': typeof ToolsPrStatusRoute
-  '/tools/releases': typeof ToolsReleasesRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
@@ -591,9 +504,6 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
-  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
-  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
-  '/api/public/hooks/github': typeof ApiPublicHooksGithubRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -620,7 +530,6 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
-  '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -630,19 +539,15 @@ export interface FileRoutesById {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
-  '/admin/ci-health': typeof AdminCiHealthRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
-  '/admin/gmail-github': typeof AdminGmailGithubRoute
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
-  '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
-  '/admin/security-scan': typeof AdminSecurityScanRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -652,9 +557,6 @@ export interface FileRoutesById {
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/issue-triage': typeof ToolsIssueTriageRoute
-  '/tools/pr-status': typeof ToolsPrStatusRoute
-  '/tools/releases': typeof ToolsReleasesRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -666,9 +568,6 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
-  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
-  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
-  '/api/public/hooks/github': typeof ApiPublicHooksGithubRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
@@ -696,7 +595,6 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/rcgf'
-    | '/security'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -706,19 +604,15 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
-    | '/admin/ci-health'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
-    | '/admin/gmail-github'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
-    | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
-    | '/admin/security-scan'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -728,9 +622,6 @@ export interface FileRouteTypes {
     | '/epublisher/pricing'
     | '/legal/governance'
     | '/sync-vision/pricing'
-    | '/tools/issue-triage'
-    | '/tools/pr-status'
-    | '/tools/releases'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -742,9 +633,6 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
-    | '/api/public/forms/create-issue'
-    | '/api/public/hooks/ci-failure-alerts'
-    | '/api/public/hooks/github'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -770,7 +658,6 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/rcgf'
-    | '/security'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -780,19 +667,15 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
-    | '/admin/ci-health'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
-    | '/admin/gmail-github'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
-    | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
-    | '/admin/security-scan'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -802,9 +685,6 @@ export interface FileRouteTypes {
     | '/epublisher/pricing'
     | '/legal/governance'
     | '/sync-vision/pricing'
-    | '/tools/issue-triage'
-    | '/tools/pr-status'
-    | '/tools/releases'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
@@ -816,9 +696,6 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
-    | '/api/public/forms/create-issue'
-    | '/api/public/hooks/ci-failure-alerts'
-    | '/api/public/hooks/github'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -844,7 +721,6 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/rcgf'
-    | '/security'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -854,19 +730,15 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
-    | '/admin/ci-health'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
     | '/admin/entitlement-diagnostics'
-    | '/admin/gmail-github'
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
-    | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
-    | '/admin/security-scan'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -876,9 +748,6 @@ export interface FileRouteTypes {
     | '/epublisher/pricing'
     | '/legal/governance'
     | '/sync-vision/pricing'
-    | '/tools/issue-triage'
-    | '/tools/pr-status'
-    | '/tools/releases'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -890,9 +759,6 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
-    | '/api/public/forms/create-issue'
-    | '/api/public/hooks/ci-failure-alerts'
-    | '/api/public/hooks/github'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
@@ -919,7 +785,6 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   RcgfRoute: typeof RcgfRoute
-  SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -929,28 +794,21 @@ export interface RootRouteChildren {
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
-  AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
-  AdminGmailGithubRoute: typeof AdminGmailGithubRoute
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
-  AdminRepoHealthRoute: typeof AdminRepoHealthRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
-  AdminSecurityScanRoute: typeof AdminSecurityScanRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   LegalGovernanceRoute: typeof LegalGovernanceRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
-  ToolsIssueTriageRoute: typeof ToolsIssueTriageRoute
-  ToolsPrStatusRoute: typeof ToolsPrStatusRoute
-  ToolsReleasesRoute: typeof ToolsReleasesRoute
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -959,9 +817,6 @@ export interface RootRouteChildren {
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
-  ApiPublicFormsCreateIssueRoute: typeof ApiPublicFormsCreateIssueRoute
-  ApiPublicHooksCiFailureAlertsRoute: typeof ApiPublicHooksCiFailureAlertsRoute
-  ApiPublicHooksGithubRoute: typeof ApiPublicHooksGithubRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
@@ -985,13 +840,6 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/security': {
-      id: '/security'
-      path: '/security'
-      fullPath: '/security'
-      preLoaderRoute: typeof SecurityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rcgf': {
@@ -1078,27 +926,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpdatesPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools/releases': {
-      id: '/tools/releases'
-      path: '/tools/releases'
-      fullPath: '/tools/releases'
-      preLoaderRoute: typeof ToolsReleasesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tools/pr-status': {
-      id: '/tools/pr-status'
-      path: '/tools/pr-status'
-      fullPath: '/tools/pr-status'
-      preLoaderRoute: typeof ToolsPrStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tools/issue-triage': {
-      id: '/tools/issue-triage'
-      path: '/tools/issue-triage'
-      fullPath: '/tools/issue-triage'
-      preLoaderRoute: typeof ToolsIssueTriageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sync-vision/pricing': {
       id: '/sync-vision/pricing'
       path: '/sync-vision/pricing'
@@ -1162,13 +989,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/security-scan': {
-      id: '/admin/security-scan'
-      path: '/admin/security-scan'
-      fullPath: '/admin/security-scan'
-      preLoaderRoute: typeof AdminSecurityScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/rop': {
       id: '/admin/rop'
       path: '/admin/rop'
@@ -1181,13 +1001,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/repo-health': {
-      id: '/admin/repo-health'
-      path: '/admin/repo-health'
-      fullPath: '/admin/repo-health'
-      preLoaderRoute: typeof AdminRepoHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/payfast-audit': {
@@ -1209,13 +1022,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/invoices'
       fullPath: '/admin/invoices'
       preLoaderRoute: typeof AdminInvoicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/gmail-github': {
-      id: '/admin/gmail-github'
-      path: '/admin/gmail-github'
-      fullPath: '/admin/gmail-github'
-      preLoaderRoute: typeof AdminGmailGithubRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/entitlement-diagnostics': {
@@ -1244,13 +1050,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/credits'
       fullPath: '/admin/credits'
       preLoaderRoute: typeof AdminCreditsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/ci-health': {
-      id: '/admin/ci-health'
-      path: '/admin/ci-health'
-      fullPath: '/admin/ci-health'
-      preLoaderRoute: typeof AdminCiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/billing': {
@@ -1428,27 +1227,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/github': {
-      id: '/api/public/hooks/github'
-      path: '/api/public/hooks/github'
-      fullPath: '/api/public/hooks/github'
-      preLoaderRoute: typeof ApiPublicHooksGithubRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/ci-failure-alerts': {
-      id: '/api/public/hooks/ci-failure-alerts'
-      path: '/api/public/hooks/ci-failure-alerts'
-      fullPath: '/api/public/hooks/ci-failure-alerts'
-      preLoaderRoute: typeof ApiPublicHooksCiFailureAlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/forms/create-issue': {
-      id: '/api/public/forms/create-issue'
-      path: '/api/public/forms/create-issue'
-      fullPath: '/api/public/forms/create-issue'
-      preLoaderRoute: typeof ApiPublicFormsCreateIssueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/analytics/auth-gate': {
       id: '/api/public/analytics/auth-gate'
       path: '/api/public/analytics/auth-gate'
@@ -1537,7 +1315,6 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
-  SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
@@ -1548,28 +1325,21 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
-  AdminCiHealthRoute: AdminCiHealthRoute,
   AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
-  AdminGmailGithubRoute: AdminGmailGithubRoute,
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
-  AdminRepoHealthRoute: AdminRepoHealthRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
-  AdminSecurityScanRoute: AdminSecurityScanRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
   LegalGovernanceRoute: LegalGovernanceRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
-  ToolsIssueTriageRoute: ToolsIssueTriageRoute,
-  ToolsPrStatusRoute: ToolsPrStatusRoute,
-  ToolsReleasesRoute: ToolsReleasesRoute,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -1578,9 +1348,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
-  ApiPublicFormsCreateIssueRoute: ApiPublicFormsCreateIssueRoute,
-  ApiPublicHooksCiFailureAlertsRoute: ApiPublicHooksCiFailureAlertsRoute,
-  ApiPublicHooksGithubRoute: ApiPublicHooksGithubRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,

@@ -91,7 +91,6 @@ function AdminHome() {
   }
 
   const sections = [
-    { to: ROUTES.adminGmailGithub, label: "GitHub Emails (Gmail)", desc: "Read GitHub failure & security emails from your Gmail inbox for triage." },
     { to: ROUTES.adminRevenue, label: "Revenue & Profit", desc: "Per-subscription revenue, costs, and profit." },
     { to: ROUTES.adminBilling, label: "Billing Overview", desc: "Cross-app subscriptions, wallets, and ledger activity." },
     { to: ROUTES.adminCredits, label: "Credit Adjustments", desc: "Add or subtract subscription credits with a full audit trail." },
