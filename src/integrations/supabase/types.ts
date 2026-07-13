@@ -1655,13 +1655,16 @@ export type Database = {
           amount_cents: number
           app: Database["public"]["Enums"]["subscription_app"]
           billing_cycle: string
+          cancel_at_period_end: boolean
           cancelled_at: string | null
           created_at: string
           currency: string
           current_period_end: string | null
+          grace_period_ends_at: string | null
           id: string
           payfast_payment_id: string | null
           payfast_token: string | null
+          product_id: string | null
           status: Database["public"]["Enums"]["subscription_status"]
           superseded_at: string | null
           superseded_by: string | null
@@ -1673,13 +1676,16 @@ export type Database = {
           amount_cents?: number
           app: Database["public"]["Enums"]["subscription_app"]
           billing_cycle?: string
+          cancel_at_period_end?: boolean
           cancelled_at?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
+          grace_period_ends_at?: string | null
           id?: string
           payfast_payment_id?: string | null
           payfast_token?: string | null
+          product_id?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           superseded_at?: string | null
           superseded_by?: string | null
@@ -1691,13 +1697,16 @@ export type Database = {
           amount_cents?: number
           app?: Database["public"]["Enums"]["subscription_app"]
           billing_cycle?: string
+          cancel_at_period_end?: boolean
           cancelled_at?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
+          grace_period_ends_at?: string | null
           id?: string
           payfast_payment_id?: string | null
           payfast_token?: string | null
+          product_id?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           superseded_at?: string | null
           superseded_by?: string | null
@@ -1706,6 +1715,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_superseded_by_fkey"
             columns: ["superseded_by"]
@@ -1841,6 +1857,14 @@ export type Database = {
         Returns: number
       }
       expire_stale_reservations: { Args: never; Returns: number }
+      expire_stale_subscriptions: {
+        Args: { _grace_days?: number }
+        Returns: {
+          cancelled_after_grace: number
+          cancelled_at_period_end: number
+          moved_to_past_due: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
