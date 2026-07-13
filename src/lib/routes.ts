@@ -21,7 +21,7 @@ export type RoutePath = RouteToPath<RegisteredRouter>;
  * mistakes like "/admin/" never re-enter the route union. Pairs with the
  * runtime check in `scripts/verify-route-strings.ts`.
  */
-export type NoTrailingSlash<T extends string> = T extends "/"
+export type NoTrailingSlash<T> = T extends "/"
   ? T
   : T extends `${string}/`
     ? never
