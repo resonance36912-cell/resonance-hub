@@ -153,7 +153,7 @@ function SuccessPage() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {phase === "verified" ? (
+            {phase === "verified" || phase === "skip" ? (
               primaryIsExternal ? (
                 <a
                   href={primaryHref}
@@ -179,7 +179,7 @@ function SuccessPage() {
                 {secondaryTo.label}
               </AppLink>
             )}
-            {phase === "verified" && (
+            {(phase === "verified" || phase === "skip") && (
               <AppLink
                 to={secondaryTo.to}
                 hash={secondaryTo.hash}
@@ -189,6 +189,7 @@ function SuccessPage() {
               </AppLink>
             )}
           </div>
+
 
           {phase === "pending" && (
             <p className="mt-6 text-xs text-white/50">
