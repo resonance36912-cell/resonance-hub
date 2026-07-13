@@ -49,9 +49,9 @@ function AdminGovernancePage() {
   const [filter, setFilter] = useState<ProposalStatus | "all">("all");
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery<Proposal[]>({
     queryKey: ["admin", "governance", "proposals"],
-    queryFn: () => list(),
+    queryFn: () => list() as Promise<Proposal[]>,
   });
 
   const rows = (data ?? []).filter((p) => filter === "all" || p.status === filter);
