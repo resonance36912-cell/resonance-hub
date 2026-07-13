@@ -114,6 +114,50 @@ export const getEntitlement = createServerFn({ method: "POST" })
     const sourceIp = req?.headers.get("x-forwarded-for") ?? null;
     const userAgent = req?.headers.get("user-agent") ?? null;
 
+    // ---------- Stage 3: prefer canonical `entitlements` table ----------
+    // Bundle grants are stored per-app (source='pass'), so `all_access`
+    // callers still fall through to the subscription-derived path below.
+    if (data.app !== "all_access") {
+      const nowIso = new Date().toISOString();
+      const { data: entRows, error: entErr } = await supabase
+        .from("entitlements")
+        .select("application_key,tier,source,expires_at,revoked_at")
+        .eq("user_id", userId)
+        .eq("application_key", data.app)
+        .is("revoked_at", null)
+        .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
+
+      if (!entErr && entRows && entRows.length > 0) {
+        // Pass beats subscription; longest expiry wins within the same source.
+        const ranked = [...entRows].sort((a, b) => {
+          if (a.source !== b.source) return a.source === "pass" ? -1 : 1;
+          const ax = a.expires_at ? Date.parse(a.expires_at) : Infinity;
+          const bx = b.expires_at ? Date.parse(b.expires_at) : Infinity;
+          return bx - ax;
+        });
+        const winner = ranked[0];
+        const source: EntitlementSource = winner.source === "pass" ? "all_access" : "direct";
+        const tier = winner.tier as Tier;
+        void logEntitlementCheck({
+          userId, app: data.app, tier, status: "active", source, sourceIp, userAgent,
+        });
+        return {
+          ok: true,
+          app: data.app,
+          userId,
+          tier,
+          status: "active",
+          source,
+          expiresAt: winner.expires_at,
+          features: deriveFeatures(data.app, tier),
+          checkedAt,
+          hasAccess: true,
+          currentPeriodEnd: winner.expires_at,
+        };
+      }
+    }
+
+    // ---------- Fallback: derive from subscriptions ----------
     const { data: rows, error } = await supabase
       .from("subscriptions")
       .select("app,tier,status,current_period_end")

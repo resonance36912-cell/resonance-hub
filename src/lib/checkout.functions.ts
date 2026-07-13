@@ -212,11 +212,38 @@ function requestOrigin() {
   };
 }
 
+/**
+ * Stage 3: prefer `public.products` (DB catalog) for price + label, falling
+ * back to the compile-time SKU_CATALOG when a product row is missing. This
+ * lets ops re-price ecosystem passes without a redeploy while keeping the
+ * verify-catalog-parity CI check as the safety net.
+ */
+async function resolveSkuDefFromDb(sku: string): Promise<SkuDef | null> {
+  const fallback = SKU_CATALOG[sku] ?? null;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("products")
+      .select("product_key,name,price_cents,status,metadata")
+      .eq("product_key", sku)
+      .maybeSingle();
+    if (error || !data || !fallback) return fallback;
+    if (data.status === "draft") return fallback;
+    return {
+      ...fallback,
+      amountCents: Number(data.price_cents) || fallback.amountCents,
+      label: data.name || fallback.label,
+    };
+  } catch (err) {
+    console.error("resolveSkuDefFromDb failed, using SKU_CATALOG:", err);
+    return fallback;
+  }
+}
+
 export const createPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
-    const def = SKU_CATALOG[data.sku];
+    const def = await resolveSkuDefFromDb(data.sku);
     if (!def) throw new Error(`Unknown SKU: ${data.sku}`);
     const email = (context.claims as { email?: string } | null)?.email ?? "";
     return buildLaunch(context.userId, email, def, data.returnTo, requestOrigin());
@@ -255,7 +282,7 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
     }
 
     const key = `${sub.app}:${sub.tier}:${sub.billing_cycle}`;
-    const def = SKU_CATALOG[key];
+    const def = await resolveSkuDefFromDb(key);
     if (!def) throw new Error(`No SKU available to retry (${key})`);
 
     const email = (context.claims as { email?: string } | null)?.email ?? "";
