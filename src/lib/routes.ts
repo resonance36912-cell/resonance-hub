@@ -60,7 +60,6 @@ export const ROUTES = {
   mcp: routePath("/mcp"),
   pricing: routePath("/pricing"),
   rcgf: routePath("/rcgf"),
-  security: routePath("/security"),
   sitemapXml: routePath("/sitemap.xml"),
   updatesPreview: routePath("/updates/preview"),
 
