@@ -274,6 +274,78 @@ export type Database = {
           },
         ]
       }
+      credit_reservations: {
+        Row: {
+          amount: number
+          app: string
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          idempotency_key: string
+          ledger_entry_id: string | null
+          metadata: Json
+          reason: string
+          released_at: string | null
+          sku: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          app: string
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          idempotency_key: string
+          ledger_entry_id?: string | null
+          metadata?: Json
+          reason: string
+          released_at?: string | null
+          sku?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          app?: string
+          completed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          idempotency_key?: string
+          ledger_entry_id?: string | null
+          metadata?: Json
+          reason?: string
+          released_at?: string | null
+          sku?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_reservations_ledger_entry_id_fkey"
+            columns: ["ledger_entry_id"]
+            isOneToOne: false
+            referencedRelation: "credit_ledger"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_reservations_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "credit_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_wallets: {
         Row: {
           app: string
@@ -450,6 +522,65 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      entitlements: {
+        Row: {
+          application_key: string
+          created_at: string
+          expires_at: string | null
+          granted_at: string
+          id: string
+          metadata: Json
+          organisation_id: string | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          source: string
+          source_ref: string | null
+          tier: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          application_key: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          metadata?: Json
+          organisation_id?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          source: string
+          source_ref?: string | null
+          tier: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          application_key?: string
+          created_at?: string
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          metadata?: Json
+          organisation_id?: string | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          source?: string
+          source_ref?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entitlements_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       feature_flags: {
         Row: {
@@ -1673,6 +1804,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_reservation: {
+        Args: { _reservation_id: string }
+        Returns: {
+          amount: number
+          app: string
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          idempotency_key: string
+          ledger_entry_id: string | null
+          metadata: Json
+          reason: string
+          released_at: string | null
+          sku: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_reservations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1682,6 +1840,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      expire_stale_reservations: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1724,6 +1883,68 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      release_reservation: {
+        Args: { _reason?: string; _reservation_id: string }
+        Returns: {
+          amount: number
+          app: string
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          idempotency_key: string
+          ledger_entry_id: string | null
+          metadata: Json
+          reason: string
+          released_at: string | null
+          sku: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_reservations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reserve_credits: {
+        Args: {
+          _amount: number
+          _app: string
+          _idempotency_key: string
+          _metadata?: Json
+          _reason: string
+          _sku: string
+          _user_id: string
+        }
+        Returns: {
+          amount: number
+          app: string
+          completed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          idempotency_key: string
+          ledger_entry_id: string | null
+          metadata: Json
+          reason: string
+          released_at: string | null
+          sku: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_reservations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
