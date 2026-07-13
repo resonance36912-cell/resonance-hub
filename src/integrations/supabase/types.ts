@@ -116,6 +116,51 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          application_key: string
+          base_url: string | null
+          created_at: string
+          credit_enabled: boolean
+          description: string | null
+          governance_enabled: boolean
+          id: string
+          metadata: Json
+          name: string
+          status: Database["public"]["Enums"]["application_status"]
+          subscription_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          application_key: string
+          base_url?: string | null
+          created_at?: string
+          credit_enabled?: boolean
+          description?: string | null
+          governance_enabled?: boolean
+          id?: string
+          metadata?: Json
+          name: string
+          status?: Database["public"]["Enums"]["application_status"]
+          subscription_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          application_key?: string
+          base_url?: string | null
+          created_at?: string
+          credit_enabled?: boolean
+          description?: string | null
+          governance_enabled?: boolean
+          id?: string
+          metadata?: Json
+          name?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          subscription_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ci_alert_config: {
         Row: {
           default_branch_only: boolean
@@ -173,33 +218,6 @@ export type Database = {
           run_id?: number
           sent_at?: string
           workflow_name?: string | null
-        }
-        Relationships: []
-      }
-      ci_repo_presets: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          repos: string[]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          repos?: string[]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          repos?: string[]
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -430,6 +448,39 @@ export type Database = {
           tier?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          flag_key: string
+          id: string
+          metadata: Json
+          rollout_percent: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key: string
+          id?: string
+          metadata?: Json
+          rollout_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          flag_key?: string
+          id?: string
+          metadata?: Json
+          rollout_percent?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -918,6 +969,86 @@ export type Database = {
         }
         Relationships: []
       }
+      organisation_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          metadata: Json
+          organisation_id: string
+          role: Database["public"]["Enums"]["org_member_role"]
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          metadata?: Json
+          organisation_id: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          metadata?: Json
+          organisation_id?: string
+          role?: Database["public"]["Enums"]["org_member_role"]
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organisation_members_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organisations: {
+        Row: {
+          billing_email: string | null
+          country_code: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          name: string
+          slug: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          billing_email?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          name: string
+          slug: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_email?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          name?: string
+          slug?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payfast_itn_logs: {
         Row: {
           amount_cents: number | null
@@ -1073,6 +1204,168 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      product_application_rules: {
+        Row: {
+          access_level: string
+          application_id: string
+          capability_key: string | null
+          created_at: string
+          credit_multiplier: number
+          enabled: boolean
+          id: string
+          included_usage: number
+          metadata: Json
+          product_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_level?: string
+          application_id: string
+          capability_key?: string | null
+          created_at?: string
+          credit_multiplier?: number
+          enabled?: boolean
+          id?: string
+          included_usage?: number
+          metadata?: Json
+          product_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_level?: string
+          application_id?: string
+          capability_key?: string | null
+          created_at?: string
+          credit_multiplier?: number
+          enabled?: boolean
+          id?: string
+          included_usage?: number
+          metadata?: Json
+          product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_application_rules_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_application_rules_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          billing_interval: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          effective_from: string | null
+          effective_to: string | null
+          id: string
+          included_credits: number
+          metadata: Json
+          name: string
+          price_cents: number
+          product_key: string
+          product_type: Database["public"]["Enums"]["product_type"]
+          status: Database["public"]["Enums"]["product_status"]
+          updated_at: string
+        }
+        Insert: {
+          billing_interval?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          id?: string
+          included_credits?: number
+          metadata?: Json
+          name: string
+          price_cents?: number
+          product_key: string
+          product_type: Database["public"]["Enums"]["product_type"]
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Update: {
+          billing_interval?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          effective_from?: string | null
+          effective_to?: string | null
+          id?: string
+          included_credits?: number
+          metadata?: Json
+          name?: string
+          price_cents?: number
+          product_key?: string
+          product_type?: Database["public"]["Enums"]["product_type"]
+          status?: Database["public"]["Enums"]["product_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          country_code: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          onboarding_status: Database["public"]["Enums"]["onboarding_status"]
+          phone: string | null
+          preferred_currency: string
+          timezone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          country_code?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          onboarding_status?: Database["public"]["Enums"]["onboarding_status"]
+          phone?: string | null
+          preferred_currency?: string
+          timezone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          country_code?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          onboarding_status?: Database["public"]["Enums"]["onboarding_status"]
+          phone?: string | null
+          preferred_currency?: string
+          timezone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       site_visits: {
         Row: {
@@ -1407,6 +1700,14 @@ export type Database = {
         Args: { _app_id: string; _user_id: string }
         Returns: boolean
       }
+      is_org_admin: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_org_member: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1426,7 +1727,13 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role:
+        | "admin"
+        | "user"
+        | "billing_manager"
+        | "institutional_manager"
+        | "viewer"
+      application_status: "active" | "beta" | "hidden" | "retired"
       hub_app_role: "hub_admin" | "app_owner"
       hub_outcome_verdict: "improved" | "neutral" | "regressed" | "inconclusive"
       hub_suggestion_source: "rule" | "ai" | "cross_app" | "manual"
@@ -1437,12 +1744,28 @@ export type Database = {
         | "reverted"
         | "rejected"
         | "superseded"
+      onboarding_status: "pending" | "in_progress" | "complete"
+      org_member_role:
+        | "owner"
+        | "administrator"
+        | "billing_manager"
+        | "member"
+        | "viewer"
+        | "institutional_manager"
+      product_status: "draft" | "active" | "retired"
+      product_type:
+        | "credit_package"
+        | "subscription"
+        | "institutional_plan"
+        | "promotional_credit"
+        | "add_on"
       subscription_app:
         | "epublisher"
         | "creative_studio"
         | "sync_vision"
         | "youtube_optimizer"
         | "all_access"
+        | "career_compass"
       subscription_status: "pending" | "active" | "past_due" | "cancelled"
       subscription_tier:
         | "free"
@@ -1581,7 +1904,14 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: [
+        "admin",
+        "user",
+        "billing_manager",
+        "institutional_manager",
+        "viewer",
+      ],
+      application_status: ["active", "beta", "hidden", "retired"],
       hub_app_role: ["hub_admin", "app_owner"],
       hub_outcome_verdict: ["improved", "neutral", "regressed", "inconclusive"],
       hub_suggestion_source: ["rule", "ai", "cross_app", "manual"],
@@ -1593,12 +1923,30 @@ export const Constants = {
         "rejected",
         "superseded",
       ],
+      onboarding_status: ["pending", "in_progress", "complete"],
+      org_member_role: [
+        "owner",
+        "administrator",
+        "billing_manager",
+        "member",
+        "viewer",
+        "institutional_manager",
+      ],
+      product_status: ["draft", "active", "retired"],
+      product_type: [
+        "credit_package",
+        "subscription",
+        "institutional_plan",
+        "promotional_credit",
+        "add_on",
+      ],
       subscription_app: [
         "epublisher",
         "creative_studio",
         "sync_vision",
         "youtube_optimizer",
         "all_access",
+        "career_compass",
       ],
       subscription_status: ["pending", "active", "past_due", "cancelled"],
       subscription_tier: [
