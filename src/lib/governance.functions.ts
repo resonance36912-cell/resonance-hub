@@ -174,7 +174,7 @@ export const decideProposal = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabaseAdmin
       .from("governance_proposals")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.proposal_id)
       .select("*")
       .single();
