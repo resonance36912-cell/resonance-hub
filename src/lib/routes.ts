@@ -87,25 +87,16 @@ export const ROUTES = {
 
   adminAppSubmissions: routePath("/admin/app-submissions"),
   adminBilling: routePath("/admin/billing"),
-  adminCiHealth: routePath("/admin/ci-health"),
   adminCredits: routePath("/admin/credits"),
   adminEmailDomain: routePath("/admin/email-domain"),
   adminEmails: routePath("/admin/emails"),
-  adminGmailGithub: routePath("/admin/gmail-github"),
   adminEntitlementDiagnostics: routePath("/admin/entitlement-diagnostics"),
   adminInvoices: routePath("/admin/invoices"),
   adminLogin: routePath("/admin/login"),
   adminPayfastAudit: routePath("/admin/payfast-audit"),
-  adminRepoHealth: routePath("/admin/repo-health"),
   adminRevenue: routePath("/admin/revenue"),
   adminRop: routePath("/admin/rop"),
-  adminSecurityScan: routePath("/admin/security-scan"),
   adminWebhooks: routePath("/admin/webhooks"),
-
-  // Internal tools
-  toolsIssueTriage: routePath("/tools/issue-triage"),
-  toolsPrStatus: routePath("/tools/pr-status"),
-  toolsReleases: routePath("/tools/releases"),
 } as const satisfies Record<string, RoutePath>;
 
 /**
