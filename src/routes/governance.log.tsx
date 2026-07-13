@@ -45,6 +45,7 @@ function PublicLogPage() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-6">
+      <AppLink to={ROUTES.home} className="text-sm underline">← Back to Hub</AppLink>
       <header>
         <h1 className="text-2xl font-semibold">Governance decision log</h1>
         <p className="mt-2 text-sm text-muted-foreground">
