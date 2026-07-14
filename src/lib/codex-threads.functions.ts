@@ -9,11 +9,10 @@ export type CodexThread = {
   created_at: string;
 };
 
-export type CodexMessagePart = { type: string; text?: string; [key: string]: unknown };
 export type CodexMessageRow = {
   id: string;
   role: "user" | "assistant" | "system";
-  parts: CodexMessagePart[];
+  parts: string;
   created_at: string;
 };
 
