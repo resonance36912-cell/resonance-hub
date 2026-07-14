@@ -72,6 +72,7 @@ import { Route as ApiPublicRopIngestSuggestionRouteImport } from './routes/api/p
 import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/rop/ingest-perf'
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
+import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
@@ -404,6 +405,12 @@ const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   path: '/api/public/payfast/itn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHubControlPullConfigRoute =
+  ApiPublicHubControlPullConfigRouteImport.update({
+    id: '/api/public/hub-control/pull-config',
+    path: '/api/public/hub-control/pull-config',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessSubscriptionEmailsRoute =
   ApiPublicHooksProcessSubscriptionEmailsRouteImport.update({
     id: '/api/public/hooks/process-subscription-emails',
@@ -494,6 +501,7 @@ export interface FileRoutesByFullPath {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
@@ -565,6 +573,7 @@ export interface FileRoutesByTo {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
@@ -637,6 +646,7 @@ export interface FileRoutesById {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
@@ -710,6 +720,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
     | '/api/public/rop/ingest-perf'
@@ -781,6 +792,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
     | '/api/public/rop/ingest-perf'
@@ -852,6 +864,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
     | '/api/public/rop/ingest-perf'
@@ -917,6 +930,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
   ApiPublicRopIngestPerfRoute: typeof ApiPublicRopIngestPerfRoute
@@ -1379,6 +1393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hub-control/pull-config': {
+      id: '/api/public/hub-control/pull-config'
+      path: '/api/public/hub-control/pull-config'
+      fullPath: '/api/public/hub-control/pull-config'
+      preLoaderRoute: typeof ApiPublicHubControlPullConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-subscription-emails': {
       id: '/api/public/hooks/process-subscription-emails'
       path: '/api/public/hooks/process-subscription-emails'
@@ -1524,6 +1545,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
+  ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
   ApiPublicRopIngestAppliedRoute: ApiPublicRopIngestAppliedRoute,
   ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,
