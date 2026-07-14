@@ -106,7 +106,7 @@ export async function pushToApp(
   }
 }
 
-export async function probeApp(appId: string): Promise<PushResult & { detail?: unknown }> {
+export async function probeApp(appId: string): Promise<PushResult & { detail?: string }> {
   const app = await loadApp(appId);
   if (!app) return { ok: false, status: null, error: "app not found" };
   if (!app.origin_url) return { ok: false, status: null, error: "origin_url not set" };
