@@ -55,6 +55,15 @@ function SpokeHealth() {
   const probeAll = useServerFn(probeAllSpokes);
   const pushOne = useServerFn(pushConfigToApp);
   const pushAll = useServerFn(pushConfigToAll);
+  const register = useServerFn(registerHubApp);
+  const rotate = useServerFn(rotateHubAppKey);
+  const setStatus = useServerFn(setHubAppStatus);
+
+  const [slug, setSlug] = useState("");
+  const [name, setName] = useState("");
+  const [originUrl, setOriginUrl] = useState("");
+  const [minted, setMinted] = useState<{ slug: string; raw: string; hmac: string } | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
 
   const spokesQ = useQuery({
     queryKey: ["admin-spokes"],
