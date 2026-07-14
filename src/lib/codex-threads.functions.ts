@@ -94,7 +94,12 @@ export const getCodexThreadMessages = createServerFn({ method: "GET" })
       .eq("user_id", context.userId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return (rows ?? []) as CodexMessageRow[];
+    return (rows ?? []).map((r) => ({
+      id: r.id as string,
+      role: r.role as "user" | "assistant" | "system",
+      parts: JSON.stringify(r.parts ?? []),
+      created_at: r.created_at as string,
+    }));
   });
 
 export const saveCodexMessages = createServerFn({ method: "POST" })
