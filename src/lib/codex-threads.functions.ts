@@ -40,11 +40,41 @@ export const createCodexThread = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase
       .from("codex_threads")
       .insert({ user_id: context.userId, title: data.title ?? "New conversation" })
-      .select("id,title,updated_at,created_at")
+      .select("id,title,updated_at,created_at,system_prompt,mcp_enabled")
       .single();
     if (error) throw new Error(error.message);
     return row as CodexThread;
   });
+
+export const updateCodexThreadSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (d: { id: string; systemPrompt?: string | null; mcpEnabled?: boolean }) =>
+      z
+        .object({
+          id: z.string().uuid(),
+          systemPrompt: z.string().max(10_000).nullable().optional(),
+          mcpEnabled: z.boolean().optional(),
+        })
+        .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const patch: Record<string, unknown> = {};
+    if (data.systemPrompt !== undefined) {
+      const trimmed = (data.systemPrompt ?? "").trim();
+      patch.system_prompt = trimmed.length === 0 ? null : trimmed;
+    }
+    if (data.mcpEnabled !== undefined) patch.mcp_enabled = data.mcpEnabled;
+    if (Object.keys(patch).length === 0) return { ok: true };
+    const { error } = await context.supabase
+      .from("codex_threads")
+      .update(patch)
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 
 export const renameCodexThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
