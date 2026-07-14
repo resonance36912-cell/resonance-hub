@@ -32,6 +32,7 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-health'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
@@ -193,6 +194,11 @@ const AppsSubmitRoute = AppsSubmitRouteImport.update({
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
   path: '/admin/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSpokeHealthRoute = AdminSpokeHealthRouteImport.update({
+  id: '/admin/spoke-health',
+  path: '/admin/spoke-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRopRoute = AdminRopRouteImport.update({
@@ -479,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -551,6 +558,7 @@ export interface FileRoutesByTo {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -624,6 +632,7 @@ export interface FileRoutesById {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -698,6 +707,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/spoke-health'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -770,6 +780,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/spoke-health'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -842,6 +853,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/spoke-health'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -915,6 +927,7 @@ export interface RootRouteChildren {
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
+  AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -1111,6 +1124,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/webhooks'
       fullPath: '/admin/webhooks'
       preLoaderRoute: typeof AdminWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/spoke-health': {
+      id: '/admin/spoke-health'
+      path: '/admin/spoke-health'
+      fullPath: '/admin/spoke-health'
+      preLoaderRoute: typeof AdminSpokeHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/rop': {
@@ -1529,6 +1549,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
+  AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
