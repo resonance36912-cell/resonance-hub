@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
+import { Route as ToolsCodexRouteImport } from './routes/tools.codex'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
 import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
 import { Route as GovernanceLogRouteImport } from './routes/governance.log'
@@ -31,6 +32,7 @@ import { Route as CreativeStudioPricingRouteImport } from './routes/creative-stu
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-health'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
@@ -146,6 +148,11 @@ const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
   path: '/updates/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsCodexRoute = ToolsCodexRouteImport.update({
+  id: '/tools/codex',
+  path: '/tools/codex',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   id: '/sync-vision/pricing',
   path: '/sync-vision/pricing',
@@ -190,6 +197,11 @@ const AppsSubmitRoute = AppsSubmitRouteImport.update({
   id: '/submit',
   path: '/submit',
   getParentRoute: () => AppsRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
@@ -487,6 +499,7 @@ export interface FileRoutesByFullPath {
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -496,6 +509,7 @@ export interface FileRoutesByFullPath {
   '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/codex': typeof ToolsCodexRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -560,6 +574,7 @@ export interface FileRoutesByTo {
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -569,6 +584,7 @@ export interface FileRoutesByTo {
   '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/codex': typeof ToolsCodexRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
@@ -634,6 +650,7 @@ export interface FileRoutesById {
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -643,6 +660,7 @@ export interface FileRoutesById {
   '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/codex': typeof ToolsCodexRoute
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -709,6 +727,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
+    | '/api/chat'
     | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -718,6 +737,7 @@ export interface FileRouteTypes {
     | '/governance/log'
     | '/legal/governance'
     | '/sync-vision/pricing'
+    | '/tools/codex'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -782,6 +802,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
+    | '/api/chat'
     | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -791,6 +812,7 @@ export interface FileRouteTypes {
     | '/governance/log'
     | '/legal/governance'
     | '/sync-vision/pricing'
+    | '/tools/codex'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
@@ -855,6 +877,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
+    | '/api/chat'
     | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -864,6 +887,7 @@ export interface FileRouteTypes {
     | '/governance/log'
     | '/legal/governance'
     | '/sync-vision/pricing'
+    | '/tools/codex'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
@@ -929,11 +953,13 @@ export interface RootRouteChildren {
   AdminRopRoute: typeof AdminRopRoute
   AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
+  ApiChatRoute: typeof ApiChatRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   LegalGovernanceRoute: typeof LegalGovernanceRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
+  ToolsCodexRoute: typeof ToolsCodexRoute
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1056,6 +1082,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpdatesPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/codex': {
+      id: '/tools/codex'
+      path: '/tools/codex'
+      fullPath: '/tools/codex'
+      preLoaderRoute: typeof ToolsCodexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sync-vision/pricing': {
       id: '/sync-vision/pricing'
       path: '/sync-vision/pricing'
@@ -1118,6 +1151,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/apps/submit'
       preLoaderRoute: typeof AppsSubmitRouteImport
       parentRoute: typeof AppsRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/webhooks': {
       id: '/admin/webhooks'
@@ -1551,11 +1591,13 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRopRoute: AdminRopRoute,
   AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
+  ApiChatRoute: ApiChatRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
   LegalGovernanceRoute: LegalGovernanceRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
+  ToolsCodexRoute: ToolsCodexRoute,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
