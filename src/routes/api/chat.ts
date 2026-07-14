@@ -18,13 +18,18 @@ Rules:
 - Never invent Hub URLs, table names, or endpoints. If unsure, say so and suggest opening /admin/spoke-health or the relevant doc.
 - Keep answers concise and use markdown code blocks for commands and snippets.`;
 
-type ChatRequestBody = { messages?: unknown };
+type ChatRequestBody = {
+  messages?: unknown;
+  system?: unknown;
+  mcpEnabled?: unknown;
+};
 
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { messages } = (await request.json()) as ChatRequestBody;
+        const body = (await request.json()) as ChatRequestBody;
+        const { messages } = body;
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
         }
@@ -34,12 +39,23 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("Missing LOVABLE_API_KEY", { status: 500 });
         }
 
+        const customSystem =
+          typeof body.system === "string" && body.system.trim().length > 0
+            ? body.system.trim()
+            : null;
+        const mcpEnabled = body.mcpEnabled !== false; // default on
+
+        const systemPrompt = customSystem ?? CODEX_SYSTEM_PROMPT;
+        const suffix = mcpEnabled
+          ? "\n\nMCP tools are enabled for this conversation."
+          : "\n\nMCP tools are disabled for this conversation — do not attempt to call external tools; answer from your own knowledge and the docs.";
+
         const initialRunId = getLovableAiGatewayRunId(request);
         const gateway = createLovableAiGatewayProvider(key, initialRunId);
 
         const result = streamText({
           model: gateway("google/gemini-3-flash-preview"),
-          system: CODEX_SYSTEM_PROMPT,
+          system: systemPrompt + suffix,
           messages: await convertToModelMessages(messages as UIMessage[]),
         });
 
@@ -50,3 +66,4 @@ export const Route = createFileRoute("/api/chat")({
     },
   },
 });
+
