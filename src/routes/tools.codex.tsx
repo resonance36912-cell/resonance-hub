@@ -52,13 +52,6 @@ function CodexIndexGate() {
   }, []);
 
   useEffect(() => {
-    if (state === "anon") {
-      navigate({
-        to: ROUTES.login,
-        search: { next: ROUTES.toolsCodex } as never,
-      });
-      return;
-    }
     if (state !== "authed") return;
     let cancelled = false;
     (async () => {
@@ -82,9 +75,43 @@ function CodexIndexGate() {
     };
   }, [state, navigate, list, create]);
 
+  if (state === "anon") return <CodexSignInPrompt />;
+
   return (
     <div className="min-h-screen flex items-center justify-center">
       <p className="text-muted-foreground text-sm">Loading Codex Assistant…</p>
+    </div>
+  );
+}
+
+export function CodexSignInPrompt() {
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="max-w-md w-full rounded-xl border bg-card p-8 text-center space-y-5">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg border bg-muted">
+          <Terminal className="h-6 w-6" aria-hidden />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-xl font-semibold">Sign in to use Codex Assistant</h1>
+          <p className="text-sm text-muted-foreground">
+            Your chats are saved to your Resonance Hub account so you can resume
+            conversations anytime.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button asChild className="w-full">
+            <AppLink to={ROUTES.login} search={{ next: ROUTES.toolsCodex } as never}>
+              <LogIn className="h-4 w-4 mr-1.5" /> Sign in to continue
+            </AppLink>
+          </Button>
+          <AppLink
+            to={ROUTES.home}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Back to Hub
+          </AppLink>
+        </div>
+      </div>
     </div>
   );
 }
