@@ -100,7 +100,6 @@ export const ROUTES = {
   adminReconciliation: routePath("/admin/reconciliation"),
   adminRevenue: routePath("/admin/revenue"),
   adminRop: routePath("/admin/rop"),
-  adminSpokeHealth: routePath("/admin/spoke-health"),
   adminWebhooks: routePath("/admin/webhooks"),
 } as const satisfies Record<string, RoutePath>;
 
