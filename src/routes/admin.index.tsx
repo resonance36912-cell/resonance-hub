@@ -99,6 +99,7 @@ function AdminHome() {
     { to: ROUTES.adminEntitlementDiagnostics, label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
     { to: ROUTES.adminReconciliation, label: "Reconciliation", desc: "Wallet drift, orphan entitlements/subs, stale reservations, unposted ITNs." },
     { to: ROUTES.adminRop, label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
+    { to: ROUTES.adminSpokeHealth, label: "Spoke Health & Control", desc: "Push config to spokes, probe health, review delivery history." },
     { to: ROUTES.adminEmails, label: "Email Queue", desc: "Transactional sends and delivery status." },
     { to: ROUTES.adminEmailDomain, label: "Email Domain", desc: "Sending domain configuration and DNS." },
     { to: ROUTES.adminAppSubmissions, label: "App Submissions", desc: "Review and publish community-submitted apps to the catalog." },
