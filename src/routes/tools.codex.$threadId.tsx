@@ -1,3 +1,4 @@
+// @no-back-to-hub authenticated chat workspace; nav lives inside the app shell
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { CodexSignInPrompt } from "./tools.codex";
