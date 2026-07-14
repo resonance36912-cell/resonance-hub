@@ -107,7 +107,7 @@ export const saveCodexMessages = createServerFn({ method: "POST" })
   .inputValidator(
     (d: {
       threadId: string;
-      messages: Array<{ role: "user" | "assistant" | "system"; parts: unknown }>;
+      messages: Array<{ role: "user" | "assistant" | "system"; partsJson: string }>;
     }) =>
       z
         .object({
@@ -116,7 +116,7 @@ export const saveCodexMessages = createServerFn({ method: "POST" })
             .array(
               z.object({
                 role: z.enum(["user", "assistant", "system"]),
-                parts: z.unknown(),
+                partsJson: z.string().max(200_000),
               }),
             )
             .max(50),
@@ -134,12 +134,20 @@ export const saveCodexMessages = createServerFn({ method: "POST" })
     if (!thread) throw new Error("Thread not found");
 
     if (data.messages.length > 0) {
-      const rows = data.messages.map((m) => ({
-        thread_id: data.threadId,
-        user_id: context.userId,
-        role: m.role,
-        parts: m.parts as never,
-      }));
+      const rows = data.messages.map((m) => {
+        let parsed: unknown = [];
+        try {
+          parsed = JSON.parse(m.partsJson);
+        } catch {
+          parsed = [{ type: "text", text: m.partsJson }];
+        }
+        return {
+          thread_id: data.threadId,
+          user_id: context.userId,
+          role: m.role,
+          parts: parsed as never,
+        };
+      });
       const { error } = await context.supabase.from("codex_messages").insert(rows);
       if (error) throw new Error(error.message);
     }
