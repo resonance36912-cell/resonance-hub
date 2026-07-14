@@ -5,7 +5,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { Plus, Terminal, Trash2, Pencil, MessageSquare } from "lucide-react";
+import {
+  Plus,
+  Terminal,
+  Trash2,
+  Pencil,
+  MessageSquare,
+  Settings2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Conversation,
@@ -28,6 +35,18 @@ import {
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { ToolPart, isToolPart } from "@/components/ai-elements/tool-part";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import {
   listCodexThreads,
@@ -36,6 +55,7 @@ import {
   renameCodexThread,
   getCodexThreadMessages,
   saveCodexMessages,
+  updateCodexThreadSettings,
   type CodexThread,
 } from "@/lib/codex-threads.functions";
 import { ROUTES } from "@/lib/routes";
@@ -94,6 +114,7 @@ function CodexWorkspace() {
   const rename = useServerFn(renameCodexThread);
   const getMsgs = useServerFn(getCodexThreadMessages);
   const save = useServerFn(saveCodexMessages);
+  const updateSettings = useServerFn(updateCodexThreadSettings);
 
   const threadsQ = useQuery<CodexThread[]>({
     queryKey: ["codex-threads"],
@@ -104,6 +125,8 @@ function CodexWorkspace() {
     queryKey: ["codex-messages", threadId],
     queryFn: () => getMsgs({ data: { threadId } }),
   });
+
+  const activeThread = (threadsQ.data ?? []).find((t) => t.id === threadId);
 
   const initialMessages = useMemo<UIMessage[]>(() => {
     const rows = messagesQ.data ?? [];
@@ -158,14 +181,14 @@ function CodexWorkspace() {
         }}
       />
       <main className="flex-1 flex flex-col min-h-screen">
-        {messagesQ.isLoading ? (
+        {messagesQ.isLoading || !activeThread ? (
           <div className="flex-1 flex items-center justify-center">
             <p className="text-sm text-muted-foreground">Loading conversation…</p>
           </div>
         ) : (
           <ChatPanel
             key={threadId}
-            threadId={threadId}
+            thread={activeThread}
             initialMessages={initialMessages}
             onPersist={async (msgs) => {
               await save({
@@ -180,11 +203,14 @@ function CodexWorkspace() {
               await qc.invalidateQueries({ queryKey: ["codex-threads"] });
             }}
             onFirstUserMessage={async (text) => {
-              const currentTitle = (threadsQ.data ?? []).find((t) => t.id === threadId)
-                ?.title;
+              const currentTitle = activeThread.title;
               if (currentTitle && currentTitle !== "New conversation") return;
               const title = text.slice(0, 60).trim() || "New conversation";
               await rename({ data: { id: threadId, title } });
+              await qc.invalidateQueries({ queryKey: ["codex-threads"] });
+            }}
+            onSaveSettings={async (patch) => {
+              await updateSettings({ data: { id: threadId, ...patch } });
               await qc.invalidateQueries({ queryKey: ["codex-threads"] });
             }}
           />
@@ -262,20 +288,35 @@ function ThreadSidebar({
   );
 }
 
+type SettingsPatch = { systemPrompt?: string | null; mcpEnabled?: boolean };
+
 function ChatPanel({
-  threadId,
+  thread,
   initialMessages,
   onPersist,
   onFirstUserMessage,
+  onSaveSettings,
 }: {
-  threadId: string;
+  thread: CodexThread;
   initialMessages: UIMessage[];
   onPersist: (msgs: UIMessage[]) => Promise<void>;
   onFirstUserMessage: (text: string) => Promise<void>;
+  onSaveSettings: (patch: SettingsPatch) => Promise<void>;
 }) {
+  const threadId = thread.id;
+  const systemPrompt = thread.system_prompt ?? "";
+  const mcpEnabled = thread.mcp_enabled;
+
   const transport = useMemo(
-    () => new DefaultChatTransport({ api: "/api/chat" }),
-    [],
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        body: () => ({
+          system: systemPrompt.trim().length > 0 ? systemPrompt : undefined,
+          mcpEnabled,
+        }),
+      }),
+    [systemPrompt, mcpEnabled],
   );
   const { messages, sendMessage, status, error, stop } = useChat({
     id: threadId,
@@ -321,12 +362,18 @@ function ChatPanel({
         <div className="grid h-10 w-10 place-items-center rounded-lg border bg-muted">
           <Terminal className="h-5 w-5" aria-hidden />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-semibold leading-tight">Codex Assistant</h1>
           <p className="text-sm text-muted-foreground">
-            Saved to your account. Resume anytime.
+            {mcpEnabled ? "MCP tools on" : "MCP tools off"}
+            {systemPrompt.trim().length > 0 ? " · custom prompt" : ""}
           </p>
         </div>
+        <ChatSettingsSheet
+          initialSystemPrompt={systemPrompt}
+          initialMcpEnabled={mcpEnabled}
+          onSave={onSaveSettings}
+        />
       </header>
 
       <section className="flex min-h-[60vh] flex-1 flex-col overflow-hidden rounded-xl border bg-card">
@@ -392,5 +439,106 @@ function ChatPanel({
         </div>
       </section>
     </div>
+  );
+}
+
+function ChatSettingsSheet({
+  initialSystemPrompt,
+  initialMcpEnabled,
+  onSave,
+}: {
+  initialSystemPrompt: string;
+  initialMcpEnabled: boolean;
+  onSave: (patch: SettingsPatch) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [prompt, setPrompt] = useState(initialSystemPrompt);
+  const [mcp, setMcp] = useState(initialMcpEnabled);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setPrompt(initialSystemPrompt);
+      setMcp(initialMcpEnabled);
+    }
+  }, [open, initialSystemPrompt, initialMcpEnabled]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await onSave({ systemPrompt: prompt, mcpEnabled: mcp });
+      setOpen(false);
+    } catch (err) {
+      console.error("codex: save settings failed", err);
+      alert("Failed to save settings.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Settings2 className="h-4 w-4 mr-1" /> Settings
+        </Button>
+      </SheetTrigger>
+      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+        <SheetHeader>
+          <SheetTitle>Chat settings</SheetTitle>
+          <SheetDescription>
+            These settings apply to this conversation only.
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex-1 overflow-y-auto space-y-6 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <Label htmlFor="mcp-toggle" className="text-sm font-medium">
+                Use MCP tools
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                When off, the assistant answers without calling external tools.
+              </p>
+            </div>
+            <Switch id="mcp-toggle" checked={mcp} onCheckedChange={setMcp} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="system-prompt" className="text-sm font-medium">
+              System prompt override
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Leave empty to use the default Codex assistant prompt.
+            </p>
+            <Textarea
+              id="system-prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="e.g. You are a terse code reviewer focused on Supabase RLS…"
+              rows={12}
+              className="font-mono text-xs"
+              maxLength={10_000}
+            />
+            <p className="text-[10px] text-muted-foreground text-right">
+              {prompt.length}/10000
+            </p>
+          </div>
+        </div>
+
+        <SheetFooter className="gap-2 sm:gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => setPrompt("")}
+            disabled={saving}
+          >
+            Reset prompt
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

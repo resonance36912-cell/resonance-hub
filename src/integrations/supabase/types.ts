@@ -260,6 +260,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          mcp_enabled: boolean
+          system_prompt: string | null
           title: string
           updated_at: string
           user_id: string
@@ -267,6 +269,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          mcp_enabled?: boolean
+          system_prompt?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -274,6 +278,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          mcp_enabled?: boolean
+          system_prompt?: string | null
           title?: string
           updated_at?: string
           user_id?: string
