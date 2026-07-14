@@ -7,6 +7,8 @@ export type CodexThread = {
   title: string;
   updated_at: string;
   created_at: string;
+  system_prompt: string | null;
+  mcp_enabled: boolean;
 };
 
 export type CodexMessageRow = {
@@ -21,12 +23,13 @@ export const listCodexThreads = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<CodexThread[]> => {
     const { data, error } = await context.supabase
       .from("codex_threads")
-      .select("id,title,updated_at,created_at")
+      .select("id,title,updated_at,created_at,system_prompt,mcp_enabled")
       .eq("user_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []) as CodexThread[];
   });
+
 
 export const createCodexThread = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
