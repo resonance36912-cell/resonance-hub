@@ -32,6 +32,7 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
+import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-health'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
@@ -72,6 +73,7 @@ import { Route as ApiPublicRopIngestSuggestionRouteImport } from './routes/api/p
 import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/rop/ingest-perf'
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
+import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
@@ -192,6 +194,11 @@ const AppsSubmitRoute = AppsSubmitRouteImport.update({
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
   path: '/admin/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSpokeHealthRoute = AdminSpokeHealthRouteImport.update({
+  id: '/admin/spoke-health',
+  path: '/admin/spoke-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRopRoute = AdminRopRouteImport.update({
@@ -404,6 +411,12 @@ const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   path: '/api/public/payfast/itn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHubControlPullConfigRoute =
+  ApiPublicHubControlPullConfigRouteImport.update({
+    id: '/api/public/hub-control/pull-config',
+    path: '/api/public/hub-control/pull-config',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessSubscriptionEmailsRoute =
   ApiPublicHooksProcessSubscriptionEmailsRouteImport.update({
     id: '/api/public/hooks/process-subscription-emails',
@@ -472,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -494,6 +508,7 @@ export interface FileRoutesByFullPath {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
@@ -543,6 +558,7 @@ export interface FileRoutesByTo {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -565,6 +581,7 @@ export interface FileRoutesByTo {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
@@ -615,6 +632,7 @@ export interface FileRoutesById {
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
@@ -637,6 +655,7 @@ export interface FileRoutesById {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
   '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
   '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
@@ -688,6 +707,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/spoke-health'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -710,6 +730,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
     | '/api/public/rop/ingest-perf'
@@ -759,6 +780,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/spoke-health'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -781,6 +803,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
     | '/api/public/rop/ingest-perf'
@@ -830,6 +853,7 @@ export interface FileRouteTypes {
     | '/admin/reconciliation'
     | '/admin/revenue'
     | '/admin/rop'
+    | '/admin/spoke-health'
     | '/admin/webhooks'
     | '/apps/submit'
     | '/checkout/cancel'
@@ -852,6 +876,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
     | '/api/public/rop/ingest-applied'
     | '/api/public/rop/ingest-perf'
@@ -902,6 +927,7 @@ export interface RootRouteChildren {
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
+  AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
@@ -917,6 +943,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
   ApiPublicRopIngestPerfRoute: typeof ApiPublicRopIngestPerfRoute
@@ -1097,6 +1124,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/webhooks'
       fullPath: '/admin/webhooks'
       preLoaderRoute: typeof AdminWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/spoke-health': {
+      id: '/admin/spoke-health'
+      path: '/admin/spoke-health'
+      fullPath: '/admin/spoke-health'
+      preLoaderRoute: typeof AdminSpokeHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/rop': {
@@ -1379,6 +1413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hub-control/pull-config': {
+      id: '/api/public/hub-control/pull-config'
+      path: '/api/public/hub-control/pull-config'
+      fullPath: '/api/public/hub-control/pull-config'
+      preLoaderRoute: typeof ApiPublicHubControlPullConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-subscription-emails': {
       id: '/api/public/hooks/process-subscription-emails'
       path: '/api/public/hooks/process-subscription-emails'
@@ -1508,6 +1549,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
+  AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
@@ -1524,6 +1566,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
+  ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
   ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
   ApiPublicRopIngestAppliedRoute: ApiPublicRopIngestAppliedRoute,
   ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,

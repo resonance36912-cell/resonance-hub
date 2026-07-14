@@ -833,9 +833,16 @@ export type Database = {
       }
       hub_apps: {
         Row: {
+          control_enabled: boolean
+          control_path: string
           created_at: string
           created_by: string | null
           id: string
+          last_health_at: string | null
+          last_health_detail: Json | null
+          last_health_status: string | null
+          last_push_at: string | null
+          last_push_status: string | null
           metadata: Json
           name: string
           origin_url: string | null
@@ -844,12 +851,20 @@ export type Database = {
           slug: string
           status: string
           updated_at: string
+          validate_path: string
           workspace_id: string | null
         }
         Insert: {
+          control_enabled?: boolean
+          control_path?: string
           created_at?: string
           created_by?: string | null
           id?: string
+          last_health_at?: string | null
+          last_health_detail?: Json | null
+          last_health_status?: string | null
+          last_push_at?: string | null
+          last_push_status?: string | null
           metadata?: Json
           name: string
           origin_url?: string | null
@@ -858,12 +873,20 @@ export type Database = {
           slug: string
           status?: string
           updated_at?: string
+          validate_path?: string
           workspace_id?: string | null
         }
         Update: {
+          control_enabled?: boolean
+          control_path?: string
           created_at?: string
           created_by?: string | null
           id?: string
+          last_health_at?: string | null
+          last_health_detail?: Json | null
+          last_health_status?: string | null
+          last_push_at?: string | null
+          last_push_status?: string | null
           metadata?: Json
           name?: string
           origin_url?: string | null
@@ -872,6 +895,7 @@ export type Database = {
           slug?: string
           status?: string
           updated_at?: string
+          validate_path?: string
           workspace_id?: string | null
         }
         Relationships: []
@@ -913,6 +937,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "hub_audit_events_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "hub_apps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hub_control_deliveries: {
+        Row: {
+          app_id: string
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          http_status: number | null
+          id: string
+          kind: string
+          request_body: Json | null
+          response_body: Json | null
+          status: string
+        }
+        Insert: {
+          app_id: string
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          http_status?: number | null
+          id?: string
+          kind: string
+          request_body?: Json | null
+          response_body?: Json | null
+          status: string
+        }
+        Update: {
+          app_id?: string
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          http_status?: number | null
+          id?: string
+          kind?: string
+          request_body?: Json | null
+          response_body?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hub_control_deliveries_app_id_fkey"
             columns: ["app_id"]
             isOneToOne: false
             referencedRelation: "hub_apps"
