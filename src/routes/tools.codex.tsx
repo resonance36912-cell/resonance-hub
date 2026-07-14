@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { Terminal, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { AppLink } from "@/components/AppLink";
 import {
   listCodexThreads,
   createCodexThread,
