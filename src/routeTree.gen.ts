@@ -31,6 +31,7 @@ import { Route as CreativeStudioPricingRouteImport } from './routes/creative-stu
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-health'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
@@ -190,6 +191,11 @@ const AppsSubmitRoute = AppsSubmitRouteImport.update({
   id: '/submit',
   path: '/submit',
   getParentRoute: () => AppsRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
@@ -487,6 +493,7 @@ export interface FileRoutesByFullPath {
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -560,6 +567,7 @@ export interface FileRoutesByTo {
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -634,6 +642,7 @@ export interface FileRoutesById {
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
   '/apps/submit': typeof AppsSubmitRoute
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
@@ -709,6 +718,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
+    | '/api/chat'
     | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -782,6 +792,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
+    | '/api/chat'
     | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -855,6 +866,7 @@ export interface FileRouteTypes {
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
+    | '/api/chat'
     | '/apps/submit'
     | '/checkout/cancel'
     | '/checkout/success'
@@ -929,6 +941,7 @@ export interface RootRouteChildren {
   AdminRopRoute: typeof AdminRopRoute
   AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
+  ApiChatRoute: typeof ApiChatRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
@@ -1118,6 +1131,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/apps/submit'
       preLoaderRoute: typeof AppsSubmitRouteImport
       parentRoute: typeof AppsRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/webhooks': {
       id: '/admin/webhooks'
@@ -1551,6 +1571,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRopRoute: AdminRopRoute,
   AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
+  ApiChatRoute: ApiChatRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
