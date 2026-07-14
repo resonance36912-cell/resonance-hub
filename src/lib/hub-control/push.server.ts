@@ -128,7 +128,7 @@ export async function probeApp(appId: string): Promise<PushResult & { detail?: s
       last_health_status: status,
       last_health_detail: (r.body ?? null) as never,
     }).eq("id", app.id);
-    return { ok: r.ok, status: r.status, detail: r.body };
+    return { ok: r.ok, status: r.status, detail: typeof r.body === "string" ? r.body : JSON.stringify(r.body) };
   } catch (e) {
     const err = (e as Error).message;
     await recordDelivery({ app_id: app.id, kind: "probe", status: "network_error", error: err });
