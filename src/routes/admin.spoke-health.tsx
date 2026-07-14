@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
@@ -12,6 +13,11 @@ import {
   pushConfigToAll,
   pushConfigToApp,
 } from "@/lib/hub-control.functions";
+import {
+  registerHubApp,
+  rotateHubAppKey,
+  setHubAppStatus,
+} from "@/lib/rop-admin.functions";
 
 export const Route = createFileRoute("/admin/spoke-health")({
   head: () => ({
