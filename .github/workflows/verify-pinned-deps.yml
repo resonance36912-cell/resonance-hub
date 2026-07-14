@@ -1,0 +1,38 @@
+name: Verify pinned dependencies
+
+# Fails the build unless every entry in package.json is pinned to an exact
+# version AND bun.lock resolves to that same exact version. Guards against
+# caret/tilde ranges and package.json ↔ lockfile drift.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "bun.lock"
+      - "bun.lockb"
+      - "scripts/verify-pinned-deps.ts"
+      - "scripts/verify-lockfile-consistency.ts"
+      - ".github/workflows/verify-pinned-deps.yml"
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Enforce exact-version pins (package.json + bun.lock)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Verify package.json pins are exact versions
+        run: bun run scripts/verify-pinned-deps.ts
+
+      - name: Verify bun.lock matches package.json exactly
+        run: bun run scripts/verify-lockfile-consistency.ts
