@@ -55,6 +55,7 @@ import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as ToolsCodexThreadIdRouteImport } from './routes/tools.codex.$threadId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AppsSubmissionsIdRouteImport } from './routes/apps.submissions.$id'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
@@ -316,6 +317,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ToolsCodexThreadIdRoute = ToolsCodexThreadIdRouteImport.update({
+  id: '/$threadId',
+  path: '/$threadId',
+  getParentRoute: () => ToolsCodexRoute,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -509,7 +515,7 @@ export interface FileRoutesByFullPath {
   '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/codex': typeof ToolsCodexRoute
+  '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -519,6 +525,7 @@ export interface FileRoutesByFullPath {
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -584,7 +591,7 @@ export interface FileRoutesByTo {
   '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/codex': typeof ToolsCodexRoute
+  '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
@@ -594,6 +601,7 @@ export interface FileRoutesByTo {
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -660,7 +668,7 @@ export interface FileRoutesById {
   '/governance/log': typeof GovernanceLogRoute
   '/legal/governance': typeof LegalGovernanceRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/codex': typeof ToolsCodexRoute
+  '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
@@ -670,6 +678,7 @@ export interface FileRoutesById {
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -747,6 +756,7 @@ export interface FileRouteTypes {
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
     | '/lovable/email/suppression'
+    | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
@@ -822,6 +832,7 @@ export interface FileRouteTypes {
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
     | '/lovable/email/suppression'
+    | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
@@ -897,6 +908,7 @@ export interface FileRouteTypes {
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
     | '/lovable/email/suppression'
+    | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/hooks/process-subscription-emails'
@@ -959,7 +971,7 @@ export interface RootRouteChildren {
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   LegalGovernanceRoute: typeof LegalGovernanceRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
-  ToolsCodexRoute: typeof ToolsCodexRoute
+  ToolsCodexRoute: typeof ToolsCodexRouteWithChildren
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1313,6 +1325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/codex/$threadId': {
+      id: '/tools/codex/$threadId'
+      path: '/$threadId'
+      fullPath: '/tools/codex/$threadId'
+      preLoaderRoute: typeof ToolsCodexThreadIdRouteImport
+      parentRoute: typeof ToolsCodexRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -1557,6 +1576,18 @@ const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
   AccountInvoicesRouteChildren,
 )
 
+interface ToolsCodexRouteChildren {
+  ToolsCodexThreadIdRoute: typeof ToolsCodexThreadIdRoute
+}
+
+const ToolsCodexRouteChildren: ToolsCodexRouteChildren = {
+  ToolsCodexThreadIdRoute: ToolsCodexThreadIdRoute,
+}
+
+const ToolsCodexRouteWithChildren = ToolsCodexRoute._addFileChildren(
+  ToolsCodexRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppsRoute: AppsRouteWithChildren,
@@ -1597,7 +1628,7 @@ const rootRouteChildren: RootRouteChildren = {
   EpublisherPricingRoute: EpublisherPricingRoute,
   LegalGovernanceRoute: LegalGovernanceRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
-  ToolsCodexRoute: ToolsCodexRoute,
+  ToolsCodexRoute: ToolsCodexRouteWithChildren,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
