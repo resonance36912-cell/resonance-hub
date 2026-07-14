@@ -25,6 +25,7 @@ import {
   type PromptInputMessage,
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
+import { ToolPart, isToolPart } from "@/components/ai-elements/tool-part";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
