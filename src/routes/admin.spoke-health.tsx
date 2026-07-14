@@ -84,6 +84,30 @@ function SpokeHealth() {
   const pushOneMut = useMutation({ mutationFn: (id: string) => pushOne({ data: { appId: id } }), onSettled: invalidate });
   const probeAllMut = useMutation({ mutationFn: () => probeAll(), onSettled: invalidate });
   const pushAllMut = useMutation({ mutationFn: () => pushAll(), onSettled: invalidate });
+  const registerMut = useMutation({
+    mutationFn: (v: { slug: string; name: string; origin_url: string }) => register({ data: v }),
+    onSuccess: (res) => {
+      setMinted({ slug: res.app.slug, raw: res.raw_signing_key, hmac: res.hmac_secret });
+      setSlug(""); setName(""); setOriginUrl("");
+      invalidate();
+    },
+  });
+  const rotateMut = useMutation({
+    mutationFn: (id: string) => rotate({ data: { id } }),
+    onSuccess: (res, id) => {
+      const app = spokesQ.data?.find((a) => a.id === id);
+      setMinted({ slug: app?.slug ?? id, raw: res.raw_signing_key, hmac: res.hmac_secret });
+      invalidate();
+    },
+  });
+  const statusMut = useMutation({
+    mutationFn: (v: { id: string; status: "active" | "paused" | "revoked" }) => setStatus({ data: v }),
+    onSettled: invalidate,
+  });
+
+  const copy = async (label: string, val: string) => {
+    try { await navigator.clipboard.writeText(val); setCopied(label); setTimeout(() => setCopied(null), 1500); } catch { /* noop */ }
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
