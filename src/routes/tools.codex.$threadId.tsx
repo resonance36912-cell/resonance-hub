@@ -53,7 +53,6 @@ export const Route = createFileRoute("/tools/codex/$threadId")({
 type AuthState = "checking" | "authed" | "anon";
 
 function CodexThreadGate() {
-  const navigate = useNavigate();
   const [state, setState] = useState<AuthState>("checking");
 
   useEffect(() => {
@@ -72,15 +71,7 @@ function CodexThreadGate() {
     };
   }, []);
 
-  useEffect(() => {
-    if (state === "anon") {
-      navigate({
-        to: ROUTES.login,
-        search: { next: ROUTES.toolsCodex } as never,
-      });
-    }
-  }, [state, navigate]);
-
+  if (state === "anon") return <CodexSignInPrompt />;
   if (state !== "authed") {
     return (
       <div className="min-h-screen flex items-center justify-center">
