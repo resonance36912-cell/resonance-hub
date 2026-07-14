@@ -360,6 +360,9 @@ function ChatPanel({
                           </span>
                         );
                       }
+                      if (isToolPart(part)) {
+                        return <ToolPart key={index} part={part} />;
+                      }
                       return null;
                     })}
                   </MessageContent>
