@@ -102,6 +102,9 @@ export const ROUTES = {
   adminRop: routePath("/admin/rop"),
   adminSpokeHealth: routePath("/admin/spoke-health"),
   adminWebhooks: routePath("/admin/webhooks"),
+
+  // Tools
+  toolsCodex: routePath("/tools/codex"),
 } as const satisfies Record<string, RoutePath>;
 
 /**
