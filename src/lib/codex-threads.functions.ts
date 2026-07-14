@@ -59,7 +59,7 @@ export const updateCodexThreadSettings = createServerFn({ method: "POST" })
         .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
+    const patch: { system_prompt?: string | null; mcp_enabled?: boolean } = {};
     if (data.systemPrompt !== undefined) {
       const trimmed = (data.systemPrompt ?? "").trim();
       patch.system_prompt = trimmed.length === 0 ? null : trimmed;
@@ -74,6 +74,7 @@ export const updateCodexThreadSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
 
 
 export const renameCodexThread = createServerFn({ method: "POST" })
