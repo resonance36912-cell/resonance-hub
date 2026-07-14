@@ -43,8 +43,8 @@
     "prebuild": "bun run typecheck && bun run scripts/verify-pinned-deps.ts && bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts && bun run scripts/verify-no-stale-domains.ts && bun run scripts/verify-bundle-copy.ts && bun run scripts/verify-honest-copy.ts && bun run scripts/verify-catalog-parity.ts && bun run scripts/verify-security-invariants.ts && bun run scripts/verify-all-access.ts && bun run scripts/verify-pricing.ts && bun run scripts/verify-pricing-packs.ts && bun run scripts/verify-transparency-copy.ts && bun run scripts/verify-route-strings.ts && bun run test:route-registry"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^3.0.7",
-    "@ai-sdk/react": "^4.0.23",
+    "@ai-sdk/openai-compatible": "3.0.7",
+    "@ai-sdk/react": "4.0.23",
     "@cloudflare/vite-plugin": "1.42.4",
     "@hookform/resolvers": "5.2.2",
     "@lovable.dev/email-js": "0.0.4",
@@ -77,8 +77,8 @@
     "@radix-ui/react-toggle-group": "1.1.11",
     "@radix-ui/react-tooltip": "1.2.8",
     "@react-email/components": "1.0.12",
-    "@streamdown/cjk": "^1.0.3",
-    "@streamdown/code": "^1.1.1",
+    "@streamdown/cjk": "1.0.3",
+    "@streamdown/code": "1.1.1",
     "@streamdown/math": "1.0.2",
     "@streamdown/mermaid": "1.0.2",
     "@supabase/supabase-js": "2.106.2",
