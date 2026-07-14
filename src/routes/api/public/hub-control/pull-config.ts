@@ -27,8 +27,8 @@ export const Route = createFileRoute("/api/public/hub-control/pull-config")({
             .or(`app_id.is.null,app_id.eq.${app.id}`),
           supabaseAdmin
             .from("products")
-            .select("id, sku, kind, tier, price_cents, active, metadata")
-            .eq("active", true),
+            .select("id, product_key, product_type, price_cents, currency, billing_interval, included_credits, status, metadata")
+            .eq("status", "active"),
           supabaseAdmin
             .from("hub_suggestions")
             .select("id, source, title, target_scope, proposed_change, evidence, updated_at, app_id, broadcast")
