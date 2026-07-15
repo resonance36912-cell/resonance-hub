@@ -11,7 +11,8 @@ type ExternalHref = `https://${string}`;
 
 type DocEntry =
   | { title: string; description: string; to: RoutePath; href?: never }
-  | { title: string; description: string; href: string; to?: never };
+  | { title: string; description: string; href: ExternalHref; to?: never };
+
 
 interface DocGroup {
   heading: string;
