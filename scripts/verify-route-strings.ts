@@ -45,6 +45,24 @@ const ALLOWLIST_PREFIXES = [
 
 const ALLOWLIST_EXACT = new Set<string>(["/", "//"]);
 
+// External hosts trusted for intentional non-route `href`s. Match is exact
+// on the URL host or on a `.suffix` (e.g. `github.com` matches
+// `github.com` and `docs.github.com`). Prefer `DocsLink` in app code — this
+// list exists so scanning stays green even when a legacy inline `<a>` slips
+// through, and so verify catches unknown outbound domains loudly.
+const ALLOWLIST_EXTERNAL_HOSTS = [
+  "github.com",
+  "raw.githubusercontent.com",
+  "lovable.dev",
+  "lovable.app",
+  "docs.lovable.dev",
+  "supabase.com",
+  "supabase.co",
+  "payfast.co.za",
+  "reson8.life",
+];
+
+
 function loadRoutePatterns(): string[] {
   const src = readFileSync(ROUTE_TREE, "utf8");
   const patterns = new Set<string>();
