@@ -14,6 +14,7 @@ import {
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
+import { DocsLink } from "@/components/DocsLink";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
@@ -167,7 +168,7 @@ function AppsCatalogPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Resonance Apps</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Every app in the Resonance ecosystem. Paid apps share one Hub billing account today,
-            with unified app login on the roadmap and All-Access passes on <a href="https://reson8.life" className="text-primary underline">reson8.life</a>.
+            with unified app login on the roadmap and All-Access passes on <DocsLink href="https://reson8.life" className="text-primary underline">reson8.life</DocsLink>.
           </p>
         </div>
         <AppLink
