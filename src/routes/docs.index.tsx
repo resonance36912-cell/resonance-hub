@@ -134,6 +134,13 @@ const GROUPS: DocGroup[] = [
           "How to bump exact-pinned deps and when to commit bun.lock.",
         href: `${REPO_DOCS}/dependency-pinning.md`,
       },
+      {
+        title: "DocsLink Usage Guide",
+        description:
+          "How to link docs and contracts: RoutePath for internal, full URLs for external.",
+        href: `${REPO_DOCS}/docs-link-usage.md`,
+      },
+
     ],
   },
   {
