@@ -128,6 +128,21 @@ function normalizePath(raw: string): string {
   return raw.replace(/\$\{[^}]*\}/g, "$x");
 }
 
+function isAllowedExternalHost(host: string): boolean {
+  const h = host.toLowerCase();
+  return ALLOWLIST_EXTERNAL_HOSTS.some(
+    (allowed) => h === allowed || h.endsWith(`.${allowed}`),
+  );
+}
+
+// Capture full absolute http(s) URLs from href/to/etc. so we can allowlist
+// trusted external hosts and flag unknown ones.
+const EXTERNAL_URL_PATTERNS: RegExp[] = [
+  /\bhref\s*=\s*["'`](https?:\/\/[^"'`\s]+)/g,
+  /\bto\s*=\s*\{?\s*["'`](https?:\/\/[^"'`\s]+)/g,
+  /window\.location\.(?:href|assign|replace)\s*(?:=|\()\s*["'`](https?:\/\/[^"'`\s]+)/g,
+];
+
 function scanFile(file: string, matchers: RegExp[]): Hit[] {
   const src = readFileSync(file, "utf8");
   const lines = src.split("\n");
@@ -162,8 +177,31 @@ function scanFile(file: string, matchers: RegExp[]): Hit[] {
       });
     }
   }
+  for (const re of EXTERNAL_URL_PATTERNS) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src)) !== null) {
+      const raw = m[1];
+      let host = "";
+      try {
+        host = new URL(raw).host;
+      } catch {
+        continue;
+      }
+      if (isAllowedExternalHost(host)) continue;
+      const upto = src.slice(0, m.index).split("\n");
+      const line = upto.length;
+      hits.push({
+        file: relative(REPO_ROOT, file),
+        line,
+        path: raw,
+        context: `[external host not allowlisted: ${host}] ${(lines[line - 1] ?? "").trim().slice(0, 130)}`,
+      });
+    }
+  }
   return hits;
 }
+
 
 function main(): void {
   const patterns = loadRoutePatterns();
