@@ -19,6 +19,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
@@ -133,6 +134,11 @@ const AppsRoute = AppsRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -527,6 +533,7 @@ export interface FileRoutesByFullPath {
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
@@ -604,6 +611,7 @@ export interface FileRoutesByTo {
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin': typeof AdminIndexRoute
+  '/docs': typeof DocsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
@@ -682,6 +690,7 @@ export interface FileRoutesById {
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/admin/': typeof AdminIndexRoute
+  '/docs/': typeof DocsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
@@ -761,6 +770,7 @@ export interface FileRouteTypes {
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
+    | '/docs/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
@@ -838,6 +848,7 @@ export interface FileRouteTypes {
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin'
+    | '/docs'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
@@ -915,6 +926,7 @@ export interface FileRouteTypes {
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
     | '/admin/'
+    | '/docs/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
@@ -989,6 +1001,7 @@ export interface RootRouteChildren {
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  DocsIndexRoute: typeof DocsIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
@@ -1085,6 +1098,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1654,6 +1674,7 @@ const rootRouteChildren: RootRouteChildren = {
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
+  DocsIndexRoute: DocsIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
