@@ -14,6 +14,7 @@ import {
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
+import { DocsLink } from "@/components/DocsLink";
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
