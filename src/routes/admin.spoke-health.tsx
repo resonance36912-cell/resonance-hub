@@ -5,6 +5,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
+import { DocsLink } from "@/components/DocsLink";
 import {
   listDeliveries,
   listSpokes,
