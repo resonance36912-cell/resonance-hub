@@ -217,6 +217,41 @@ function scanFile(file: string, matchers: RegExp[]): Hit[] {
 }
 
 
+function writeStepSummary(hits: Hit[], filesScanned: number, routes: number) {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath) return;
+  const lines: string[] = [];
+  lines.push(`## verify-route-strings`);
+  lines.push("");
+  if (hits.length === 0) {
+    lines.push(
+      `✅ Scanned **${filesScanned}** files against **${routes}** registered routes — no invalid hrefs.`,
+    );
+  } else {
+    lines.push(
+      `❌ **${hits.length}** invalid href(s) across **${filesScanned}** files (**${routes}** routes registered).`,
+    );
+    lines.push("");
+    lines.push("| File | Line | Path | Context |");
+    lines.push("| --- | ---: | --- | --- |");
+    for (const h of hits) {
+      const ctx = h.context.replace(/\|/g, "\\|").slice(0, 160);
+      const path = h.path.replace(/\|/g, "\\|");
+      lines.push(`| \`${h.file}\` | ${h.line} | \`${path}\` | ${ctx} |`);
+    }
+    lines.push("");
+    lines.push(
+      "**Fix:** point to a real route (see `src/lib/routes.ts`), add the prefix to `ALLOWLIST_PREFIXES`, or add the host to `ALLOWLIST_EXTERNAL_HOSTS` in `scripts/verify-route-strings.ts`.",
+    );
+  }
+  lines.push("");
+  try {
+    require("node:fs").appendFileSync(summaryPath, lines.join("\n") + "\n");
+  } catch {
+    /* non-fatal */
+  }
+}
+
 function main(): void {
   const patterns = loadRoutePatterns();
   const matchers = patterns.map(toRegex);
@@ -224,11 +259,25 @@ function main(): void {
   const hits: Hit[] = [];
   for (const f of files) hits.push(...scanFile(f, matchers));
 
+  writeStepSummary(hits, files.length, patterns.length);
+
   if (hits.length === 0) {
     console.log(
       `✓ verify-route-strings: scanned ${files.length} files against ${patterns.length} routes — no invalid paths.`,
     );
     return;
+  }
+
+  // GitHub Actions annotations — one per hit, clickable in the PR diff.
+  const inCi = process.env.GITHUB_ACTIONS === "true";
+  if (inCi) {
+    for (const h of hits) {
+      const msg = `Invalid href \"${h.path}\" — ${h.context}`.replace(
+        /\r?\n/g,
+        " ",
+      );
+      console.log(`::error file=${h.file},line=${h.line}::${msg}`);
+    }
   }
 
   console.error(
@@ -240,10 +289,11 @@ function main(): void {
   }
   console.error(
     `\nFix by pointing to a real route (see src/lib/routes.ts) or add the` +
-      ` prefix to ALLOWLIST_PREFIXES in scripts/verify-route-strings.ts if it` +
-      ` is intentionally a non-route absolute URL.`,
+      ` prefix to ALLOWLIST_PREFIXES / host to ALLOWLIST_EXTERNAL_HOSTS in` +
+      ` scripts/verify-route-strings.ts if the target is intentionally non-app.`,
   );
   process.exit(1);
 }
 
 main();
+
