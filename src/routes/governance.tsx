@@ -10,6 +10,7 @@ import {
 import { getRequestOrigin } from "@/lib/origin.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
+import { DocsLink } from "@/components/DocsLink";
 
 export const Route = createFileRoute("/governance")({
   loader: async () => ({ origin: await getRequestOrigin() }),
