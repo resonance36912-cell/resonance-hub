@@ -138,43 +138,39 @@ function GovernancePage() {
           <p className="text-white/75 leading-relaxed">
             The authoritative RCGF specification, standards, prompts and machine-readable
             schemas are published under {RCGF_LICENSE} at{" "}
-            <a href={RCGF_REPO_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+            <DocsLink href={RCGF_REPO_URL} className="underline hover:text-white">
               resonance36912-cell/RCGF
-            </a>
+            </DocsLink>
             . Reference implementations live at{" "}
-            <a href={RCGF_EXAMPLES_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+            <DocsLink href={RCGF_EXAMPLES_URL} className="underline hover:text-white">
               RCGF-Examples
-            </a>
+            </DocsLink>
             .
           </p>
           <ul className="mt-4 space-y-1 text-sm text-white/70">
             <li>
               →{" "}
-              <a href={RCGF_CANONICAL_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+              <DocsLink href={RCGF_CANONICAL_URL} className="underline hover:text-white">
                 Constitution v{RCGF_VERSION} (canonical markdown)
-              </a>
+              </DocsLink>
             </li>
             <li>
               →{" "}
-              <a
-                href={`${RCGF_REPO_URL}/blob/main/prompts/Universal_System_Prompt.md`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <DocsLink
+                href={`${RCGF_REPO_URL}/blob/main/prompts/Universal_System_Prompt.md` as `https://${string}`}
                 className="underline hover:text-white"
               >
                 Universal AI System Prompt
-              </a>
+              </DocsLink>
             </li>
             <li>
               →{" "}
-              <a
-                href={`${RCGF_REPO_URL}/blob/main/schemas/rcgf.json`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <DocsLink
+                href={`${RCGF_REPO_URL}/blob/main/schemas/rcgf.json` as `https://${string}`}
                 className="underline hover:text-white"
               >
                 Machine-readable schema (JSON)
-              </a>
+              </DocsLink>
             </li>
           </ul>
         </section>
