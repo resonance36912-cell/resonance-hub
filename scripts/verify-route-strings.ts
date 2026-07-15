@@ -45,6 +45,38 @@ const ALLOWLIST_PREFIXES = [
 
 const ALLOWLIST_EXACT = new Set<string>(["/", "//"]);
 
+// External hosts trusted for intentional non-route `href`s. Match is exact
+// on the URL host or on a `.suffix` (e.g. `github.com` matches
+// `github.com` and `docs.github.com`). Prefer `DocsLink` in app code — this
+// list exists so scanning stays green even when a legacy inline `<a>` slips
+// through, and so verify catches unknown outbound domains loudly.
+const ALLOWLIST_EXTERNAL_HOSTS = [
+  "github.com",
+  "raw.githubusercontent.com",
+  "lovable.dev",
+  "lovable.app",
+  "docs.lovable.dev",
+  "supabase.com",
+  "supabase.co",
+  "payfast.co.za",
+  "reson8.life",
+  // Ecosystem / spoke apps
+  "resonanceonline.life",
+  "creativestudio.life",
+  "syncvision.life",
+  "epublisher.life",
+  "youtube-optimizer.life",
+  "resonance-podcast.com",
+  "medi-tech.co.za",
+  "career-compass.org",
+  // Common third parties referenced in marketing pages
+  "youtube.com",
+  "youtu.be",
+  "keepachangelog.com",
+];
+
+
+
 function loadRoutePatterns(): string[] {
   const src = readFileSync(ROUTE_TREE, "utf8");
   const patterns = new Set<string>();
@@ -110,6 +142,21 @@ function normalizePath(raw: string): string {
   return raw.replace(/\$\{[^}]*\}/g, "$x");
 }
 
+function isAllowedExternalHost(host: string): boolean {
+  const h = host.toLowerCase();
+  return ALLOWLIST_EXTERNAL_HOSTS.some(
+    (allowed) => h === allowed || h.endsWith(`.${allowed}`),
+  );
+}
+
+// Capture full absolute http(s) URLs from href/to/etc. so we can allowlist
+// trusted external hosts and flag unknown ones.
+const EXTERNAL_URL_PATTERNS: RegExp[] = [
+  /\bhref\s*=\s*["'`](https?:\/\/[^"'`\s]+)/g,
+  /\bto\s*=\s*\{?\s*["'`](https?:\/\/[^"'`\s]+)/g,
+  /window\.location\.(?:href|assign|replace)\s*(?:=|\()\s*["'`](https?:\/\/[^"'`\s]+)/g,
+];
+
 function scanFile(file: string, matchers: RegExp[]): Hit[] {
   const src = readFileSync(file, "utf8");
   const lines = src.split("\n");
@@ -144,8 +191,31 @@ function scanFile(file: string, matchers: RegExp[]): Hit[] {
       });
     }
   }
+  for (const re of EXTERNAL_URL_PATTERNS) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(src)) !== null) {
+      const raw = m[1];
+      let host = "";
+      try {
+        host = new URL(raw).host;
+      } catch {
+        continue;
+      }
+      if (isAllowedExternalHost(host)) continue;
+      const upto = src.slice(0, m.index).split("\n");
+      const line = upto.length;
+      hits.push({
+        file: relative(REPO_ROOT, file),
+        line,
+        path: raw,
+        context: `[external host not allowlisted: ${host}] ${(lines[line - 1] ?? "").trim().slice(0, 130)}`,
+      });
+    }
+  }
   return hits;
 }
+
 
 function main(): void {
   const patterns = loadRoutePatterns();
