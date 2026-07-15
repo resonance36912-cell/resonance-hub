@@ -60,7 +60,21 @@ const ALLOWLIST_EXTERNAL_HOSTS = [
   "supabase.co",
   "payfast.co.za",
   "reson8.life",
+  // Ecosystem / spoke apps
+  "resonanceonline.life",
+  "creativestudio.life",
+  "syncvision.life",
+  "epublisher.life",
+  "youtube-optimizer.life",
+  "resonance-podcast.com",
+  "medi-tech.co.za",
+  "career-compass.org",
+  // Common third parties referenced in marketing pages
+  "youtube.com",
+  "youtu.be",
+  "keepachangelog.com",
 ];
+
 
 
 function loadRoutePatterns(): string[] {
