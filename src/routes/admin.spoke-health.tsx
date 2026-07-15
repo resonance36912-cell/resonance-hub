@@ -117,12 +117,7 @@ function SpokeHealth() {
           <h1 className="mt-1 text-2xl font-semibold">Spoke Health & Control</h1>
           <p className="text-sm text-muted-foreground">
             Push config bundles and probe every registered spoke. See{" "}
-            <a
-              href="https://github.com/resonance36912-cell/resonance-hub/blob/main/docs/spoke-hub-control-contract.md"
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-            >the contract</a> for the endpoints spokes expose.
+            <AppLink to={ROUTES.docsSpokeHubControlContract} className="underline">the contract</AppLink> for the endpoints spokes expose.
           </p>
         </div>
         <div className="flex gap-2">
