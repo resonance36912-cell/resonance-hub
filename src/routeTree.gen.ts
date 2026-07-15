@@ -28,6 +28,7 @@ import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
 import { Route as GovernanceLogRouteImport } from './routes/governance.log'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as DocsSpokeHubControlContractRouteImport } from './routes/docs.spoke-hub-control-contract'
 import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -179,6 +180,12 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsSpokeHubControlContractRoute =
+  DocsSpokeHubControlContractRouteImport.update({
+    id: '/docs/spoke-hub-control-contract',
+    path: '/docs/spoke-hub-control-contract',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CreativeStudioPricingRoute = CreativeStudioPricingRouteImport.update({
   id: '/creative-studio/pricing',
   path: '/creative-studio/pricing',
@@ -510,6 +517,7 @@ export interface FileRoutesByFullPath {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/governance/log': typeof GovernanceLogRoute
@@ -586,6 +594,7 @@ export interface FileRoutesByTo {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/governance/log': typeof GovernanceLogRoute
@@ -663,6 +672,7 @@ export interface FileRoutesById {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/governance/log': typeof GovernanceLogRoute
@@ -741,6 +751,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
+    | '/docs/spoke-hub-control-contract'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/governance/log'
@@ -817,6 +828,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
+    | '/docs/spoke-hub-control-contract'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/governance/log'
@@ -893,6 +905,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
+    | '/docs/spoke-hub-control-contract'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/governance/log'
@@ -967,6 +980,7 @@ export interface RootRouteChildren {
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   ApiChatRoute: typeof ApiChatRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
+  DocsSpokeHubControlContractRoute: typeof DocsSpokeHubControlContractRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
   LegalGovernanceRoute: typeof LegalGovernanceRoute
@@ -1134,6 +1148,13 @@ declare module '@tanstack/react-router' {
       path: '/email/unsubscribe'
       fullPath: '/email/unsubscribe'
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/spoke-hub-control-contract': {
+      id: '/docs/spoke-hub-control-contract'
+      path: '/docs/spoke-hub-control-contract'
+      fullPath: '/docs/spoke-hub-control-contract'
+      preLoaderRoute: typeof DocsSpokeHubControlContractRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/creative-studio/pricing': {
@@ -1624,6 +1645,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminWebhooksRoute: AdminWebhooksRoute,
   ApiChatRoute: ApiChatRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
+  DocsSpokeHubControlContractRoute: DocsSpokeHubControlContractRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
   LegalGovernanceRoute: LegalGovernanceRoute,
