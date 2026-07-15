@@ -4,7 +4,10 @@ import { DocsLink } from "@/components/DocsLink";
 import { ROUTES, type RoutePath } from "@/lib/routes";
 
 const REPO_DOCS =
-  "https://github.com/resonance36912-cell/resonance-hub/blob/main/docs";
+  "https://github.com/resonance36912-cell/resonance-hub/blob/main/docs" as const;
+
+type ExternalHref = `https://${string}`;
+
 
 type DocEntry =
   | { title: string; description: string; to: RoutePath; href?: never }
