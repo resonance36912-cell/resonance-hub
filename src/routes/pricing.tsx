@@ -125,14 +125,7 @@ function PricingPage() {
             </p>
           </header>
 
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              Buy only what you need
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              Resonance apps use once-off credits, project packs, or pilots. No individual app
-              subscriptions. Purchase once, use whenever — top up when you need more.
-            </p>
-          </header>
+
 
           {Object.entries(APP_META).map(([appKey, meta]) => {
             const packs = packsByApp[appKey] ?? [];
