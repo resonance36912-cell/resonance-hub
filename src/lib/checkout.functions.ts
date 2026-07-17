@@ -12,11 +12,12 @@ import { isAllowedReturnTo } from "./return-to-allowlist";
  * to PayFast. ITN posts back to /api/public/payfast/itn.
  */
 
-// Annual billing is NOT supported. If/when annual SKUs are added,
-// extend the union and add matching entries to SKU_CATALOG + ITN SKU_CATALOG.
-export type Cycle = "monthly";
+// Ecosystem passes bill monthly; once-off packs bill once (no PayFast
+// subscription token). Any new cycle must be added to BOTH catalogs and to
+// the ITN parity map.
+export type Cycle = "monthly" | "once";
 
-export type SkuKind = "pass" | "legacy_monthly";
+export type SkuKind = "pass" | "legacy_monthly" | "pack";
 
 export type SkuDef = {
   sku: string;
@@ -25,11 +26,11 @@ export type SkuDef = {
   cycle: Cycle;
   amountCents: number;
   label: string;
-  /** UI classification: `pass` = active ecosystem pass, `legacy_monthly` = retired per-app plan (kept only so existing subscribers keep renewing). */
+  /** UI classification: `pass` = active ecosystem pass, `legacy_monthly` = retired per-app plan (kept only so existing subscribers keep renewing), `pack` = one-off credit pack. */
   kind: SkuKind;
 };
 
-// Monthly catalog mirrors SKU_CATALOG in routes/api/public/payfast/itn.ts
+// Monthly + one-off catalog mirrors SKU_CATALOG in routes/api/public/payfast/itn.ts
 // Prices reflect 2026-05-28 repricing audit (target ≥70% gross margin).
 export const SKU_CATALOG: Record<string, SkuDef> = {
   // ---------- Ecosystem passes (Hub-only, active) ----------
@@ -52,41 +53,59 @@ export const SKU_CATALOG: Record<string, SkuDef> = {
   "youtube_optimizer:business:monthly": { sku: "youtube_optimizer:business:monthly", app: "youtube_optimizer", tier: "business", cycle: "monthly", amountCents: 299900, label: "YouTube Optimizer · Business (legacy)", kind: "legacy_monthly" },
   // Legacy All-Access — replaced in UI by Studio Pass at same R1,499 price point.
   "all_access:all_access:monthly":    { sku: "all_access:all_access:monthly",    app: "all_access",       tier: "all_access", cycle: "monthly", amountCents: 149900, label: "All-Access Bundle (legacy)",          kind: "legacy_monthly" },
+
+  // ---------- One-off packs (PayFast one-time payments; credits into wallet) ----------
+  "epublisher:starter_pack:once":         { sku: "epublisher:starter_pack:once",         app: "epublisher",        tier: "starter_pack",  cycle: "once", amountCents: 9900,   label: "ePublisher · Starter Pack",           kind: "pack" },
+  "epublisher:creator_pack:once":         { sku: "epublisher:creator_pack:once",         app: "epublisher",        tier: "creator_pack",  cycle: "once", amountCents: 29900,  label: "ePublisher · Creator Pack",           kind: "pack" },
+  "epublisher:studio_pack:once":          { sku: "epublisher:studio_pack:once",          app: "epublisher",        tier: "studio_pack",   cycle: "once", amountCents: 69900,  label: "ePublisher · Studio Pack",            kind: "pack" },
+  "creative_studio:starter_pack:once":    { sku: "creative_studio:starter_pack:once",    app: "creative_studio",   tier: "starter_pack",  cycle: "once", amountCents: 14900,  label: "Creative Studio · Starter Pack",      kind: "pack" },
+  "creative_studio:pro_pack:once":        { sku: "creative_studio:pro_pack:once",        app: "creative_studio",   tier: "pro_pack",      cycle: "once", amountCents: 39900,  label: "Creative Studio · Pro Pack",          kind: "pack" },
+  "creative_studio:agency_pack:once":     { sku: "creative_studio:agency_pack:once",     app: "creative_studio",   tier: "agency_pack",   cycle: "once", amountCents: 89900,  label: "Creative Studio · Agency Pack",       kind: "pack" },
+  "sync_vision:single_pack:once":         { sku: "sync_vision:single_pack:once",         app: "sync_vision",       tier: "single_pack",   cycle: "once", amountCents: 34900,  label: "Sync Vision · Single Track",          kind: "pack" },
+  "sync_vision:ep_pack:once":             { sku: "sync_vision:ep_pack:once",             app: "sync_vision",       tier: "ep_pack",       cycle: "once", amountCents: 99900,  label: "Sync Vision · EP Pack",               kind: "pack" },
+  "sync_vision:album_pack:once":          { sku: "sync_vision:album_pack:once",          app: "sync_vision",       tier: "album_pack",    cycle: "once", amountCents: 249900, label: "Sync Vision · Album Pack",            kind: "pack" },
+  "youtube_optimizer:channel_audit:once": { sku: "youtube_optimizer:channel_audit:once", app: "youtube_optimizer", tier: "channel_audit", cycle: "once", amountCents: 14900,  label: "YouTube Optimizer · Channel Audit",   kind: "pack" },
+  "youtube_optimizer:growth_pack:once":   { sku: "youtube_optimizer:growth_pack:once",   app: "youtube_optimizer", tier: "growth_pack",   cycle: "once", amountCents: 59900,  label: "YouTube Optimizer · Growth Pack",     kind: "pack" },
+  "youtube_optimizer:agency_pack:once":   { sku: "youtube_optimizer:agency_pack:once",   app: "youtube_optimizer", tier: "agency_pack",   cycle: "once", amountCents: 249900, label: "YouTube Optimizer · Agency Pack",     kind: "pack" },
 };
 
 /**
- * Once-off app packs (UI/marketing catalog). NOT wired to PayFast yet —
- * checkout renders a waitlist stub. Prices and included allowances are
- * scaffolded defaults; edit freely.
+ * Once-off app packs shown on /pricing. Every pack maps 1:1 to a `kind:"pack"`
+ * SKU in SKU_CATALOG above (via `pack.sku`). On PayFast COMPLETE the ITN
+ * handler credits `creditsGranted` into the buyer's wallet for `pack.app` —
+ * spokes read that wallet via the shared usage API. Convention: 1 credit = R1.
  */
 export type PackDef = {
   id: string;
   app: "epublisher" | "creative_studio" | "sync_vision" | "youtube_optimizer";
+  sku: string;
   name: string;
   zar: string;
   amountCents: number;
+  creditsGranted: number;
   blurb: string;
   includes: string[];
 };
 
 export const PACK_CATALOG: Record<string, PackDef> = {
-  "epublisher_starter_pack":  { id: "epublisher_starter_pack",  app: "epublisher",       name: "Starter Pack",  zar: "R99",  amountCents: 9900,   blurb: "First-book kit",       includes: ["1 project", "Standard ePub export", "Watermark-free preview"] },
-  "epublisher_creator_pack":  { id: "epublisher_creator_pack",  app: "epublisher",       name: "Creator Pack",  zar: "R299", amountCents: 29900,  blurb: "For active authors",   includes: ["3 projects", "Audio narration credits", "AV export"] },
-  "epublisher_studio_pack":   { id: "epublisher_studio_pack",   app: "epublisher",       name: "Studio Pack",   zar: "R699", amountCents: 69900,  blurb: "Backlist migration",   includes: ["10 projects", "Custom voices", "Priority render queue"] },
-  "creative_studio_starter":  { id: "creative_studio_starter",  app: "creative_studio",  name: "Starter Pack",  zar: "R149", amountCents: 14900,  blurb: "Small campaigns",      includes: ["30 image credits", "5 short videos", "HD exports"] },
-  "creative_studio_pro":      { id: "creative_studio_pro",      app: "creative_studio",  name: "Pro Pack",      zar: "R399", amountCents: 39900,  blurb: "Full campaigns",       includes: ["100 image credits", "20 videos", "Brand kit slot"] },
-  "creative_studio_agency":   { id: "creative_studio_agency",   app: "creative_studio",  name: "Agency Pack",   zar: "R899", amountCents: 89900,  blurb: "Multi-client output",  includes: ["300 image credits", "60 videos", "White-label option"] },
-  "sync_vision_single":       { id: "sync_vision_single",       app: "sync_vision",      name: "Single Track",  zar: "R349", amountCents: 34900,  blurb: "One music video",      includes: ["1 track storyboard", "Character concepts", "Scene prompts"] },
-  "sync_vision_ep":           { id: "sync_vision_ep",           app: "sync_vision",      name: "EP Pack",       zar: "R999", amountCents: 99900,  blurb: "Four-track EP",        includes: ["4 track storyboards", "Character consistency", "Priority render"] },
-  "sync_vision_album":        { id: "sync_vision_album",        app: "sync_vision",      name: "Album Pack",    zar: "R2,499", amountCents: 249900, blurb: "Album/tour ready",    includes: ["12 track storyboards", "Tour visuals", "Studio support"] },
-  "yto_channel_audit":        { id: "yto_channel_audit",        app: "youtube_optimizer",name: "Channel Audit", zar: "R149", amountCents: 14900,  blurb: "First deep audit",     includes: ["1 channel audit", "10 AI thumbnails", "Title/tag report"] },
-  "yto_growth_pack":          { id: "yto_growth_pack",          app: "youtube_optimizer",name: "Growth Pack",   zar: "R599", amountCents: 59900,  blurb: "Ongoing optimisation", includes: ["5 audits", "50 thumbnails", "90-day growth roadmap"] },
-  "yto_agency_pack":          { id: "yto_agency_pack",          app: "youtube_optimizer",name: "Agency Pack",   zar: "R2,499", amountCents: 249900, blurb: "Multi-channel teams", includes: ["25 audits", "250 thumbnails", "Team seats"] },
+  "epublisher_starter_pack":  { id: "epublisher_starter_pack",  app: "epublisher",       sku: "epublisher:starter_pack:once",         name: "Starter Pack",   zar: "R99",    amountCents: 9900,   creditsGranted: 99,   blurb: "First-book kit",       includes: ["1 project", "Standard ePub export", "Watermark-free preview"] },
+  "epublisher_creator_pack":  { id: "epublisher_creator_pack",  app: "epublisher",       sku: "epublisher:creator_pack:once",         name: "Creator Pack",   zar: "R299",   amountCents: 29900,  creditsGranted: 299,  blurb: "For active authors",   includes: ["3 projects", "Audio narration credits", "AV export"] },
+  "epublisher_studio_pack":   { id: "epublisher_studio_pack",   app: "epublisher",       sku: "epublisher:studio_pack:once",          name: "Studio Pack",    zar: "R699",   amountCents: 69900,  creditsGranted: 699,  blurb: "Backlist migration",   includes: ["10 projects", "Custom voices", "Priority render queue"] },
+  "creative_studio_starter":  { id: "creative_studio_starter",  app: "creative_studio",  sku: "creative_studio:starter_pack:once",    name: "Starter Pack",   zar: "R149",   amountCents: 14900,  creditsGranted: 149,  blurb: "Small campaigns",      includes: ["30 image credits", "5 short videos", "HD exports"] },
+  "creative_studio_pro":      { id: "creative_studio_pro",      app: "creative_studio",  sku: "creative_studio:pro_pack:once",        name: "Pro Pack",       zar: "R399",   amountCents: 39900,  creditsGranted: 399,  blurb: "Full campaigns",       includes: ["100 image credits", "20 videos", "Brand kit slot"] },
+  "creative_studio_agency":   { id: "creative_studio_agency",   app: "creative_studio",  sku: "creative_studio:agency_pack:once",     name: "Agency Pack",    zar: "R899",   amountCents: 89900,  creditsGranted: 899,  blurb: "Multi-client output",  includes: ["300 image credits", "60 videos", "White-label option"] },
+  "sync_vision_single":       { id: "sync_vision_single",       app: "sync_vision",      sku: "sync_vision:single_pack:once",         name: "Single Track",   zar: "R349",   amountCents: 34900,  creditsGranted: 349,  blurb: "One music video",      includes: ["1 track storyboard", "Character concepts", "Scene prompts"] },
+  "sync_vision_ep":           { id: "sync_vision_ep",           app: "sync_vision",      sku: "sync_vision:ep_pack:once",             name: "EP Pack",        zar: "R999",   amountCents: 99900,  creditsGranted: 999,  blurb: "Four-track EP",        includes: ["4 track storyboards", "Character consistency", "Priority render"] },
+  "sync_vision_album":        { id: "sync_vision_album",        app: "sync_vision",      sku: "sync_vision:album_pack:once",          name: "Album Pack",     zar: "R2,499", amountCents: 249900, creditsGranted: 2499, blurb: "Album/tour ready",     includes: ["12 track storyboards", "Tour visuals", "Studio support"] },
+  "yto_channel_audit":        { id: "yto_channel_audit",        app: "youtube_optimizer",sku: "youtube_optimizer:channel_audit:once", name: "Channel Audit",  zar: "R149",   amountCents: 14900,  creditsGranted: 149,  blurb: "First deep audit",     includes: ["1 channel audit", "10 AI thumbnails", "Title/tag report"] },
+  "yto_growth_pack":          { id: "yto_growth_pack",          app: "youtube_optimizer",sku: "youtube_optimizer:growth_pack:once",   name: "Growth Pack",    zar: "R599",   amountCents: 59900,  creditsGranted: 599,  blurb: "Ongoing optimisation", includes: ["5 audits", "50 thumbnails", "90-day growth roadmap"] },
+  "yto_agency_pack":          { id: "yto_agency_pack",          app: "youtube_optimizer",sku: "youtube_optimizer:agency_pack:once",   name: "Agency Pack",    zar: "R2,499", amountCents: 249900, creditsGranted: 2499, blurb: "Multi-channel teams",  includes: ["25 audits", "250 thumbnails", "Team seats"] },
 };
 
 export function resolvePack(id: string): PackDef | null {
   return PACK_CATALOG[id] ?? null;
 }
+
 
 
 export function resolveSku(app: string, plan: string, cycle: Cycle = "monthly"): SkuDef | null {
