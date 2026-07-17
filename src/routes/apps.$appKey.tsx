@@ -100,8 +100,8 @@ export const Route = createFileRoute("/apps/$appKey")({
 });
 
 function AppDetailPage() {
-  const { entry } = Route.useLoaderData();
-  const capabilities = CAPABILITIES[entry.key];
+  const { entry } = Route.useLoaderData() as { entry: AppRegistryEntry };
+  const capabilities: Capability[] = CAPABILITIES[entry.key];
   const pricingRoute =
     entry.key === "epublisher"
       ? ROUTES.epublisherPricing
