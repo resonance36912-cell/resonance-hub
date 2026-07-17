@@ -267,6 +267,7 @@ export type PayfastLaunch = {
   sku: string;
   amountCents: number;
   label: string;
+  sessionId: string;
 };
 
 async function buildLaunch(
@@ -291,14 +292,57 @@ async function buildLaunch(
   const originUrl = `${origin.proto}://${origin.host}`;
   const returnTo = returnToInput ?? `${originUrl}/account/subscriptions`;
   const amount = (def.amountCents / 100).toFixed(2);
+  const mPaymentId = `${userId}:${def.sku}:${Date.now()}`;
+
+  // Create the checkout_sessions row FIRST so it's queryable the instant PayFast
+  // (or the return URL) hits us. m_payment_id is our unique correlation key.
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: session, error: sessionErr } = await supabaseAdmin
+    .from("checkout_sessions" as never)
+    .insert({
+      user_id: userId,
+      sku: def.sku,
+      app: def.app,
+      tier: def.tier,
+      cycle: def.cycle,
+      amount_cents: def.amountCents,
+      currency: "ZAR",
+      m_payment_id: mPaymentId,
+      status: "pending",
+      return_to: returnTo,
+      retry_of_subscription_id: meta.retryOfSubscriptionId ?? null,
+      sandbox,
+      source_ip: origin.sourceIp,
+      user_agent: origin.userAgent,
+      metadata: { kind: def.kind, label: def.label },
+    } as never)
+    .select("id")
+    .single();
+
+  if (sessionErr || !session) {
+    throw new Error(`Failed to create checkout session: ${sessionErr?.message ?? "unknown"}`);
+  }
+  const sessionId = (session as unknown as { id: string }).id;
+
+  // Append the "launch" event to the append-only ledger.
+  await supabaseAdmin.from("payment_events" as never).insert({
+    session_id: sessionId,
+    user_id: userId,
+    provider: "payfast",
+    event_type: "launch",
+    m_payment_id: mPaymentId,
+    amount_cents: def.amountCents,
+    source_ip: origin.sourceIp,
+    metadata: { sku: def.sku, sandbox, retry_of: meta.retryOfSubscriptionId ?? null },
+  } as never);
 
   const unsignedFields: Record<string, string> = {
     merchant_id: merchantId,
     merchant_key: merchantKey,
-    return_url: `${originUrl}/checkout/success?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
-    cancel_url: `${originUrl}/checkout/cancel?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
+    return_url: `${originUrl}/checkout/success?sku=${encodeURIComponent(def.sku)}&session=${sessionId}&return_to=${encodeURIComponent(returnTo)}`,
+    cancel_url: `${originUrl}/checkout/cancel?sku=${encodeURIComponent(def.sku)}&session=${sessionId}&return_to=${encodeURIComponent(returnTo)}`,
     notify_url: `${originUrl}/api/public/payfast/itn`,
-    m_payment_id: `${userId}:${def.sku}:${Date.now()}`,
+    m_payment_id: mPaymentId,
     amount,
     item_name: def.sku,
     item_description: def.label,
@@ -316,6 +360,7 @@ async function buildLaunch(
     event: meta.retryOfSubscriptionId ? "payfast_launch_retry" : "payfast_launch",
     user_id: userId,
     sku: def.sku,
+    session_id: sessionId,
     amount_cents: def.amountCents,
     amount_zar: amount,
     m_payment_id: fields.m_payment_id,
@@ -325,7 +370,6 @@ async function buildLaunch(
   }));
 
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin.from("payfast_launch_logs").insert({
       user_id: userId,
       sku: def.sku,
@@ -342,7 +386,7 @@ async function buildLaunch(
     console.error("Failed to write payfast_launch_logs:", err);
   }
 
-  return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label };
+  return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label, sessionId };
 }
 
 async function requestOrigin() {

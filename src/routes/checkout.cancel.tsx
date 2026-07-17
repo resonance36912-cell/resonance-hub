@@ -13,6 +13,7 @@ import { AppLink } from "@/components/AppLink";
 const Search = z.object({
   sku: z.string().optional(),
   pack: z.string().optional(),
+  session: z.string().uuid().optional(),
   return_to: z
     .string()
     .url()

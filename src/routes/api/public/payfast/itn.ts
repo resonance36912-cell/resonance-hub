@@ -138,10 +138,67 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           source_ip: sourceIp, raw_payload: params,
         };
 
+        // ---------- Session correlation + append-only event ledger ----------
+        // buildLaunch() wrote a checkout_sessions row keyed by our
+        // m_payment_id. Every ITN — signature-invalid, duplicate, or terminal
+        // — appends to payment_events. Terminal outcomes also transition
+        // checkout_sessions.status so /checkout/success can poll it.
+        let sessionId: string | null = null;
+        let sessionUserId: string | null = null;
+        if (mPaymentId) {
+          const { data: sessRow } = await supabaseAdmin
+            .from("checkout_sessions" as never)
+            .select("id, user_id")
+            .eq("m_payment_id" as never, mPaymentId as never)
+            .maybeSingle();
+          const s = sessRow as unknown as { id: string; user_id: string } | null;
+          if (s) { sessionId = s.id; sessionUserId = s.user_id; }
+        }
+
+        const recordEvent = async (input: {
+          event_type: string; outcome?: string | null; http_status?: number | null;
+          include_payload?: boolean;
+        }) => {
+          try {
+            await supabaseAdmin.from("payment_events" as never).insert({
+              session_id: sessionId,
+              user_id: sessionUserId ?? userId ?? null,
+              provider: "payfast",
+              event_type: input.event_type,
+              payment_status: paymentStatus,
+              pf_payment_id: pfPaymentId,
+              m_payment_id: mPaymentId,
+              amount_cents: grossCents,
+              outcome: input.outcome ?? input.event_type,
+              http_status: input.http_status ?? null,
+              source_ip: sourceIp,
+              raw_payload: input.include_payload ? params : null,
+              metadata: { sku },
+            } as never);
+          } catch (err) { console.error("payment_events insert failed:", err); }
+        };
+
+        const updateSession = async (
+          status: "pending" | "succeeded" | "failed" | "cancelled" | "refunded" | "expired",
+          errorMessage?: string | null,
+        ) => {
+          if (!sessionId) return;
+          try {
+            await supabaseAdmin.from("checkout_sessions" as never).update({
+              status,
+              error_message: errorMessage ?? null,
+              pf_payment_id: pfPaymentId,
+              last_event_at: new Date().toISOString(),
+            } as never).eq("id" as never, sessionId as never);
+          } catch (err) { console.error("checkout_sessions update failed:", err); }
+        };
+
+
         // 1. Signature
         const expectedSig = buildSignature(params, passphrase);
         const sigOk = !!params.signature && params.signature.toLowerCase() === expectedSig.toLowerCase();
         if (!sigOk) {
+          await recordEvent({ event_type: "signature_invalid", http_status: 400, include_payload: true });
           await logAttempt({ ...baseLog, signature_valid: false, server_validated: false,
             outcome: "invalid_signature", http_status: 400, error_message: "Signature mismatch" });
           return new Response("invalid signature", { status: 400 });
@@ -150,10 +207,13 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // 2. Server-to-server validation
         const validated = await validateWithPayfast(rawBody, sandbox);
         if (!validated) {
+          await recordEvent({ event_type: "validation_failed", http_status: 400 });
+          await updateSession("failed", "PayFast did not return VALID");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: false,
             outcome: "validation_failed", http_status: 400, error_message: "PayFast did not return VALID" });
           return new Response("not validated", { status: 400 });
         }
+
 
         // 3. Webhook dedup / idempotency claim.
         //
@@ -194,6 +254,10 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             .eq("event_id", eventId)
             .maybeSingle();
 
+          await recordEvent({
+            event_type: "duplicate", outcome: `replay:${prior?.outcome ?? "unknown"}`,
+            http_status: prior?.http_status ?? 200,
+          });
           await logAttempt({
             ...baseLog, signature_valid: true, server_validated: true,
             outcome: "duplicate_webhook", http_status: prior?.http_status ?? 200,
@@ -204,11 +268,13 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         if (claimErr) {
           // Claim insert failed for a non-dedup reason — fail closed so
           // PayFast retries rather than silently dropping the event.
+          await recordEvent({ event_type: "dedup_claim_failed", http_status: 500 });
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "dedup_claim_failed", http_status: 500, error_message: claimErr.message });
           return new Response("dedup claim failed", { status: 500 });
         }
         const webhookRowId = claimed?.id ?? null;
+
 
         // Helper: finalize the webhook_events row with the response we're
         // about to return, so future replays get the same answer.
@@ -231,24 +297,31 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
 
         const def = sku ? SKU_CATALOG[sku] : undefined;
         if (!def) {
+          await recordEvent({ event_type: "unknown_sku", http_status: 400 });
+          await updateSession("failed", `Unknown SKU: ${sku}`);
           await finalize("unknown_sku", 400, "unknown sku");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
           return new Response("unknown sku", { status: 400 });
         }
         if (!userId) {
+          await recordEvent({ event_type: "missing_user", http_status: 400 });
+          await updateSession("failed", "custom_str1 missing");
           await finalize("missing_user", 400, "missing user");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
           return new Response("missing user", { status: 400 });
         }
         if (grossCents !== def.amountCents) {
+          await recordEvent({ event_type: "amount_mismatch", http_status: 400 });
+          await updateSession("failed", `Got ${grossCents}, expected ${def.amountCents}`);
           await finalize("amount_mismatch", 400, "amount mismatch");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "amount_mismatch", http_status: 400,
             error_message: `Got ${grossCents}, expected ${def.amountCents}` });
           return new Response("amount mismatch", { status: 400 });
         }
+
 
         // ---------- One-off pack fulfillment ----------
         // Packs are once-off PayFast payments. On COMPLETE we credit the
@@ -276,6 +349,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
               if (webhookRowId) {
                 await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
               }
+              await recordEvent({ event_type: "pack_grant_failed", http_status: 500 });
               await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
                 outcome: "pack_grant_failed", http_status: 500, error_message: grantErr.message });
               return new Response("grant failed", { status: 500 });
@@ -322,11 +396,16 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             : packSuccess
               ? "pack_purchase_complete"
               : `pack_${paymentStatus.toLowerCase()}`;
+          await recordEvent({ event_type: outcomeTag, http_status: 200 });
+          await updateSession(
+            isPackRefund ? "refunded" : packSuccess ? "succeeded" : "pending",
+          );
           await finalize(outcomeTag, 200, "ok");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: outcomeTag, http_status: 200 });
           return new Response("ok", { status: 200 });
         }
+
 
 
         // PayFast payment_status values we care about:
@@ -400,10 +479,12 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           if (webhookRowId) {
             await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
           }
+          await recordEvent({ event_type: "db_error", http_status: 500 });
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "db_error", http_status: 500, error_message: error.message });
           return new Response("db error", { status: 500 });
         }
+
 
         const newSubId = (upserted as { id: string } | null)?.id ?? null;
 
@@ -569,11 +650,20 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         }
 
         const outcomeTag = isRefund ? "subscription_refunded" : `subscription_${nextStatus}`;
+        const sessionStatus: "succeeded" | "cancelled" | "refunded" | "failed" | "pending" =
+          isRefund ? "refunded"
+          : nextStatus === "active" ? "succeeded"
+          : nextStatus === "cancelled" ? "cancelled"
+          : nextStatus === "past_due" ? "failed"
+          : "pending";
+        await recordEvent({ event_type: outcomeTag, http_status: 200 });
+        await updateSession(sessionStatus);
         await finalize(outcomeTag, 200, "ok");
         await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
           outcome: outcomeTag, http_status: 200 });
 
         return new Response("ok", { status: 200 });
+
 
       },
     },
