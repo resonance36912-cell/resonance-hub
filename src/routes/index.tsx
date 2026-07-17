@@ -1130,14 +1130,30 @@ function Index() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { title: "Unified Hub login", body: "Single sign-on across every Resonance app.", eta: "Q1 2026" },
-              { title: "Pack redemption", body: "Once-off packs redeemable inside each app dashboard.", eta: "Q1 2026" },
-              { title: "Career Compass paid tiers", body: "Per-report, school, and district packages.", eta: "2026" },
+              {
+                title: "Unified Hub login",
+                body: "Single sign-on across every Resonance app.",
+                status: "In development",
+                note: "Broker + Supabase session already flows via the Hub; per-spoke handoff rollout begins after Phase 8 QA.",
+              },
+              {
+                title: "Pack redemption inside spokes",
+                body: "Once-off packs redeemable inside each app dashboard.",
+                status: "Rolling out",
+                note: "Live in Creative Studio proxy; ePublisher and Sync Vision wiring in progress.",
+              },
+              {
+                title: "Career Compass paid tiers",
+                body: "Per-report, school, and district packages.",
+                status: "Planned",
+                note: "Pilot stays free-to-use while paid packaging is scoped.",
+              },
             ].map((r) => (
               <article key={r.title} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-2">{r.eta}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-white/60 mb-2">{r.status}</div>
                 <h4 className="text-sm font-bold tracking-tight mb-2">{r.title}</h4>
-                <p className="text-xs text-white/65 leading-relaxed">{r.body}</p>
+                <p className="text-xs text-white/65 leading-relaxed mb-2">{r.body}</p>
+                <p className="text-[11px] text-white/45 leading-relaxed">{r.note}</p>
               </article>
             ))}
           </div>
