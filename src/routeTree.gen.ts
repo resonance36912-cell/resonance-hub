@@ -35,6 +35,7 @@ import { Route as GovernanceLogRouteImport } from './routes/governance.log'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DocsSpokeHubControlContractRouteImport } from './routes/docs.spoke-hub-control-contract'
+import { Route as DocsEntitlementApiRouteImport } from './routes/docs.entitlement-api'
 import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
@@ -85,6 +86,7 @@ import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/publ
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
 import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
+import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/public/entitlement.health'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
@@ -222,6 +224,11 @@ const DocsSpokeHubControlContractRoute =
     path: '/docs/spoke-hub-control-contract',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DocsEntitlementApiRoute = DocsEntitlementApiRouteImport.update({
+  id: '/docs/entitlement-api',
+  path: '/docs/entitlement-api',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CreativeStudioPricingRoute = CreativeStudioPricingRouteImport.update({
   id: '/creative-studio/pricing',
   path: '/creative-studio/pricing',
@@ -484,6 +491,12 @@ const ApiPublicHooksProcessSubscriptionEmailsRoute =
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicEntitlementHealthRoute =
+  ApiPublicEntitlementHealthRouteImport.update({
+    id: '/health',
+    path: '/health',
+    getParentRoute: () => ApiPublicEntitlementRoute,
+  } as any)
 const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicAnalyticsAuthGateRouteImport.update({
     id: '/api/public/analytics/auth-gate',
@@ -553,6 +566,7 @@ export interface FileRoutesByFullPath {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/entitlement-api': typeof DocsEntitlementApiRoute
   '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
@@ -572,12 +586,13 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
-  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -636,6 +651,7 @@ export interface FileRoutesByTo {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/entitlement-api': typeof DocsEntitlementApiRoute
   '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
@@ -655,12 +671,13 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
-  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -720,6 +737,7 @@ export interface FileRoutesById {
   '/checkout/cancel': typeof CheckoutCancelRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/entitlement-api': typeof DocsEntitlementApiRoute
   '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
@@ -739,12 +757,13 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
-  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
   '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
@@ -805,6 +824,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
+    | '/docs/entitlement-api'
     | '/docs/spoke-hub-control-contract'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
@@ -830,6 +850,7 @@ export interface FileRouteTypes {
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
@@ -888,6 +909,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
+    | '/docs/entitlement-api'
     | '/docs/spoke-hub-control-contract'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
@@ -913,6 +935,7 @@ export interface FileRouteTypes {
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
@@ -971,6 +994,7 @@ export interface FileRouteTypes {
     | '/checkout/cancel'
     | '/checkout/success'
     | '/creative-studio/pricing'
+    | '/docs/entitlement-api'
     | '/docs/spoke-hub-control-contract'
     | '/email/unsubscribe'
     | '/epublisher/pricing'
@@ -996,6 +1020,7 @@ export interface FileRouteTypes {
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
     | '/api/public/payfast/itn'
@@ -1052,6 +1077,7 @@ export interface RootRouteChildren {
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   ApiChatRoute: typeof ApiChatRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
+  DocsEntitlementApiRoute: typeof DocsEntitlementApiRoute
   DocsSpokeHubControlContractRoute: typeof DocsSpokeHubControlContractRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
@@ -1069,7 +1095,7 @@ export interface RootRouteChildren {
   LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
-  ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
+  ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
@@ -1275,6 +1301,13 @@ declare module '@tanstack/react-router' {
       path: '/docs/spoke-hub-control-contract'
       fullPath: '/docs/spoke-hub-control-contract'
       preLoaderRoute: typeof DocsSpokeHubControlContractRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/entitlement-api': {
+      id: '/docs/entitlement-api'
+      path: '/docs/entitlement-api'
+      fullPath: '/docs/entitlement-api'
+      preLoaderRoute: typeof DocsEntitlementApiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/creative-studio/pricing': {
@@ -1627,6 +1660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/entitlement/health': {
+      id: '/api/public/entitlement/health'
+      path: '/health'
+      fullPath: '/api/public/entitlement/health'
+      preLoaderRoute: typeof ApiPublicEntitlementHealthRouteImport
+      parentRoute: typeof ApiPublicEntitlementRoute
+    }
     '/api/public/analytics/auth-gate': {
       id: '/api/public/analytics/auth-gate'
       path: '/api/public/analytics/auth-gate'
@@ -1729,6 +1769,17 @@ const ToolsCodexRouteWithChildren = ToolsCodexRoute._addFileChildren(
   ToolsCodexRouteChildren,
 )
 
+interface ApiPublicEntitlementRouteChildren {
+  ApiPublicEntitlementHealthRoute: typeof ApiPublicEntitlementHealthRoute
+}
+
+const ApiPublicEntitlementRouteChildren: ApiPublicEntitlementRouteChildren = {
+  ApiPublicEntitlementHealthRoute: ApiPublicEntitlementHealthRoute,
+}
+
+const ApiPublicEntitlementRouteWithChildren =
+  ApiPublicEntitlementRoute._addFileChildren(ApiPublicEntitlementRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppsRoute: AppsRouteWithChildren,
@@ -1765,6 +1816,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminWebhooksRoute: AdminWebhooksRoute,
   ApiChatRoute: ApiChatRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
+  DocsEntitlementApiRoute: DocsEntitlementApiRoute,
   DocsSpokeHubControlContractRoute: DocsSpokeHubControlContractRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
@@ -1782,7 +1834,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalIndexRoute: LegalIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
-  ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
+  ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
