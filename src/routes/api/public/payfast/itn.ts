@@ -254,6 +254,10 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             .eq("event_id", eventId)
             .maybeSingle();
 
+          await recordEvent({
+            event_type: "duplicate", outcome: `replay:${prior?.outcome ?? "unknown"}`,
+            http_status: prior?.http_status ?? 200,
+          });
           await logAttempt({
             ...baseLog, signature_valid: true, server_validated: true,
             outcome: "duplicate_webhook", http_status: prior?.http_status ?? 200,
@@ -264,11 +268,13 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         if (claimErr) {
           // Claim insert failed for a non-dedup reason — fail closed so
           // PayFast retries rather than silently dropping the event.
+          await recordEvent({ event_type: "dedup_claim_failed", http_status: 500 });
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "dedup_claim_failed", http_status: 500, error_message: claimErr.message });
           return new Response("dedup claim failed", { status: 500 });
         }
         const webhookRowId = claimed?.id ?? null;
+
 
         // Helper: finalize the webhook_events row with the response we're
         // about to return, so future replays get the same answer.
