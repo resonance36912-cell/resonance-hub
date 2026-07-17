@@ -121,7 +121,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
-    "@lovable.dev/vite-tanstack-config": "2.7.1",
+    "@lovable.dev/vite-tanstack-config": "2.7.6",
     "@types/node": "22.19.17",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
