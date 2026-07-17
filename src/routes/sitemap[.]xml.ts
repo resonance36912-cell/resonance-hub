@@ -20,15 +20,28 @@ export const Route = createFileRoute("/sitemap.xml")({
         const hubEntries: SitemapEntry[] = [
           { loc: `${BASE_URL}/`, changefreq: "weekly", priority: "1.0", lastmod: today },
           { loc: `${BASE_URL}/pricing`, changefreq: "monthly", priority: "0.9", lastmod: today },
+          { loc: `${BASE_URL}/apps`, changefreq: "weekly", priority: "0.9", lastmod: today },
           { loc: `${BASE_URL}/governance`, changefreq: "monthly", priority: "0.5", lastmod: today },
           { loc: `${BASE_URL}/changelog`, changefreq: "weekly", priority: "0.6", lastmod: today },
+          { loc: `${BASE_URL}/legal`, changefreq: "yearly", priority: "0.3", lastmod: today },
+          { loc: `${BASE_URL}/legal/privacy`, changefreq: "yearly", priority: "0.3", lastmod: today },
+          { loc: `${BASE_URL}/legal/terms`, changefreq: "yearly", priority: "0.3", lastmod: today },
+          { loc: `${BASE_URL}/legal/cookies`, changefreq: "yearly", priority: "0.3", lastmod: today },
           { loc: `${BASE_URL}/epublisher/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
           { loc: `${BASE_URL}/creative-studio/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
           { loc: `${BASE_URL}/sync-vision/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
           { loc: `${BASE_URL}/youtube-optimizer/pricing`, changefreq: "monthly", priority: "0.8", lastmod: today },
         ];
 
-        // One entry per canonical public app URL from APP_REGISTRY.
+        // Public detail page on the Hub for every app in APP_REGISTRY.
+        const appDetailEntries: SitemapEntry[] = Object.values(APP_REGISTRY).map((e) => ({
+          loc: `${BASE_URL}/apps/${e.key}`,
+          changefreq: "weekly" as const,
+          priority: e.status === "live" ? "0.8" : "0.6",
+          lastmod: today,
+        }));
+
+        // One entry per canonical external app URL from APP_REGISTRY.
         const seen = new Set<string>();
         const appEntries: SitemapEntry[] = Object.values(APP_REGISTRY)
           .filter((e) => {
@@ -44,7 +57,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             lastmod: today,
           }));
 
-        const entries = [...hubEntries, ...appEntries];
+        const entries = [...hubEntries, ...appDetailEntries, ...appEntries];
 
         const urls = entries.map((e) =>
           [
