@@ -35,7 +35,7 @@ export type AppRegistryRow = {
   pricingPath: string;
   manageBillingPath: string;
   backToHubPath: string;
-  capabilities: Record<string, unknown>;
+  capabilities: Record<string, string | number | boolean | string[] | null>;
   sortOrder: number;
   updatedAt: string;
 };
