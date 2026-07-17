@@ -1881,6 +1881,72 @@ export type Database = {
         }
         Relationships: []
       }
+      sku_catalogue: {
+        Row: {
+          amount_cents: number
+          app: string
+          billing_type: Database["public"]["Enums"]["sku_billing_type"]
+          catalogue_version: number
+          created_at: string
+          credit_expiry_days: number | null
+          credits_granted: number
+          currency: string
+          intended_user: string
+          kind: Database["public"]["Enums"]["sku_kind"]
+          label: string
+          metadata: Json
+          refund_rule: string
+          short_description: string
+          sku_id: string
+          status: Database["public"]["Enums"]["sku_status"]
+          terms_version: string
+          updated_at: string
+          vat_cents: number
+        }
+        Insert: {
+          amount_cents: number
+          app: string
+          billing_type: Database["public"]["Enums"]["sku_billing_type"]
+          catalogue_version?: number
+          created_at?: string
+          credit_expiry_days?: number | null
+          credits_granted?: number
+          currency?: string
+          intended_user?: string
+          kind: Database["public"]["Enums"]["sku_kind"]
+          label: string
+          metadata?: Json
+          refund_rule?: string
+          short_description?: string
+          sku_id: string
+          status?: Database["public"]["Enums"]["sku_status"]
+          terms_version?: string
+          updated_at?: string
+          vat_cents?: number
+        }
+        Update: {
+          amount_cents?: number
+          app?: string
+          billing_type?: Database["public"]["Enums"]["sku_billing_type"]
+          catalogue_version?: number
+          created_at?: string
+          credit_expiry_days?: number | null
+          credits_granted?: number
+          currency?: string
+          intended_user?: string
+          kind?: Database["public"]["Enums"]["sku_kind"]
+          label?: string
+          metadata?: Json
+          refund_rule?: string
+          short_description?: string
+          sku_id?: string
+          status?: Database["public"]["Enums"]["sku_status"]
+          terms_version?: string
+          updated_at?: string
+          vat_cents?: number
+        }
+        Relationships: []
+      }
       sku_costs: {
         Row: {
           cost_cents: number
@@ -1907,6 +1973,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sku_lifecycle_log: {
+        Row: {
+          actor_user_id: string | null
+          created_at: string
+          from_status: Database["public"]["Enums"]["sku_status"] | null
+          id: string
+          reason: string
+          sku_id: string
+          to_status: Database["public"]["Enums"]["sku_status"]
+        }
+        Insert: {
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["sku_status"] | null
+          id?: string
+          reason: string
+          sku_id: string
+          to_status: Database["public"]["Enums"]["sku_status"]
+        }
+        Update: {
+          actor_user_id?: string | null
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["sku_status"] | null
+          id?: string
+          reason?: string
+          sku_id?: string
+          to_status?: Database["public"]["Enums"]["sku_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sku_lifecycle_log_sku_id_fkey"
+            columns: ["sku_id"]
+            isOneToOne: false
+            referencedRelation: "sku_catalogue"
+            referencedColumns: ["sku_id"]
+          },
+        ]
       }
       subscription_email_attempts: {
         Row: {
@@ -2427,6 +2531,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      resolve_sku_for_purchase: {
+        Args: { _sku_id: string; _user_id: string }
+        Returns: {
+          amount_cents: number
+          app: string
+          billing_type: Database["public"]["Enums"]["sku_billing_type"]
+          catalogue_version: number
+          credits_granted: number
+          currency: string
+          grandfathered: boolean
+          kind: Database["public"]["Enums"]["sku_kind"]
+          label: string
+          sku_id: string
+          status: Database["public"]["Enums"]["sku_status"]
+          terms_version: string
+          vat_cents: number
+        }[]
+      }
     }
     Enums: {
       app_role:
@@ -2472,6 +2594,9 @@ export type Database = {
         | "institutional_plan"
         | "promotional_credit"
         | "add_on"
+      sku_billing_type: "once" | "monthly" | "quote"
+      sku_kind: "pack" | "pass" | "legacy_monthly" | "custom_quote"
+      sku_status: "draft" | "active" | "grandfathered" | "retired" | "disabled"
       subscription_app:
         | "epublisher"
         | "creative_studio"
@@ -2665,6 +2790,9 @@ export const Constants = {
         "promotional_credit",
         "add_on",
       ],
+      sku_billing_type: ["once", "monthly", "quote"],
+      sku_kind: ["pack", "pass", "legacy_monthly", "custom_quote"],
+      sku_status: ["draft", "active", "grandfathered", "retired", "disabled"],
       subscription_app: [
         "epublisher",
         "creative_studio",
