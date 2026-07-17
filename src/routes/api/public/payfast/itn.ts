@@ -250,6 +250,85 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           return new Response("amount mismatch", { status: 400 });
         }
 
+        // ---------- One-off pack fulfillment ----------
+        // Packs are once-off PayFast payments. On COMPLETE we credit the
+        // buyer's wallet via grant_pack_credits (idempotent on pf_payment_id)
+        // and write an invoice. No subscription row, no email retry queue.
+        if (def.kind === "pack") {
+          const isPackRefund = paymentStatus === "REFUND" || paymentStatus === "REFUNDED";
+          const packSuccess = paymentStatus === "COMPLETE";
+
+          if (packSuccess && def.creditsGranted && def.creditsGranted > 0) {
+            const { error: grantErr } = await supabaseAdmin.rpc(
+              "grant_pack_credits" as never,
+              {
+                _user_id: userId,
+                _app: def.app,
+                _amount: def.creditsGranted,
+                _sku: sku!,
+                _pf_payment_id: pfPaymentId,
+                _idempotency_key: `pack:${pfPaymentId}`,
+                _metadata: { source: "payfast_itn", tier: def.tier },
+              } as never,
+            );
+            if (grantErr) {
+              // Fail-open so PayFast retries; clear webhook claim.
+              if (webhookRowId) {
+                await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
+              }
+              await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+                outcome: "pack_grant_failed", http_status: 500, error_message: grantErr.message });
+              return new Response("grant failed", { status: 500 });
+            }
+          }
+
+          // Invoice (packs still get a receipt). subscription_id null for packs.
+          if (pfPaymentId && (packSuccess || isPackRefund)) {
+            try {
+              const { data: recipientRec } = await supabaseAdmin.auth.admin.getUserById(userId);
+              const recipient = recipientRec?.user?.email ?? null;
+              const { error: invErr } = await supabaseAdmin
+                .from("invoices" as never)
+                .upsert(
+                  {
+                    user_id: userId,
+                    subscription_id: null,
+                    number: `INV-${pfPaymentId}`,
+                    sku,
+                    app: def.app,
+                    tier: def.tier,
+                    billing_cycle: def.cycle,
+                    amount_cents: def.amountCents,
+                    currency: "ZAR",
+                    status: isPackRefund ? "refunded" : "paid",
+                    recipient_email: recipient,
+                    pf_payment_id: pfPaymentId,
+                    m_payment_id: mPaymentId,
+                    provider: "payfast",
+                    issued_at: new Date().toISOString(),
+                    refunded_at: isPackRefund ? new Date().toISOString() : null,
+                    metadata: { payment_status: paymentStatus, source: "payfast_itn", pack: true, credits_granted: def.creditsGranted ?? 0 },
+                  } as never,
+                  { onConflict: "provider,pf_payment_id" },
+                );
+              if (invErr) console.error("pack invoice upsert failed (non-fatal):", invErr);
+            } catch (err) {
+              console.error("pack invoice write failed (non-fatal):", err);
+            }
+          }
+
+          const outcomeTag = isPackRefund
+            ? "pack_refunded"
+            : packSuccess
+              ? "pack_purchase_complete"
+              : `pack_${paymentStatus.toLowerCase()}`;
+          await finalize(outcomeTag, 200, "ok");
+          await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+            outcome: outcomeTag, http_status: 200 });
+          return new Response("ok", { status: 200 });
+        }
+
+
         // PayFast payment_status values we care about:
         //   COMPLETE  → activate
         //   CANCELLED → user or admin cancelled the recurring token
