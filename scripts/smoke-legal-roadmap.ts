@@ -103,6 +103,74 @@ try {
     } else {
       pass("Roadmap avoids Q-style hard targets");
     }
+
+    // --- a11y: headings, contrast, link semantics inside the section -----
+
+    // Headings: at least one, and no downward level skip (e.g. h2 → h4).
+    const headings = Array.from(
+      roadmap.matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/gi),
+    ).map((m) => ({ level: Number(m[1]), text: m[2].replace(/<[^>]+>/g, "").trim() }));
+    if (headings.length === 0) {
+      fail("Roadmap a11y: has heading", "no <h1>-<h6> inside roadmap section");
+    } else {
+      pass("Roadmap a11y: has heading", `${headings.length} found`);
+      let skipped: string | null = null;
+      for (let i = 1; i < headings.length; i++) {
+        const jump = headings[i].level - headings[i - 1].level;
+        if (jump > 1) {
+          skipped = `h${headings[i - 1].level} → h${headings[i].level} ("${headings[i].text}")`;
+          break;
+        }
+      }
+      if (skipped) {
+        fail("Roadmap a11y: heading order (no skipped levels)", skipped);
+      } else {
+        pass("Roadmap a11y: heading order (no skipped levels)");
+      }
+    }
+
+    // Contrast (static heuristic): flag arbitrary low-opacity white text and
+    // known low-contrast tokens on the roadmap markup. Full computed-color
+    // WCAG math needs a rendering engine; this catches the common regressions.
+    const LOW_CONTRAST = [
+      /text-white\/(?:[1-5]?\d)\b/g,     // text-white/0..text-white/59
+      /text-gray-(?:100|200|300|400)\b/g,
+      /text-muted-foreground\/(?:[1-5]?\d)\b/g,
+    ];
+    const lowContrastHits = LOW_CONTRAST.flatMap((re) =>
+      Array.from(roadmap.matchAll(re), (m) => m[0]),
+    );
+    // text-white/60+ is acceptable; strip those from the /d+ matches.
+    const bad = lowContrastHits.filter((cls) => {
+      const m = cls.match(/\/(\d+)\b/);
+      if (!m) return true; // named low tokens (gray-300 etc) — always flag
+      return Number(m[1]) < 60;
+    });
+    if (bad.length > 0) {
+      const uniq = Array.from(new Set(bad));
+      fail("Roadmap a11y: no low-contrast text utilities", uniq.join(", "));
+    } else {
+      pass("Roadmap a11y: no low-contrast text utilities");
+    }
+
+    // Link semantics: every <a> must have href AND an accessible name
+    // (visible text OR aria-label). Rules out icon-only unlabeled links.
+    const anchors = Array.from(roadmap.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi));
+    const brokenLinks: string[] = [];
+    for (const [, attrs, inner] of anchors) {
+      const hasHref = /\bhref\s*=\s*["'][^"']+["']/i.test(attrs);
+      const ariaLabel = attrs.match(/\baria-label\s*=\s*["']([^"']+)["']/i)?.[1]?.trim();
+      const text = inner.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+      if (!hasHref) brokenLinks.push(`<a> without href (text="${text.slice(0, 40)}")`);
+      else if (!text && !ariaLabel) brokenLinks.push(`<a href> without accessible name (attrs="${attrs.trim().slice(0, 60)}")`);
+    }
+    if (anchors.length === 0) {
+      pass("Roadmap a11y: link semantics", "no <a> in section");
+    } else if (brokenLinks.length > 0) {
+      fail("Roadmap a11y: link semantics", brokenLinks.join("; "));
+    } else {
+      pass("Roadmap a11y: link semantics", `${anchors.length} anchor(s) OK`);
+    }
   }
 } catch (err) {
   fail("Homepage fetch", (err as Error).message);
