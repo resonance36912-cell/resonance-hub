@@ -65,8 +65,8 @@ export const Route = createFileRoute("/apps/$appKey")({
         { property: "og:title", content: title },
         { property: "og:description", content: entry.tagline },
         { property: "og:type", content: "website" },
+        { property: "og:url", content: `https://reson8.life/apps/${entry.key}` },
         { name: "twitter:card", content: "summary_large_image" },
-        { rel: "canonical", href: `https://reson8.life/apps/${entry.key}` } as unknown as { name: string; content: string },
       ],
       links: [{ rel: "canonical", href: `https://reson8.life/apps/${entry.key}` }],
     };
