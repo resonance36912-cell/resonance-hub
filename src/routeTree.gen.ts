@@ -21,6 +21,7 @@ import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as ToolsCodexRouteImport } from './routes/tools.codex'
@@ -144,6 +145,11 @@ const DocsIndexRoute = DocsIndexRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
@@ -532,6 +538,7 @@ export interface FileRoutesByFullPath {
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -610,6 +617,7 @@ export interface FileRoutesByTo {
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/docs': typeof DocsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -689,6 +697,7 @@ export interface FileRoutesById {
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -769,6 +778,7 @@ export interface FileRouteTypes {
     | '/tools/codex'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
+    | '/account/'
     | '/admin/'
     | '/docs/'
     | '/.lovable/oauth/consent'
@@ -847,6 +857,7 @@ export interface FileRouteTypes {
     | '/tools/codex'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
+    | '/account'
     | '/admin'
     | '/docs'
     | '/.lovable/oauth/consent'
@@ -925,6 +936,7 @@ export interface FileRouteTypes {
     | '/tools/codex'
     | '/updates/preview'
     | '/youtube-optimizer/pricing'
+    | '/account/'
     | '/admin/'
     | '/docs/'
     | '/.lovable/oauth/consent'
@@ -1000,6 +1012,7 @@ export interface RootRouteChildren {
   ToolsCodexRoute: typeof ToolsCodexRouteWithChildren
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
+  AccountIndexRoute: typeof AccountIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -1112,6 +1125,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/youtube-optimizer/pricing': {
@@ -1673,6 +1693,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsCodexRoute: ToolsCodexRouteWithChildren,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
+  AccountIndexRoute: AccountIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
