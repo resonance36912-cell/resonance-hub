@@ -297,24 +297,31 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
 
         const def = sku ? SKU_CATALOG[sku] : undefined;
         if (!def) {
+          await recordEvent({ event_type: "unknown_sku", http_status: 400 });
+          await updateSession("failed", `Unknown SKU: ${sku}`);
           await finalize("unknown_sku", 400, "unknown sku");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
           return new Response("unknown sku", { status: 400 });
         }
         if (!userId) {
+          await recordEvent({ event_type: "missing_user", http_status: 400 });
+          await updateSession("failed", "custom_str1 missing");
           await finalize("missing_user", 400, "missing user");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
           return new Response("missing user", { status: 400 });
         }
         if (grossCents !== def.amountCents) {
+          await recordEvent({ event_type: "amount_mismatch", http_status: 400 });
+          await updateSession("failed", `Got ${grossCents}, expected ${def.amountCents}`);
           await finalize("amount_mismatch", 400, "amount mismatch");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "amount_mismatch", http_status: 400,
             error_message: `Got ${grossCents}, expected ${def.amountCents}` });
           return new Response("amount mismatch", { status: 400 });
         }
+
 
         // ---------- One-off pack fulfillment ----------
         // Packs are once-off PayFast payments. On COMPLETE we credit the
