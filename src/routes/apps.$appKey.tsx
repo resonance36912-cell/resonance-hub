@@ -42,8 +42,8 @@ const STATUS_LABELS = {
 } as const;
 
 export const Route = createFileRoute("/apps/$appKey")({
-  loader: ({ params }) => {
-    const entry = (APP_REGISTRY as Record<string, (typeof APP_REGISTRY)[ResonanceAppKey]>)[params.appKey];
+  loader: ({ params }): { entry: AppRegistryEntry } => {
+    const entry = (APP_REGISTRY as Record<string, AppRegistryEntry>)[params.appKey];
     if (!entry) throw notFound();
     return { entry };
   },
