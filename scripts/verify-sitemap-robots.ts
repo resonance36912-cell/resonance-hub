@@ -47,10 +47,38 @@ const SPOKE_URLS = Object.values(APP_REGISTRY)
 type Failure = { file: string; missing: string };
 const failures: Failure[] = [];
 
+async function fetchResponse(path: string): Promise<Response> {
+  const res = await fetch(new URL(path, BASE).toString(), { redirect: "manual" });
+  return res;
+}
+
 async function fetchText(path: string): Promise<string> {
   const res = await fetch(new URL(path, BASE).toString());
   if (!res.ok) throw new Error(`GET ${path} → ${res.status}`);
   return res.text();
+}
+
+// ---- reachability ------------------------------------------------------
+console.log("reachability:");
+for (const path of ["/robots.txt", "/sitemap.xml"]) {
+  const res = await fetchResponse(path);
+  if (res.status === 200) {
+    console.log(`  ✓ ${path} → 200`);
+  } else {
+    console.log(`  ✗ ${path} → ${res.status}`);
+    failures.push({ file: path, missing: `HTTP 200 (got ${res.status})` });
+  }
+}
+
+// ---- sitemap Content-Type ----------------------------------------------
+{
+  const res = await fetchResponse("/sitemap.xml");
+  const ct = res.headers.get("content-type") ?? "";
+  if (!/xml/i.test(ct)) {
+    failures.push({ file: "sitemap.xml", missing: `XML Content-Type (got '${ct}')` });
+  } else {
+    console.log(`  ✓ sitemap.xml Content-Type: ${ct}`);
+  }
 }
 
 // ---- robots.txt --------------------------------------------------------
