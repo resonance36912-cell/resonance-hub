@@ -2224,6 +2224,37 @@ export type Database = {
           moved_to_past_due: number
         }[]
       }
+      grant_pack_credits: {
+        Args: {
+          _amount: number
+          _app: string
+          _idempotency_key: string
+          _metadata?: Json
+          _pf_payment_id: string
+          _sku: string
+          _user_id: string
+        }
+        Returns: {
+          app: string
+          balance_after: number
+          created_at: string
+          delta: number
+          id: string
+          idempotency_key: string
+          metadata: Json
+          pf_payment_id: string | null
+          reason: string
+          sku: string | null
+          user_id: string
+          wallet_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "credit_ledger"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
