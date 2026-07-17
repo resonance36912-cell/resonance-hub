@@ -16,7 +16,7 @@
  * Run: bun run scripts/test-payfast-itn.ts
  */
 import { createHash } from "node:crypto";
-import { SKU_CATALOG } from "../src/lib/checkout.functions";
+import { buildPayfastSignature, orderPayfastFieldsForSubmit, SKU_CATALOG } from "../src/lib/checkout.functions";
 
 const SKU = "epublisher:starter:monthly";
 const EXPECTED_CENTS = 9900;
@@ -28,7 +28,8 @@ function assert(cond: unknown, msg: string) {
   else { console.log(`  ✗ ${msg}`); failures.push(msg); }
 }
 
-// Same algorithm as checkout.functions.ts and itn.ts
+// ITN verifier algorithm: PayFast signs ITN payloads in the order they send
+// them. Checkout launch forms use the canonical PayFast field order below.
 function buildSignature(params: Record<string, string>, passphrase: string): string {
   const pairs = Object.entries(params)
     .filter(([k, v]) => k !== "signature" && v !== "" && v !== undefined && v !== null)
@@ -53,7 +54,7 @@ const amountStr = (def.amountCents / 100).toFixed(2);
 assert(amountStr === EXPECTED_AMOUNT_STR, `amount string === "${EXPECTED_AMOUNT_STR}"`);
 
 const userId = "test-user-uuid-0000";
-const launchFields: Record<string, string> = {
+const unsignedLaunchFields: Record<string, string> = {
   merchant_id: "10000100",
   merchant_key: "46f0cd694581a",
   return_url: "https://example.com/checkout/success",
@@ -65,10 +66,24 @@ const launchFields: Record<string, string> = {
   item_description: def.label,
   custom_str1: userId,
   custom_str2: SKU,
+  email_address: "ashley@example.com",
 };
-launchFields.signature = buildSignature(launchFields, passphrase);
+const launchFields = orderPayfastFieldsForSubmit({
+  ...unsignedLaunchFields,
+  signature: buildPayfastSignature(unsignedLaunchFields, passphrase),
+});
 assert(launchFields.amount === EXPECTED_AMOUNT_STR, `launch.amount === "${EXPECTED_AMOUNT_STR}"`);
 assert(/^[a-f0-9]{32}$/.test(launchFields.signature), "launch signature is valid MD5");
+const launchOrder = Object.keys(launchFields);
+assert(
+  launchOrder.indexOf("email_address") > launchOrder.indexOf("name_last") &&
+  launchOrder.indexOf("email_address") < launchOrder.indexOf("m_payment_id"),
+  "email_address is submitted in PayFast canonical order before m_payment_id",
+);
+assert(
+  launchOrder.at(-1) === "signature",
+  "signature is submitted last after signed fields",
+);
 
 // ---------- 3. Simulate PayFast ITN POST back to /api/public/payfast/itn ----------
 // PayFast echoes the same merchant/custom fields plus payment_status, pf_payment_id,
