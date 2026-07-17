@@ -80,7 +80,7 @@ const upsertSchema = z.object({
 });
 
 async function assertAdmin(context: {
-  supabase: Awaited<ReturnType<typeof requireSupabaseAuth.client>>["context"]["supabase"];
+  supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
   userId: string;
 }) {
   const { data, error } = await context.supabase.rpc("has_role", {
