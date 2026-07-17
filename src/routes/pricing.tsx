@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PACK_CATALOG } from "@/lib/checkout.functions";
+
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { ROUTES } from "@/lib/routes";
