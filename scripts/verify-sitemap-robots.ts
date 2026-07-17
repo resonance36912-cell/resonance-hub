@@ -124,6 +124,37 @@ for (const url of SPOKE_URLS) {
   }
 }
 
+// ---- canonical homepage + legal URLs -----------------------------------
+// Each MUST appear as an absolute URL under the canonical hub host so
+// crawlers get one canonical signal — no host drift, no bare paths.
+console.log("\ncanonical hub URLs (homepage + legal):");
+for (const path of CANONICAL_PATHS) {
+  const expected = `${CANONICAL_HOST}${path === "/" ? "/" : path}`;
+  if (locs.includes(expected)) {
+    console.log(`  ✓ ${expected}`);
+  } else {
+    // Detect wrong-host duplicates so the failure message is actionable.
+    const drift = locs.filter((l) => l.endsWith(path) && !l.startsWith(CANONICAL_HOST));
+    const detail = drift.length ? ` (found on wrong host: ${drift.join(", ")})` : "";
+    console.log(`  ✗ missing canonical: ${expected}${detail}`);
+    failures.push({ file: "sitemap.xml", missing: `canonical ${expected}${detail}` });
+  }
+}
+
+// robots.txt Sitemap: directive must point at the canonical host too.
+{
+  const m = robots.match(/Sitemap:\s*(\S+)/i);
+  const expected = `${CANONICAL_HOST}/sitemap.xml`;
+  if (!m) {
+    // already reported above
+  } else if (m[1].trim() !== expected) {
+    console.log(`  ✗ robots Sitemap host mismatch: ${m[1]} (want ${expected})`);
+    failures.push({ file: "robots.txt", missing: `Sitemap ${expected} (got ${m[1]})` });
+  } else {
+    console.log(`  ✓ robots Sitemap → ${m[1]}`);
+  }
+}
+
 // ---- pricing anchors ---------------------------------------------------
 console.log("\npricing anchors on /pricing:");
 const pricingHtml = await fetchText("/pricing");
