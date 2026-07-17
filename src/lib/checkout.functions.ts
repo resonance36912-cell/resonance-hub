@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { createHash } from "crypto";
+
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { isAllowedReturnTo } from "./return-to-allowlist";
@@ -136,6 +136,8 @@ export function buildPayfastSignature(params: Record<string, string>, passphrase
     ? `${base}&passphrase=${encodeURIComponent(passphrase.trim()).replace(/%20/g, "+")}`
     : base;
   // nosemgrep: ajinabraham.njsscan.crypto.crypto_node.node_md5 -- PayFast signature protocol mandates MD5; not used for password/data integrity.
+  // Dynamic require avoids bundling `node:crypto` into the client — this fn only runs server-side.
+  const { createHash } = require("node:crypto") as typeof import("node:crypto");
   return createHash("md5").update(withPass).digest("hex");
 }
 
