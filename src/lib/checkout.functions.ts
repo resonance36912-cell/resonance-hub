@@ -99,7 +99,7 @@ export function resolveSku(app: string, plan: string, cycle: Cycle = "monthly"):
 // PayFast validates the signature using the documented field order below,
 // NOT the POST/insertion order. Any field not in this list is appended last.
 // Ref: https://developers.payfast.co.za/docs#checkout_page
-const PAYFAST_FIELD_ORDER = [
+export const PAYFAST_FIELD_ORDER = [
   "merchant_id", "merchant_key",
   "return_url", "cancel_url", "notify_url",
   "name_first", "name_last", "email_address", "cell_number",
@@ -111,7 +111,7 @@ const PAYFAST_FIELD_ORDER = [
   "subscription_type", "billing_date", "recurring_amount", "frequency", "cycles",
 ];
 
-function buildSignature(params: Record<string, string>, passphrase: string): string {
+function payfastOrderedEntries(params: Record<string, string>): [string, string][] {
   const seen = new Set<string>();
   const ordered: [string, string][] = [];
   for (const key of PAYFAST_FIELD_ORDER) {
@@ -124,7 +124,11 @@ function buildSignature(params: Record<string, string>, passphrase: string): str
     if (k === "signature" || seen.has(k)) continue;
     ordered.push([k, v]);
   }
-  const pairs = ordered
+  return ordered.filter(([, v]) => v !== "" && v !== undefined && v !== null);
+}
+
+export function buildPayfastSignature(params: Record<string, string>, passphrase: string): string {
+  const pairs = payfastOrderedEntries(params)
     .filter(([, v]) => v !== "" && v !== undefined && v !== null)
     .map(([k, v]) => `${k}=${encodeURIComponent(v.trim()).replace(/%20/g, "+")}`);
   const base = pairs.join("&");
@@ -133,6 +137,12 @@ function buildSignature(params: Record<string, string>, passphrase: string): str
     : base;
   // nosemgrep: ajinabraham.njsscan.crypto.crypto_node.node_md5 -- PayFast signature protocol mandates MD5; not used for password/data integrity.
   return createHash("md5").update(withPass).digest("hex");
+}
+
+export function orderPayfastFieldsForSubmit(fields: Record<string, string>): Record<string, string> {
+  const ordered = payfastOrderedEntries(fields);
+  if (fields.signature) ordered.push(["signature", fields.signature]);
+  return Object.fromEntries(ordered);
 }
 
 const LaunchInput = z.object({
@@ -178,7 +188,7 @@ async function buildLaunch(
   const returnTo = returnToInput ?? `${originUrl}/account/subscriptions`;
   const amount = (def.amountCents / 100).toFixed(2);
 
-  const fields: Record<string, string> = {
+  const unsignedFields: Record<string, string> = {
     merchant_id: merchantId,
     merchant_key: merchantKey,
     return_url: `${originUrl}/checkout/success?sku=${encodeURIComponent(def.sku)}&return_to=${encodeURIComponent(returnTo)}`,
@@ -193,7 +203,10 @@ async function buildLaunch(
     ...(meta.retryOfSubscriptionId ? { custom_str3: `retry:${meta.retryOfSubscriptionId}` } : {}),
     ...(email ? { email_address: email } : {}),
   };
-  fields.signature = buildSignature(fields, passphrase);
+  const fields = orderPayfastFieldsForSubmit({
+    ...unsignedFields,
+    signature: buildPayfastSignature(unsignedFields, passphrase),
+  });
 
   console.log(JSON.stringify({
     event: meta.retryOfSubscriptionId ? "payfast_launch_retry" : "payfast_launch",
