@@ -110,6 +110,7 @@ export const ROUTES = {
   adminReconciliation: routePath("/admin/reconciliation"),
   adminRevenue: routePath("/admin/revenue"),
   adminRop: routePath("/admin/rop"),
+  adminRoadmap: routePath("/admin/roadmap"),
   adminSpokeHealth: routePath("/admin/spoke-health"),
   adminWebhooks: routePath("/admin/webhooks"),
 

@@ -44,6 +44,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
 import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-health'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
+import { Route as AdminRoadmapRouteImport } from './routes/admin.roadmap'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
@@ -267,6 +268,11 @@ const AdminSpokeHealthRoute = AdminSpokeHealthRouteImport.update({
 const AdminRopRoute = AdminRopRouteImport.update({
   id: '/admin/rop',
   path: '/admin/rop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoadmapRoute = AdminRoadmapRouteImport.update({
+  id: '/admin/roadmap',
+  path: '/admin/roadmap',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
@@ -558,6 +564,7 @@ export interface FileRoutesByFullPath {
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -643,6 +650,7 @@ export interface FileRoutesByTo {
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -729,6 +737,7 @@ export interface FileRoutesById {
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
   '/admin/spoke-health': typeof AdminSpokeHealthRoute
   '/admin/webhooks': typeof AdminWebhooksRoute
@@ -816,6 +825,7 @@ export interface FileRouteTypes {
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
     | '/admin/revenue'
+    | '/admin/roadmap'
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
@@ -901,6 +911,7 @@ export interface FileRouteTypes {
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
     | '/admin/revenue'
+    | '/admin/roadmap'
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
@@ -986,6 +997,7 @@ export interface FileRouteTypes {
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
     | '/admin/revenue'
+    | '/admin/roadmap'
     | '/admin/rop'
     | '/admin/spoke-health'
     | '/admin/webhooks'
@@ -1072,6 +1084,7 @@ export interface RootRouteChildren {
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminRoadmapRoute: typeof AdminRoadmapRoute
   AdminRopRoute: typeof AdminRopRoute
   AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
@@ -1364,6 +1377,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/rop'
       fullPath: '/admin/rop'
       preLoaderRoute: typeof AdminRopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/roadmap': {
+      id: '/admin/roadmap'
+      path: '/admin/roadmap'
+      fullPath: '/admin/roadmap'
+      preLoaderRoute: typeof AdminRoadmapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/revenue': {
@@ -1811,6 +1831,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminRevenueRoute: AdminRevenueRoute,
+  AdminRoadmapRoute: AdminRoadmapRoute,
   AdminRopRoute: AdminRopRoute,
   AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
