@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_registry: {
+        Row: {
+          accent_color: string
+          app_id: string
+          audience: string
+          back_to_hub_path: string
+          capabilities: Json
+          created_at: string
+          currency: string
+          description: string
+          display_name: string
+          domain: string
+          entitlement_app_key: string
+          fallback_domain: string | null
+          free_offer: string | null
+          included_in_suite: boolean
+          logo_url: string | null
+          manage_billing_path: string
+          minimum_pack_price_cents: number | null
+          pricing_path: string
+          short_name: string
+          sort_order: number
+          status: string
+          tagline: string
+          updated_at: string
+          use_case: string
+        }
+        Insert: {
+          accent_color: string
+          app_id: string
+          audience?: string
+          back_to_hub_path?: string
+          capabilities?: Json
+          created_at?: string
+          currency?: string
+          description: string
+          display_name: string
+          domain: string
+          entitlement_app_key: string
+          fallback_domain?: string | null
+          free_offer?: string | null
+          included_in_suite?: boolean
+          logo_url?: string | null
+          manage_billing_path?: string
+          minimum_pack_price_cents?: number | null
+          pricing_path?: string
+          short_name: string
+          sort_order?: number
+          status: string
+          tagline: string
+          updated_at?: string
+          use_case: string
+        }
+        Update: {
+          accent_color?: string
+          app_id?: string
+          audience?: string
+          back_to_hub_path?: string
+          capabilities?: Json
+          created_at?: string
+          currency?: string
+          description?: string
+          display_name?: string
+          domain?: string
+          entitlement_app_key?: string
+          fallback_domain?: string | null
+          free_offer?: string | null
+          included_in_suite?: boolean
+          logo_url?: string | null
+          manage_billing_path?: string
+          minimum_pack_price_cents?: number | null
+          pricing_path?: string
+          short_name?: string
+          sort_order?: number
+          status?: string
+          tagline?: string
+          updated_at?: string
+          use_case?: string
+        }
+        Relationships: []
+      }
       app_submission_audit_log: {
         Row: {
           action: string
