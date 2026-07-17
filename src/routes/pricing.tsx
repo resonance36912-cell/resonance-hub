@@ -105,30 +105,26 @@ function PricingPage() {
             <span className="font-serif italic font-normal text-white/80">actually use.</span>
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto leading-relaxed">
-            Individual apps use once-off credits and project packs. Optional ecosystem passes are
-            available for creators and teams using multiple tools every month.
+            Every Resonance app runs on once-off credit packs — buy what you need, use whenever,
+            top up when you run out. No subscriptions, no monthly commitments.
           </p>
-
-          {/* Section switcher */}
-          <div className="mt-8 inline-flex rounded-full border border-white/10 p-1 bg-card/50 backdrop-blur-xl text-[11px] font-bold uppercase tracking-widest">
-            <a href="#packs" className="px-5 py-2 rounded-full hover:bg-white/10 transition-colors">
-              Once-off packs
-            </a>
-            <a
-              href="#passes"
-              className="px-5 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
-            >
-              Ecosystem passes
-            </a>
-          </div>
         </section>
 
-        {/* SECTION 1 — Once-off app packs */}
+        {/* Once-off app packs */}
         <section id="packs" className="mb-24 scroll-mt-24">
           <header className="mb-10 max-w-3xl">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-3">
-              Section 1 · Once-off app packs
+              Once-off app packs
             </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Buy only what you need
+            </h2>
+            <p className="text-white/70 leading-relaxed">
+              Resonance apps use once-off credits, project packs, or pilots. No individual app
+              subscriptions. Purchase once, use whenever — top up when you need more.
+            </p>
+          </header>
+
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               Buy only what you need
             </h2>
