@@ -138,6 +138,62 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           source_ip: sourceIp, raw_payload: params,
         };
 
+        // ---------- Session correlation + append-only event ledger ----------
+        // buildLaunch() wrote a checkout_sessions row keyed by our
+        // m_payment_id. Every ITN — signature-invalid, duplicate, or terminal
+        // — appends to payment_events. Terminal outcomes also transition
+        // checkout_sessions.status so /checkout/success can poll it.
+        let sessionId: string | null = null;
+        let sessionUserId: string | null = null;
+        if (mPaymentId) {
+          const { data: sessRow } = await supabaseAdmin
+            .from("checkout_sessions" as never)
+            .select("id, user_id")
+            .eq("m_payment_id" as never, mPaymentId as never)
+            .maybeSingle();
+          const s = sessRow as unknown as { id: string; user_id: string } | null;
+          if (s) { sessionId = s.id; sessionUserId = s.user_id; }
+        }
+
+        const recordEvent = async (input: {
+          event_type: string; outcome?: string | null; http_status?: number | null;
+          include_payload?: boolean;
+        }) => {
+          try {
+            await supabaseAdmin.from("payment_events" as never).insert({
+              session_id: sessionId,
+              user_id: sessionUserId ?? userId ?? null,
+              provider: "payfast",
+              event_type: input.event_type,
+              payment_status: paymentStatus,
+              pf_payment_id: pfPaymentId,
+              m_payment_id: mPaymentId,
+              amount_cents: grossCents,
+              outcome: input.outcome ?? input.event_type,
+              http_status: input.http_status ?? null,
+              source_ip: sourceIp,
+              raw_payload: input.include_payload ? params : null,
+              metadata: { sku },
+            } as never);
+          } catch (err) { console.error("payment_events insert failed:", err); }
+        };
+
+        const updateSession = async (
+          status: "pending" | "succeeded" | "failed" | "cancelled" | "refunded" | "expired",
+          errorMessage?: string | null,
+        ) => {
+          if (!sessionId) return;
+          try {
+            await supabaseAdmin.from("checkout_sessions" as never).update({
+              status,
+              error_message: errorMessage ?? null,
+              pf_payment_id: pfPaymentId,
+              last_event_at: new Date().toISOString(),
+            } as never).eq("id" as never, sessionId as never);
+          } catch (err) { console.error("checkout_sessions update failed:", err); }
+        };
+
+
         // 1. Signature
         const expectedSig = buildSignature(params, passphrase);
         const sigOk = !!params.signature && params.signature.toLowerCase() === expectedSig.toLowerCase();
