@@ -2063,6 +2063,59 @@ export type Database = {
         }
         Relationships: []
       }
+      roadmap_items: {
+        Row: {
+          app_id: string | null
+          created_at: string
+          description: string
+          id: string
+          last_updated_at: string
+          original_target: string | null
+          public_note: string | null
+          revised_target: string | null
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          app_id?: string | null
+          created_at?: string
+          description: string
+          id: string
+          last_updated_at?: string
+          original_target?: string | null
+          public_note?: string | null
+          revised_target?: string | null
+          sort_order?: number
+          status: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          app_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          last_updated_at?: string
+          original_target?: string | null
+          public_note?: string | null
+          revised_target?: string | null
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_items_app_id_fkey"
+            columns: ["app_id"]
+            isOneToOne: false
+            referencedRelation: "app_registry"
+            referencedColumns: ["app_id"]
+          },
+        ]
+      }
       site_visits: {
         Row: {
           created_at: string
