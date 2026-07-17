@@ -96,9 +96,36 @@ export function resolveSku(app: string, plan: string, cycle: Cycle = "monthly"):
   return SKU_CATALOG[key] ?? null;
 }
 
+// PayFast validates the signature using the documented field order below,
+// NOT the POST/insertion order. Any field not in this list is appended last.
+// Ref: https://developers.payfast.co.za/docs#checkout_page
+const PAYFAST_FIELD_ORDER = [
+  "merchant_id", "merchant_key",
+  "return_url", "cancel_url", "notify_url",
+  "name_first", "name_last", "email_address", "cell_number",
+  "m_payment_id", "amount", "item_name", "item_description",
+  "custom_int1", "custom_int2", "custom_int3", "custom_int4", "custom_int5",
+  "custom_str1", "custom_str2", "custom_str3", "custom_str4", "custom_str5",
+  "email_confirmation", "confirmation_address",
+  "payment_method",
+  "subscription_type", "billing_date", "recurring_amount", "frequency", "cycles",
+];
+
 function buildSignature(params: Record<string, string>, passphrase: string): string {
-  const pairs = Object.entries(params)
-    .filter(([k, v]) => k !== "signature" && v !== "" && v !== undefined && v !== null)
+  const seen = new Set<string>();
+  const ordered: [string, string][] = [];
+  for (const key of PAYFAST_FIELD_ORDER) {
+    if (key in params) {
+      ordered.push([key, params[key]]);
+      seen.add(key);
+    }
+  }
+  for (const [k, v] of Object.entries(params)) {
+    if (k === "signature" || seen.has(k)) continue;
+    ordered.push([k, v]);
+  }
+  const pairs = ordered
+    .filter(([, v]) => v !== "" && v !== undefined && v !== null)
     .map(([k, v]) => `${k}=${encodeURIComponent(v.trim()).replace(/%20/g, "+")}`);
   const base = pairs.join("&");
   const withPass = passphrase
