@@ -19,6 +19,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AccountIndexRouteImport } from './routes/account.index'
@@ -26,7 +27,10 @@ import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-op
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as ToolsCodexRouteImport } from './routes/tools.codex'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as GovernanceLogRouteImport } from './routes/governance.log'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
@@ -137,6 +141,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/legal/',
+  path: '/legal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
@@ -172,9 +181,24 @@ const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   path: '/sync-vision/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalGovernanceRoute = LegalGovernanceRouteImport.update({
   id: '/legal/governance',
   path: '/legal/governance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GovernanceLogRoute = GovernanceLogRouteImport.update({
@@ -533,7 +557,10 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/governance/log': typeof GovernanceLogRoute
+  '/legal/cookies': typeof LegalCookiesRoute
   '/legal/governance': typeof LegalGovernanceRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -541,6 +568,7 @@ export interface FileRoutesByFullPath {
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
+  '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
@@ -612,7 +640,10 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/governance/log': typeof GovernanceLogRoute
+  '/legal/cookies': typeof LegalCookiesRoute
   '/legal/governance': typeof LegalGovernanceRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -620,6 +651,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/docs': typeof DocsIndexRoute
+  '/legal': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
@@ -692,7 +724,10 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/epublisher/pricing': typeof EpublisherPricingRoute
   '/governance/log': typeof GovernanceLogRoute
+  '/legal/cookies': typeof LegalCookiesRoute
   '/legal/governance': typeof LegalGovernanceRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -700,6 +735,7 @@ export interface FileRoutesById {
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/docs/': typeof DocsIndexRoute
+  '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
@@ -773,7 +809,10 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/governance/log'
+    | '/legal/cookies'
     | '/legal/governance'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -781,6 +820,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/docs/'
+    | '/legal/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
@@ -852,7 +892,10 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/governance/log'
+    | '/legal/cookies'
     | '/legal/governance'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -860,6 +903,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/docs'
+    | '/legal'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
@@ -931,7 +975,10 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/epublisher/pricing'
     | '/governance/log'
+    | '/legal/cookies'
     | '/legal/governance'
+    | '/legal/privacy'
+    | '/legal/terms'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -939,6 +986,7 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/docs/'
+    | '/legal/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
@@ -1007,7 +1055,10 @@ export interface RootRouteChildren {
   DocsSpokeHubControlContractRoute: typeof DocsSpokeHubControlContractRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
   LegalGovernanceRoute: typeof LegalGovernanceRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   ToolsCodexRoute: typeof ToolsCodexRouteWithChildren
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
@@ -1015,6 +1066,7 @@ export interface RootRouteChildren {
   AccountIndexRoute: typeof AccountIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
+  LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
@@ -1113,6 +1165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/legal'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/': {
       id: '/docs/'
       path: '/docs'
@@ -1162,11 +1221,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SyncVisionPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/governance': {
       id: '/legal/governance'
       path: '/legal/governance'
       fullPath: '/legal/governance'
       preLoaderRoute: typeof LegalGovernanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/governance/log': {
@@ -1688,7 +1768,10 @@ const rootRouteChildren: RootRouteChildren = {
   DocsSpokeHubControlContractRoute: DocsSpokeHubControlContractRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   EpublisherPricingRoute: EpublisherPricingRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
   LegalGovernanceRoute: LegalGovernanceRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
   ToolsCodexRoute: ToolsCodexRouteWithChildren,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
@@ -1696,6 +1779,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountIndexRoute: AccountIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
+  LegalIndexRoute: LegalIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
