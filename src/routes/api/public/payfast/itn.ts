@@ -349,6 +349,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
               if (webhookRowId) {
                 await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
               }
+              await recordEvent({ event_type: "pack_grant_failed", http_status: 500 });
               await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
                 outcome: "pack_grant_failed", http_status: 500, error_message: grantErr.message });
               return new Response("grant failed", { status: 500 });
@@ -395,11 +396,16 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             : packSuccess
               ? "pack_purchase_complete"
               : `pack_${paymentStatus.toLowerCase()}`;
+          await recordEvent({ event_type: outcomeTag, http_status: 200 });
+          await updateSession(
+            isPackRefund ? "refunded" : packSuccess ? "succeeded" : "pending",
+          );
           await finalize(outcomeTag, 200, "ok");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: outcomeTag, http_status: 200 });
           return new Response("ok", { status: 200 });
         }
+
 
 
         // PayFast payment_status values we care about:
