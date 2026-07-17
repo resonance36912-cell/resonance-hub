@@ -19,11 +19,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 function psql(sql: string): string {
-  return execSync(`psql -tAF"|" -c ${JSON.stringify(sql)}`, {
+  return execSync(`psql -tAF"|"`, {
     encoding: "utf8",
     env: process.env,
+    input: sql,
   });
 }
+
 
 type Row = {
   sku_id: string;
