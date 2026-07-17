@@ -12,7 +12,8 @@ export const Route = createFileRoute("/pricing")({
     const origin = loaderData?.origin ?? "https://reson8.life";
     const title = "Pricing — The Resonance Hub";
     const description =
-      "Once-off app packs and optional monthly ecosystem passes for Creative Studio, ePublisher, Sync Vision and YouTube Optimizer. ZAR · PayFast.";
+      "Once-off app packs for Creative Studio, ePublisher, Sync Vision and YouTube Optimizer. No subscriptions — pay once, use whenever. ZAR · PayFast.";
+
     return {
       meta: [
         { title },
