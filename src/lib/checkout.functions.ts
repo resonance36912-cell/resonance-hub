@@ -444,9 +444,12 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
       throw new Error("Subscription is already active — nothing to retry");
     }
 
+    // Retries reuse the same server-side gate. Grandfathered legacy SKUs
+    // pass because the RPC's ownership check finds the caller's existing
+    // subscription row.
     const key = `${sub.app}:${sub.tier}:${sub.billing_cycle}`;
-    const def = await resolveSkuDefFromDb(key);
-    if (!def) throw new Error(`No SKU available to retry (${key})`);
+    const def = await resolveSkuForPurchase(context.supabase, key);
+
 
     const email = (context.claims as { email?: string } | null)?.email ?? "";
     return buildLaunch(userId, email, def, data.returnTo, await requestOrigin(), {
