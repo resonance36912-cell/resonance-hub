@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -327,7 +326,8 @@ async function buildLaunch(
   return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label };
 }
 
-function requestOrigin() {
+async function requestOrigin() {
+  const { getRequest } = await import("@tanstack/react-start/server");
   const req = getRequest();
   const proto = req.headers.get("x-forwarded-proto") ?? "https";
   const host = req.headers.get("host")!;
@@ -374,7 +374,7 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
     const def = await resolveSkuDefFromDb(data.sku);
     if (!def) throw new Error(`Unknown SKU: ${data.sku}`);
     const email = (context.claims as { email?: string } | null)?.email ?? "";
-    return buildLaunch(context.userId, email, def, data.returnTo, requestOrigin());
+    return buildLaunch(context.userId, email, def, data.returnTo, await requestOrigin());
   });
 
 const RetryInput = z.object({
@@ -414,7 +414,7 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
     if (!def) throw new Error(`No SKU available to retry (${key})`);
 
     const email = (context.claims as { email?: string } | null)?.email ?? "";
-    return buildLaunch(userId, email, def, data.returnTo, requestOrigin(), {
+    return buildLaunch(userId, email, def, data.returnTo, await requestOrigin(), {
       retryOfSubscriptionId: sub.id,
     });
   });
