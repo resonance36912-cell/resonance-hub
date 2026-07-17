@@ -312,6 +312,15 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-app-detail.ts
 
+      # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
+      # session with admin role is injected) renders the full CRUD surface.
+      - name: E2E admin/roadmap auth + CRUD gate
+        env:
+          E2E_BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: python3 tests/e2e/admin-roadmap-auth-gate.py
+
+
+
 
       - name: Verify sitemap.xml, robots.txt, and pricing anchors
         env:
