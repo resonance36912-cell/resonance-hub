@@ -33,6 +33,12 @@ const GROUPS: DocGroup[] = [
         to: ROUTES.docsSpokeHubControlContract,
       },
       {
+        title: "Entitlement API",
+        description:
+          "Public /api/public/entitlement contract, response schema, error codes, and health probe.",
+        to: ROUTES.docsEntitlementApi,
+      },
+      {
         title: "Spoke Usage Contract",
         description:
           "Reservation, spend, and refund calls the Hub exposes to satellite apps.",
