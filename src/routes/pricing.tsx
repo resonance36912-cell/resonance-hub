@@ -69,55 +69,6 @@ export const APP_META: Record<string, { name: string; accent: string; anchor: st
   },
 };
 
-const PASSES = [
-  {
-    id: "creator_pass",
-    name: "Creator Pass",
-    zar: "R499",
-    cadence: "/ month",
-    blurb: "Solo creators publishing and promoting regularly.",
-    includes: [
-      "Monthly allowance across ePublisher",
-      "Monthly allowance across Creative Studio",
-      "Monthly allowance across YouTube Optimizer",
-    ],
-    href: "/checkout?app=all_access&plan=creator_pass",
-    cta: "Get Creator Pass",
-    kind: "checkout" as const,
-  },
-  {
-    id: "studio_pass",
-    name: "Studio Pass",
-    zar: "R1,499",
-    cadence: "/ month",
-    blurb: "Musicians, media teams, and high-output creators.",
-    includes: [
-      "Everything in Creator Pass",
-      "Monthly allowance across Sync Vision",
-      "Priority render queue",
-    ],
-    href: "/checkout?app=all_access&plan=studio_pass",
-    cta: "Get Studio Pass",
-    kind: "checkout" as const,
-    featured: true,
-  },
-  {
-    id: "business_pass",
-    name: "Business Pass",
-    zar: "Custom",
-    cadence: "/ month",
-    blurb: "Agencies, schools, publishers, and businesses.",
-    includes: [
-      "Multi-seat access",
-      "Onboarding + priority support",
-      "Custom app allowances",
-      "Invoice support",
-    ],
-    href: "mailto:hello@reson8.life?subject=Business%20Pass%20enquiry",
-    cta: "Request Business Pass",
-    kind: "quote" as const,
-  },
-];
 
 function PricingPage() {
   const packsByApp = Object.values(PACK_CATALOG).reduce<Record<string, typeof PACK_CATALOG[string][]>>(
