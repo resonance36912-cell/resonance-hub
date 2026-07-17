@@ -295,6 +295,16 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-hub-routes.ts
 
+      # End-to-end contract: SSR-rendered homepage roadmap uses Phase 7
+      # lifecycle labels (no Q-style hard dates) and every /legal route
+      # ships a distinct <title>. Runs against the same wrangler-served
+      # production Worker as the other smoke steps.
+      - name: Smoke test legal + roadmap SSR contract
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: bun run scripts/smoke-legal-roadmap.ts
+
+
       - name: Verify sitemap.xml, robots.txt, and pricing anchors
         env:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
