@@ -78,7 +78,7 @@ export const listAppRegistry = createServerFn({ method: "GET" }).handler(
       pricingPath: r.pricing_path as string,
       manageBillingPath: r.manage_billing_path as string,
       backToHubPath: r.back_to_hub_path as string,
-      capabilities: (r.capabilities as Record<string, unknown>) ?? {},
+      capabilities: (r.capabilities as AppRegistryRow["capabilities"]) ?? {},
       sortOrder: (r.sort_order as number) ?? 100,
       updatedAt: r.updated_at as string,
     }));
