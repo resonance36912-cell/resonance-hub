@@ -359,42 +359,58 @@ async function requestOrigin() {
 }
 
 /**
- * Stage 3: prefer `public.products` (DB catalog) for price + label, falling
- * back to the compile-time SKU_CATALOG when a product row is missing. This
- * lets ops re-price ecosystem passes without a redeploy while keeping the
- * verify-catalog-parity CI check as the safety net.
+ * Canonical purchase resolver.
+ *
+ * The `sku_catalogue` table + `resolve_sku_for_purchase` RPC (migration
+ * 2026-07 Phase 1) is the single source of truth for whether a SKU can be
+ * purchased by a given user:
+ *   - `active`         → anyone signed in
+ *   - `grandfathered`  → only existing owners of that exact subscription
+ *   - `draft|retired|disabled` → rejected
+ *
+ * We ALWAYS call the RPC first. Only if it accepts do we hydrate the full
+ * SkuDef (label/amount/cycle) — from the DB row when available, falling back
+ * to the compile-time SKU_CATALOG for fields the RPC doesn't return (kind,
+ * tier, cycle string). URL params can never bypass this gate.
  */
-async function resolveSkuDefFromDb(sku: string): Promise<SkuDef | null> {
-  const fallback = SKU_CATALOG[sku] ?? null;
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("products")
-      .select("product_key,name,price_cents,status,metadata")
-      .eq("product_key", sku)
-      .maybeSingle();
-    if (error || !data || !fallback) return fallback;
-    if (data.status === "draft") return fallback;
-    return {
-      ...fallback,
-      amountCents: Number(data.price_cents) || fallback.amountCents,
-      label: data.name || fallback.label,
-    };
-  } catch (err) {
-    console.error("resolveSkuDefFromDb failed, using SKU_CATALOG:", err);
-    return fallback;
+async function resolveSkuForPurchase(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  sku: string,
+): Promise<SkuDef> {
+  const { data, error } = await supabase.rpc("resolve_sku_for_purchase" as never, {
+    _sku_id: sku,
+    _user_id: null, // RPC reads auth.uid() via the authenticated bearer
+  } as never);
+  if (error) {
+    // Postgres raises P0001 for policy rejections (retired, unauthorised
+    // grandfathered) and P0002 for unknown SKUs. Both surface a clean error
+    // in the checkout UI without leaking DB structure.
+    throw new Error(error.message.replace(/^ERROR:\s*/i, ""));
   }
+  const row = Array.isArray(data) ? data[0] : (data as unknown as { sku_id: string; label: string; amount_cents: number } | null);
+  if (!row) throw new Error(`SKU not available: ${sku}`);
+  const fallback = SKU_CATALOG[sku];
+  if (!fallback) throw new Error(`SKU has no client metadata: ${sku}`);
+  return {
+    ...fallback,
+    label: row.label ?? fallback.label,
+    amountCents: Number(row.amount_cents) || fallback.amountCents,
+  };
 }
 
 export const createPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
-    const def = await resolveSkuDefFromDb(data.sku);
-    if (!def) throw new Error(`Unknown SKU: ${data.sku}`);
+    // Gate FIRST — server-side, DB-backed. Never trust URL params for price
+    // or product identity. The RPC also enforces the grandfathered ownership
+    // check so a URL like /checkout?sku=epublisher:pro:monthly cannot be used
+    // by a user who does not already own that legacy subscription.
+    const def = await resolveSkuForPurchase(context.supabase, data.sku);
     const email = (context.claims as { email?: string } | null)?.email ?? "";
     return buildLaunch(context.userId, email, def, data.returnTo, await requestOrigin());
   });
+
 
 const RetryInput = z.object({
   subscriptionId: z.string().uuid(),
