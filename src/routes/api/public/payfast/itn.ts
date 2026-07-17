@@ -650,11 +650,20 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         }
 
         const outcomeTag = isRefund ? "subscription_refunded" : `subscription_${nextStatus}`;
+        const sessionStatus: "succeeded" | "cancelled" | "refunded" | "failed" | "pending" =
+          isRefund ? "refunded"
+          : nextStatus === "active" ? "succeeded"
+          : nextStatus === "cancelled" ? "cancelled"
+          : nextStatus === "past_due" ? "failed"
+          : "pending";
+        await recordEvent({ event_type: outcomeTag, http_status: 200 });
+        await updateSession(sessionStatus);
         await finalize(outcomeTag, 200, "ok");
         await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
           outcome: outcomeTag, http_status: 200 });
 
         return new Response("ok", { status: 200 });
+
 
       },
     },
