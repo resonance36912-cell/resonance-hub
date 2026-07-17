@@ -304,6 +304,14 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-legal-roadmap.ts
 
+      # End-to-end contract: every /apps/$appKey page renders its title,
+      # meta description, three capability highlights, and a safe external
+      # link to the app's canonical URL server-side. Invalid keys not-find.
+      - name: Smoke test app detail SSR contract
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: bun run scripts/smoke-app-detail.ts
+
 
       - name: Verify sitemap.xml, robots.txt, and pricing anchors
         env:
