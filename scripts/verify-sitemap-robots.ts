@@ -28,6 +28,17 @@ const PRICING_ANCHORS = [
   "youtube-optimizer",
 ];
 
+// Canonical hub host that sitemap <loc> entries MUST use for the homepage
+// and legal routes. Mismatched hosts break canonical signals for crawlers.
+const CANONICAL_HOST = "https://reson8.life";
+const CANONICAL_PATHS = [
+  "/",
+  "/legal",
+  "/legal/privacy",
+  "/legal/terms",
+  "/legal/cookies",
+];
+
 // Every paid spoke's public URL (canonical marketing / app URL).
 const SPOKE_URLS = Object.values(APP_REGISTRY)
   .filter((e) => e.key !== "all_access")
