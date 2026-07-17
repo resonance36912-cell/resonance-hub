@@ -59,6 +59,10 @@ export const ROUTES = {
 
   governance: routePath("/governance"),
   governanceLog: routePath("/governance/log"),
+  legal: routePath("/legal"),
+  legalPrivacy: routePath("/legal/privacy"),
+  legalTerms: routePath("/legal/terms"),
+  legalCookies: routePath("/legal/cookies"),
   legalGovernance: routePath("/legal/governance"),
   login: routePath("/login"),
   mcp: routePath("/mcp"),
