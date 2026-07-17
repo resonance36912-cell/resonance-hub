@@ -9,13 +9,17 @@ import {
   primaryContinueHref,
   primaryContinueLabel,
 } from "@/lib/checkout-return";
-import { getVerifiedPurchase, type VerifiedPurchase } from "@/lib/verify-purchase.functions";
+import {
+  getCheckoutSession,
+  type CheckoutSessionView,
+} from "@/lib/checkout-session.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
 
 const Search = z.object({
   sku: z.string().optional(),
   pack: z.string().optional(),
+  session: z.string().uuid().optional(),
   return_to: z
     .string()
     .url()
@@ -36,19 +40,28 @@ export const Route = createFileRoute("/checkout/success")({
   component: SuccessPage,
 });
 
-type VerifyPhase = "verifying" | "verified" | "pending" | "skip";
+// Poll cadence: 15 attempts over ~30s covers common ITN-after-return races.
+const POLL_INTERVAL_MS = 2000;
+const MAX_POLLS = 15;
+// Auto-redirect delay after the terminal state so the user sees confirmation.
+const AUTO_REDIRECT_MS = 1800;
 
-// Poll cadence: 8 attempts over ~20s covers the common ITN-after-return race.
-const POLL_INTERVAL_MS = 2500;
-const MAX_POLLS = 8;
-// Auto-redirect delay after verification so the user sees the confirmed state.
-const AUTO_REDIRECT_MS = 1500;
+type Phase = "verifying" | "succeeded" | "failed" | "cancelled" | "refunded" | "pending" | "skip";
+
+function statusToPhase(s: CheckoutSessionView["status"]): Phase {
+  if (s === "succeeded") return "succeeded";
+  if (s === "failed") return "failed";
+  if (s === "cancelled") return "cancelled";
+  if (s === "refunded") return "refunded";
+  if (s === "expired") return "failed";
+  return "verifying";
+}
 
 function SuccessPage() {
-  const { sku, pack, return_to } = Route.useSearch();
+  const { sku, pack, session: sessionIdParam, return_to } = Route.useSearch();
   const ctx = resolveCheckoutContext({ sku, pack, return_to });
   const navigate = useNavigate();
-  const verifyFn = useServerFn(getVerifiedPurchase);
+  const sessionFn = useServerFn(getCheckoutSession);
 
   const primaryHref = primaryContinueHref(ctx);
   const primaryLabel = primaryContinueLabel(ctx);
@@ -59,30 +72,32 @@ function SuccessPage() {
       ? { to: ROUTES.pricing, hash: "packs", label: "See more packs" }
       : { to: ROUTES.accountSubscriptions, hash: undefined, label: "View subscriptions" };
 
-  // Only subscription SKUs (pass or legacy_monthly) create rows in `subscriptions`
-  // via the ITN handler. Packs are once-off and don't have an entitlement row.
-  const verifiable = !!sku && (ctx.kind === "pass" || ctx.kind === "legacy_monthly");
-  const [phase, setPhase] = useState<VerifyPhase>(verifiable ? "verifying" : "skip");
-  const [result, setResult] = useState<VerifiedPurchase | null>(null);
+  // Without a session id we can't poll — fall back to a generic ack.
+  const canPoll = !!sessionIdParam;
+  const [phase, setPhase] = useState<Phase>(canPoll ? "verifying" : "skip");
+  const [session, setSession] = useState<CheckoutSessionView | null>(null);
   const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!verifiable || !sku) return;
+    if (!canPoll || !sessionIdParam) return;
     let cancelled = false;
     let attempts = 0;
 
     const tick = async () => {
       attempts += 1;
       try {
-        const res = await verifyFn({ data: { sku } });
+        const res = await sessionFn({ data: { sessionId: sessionIdParam } });
         if (cancelled) return;
-        setResult(res);
-        if (res.verified) {
-          setPhase("verified");
-          return;
+        if (res) {
+          setSession(res);
+          const p = statusToPhase(res.status);
+          if (p !== "verifying") {
+            setPhase(p);
+            return;
+          }
         }
       } catch {
-        // Ignore transient errors; keep polling until the budget runs out.
+        // Transient — keep polling until the budget runs out.
       }
       if (cancelled) return;
       if (attempts >= MAX_POLLS) {
@@ -96,11 +111,11 @@ function SuccessPage() {
     return () => {
       cancelled = true;
     };
-  }, [verifiable, sku, verifyFn]);
+  }, [canPoll, sessionIdParam, sessionFn]);
 
-  // Auto-redirect to the correct app dashboard once verified.
+  // Auto-redirect on success only.
   useEffect(() => {
-    if (phase !== "verified") return;
+    if (phase !== "succeeded") return;
     redirectTimer.current = setTimeout(() => {
       if (primaryIsExternal) {
         window.location.href = primaryHref;
@@ -113,7 +128,16 @@ function SuccessPage() {
     };
   }, [phase, primaryHref, primaryIsExternal, navigate, ctx.pricingAnchor]);
 
-  const { headline, body, tone } = renderCopy({ phase, ctx, result });
+  const { headline, body, tone, glyph } = renderCopy({ phase, ctx, session });
+
+  const toneBorder =
+    tone === "success"
+      ? "border-emerald-500/30 bg-emerald-500/5"
+      : tone === "pending"
+        ? "border-amber-500/30 bg-amber-500/5"
+        : tone === "error"
+          ? "border-red-500/30 bg-red-500/5"
+          : "border-white/15 bg-white/5";
 
   return (
     <div className="min-h-screen text-foreground">
@@ -129,18 +153,8 @@ function SuccessPage() {
         </AppLink>
       </nav>
       <main className="pt-32 pb-24 px-6 max-w-xl mx-auto text-center">
-        <div
-          className={`rounded-3xl border backdrop-blur-xl p-10 ${
-            tone === "success"
-              ? "border-emerald-500/30 bg-emerald-500/5"
-              : tone === "pending"
-                ? "border-amber-500/30 bg-amber-500/5"
-                : "border-white/15 bg-white/5"
-          }`}
-        >
-          <div className="text-5xl mb-4" aria-hidden>
-            {tone === "success" ? "✓" : tone === "pending" ? "⏳" : "•"}
-          </div>
+        <div className={`rounded-3xl border backdrop-blur-xl p-10 ${toneBorder}`}>
+          <div className="text-5xl mb-4" aria-hidden>{glyph}</div>
           <h1 className="text-3xl font-extrabold tracking-tight mb-3">{headline}</h1>
           <p className="text-white/70 mb-8">{body}</p>
 
@@ -153,7 +167,7 @@ function SuccessPage() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {phase === "verified" || phase === "skip" ? (
+            {phase === "succeeded" || phase === "skip" ? (
               primaryIsExternal ? (
                 <a
                   href={primaryHref}
@@ -170,6 +184,14 @@ function SuccessPage() {
                   {primaryLabel}
                 </AppLink>
               )
+            ) : phase === "failed" || phase === "cancelled" || phase === "refunded" ? (
+              <AppLink
+                to={ROUTES.pricing}
+                hash={ctx.pricingAnchor}
+                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
+              >
+                Back to pricing
+              </AppLink>
             ) : (
               <AppLink
                 to={secondaryTo.to}
@@ -179,27 +201,30 @@ function SuccessPage() {
                 {secondaryTo.label}
               </AppLink>
             )}
-            {(phase === "verified" || phase === "skip") && (
-              <AppLink
-                to={secondaryTo.to}
-                hash={secondaryTo.hash}
-                className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
-              >
-                {secondaryTo.label}
-              </AppLink>
-            )}
+            <AppLink
+              to={secondaryTo.to}
+              hash={secondaryTo.hash}
+              className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
+            >
+              {secondaryTo.label}
+            </AppLink>
           </div>
-
 
           {phase === "pending" && (
             <p className="mt-6 text-xs text-white/50">
               PayFast confirmations usually land within seconds but can take a
-              few minutes. This page won't grant access — it only reflects the
-              verified webhook. Check{" "}
+              few minutes. Access is only granted after the verified webhook —
+              check{" "}
               <AppLink to={ROUTES.accountSubscriptions} className="underline">
                 My Subscriptions
               </AppLink>{" "}
-              in a minute, or contact support if it doesn't appear.
+              shortly, or contact support if it doesn't appear.
+            </p>
+          )}
+
+          {phase === "failed" && session?.errorMessage && (
+            <p className="mt-6 text-xs text-white/50">
+              Reason: {session.errorMessage}
             </p>
           )}
         </div>
@@ -211,21 +236,18 @@ function SuccessPage() {
 function renderCopy({
   phase,
   ctx,
-  result,
+  session,
 }: {
-  phase: VerifyPhase;
+  phase: Phase;
   ctx: ReturnType<typeof resolveCheckoutContext>;
-  result: VerifiedPurchase | null;
-}): { headline: string; body: string; tone: "success" | "pending" | "neutral" } {
+  session: CheckoutSessionView | null;
+}): { headline: string; body: string; tone: "success" | "pending" | "error" | "neutral"; glyph: string } {
   if (phase === "skip") {
-    // Pack (once-off): no subscription row to verify against.
     return {
       headline: "Payment received",
-      body:
-        ctx.kind === "pack"
-          ? `Thanks — PayFast has confirmed your payment for ${ctx.label}. Your pack allowance will appear in ${ctx.app?.label ?? "the app"} within a few seconds.`
-          : "Thanks — PayFast has confirmed your payment. Your purchase will be reflected within a few seconds.",
+      body: `Thanks — PayFast has confirmed your payment for ${ctx.label}. Your access will reflect within a few seconds.`,
       tone: "neutral",
+      glyph: "•",
     };
   }
   if (phase === "verifying") {
@@ -233,18 +255,47 @@ function renderCopy({
       headline: "Confirming your payment…",
       body: `Waiting for PayFast to confirm ${ctx.label}. Access is granted only after the verified webhook lands — usually within a few seconds.`,
       tone: "neutral",
+      glyph: "…",
     };
   }
-  if (phase === "verified") {
+  if (phase === "succeeded") {
     return {
       headline: "Access granted",
-      body: `${ctx.label} is now active${result?.currentPeriodEnd ? ` until ${new Date(result.currentPeriodEnd).toLocaleDateString()}` : ""}. Taking you to ${ctx.app?.label ?? "your dashboard"}…`,
+      body: `${ctx.label} is now active. Taking you to ${ctx.app?.label ?? "your dashboard"}…`,
       tone: "success",
+      glyph: "✓",
+    };
+  }
+  if (phase === "refunded") {
+    return {
+      headline: "Refunded",
+      body: `PayFast reported a refund for ${ctx.label}. Any granted access has been revoked.`,
+      tone: "error",
+      glyph: "↩",
+    };
+  }
+  if (phase === "cancelled") {
+    return {
+      headline: "Cancelled",
+      body: `The payment for ${ctx.label} was cancelled before it completed.`,
+      tone: "error",
+      glyph: "×",
+    };
+  }
+  if (phase === "failed") {
+    return {
+      headline: "Payment failed",
+      body: `PayFast reported this checkout as failed for ${ctx.label}. No access was granted.`,
+      tone: "error",
+      glyph: "!",
     };
   }
   return {
     headline: "Still waiting on PayFast",
-    body: `We haven't received the confirmed webhook for ${ctx.label} yet. Your card may still be processing — access will unlock automatically the moment it arrives.`,
+    body: `We haven't received the confirmed webhook for ${ctx.label} yet. Your card may still be processing — access will unlock automatically the moment it arrives.${
+      session?.pfPaymentId ? ` (Ref ${session.pfPaymentId})` : ""
+    }`,
     tone: "pending",
+    glyph: "⏳",
   };
 }
