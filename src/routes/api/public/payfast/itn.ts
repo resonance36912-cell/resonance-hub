@@ -479,10 +479,12 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           if (webhookRowId) {
             await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
           }
+          await recordEvent({ event_type: "db_error", http_status: 500 });
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "db_error", http_status: 500, error_message: error.message });
           return new Response("db error", { status: 500 });
         }
+
 
         const newSubId = (upserted as { id: string } | null)?.id ?? null;
 
