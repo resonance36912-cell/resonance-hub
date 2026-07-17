@@ -1153,7 +1153,7 @@ function Index() {
                 <div className="text-[10px] font-mono uppercase tracking-widest text-white/60 mb-2">{r.status}</div>
                 <h4 className="text-sm font-bold tracking-tight mb-2">{r.title}</h4>
                 <p className="text-xs text-white/65 leading-relaxed mb-2">{r.body}</p>
-                <p className="text-[11px] text-white/45 leading-relaxed">{r.note}</p>
+                <p className="text-[11px] text-white/70 leading-relaxed">{r.note}</p>
               </article>
             ))}
           </div>
