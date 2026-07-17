@@ -12,28 +12,43 @@ import { createHash } from "crypto";
 // enforces this in CI.
 const SKU_CATALOG: Record<
   string,
-  { app: string; tier: string; amountCents: number; cycle: "monthly" }
+  { app: string; tier: string; amountCents: number; cycle: "monthly" | "once"; kind?: "pass" | "legacy_monthly" | "pack"; creditsGranted?: number }
 > = {
   // Active ecosystem passes (Hub only).
-  "all_access:creator_pass:monthly": { app: "all_access", tier: "creator_pass", amountCents: 49900,  cycle: "monthly" },
-  "all_access:studio_pass:monthly":  { app: "all_access", tier: "studio_pass",  amountCents: 149900, cycle: "monthly" },
+  "all_access:creator_pass:monthly": { app: "all_access", tier: "creator_pass", amountCents: 49900,  cycle: "monthly", kind: "pass" },
+  "all_access:studio_pass:monthly":  { app: "all_access", tier: "studio_pass",  amountCents: 149900, cycle: "monthly", kind: "pass" },
   // Legacy per-app monthly SKUs — retired from UI but kept live so existing
   // PayFast subscriptions keep renewing.
-  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly" },
-  "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly" },
-  "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly" },
-  "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 99900,  cycle: "monthly" },
-  "creative_studio:creator:monthly":  { app: "creative_studio", tier: "creator",  amountCents: 14900, cycle: "monthly" },
-  "creative_studio:pro:monthly":      { app: "creative_studio", tier: "pro",      amountCents: 29900, cycle: "monthly" },
-  "creative_studio:business:monthly": { app: "creative_studio", tier: "business", amountCents: 69900, cycle: "monthly" },
-  "sync_vision:creator:monthly":  { app: "sync_vision", tier: "creator",  amountCents: 54900,  cycle: "monthly" },
-  "sync_vision:pro:monthly":      { app: "sync_vision", tier: "pro",      amountCents: 139900, cycle: "monthly" },
-  "sync_vision:business:monthly": { app: "sync_vision", tier: "business", amountCents: 279900, cycle: "monthly" },
-  "youtube_optimizer:starter:monthly":  { app: "youtube_optimizer", tier: "starter",  amountCents: 14900,  cycle: "monthly" },
-  "youtube_optimizer:pro:monthly":      { app: "youtube_optimizer", tier: "pro",      amountCents: 59900,  cycle: "monthly" },
-  "youtube_optimizer:business:monthly": { app: "youtube_optimizer", tier: "business", amountCents: 299900, cycle: "monthly" },
-  "all_access:all_access:monthly": { app: "all_access", tier: "all_access", amountCents: 149900, cycle: "monthly" },
+  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly", kind: "legacy_monthly" },
+  "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly", kind: "legacy_monthly" },
+  "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly", kind: "legacy_monthly" },
+  "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 99900,  cycle: "monthly", kind: "legacy_monthly" },
+  "creative_studio:creator:monthly":  { app: "creative_studio", tier: "creator",  amountCents: 14900, cycle: "monthly", kind: "legacy_monthly" },
+  "creative_studio:pro:monthly":      { app: "creative_studio", tier: "pro",      amountCents: 29900, cycle: "monthly", kind: "legacy_monthly" },
+  "creative_studio:business:monthly": { app: "creative_studio", tier: "business", amountCents: 69900, cycle: "monthly", kind: "legacy_monthly" },
+  "sync_vision:creator:monthly":  { app: "sync_vision", tier: "creator",  amountCents: 54900,  cycle: "monthly", kind: "legacy_monthly" },
+  "sync_vision:pro:monthly":      { app: "sync_vision", tier: "pro",      amountCents: 139900, cycle: "monthly", kind: "legacy_monthly" },
+  "sync_vision:business:monthly": { app: "sync_vision", tier: "business", amountCents: 279900, cycle: "monthly", kind: "legacy_monthly" },
+  "youtube_optimizer:starter:monthly":  { app: "youtube_optimizer", tier: "starter",  amountCents: 14900,  cycle: "monthly", kind: "legacy_monthly" },
+  "youtube_optimizer:pro:monthly":      { app: "youtube_optimizer", tier: "pro",      amountCents: 59900,  cycle: "monthly", kind: "legacy_monthly" },
+  "youtube_optimizer:business:monthly": { app: "youtube_optimizer", tier: "business", amountCents: 299900, cycle: "monthly", kind: "legacy_monthly" },
+  "all_access:all_access:monthly": { app: "all_access", tier: "all_access", amountCents: 149900, cycle: "monthly", kind: "legacy_monthly" },
+  // One-off packs — PayFast one-time payments. COMPLETE credits `creditsGranted`
+  // into the buyer's wallet for `app`. Convention: 1 credit = R1.
+  "epublisher:starter_pack:once":         { app: "epublisher",        tier: "starter_pack",  amountCents: 9900,   cycle: "once", kind: "pack", creditsGranted: 99 },
+  "epublisher:creator_pack:once":         { app: "epublisher",        tier: "creator_pack",  amountCents: 29900,  cycle: "once", kind: "pack", creditsGranted: 299 },
+  "epublisher:studio_pack:once":          { app: "epublisher",        tier: "studio_pack",   amountCents: 69900,  cycle: "once", kind: "pack", creditsGranted: 699 },
+  "creative_studio:starter_pack:once":    { app: "creative_studio",   tier: "starter_pack",  amountCents: 14900,  cycle: "once", kind: "pack", creditsGranted: 149 },
+  "creative_studio:pro_pack:once":        { app: "creative_studio",   tier: "pro_pack",      amountCents: 39900,  cycle: "once", kind: "pack", creditsGranted: 399 },
+  "creative_studio:agency_pack:once":     { app: "creative_studio",   tier: "agency_pack",   amountCents: 89900,  cycle: "once", kind: "pack", creditsGranted: 899 },
+  "sync_vision:single_pack:once":         { app: "sync_vision",       tier: "single_pack",   amountCents: 34900,  cycle: "once", kind: "pack", creditsGranted: 349 },
+  "sync_vision:ep_pack:once":             { app: "sync_vision",       tier: "ep_pack",       amountCents: 99900,  cycle: "once", kind: "pack", creditsGranted: 999 },
+  "sync_vision:album_pack:once":          { app: "sync_vision",       tier: "album_pack",    amountCents: 249900, cycle: "once", kind: "pack", creditsGranted: 2499 },
+  "youtube_optimizer:channel_audit:once": { app: "youtube_optimizer", tier: "channel_audit", amountCents: 14900,  cycle: "once", kind: "pack", creditsGranted: 149 },
+  "youtube_optimizer:growth_pack:once":   { app: "youtube_optimizer", tier: "growth_pack",   amountCents: 59900,  cycle: "once", kind: "pack", creditsGranted: 599 },
+  "youtube_optimizer:agency_pack:once":   { app: "youtube_optimizer", tier: "agency_pack",   amountCents: 249900, cycle: "once", kind: "pack", creditsGranted: 2499 },
 };
+
 
 function buildSignature(params: Record<string, string>, passphrase: string): string {
   const pairs = Object.entries(params)
@@ -234,6 +249,85 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             error_message: `Got ${grossCents}, expected ${def.amountCents}` });
           return new Response("amount mismatch", { status: 400 });
         }
+
+        // ---------- One-off pack fulfillment ----------
+        // Packs are once-off PayFast payments. On COMPLETE we credit the
+        // buyer's wallet via grant_pack_credits (idempotent on pf_payment_id)
+        // and write an invoice. No subscription row, no email retry queue.
+        if (def.kind === "pack") {
+          const isPackRefund = paymentStatus === "REFUND" || paymentStatus === "REFUNDED";
+          const packSuccess = paymentStatus === "COMPLETE";
+
+          if (packSuccess && def.creditsGranted && def.creditsGranted > 0) {
+            const { error: grantErr } = await supabaseAdmin.rpc(
+              "grant_pack_credits" as never,
+              {
+                _user_id: userId,
+                _app: def.app,
+                _amount: def.creditsGranted,
+                _sku: sku!,
+                _pf_payment_id: pfPaymentId,
+                _idempotency_key: `pack:${pfPaymentId}`,
+                _metadata: { source: "payfast_itn", tier: def.tier },
+              } as never,
+            );
+            if (grantErr) {
+              // Fail-open so PayFast retries; clear webhook claim.
+              if (webhookRowId) {
+                await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
+              }
+              await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+                outcome: "pack_grant_failed", http_status: 500, error_message: grantErr.message });
+              return new Response("grant failed", { status: 500 });
+            }
+          }
+
+          // Invoice (packs still get a receipt). subscription_id null for packs.
+          if (pfPaymentId && (packSuccess || isPackRefund)) {
+            try {
+              const { data: recipientRec } = await supabaseAdmin.auth.admin.getUserById(userId);
+              const recipient = recipientRec?.user?.email ?? null;
+              const { error: invErr } = await supabaseAdmin
+                .from("invoices" as never)
+                .upsert(
+                  {
+                    user_id: userId,
+                    subscription_id: null,
+                    number: `INV-${pfPaymentId}`,
+                    sku,
+                    app: def.app,
+                    tier: def.tier,
+                    billing_cycle: def.cycle,
+                    amount_cents: def.amountCents,
+                    currency: "ZAR",
+                    status: isPackRefund ? "refunded" : "paid",
+                    recipient_email: recipient,
+                    pf_payment_id: pfPaymentId,
+                    m_payment_id: mPaymentId,
+                    provider: "payfast",
+                    issued_at: new Date().toISOString(),
+                    refunded_at: isPackRefund ? new Date().toISOString() : null,
+                    metadata: { payment_status: paymentStatus, source: "payfast_itn", pack: true, credits_granted: def.creditsGranted ?? 0 },
+                  } as never,
+                  { onConflict: "provider,pf_payment_id" },
+                );
+              if (invErr) console.error("pack invoice upsert failed (non-fatal):", invErr);
+            } catch (err) {
+              console.error("pack invoice write failed (non-fatal):", err);
+            }
+          }
+
+          const outcomeTag = isPackRefund
+            ? "pack_refunded"
+            : packSuccess
+              ? "pack_purchase_complete"
+              : `pack_${paymentStatus.toLowerCase()}`;
+          await finalize(outcomeTag, 200, "ok");
+          await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+            outcome: outcomeTag, http_status: 200 });
+          return new Response("ok", { status: 200 });
+        }
+
 
         // PayFast payment_status values we care about:
         //   COMPLETE  → activate

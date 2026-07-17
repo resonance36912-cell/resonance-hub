@@ -71,7 +71,7 @@ function CheckoutPage() {
     };
   }, []);
 
-  // Once-off pack: waitlist stub (not wired to PayFast one-time yet).
+  // Once-off pack: same PayFast flow as monthly, resolved via pack.sku.
   if (pack) {
     return (
       <Shell>
@@ -81,7 +81,7 @@ function CheckoutPage() {
           </p>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{pack.name}</h1>
           <p className="text-white/65 mt-2">
-            {pack.zar} · once-off · no recurring app fees
+            {pack.zar} · once-off · {pack.creditsGranted.toLocaleString()} credits into your {pack.app.replace(/_/g, " ")} wallet
           </p>
         </div>
 
@@ -89,47 +89,30 @@ function CheckoutPage() {
           <Row label="Purchase type" value="Once-off pack (no subscription)" />
           <Row label="App" value={pack.app.replace(/_/g, " ")} />
           <Row label="Price" value={`${pack.zar} once-off`} />
+          <Row label="Credits granted" value={`${pack.creditsGranted.toLocaleString()} credits`} />
           <Row label="Includes" value={pack.includes.join(" · ")} />
         </div>
 
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200/90 mb-6 leading-relaxed">
-          Once-off pack checkout is opening in Q1 2027. Join the waitlist below and we'll email
-          you the moment PayFast one-time checkout is live for {pack.name}.
-        </div>
-
-        {authReady && email ? (
-          <p className="text-sm text-white/70 mb-6">
-            You're signed in as <span className="text-white">{email}</span> — we'll notify this
-            account when the pack goes live.
-          </p>
+        {!authReady ? (
+          <p className="text-white/60">Loading…</p>
+        ) : email ? (
+          <PayBlock sku={pack.sku} email={email} returnTo={search.return_to} />
         ) : (
-          <p className="text-sm text-white/70 mb-6">
-            Sign in from the{" "}
-            <AppLink to={ROUTES.home} className="underline hover:text-white">
-              Hub home
-            </AppLink>{" "}
-            to join the pack waitlist automatically.
-          </p>
+          <AuthBlock onSignedIn={() => {}} />
         )}
 
-        <div className="flex gap-3">
+        <div className="mt-6">
           <AppLink
             to={ROUTES.pricing}
-            className="px-5 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
+            className="text-xs text-white/60 hover:text-white underline"
           >
             ← Back to packs
-          </AppLink>
-          <AppLink
-            to={ROUTES.pricing}
-            hash="passes"
-            className="px-5 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest"
-          >
-            See ecosystem passes →
           </AppLink>
         </div>
       </Shell>
     );
   }
+
 
   if (!def) {
     return (
@@ -268,8 +251,12 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
       {/* Preflight panel — what is actually about to happen */}
       <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm space-y-2">
         <Row label="Plan" value={def?.label ?? sku} />
-        <Row label="Price" value={def ? `R${(def.amountCents / 100).toFixed(2)} / month` : "—"} />
-        <Row label="Billing" value="Monthly · cancel anytime" />
+        <Row
+          label="Price"
+          value={def ? `R${(def.amountCents / 100).toFixed(2)}${def.cycle === "monthly" ? " / month" : " once-off"}` : "—"}
+        />
+        <Row label="Billing" value={def?.cycle === "once" ? "One-time payment" : "Monthly · cancel anytime"} />
+
         <Row label="Account" value={email} />
         {returnTo && <Row label="Returns to" value={new URL(returnTo).host} />}
       </div>

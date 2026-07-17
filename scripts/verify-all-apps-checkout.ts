@@ -17,7 +17,7 @@ import { SKU_CATALOG as HUB_CATALOG } from "../src/lib/checkout.functions";
 // --- Source 2: ITN catalog parsed from source (same literals the runtime uses)
 function loadItnCatalog(): Record<string, number> {
   const src = readFileSync("src/routes/api/public/payfast/itn.ts", "utf8");
-  const re = /"([a-z_]+:[a-z_]+:(?:monthly|annual))":\s*\{[^}]*amountCents:\s*(\d+)/g;
+  const re = /"([a-z_]+:[a-z_]+:(?:monthly|annual|once))":\s*\{[^}]*amountCents:\s*(\d+)/g;
   const out: Record<string, number> = {};
   for (const m of src.matchAll(re)) out[m[1]] = Number(m[2]);
   return out;

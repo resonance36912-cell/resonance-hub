@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PACK_CATALOG } from "@/lib/checkout.functions";
+
 import { getRequestOrigin } from "@/lib/origin.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { ROUTES } from "@/lib/routes";
@@ -11,7 +12,8 @@ export const Route = createFileRoute("/pricing")({
     const origin = loaderData?.origin ?? "https://reson8.life";
     const title = "Pricing — The Resonance Hub";
     const description =
-      "Once-off app packs and optional monthly ecosystem passes for Creative Studio, ePublisher, Sync Vision and YouTube Optimizer. ZAR · PayFast.";
+      "Once-off app packs for Creative Studio, ePublisher, Sync Vision and YouTube Optimizer. No subscriptions — pay once, use whenever. ZAR · PayFast.";
+
     return {
       meta: [
         { title },
@@ -67,55 +69,6 @@ export const APP_META: Record<string, { name: string; accent: string; anchor: st
   },
 };
 
-const PASSES = [
-  {
-    id: "creator_pass",
-    name: "Creator Pass",
-    zar: "R499",
-    cadence: "/ month",
-    blurb: "Solo creators publishing and promoting regularly.",
-    includes: [
-      "Monthly allowance across ePublisher",
-      "Monthly allowance across Creative Studio",
-      "Monthly allowance across YouTube Optimizer",
-    ],
-    href: "/checkout?app=all_access&plan=creator_pass",
-    cta: "Get Creator Pass",
-    kind: "checkout" as const,
-  },
-  {
-    id: "studio_pass",
-    name: "Studio Pass",
-    zar: "R1,499",
-    cadence: "/ month",
-    blurb: "Musicians, media teams, and high-output creators.",
-    includes: [
-      "Everything in Creator Pass",
-      "Monthly allowance across Sync Vision",
-      "Priority render queue",
-    ],
-    href: "/checkout?app=all_access&plan=studio_pass",
-    cta: "Get Studio Pass",
-    kind: "checkout" as const,
-    featured: true,
-  },
-  {
-    id: "business_pass",
-    name: "Business Pass",
-    zar: "Custom",
-    cadence: "/ month",
-    blurb: "Agencies, schools, publishers, and businesses.",
-    includes: [
-      "Multi-seat access",
-      "Onboarding + priority support",
-      "Custom app allowances",
-      "Invoice support",
-    ],
-    href: "mailto:hello@reson8.life?subject=Business%20Pass%20enquiry",
-    cta: "Request Business Pass",
-    kind: "quote" as const,
-  },
-];
 
 function PricingPage() {
   const packsByApp = Object.values(PACK_CATALOG).reduce<Record<string, typeof PACK_CATALOG[string][]>>(
@@ -152,29 +105,16 @@ function PricingPage() {
             <span className="font-serif italic font-normal text-white/80">actually use.</span>
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto leading-relaxed">
-            Individual apps use once-off credits and project packs. Optional ecosystem passes are
-            available for creators and teams using multiple tools every month.
+            Every Resonance app runs on once-off credit packs — buy what you need, use whenever,
+            top up when you run out. No subscriptions, no monthly commitments.
           </p>
-
-          {/* Section switcher */}
-          <div className="mt-8 inline-flex rounded-full border border-white/10 p-1 bg-card/50 backdrop-blur-xl text-[11px] font-bold uppercase tracking-widest">
-            <a href="#packs" className="px-5 py-2 rounded-full hover:bg-white/10 transition-colors">
-              Once-off packs
-            </a>
-            <a
-              href="#passes"
-              className="px-5 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
-            >
-              Ecosystem passes
-            </a>
-          </div>
         </section>
 
-        {/* SECTION 1 — Once-off app packs */}
+        {/* Once-off app packs */}
         <section id="packs" className="mb-24 scroll-mt-24">
           <header className="mb-10 max-w-3xl">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-3">
-              Section 1 · Once-off app packs
+              Once-off app packs
             </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               Buy only what you need
@@ -184,6 +124,8 @@ function PricingPage() {
               subscriptions. Purchase once, use whenever — top up when you need more.
             </p>
           </header>
+
+
 
           {Object.entries(APP_META).map(([appKey, meta]) => {
             const packs = packsByApp[appKey] ?? [];
@@ -287,74 +229,6 @@ function PricingPage() {
           </div>
         </section>
 
-        {/* SECTION 2 — Optional ecosystem passes */}
-        <section id="passes" className="mb-20 scroll-mt-24">
-          <header className="mb-10 max-w-3xl">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-3">
-              Section 2 · Optional ecosystem passes
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              For creators & teams using multiple tools every month
-            </h2>
-            <p className="text-white/70 leading-relaxed">
-              The Hub offers optional monthly ecosystem passes with shared allowances across
-              apps. These are the <span className="text-white">only</span> Resonance
-              subscriptions — individual apps stay once-off.
-            </p>
-          </header>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            {PASSES.map((pass) => (
-              <article
-                key={pass.id}
-                className={`relative rounded-2xl border p-7 flex flex-col backdrop-blur-xl transition-all ${
-                  pass.featured
-                    ? "border-[hsl(295_90%_60%/0.45)] bg-gradient-to-b from-[hsl(295_90%_60%/0.08)] to-card/60 shadow-[0_0_50px_-15px_hsl(295_90%_60%/0.6)]"
-                    : "border-white/10 bg-card/60 hover:border-white/25"
-                }`}
-              >
-                {pass.featured && (
-                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold uppercase tracking-[0.2em] bg-gradient-brand px-3 py-1 rounded-full">
-                    Most popular
-                  </div>
-                )}
-                <div className="text-[11px] font-mono uppercase tracking-widest text-white/50 mb-2">
-                  Ecosystem pass
-                </div>
-                <h3 className="text-xl font-bold tracking-tight mb-1">{pass.name}</h3>
-                <div className="flex items-baseline gap-1.5 mb-2">
-                  <span className="text-4xl font-extrabold">{pass.zar}</span>
-                  <span className="text-xs text-white/55">{pass.cadence}</span>
-                </div>
-                <p className="text-[13px] text-white/65 mb-5">{pass.blurb}</p>
-                <ul className="space-y-1.5 text-sm text-white/80 mb-6 flex-1">
-                  {pass.includes.map((f) => (
-                    <li key={f} className="flex gap-2">
-                      <span className="text-[hsl(295_90%_70%)]">✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href={pass.href}
-                  {...(pass.href.startsWith("mailto:") ? {} : {})}
-                  className={`text-center px-5 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                    pass.featured
-                      ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
-                      : "border border-white/15 hover:border-white/40"
-                  }`}
-                >
-                  {pass.cta}
-                </a>
-              </article>
-            ))}
-          </div>
-
-          <p className="text-center text-xs text-white/60 mt-8 max-w-2xl mx-auto leading-relaxed">
-            Passes are the only recurring Resonance subscriptions. Cancel anytime via PayFast.
-            Individual apps never require a monthly subscription.
-          </p>
-        </section>
 
         <section className="text-center pt-10 border-t border-white/10">
           <p className="text-white/60 text-sm max-w-2xl mx-auto leading-relaxed">
