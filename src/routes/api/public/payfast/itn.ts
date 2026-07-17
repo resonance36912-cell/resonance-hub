@@ -198,6 +198,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         const expectedSig = buildSignature(params, passphrase);
         const sigOk = !!params.signature && params.signature.toLowerCase() === expectedSig.toLowerCase();
         if (!sigOk) {
+          await recordEvent({ event_type: "signature_invalid", http_status: 400, include_payload: true });
           await logAttempt({ ...baseLog, signature_valid: false, server_validated: false,
             outcome: "invalid_signature", http_status: 400, error_message: "Signature mismatch" });
           return new Response("invalid signature", { status: 400 });
@@ -206,10 +207,13 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // 2. Server-to-server validation
         const validated = await validateWithPayfast(rawBody, sandbox);
         if (!validated) {
+          await recordEvent({ event_type: "validation_failed", http_status: 400 });
+          await updateSession("failed", "PayFast did not return VALID");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: false,
             outcome: "validation_failed", http_status: 400, error_message: "PayFast did not return VALID" });
           return new Response("not validated", { status: 400 });
         }
+
 
         // 3. Webhook dedup / idempotency claim.
         //
