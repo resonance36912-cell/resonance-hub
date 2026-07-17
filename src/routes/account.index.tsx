@@ -12,6 +12,8 @@ import {
   formatZar,
   type MyBilling,
 } from "@/lib/billing-portal.functions";
+import type { AppKey } from "@/lib/subscriptions.functions";
+
 
 /**
  * /account — Phase 3 unified dashboard.
@@ -219,4 +221,4 @@ function NavCard({ to, title, body }: { to: string; title: string; body: string 
   );
 }
 
-type AppKey = Parameters<typeof labelForApp>[0];
+
