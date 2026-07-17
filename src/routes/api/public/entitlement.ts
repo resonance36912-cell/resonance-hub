@@ -103,6 +103,19 @@ export const Route = createFileRoute("/api/public/entitlement")({
           return json({ error: "Lookup failed" }, 500);
         }
 
+        // Wallet balance for the requested app (skip for `all_access` — no
+        // dedicated wallet). RLS scopes to the caller.
+        let creditsRemaining: number | null = null;
+        if (app !== "all_access") {
+          const { data: walletRow } = await supabase
+            .from("credit_wallets")
+            .select("balance")
+            .eq("user_id", userId)
+            .eq("app", app)
+            .maybeSingle();
+          creditsRemaining = walletRow?.balance ?? 0;
+        }
+
         const active = (rows ?? []).filter((r) => r.status === "active");
         const bundle = active.find((r) => r.app === "all_access");
         const direct = active.find((r) => r.app === app);
@@ -123,11 +136,24 @@ export const Route = createFileRoute("/api/public/entitlement")({
             checkedAt,
             hasAccess: false,
             currentPeriodEnd: null,
+            creditsRemaining,
+            grandfathered: false,
           });
         }
 
         const tier = winner.tier as Tier;
         const source = winner.app === "all_access" ? "all_access" : "direct";
+
+        // Grandfathered flag: the underlying SKU still resolves but the
+        // catalogue row has been retired-into-grandfathered by Phase 1.
+        const legacySkuId = `${winner.app}:${winner.tier}:monthly`;
+        const { data: skuRow } = await supabase
+          .from("sku_catalogue")
+          .select("status")
+          .eq("sku_id", legacySkuId)
+          .maybeSingle();
+        const grandfathered = skuRow?.status === "grandfathered";
+
         void logEntitlementCheck({ userId, app, tier, status: winner.status, source, sourceIp, userAgent });
 
         return json({
@@ -142,8 +168,11 @@ export const Route = createFileRoute("/api/public/entitlement")({
           checkedAt,
           hasAccess: true,
           currentPeriodEnd: winner.current_period_end,
+          creditsRemaining,
+          grandfathered,
         });
       },
     },
   },
 });
+

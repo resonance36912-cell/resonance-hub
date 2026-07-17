@@ -82,11 +82,13 @@ export const ROUTES = {
   emailUnsubscribe: routePath("/email/unsubscribe"),
 
   // Account (user)
+  account: routePath("/account"),
   accountBilling: routePath("/account/billing"),
   accountDebug: routePath("/account/debug"),
   accountInvoices: routePath("/account/invoices"),
   accountSubscriptions: routePath("/account/subscriptions"),
   accountPrivacy: routePath("/account/privacy"),
+
 
   admin: routePath("/admin"),
 
