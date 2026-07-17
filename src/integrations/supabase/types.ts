@@ -161,6 +161,78 @@ export type Database = {
         }
         Relationships: []
       }
+      checkout_sessions: {
+        Row: {
+          amount_cents: number
+          app: string
+          created_at: string
+          currency: string
+          cycle: string
+          error_message: string | null
+          id: string
+          last_event_at: string | null
+          m_payment_id: string
+          metadata: Json
+          pf_payment_id: string | null
+          retry_of_subscription_id: string | null
+          return_to: string | null
+          sandbox: boolean
+          sku: string
+          source_ip: string | null
+          status: string
+          tier: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          app: string
+          created_at?: string
+          currency?: string
+          cycle: string
+          error_message?: string | null
+          id?: string
+          last_event_at?: string | null
+          m_payment_id: string
+          metadata?: Json
+          pf_payment_id?: string | null
+          retry_of_subscription_id?: string | null
+          return_to?: string | null
+          sandbox?: boolean
+          sku: string
+          source_ip?: string | null
+          status?: string
+          tier: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          app?: string
+          created_at?: string
+          currency?: string
+          cycle?: string
+          error_message?: string | null
+          id?: string
+          last_event_at?: string | null
+          m_payment_id?: string
+          metadata?: Json
+          pf_payment_id?: string | null
+          retry_of_subscription_id?: string | null
+          return_to?: string | null
+          sandbox?: boolean
+          sku?: string
+          source_ip?: string | null
+          status?: string
+          tier?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       ci_alert_config: {
         Row: {
           default_branch_only: boolean
@@ -1601,6 +1673,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_events: {
+        Row: {
+          amount_cents: number | null
+          created_at: string
+          event_type: string
+          http_status: number | null
+          id: string
+          m_payment_id: string | null
+          metadata: Json
+          outcome: string | null
+          payment_status: string | null
+          pf_payment_id: string | null
+          provider: string
+          raw_payload: Json | null
+          session_id: string | null
+          source_ip: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_cents?: number | null
+          created_at?: string
+          event_type: string
+          http_status?: number | null
+          id?: string
+          m_payment_id?: string | null
+          metadata?: Json
+          outcome?: string | null
+          payment_status?: string | null
+          pf_payment_id?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          session_id?: string | null
+          source_ip?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_cents?: number | null
+          created_at?: string
+          event_type?: string
+          http_status?: number | null
+          id?: string
+          m_payment_id?: string | null
+          metadata?: Json
+          outcome?: string | null
+          payment_status?: string | null
+          pf_payment_id?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          session_id?: string | null
+          source_ip?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plan_changes: {
         Row: {
