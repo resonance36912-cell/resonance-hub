@@ -251,8 +251,12 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
       {/* Preflight panel — what is actually about to happen */}
       <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm space-y-2">
         <Row label="Plan" value={def?.label ?? sku} />
-        <Row label="Price" value={def ? `R${(def.amountCents / 100).toFixed(2)} / month` : "—"} />
-        <Row label="Billing" value="Monthly · cancel anytime" />
+        <Row
+          label="Price"
+          value={def ? `R${(def.amountCents / 100).toFixed(2)}${def.cycle === "monthly" ? " / month" : " once-off"}` : "—"}
+        />
+        <Row label="Billing" value={def?.cycle === "once" ? "One-time payment" : "Monthly · cancel anytime"} />
+
         <Row label="Account" value={email} />
         {returnTo && <Row label="Returns to" value={new URL(returnTo).host} />}
       </div>
