@@ -1366,7 +1366,7 @@ type UpdateItem = {
 // Source of truth for editing lives in public/content/updates.json — no code
 // changes required to add / edit / reorder cards.
 const FALLBACK_UPDATES: UpdateItem[] = [
-  { app: "Reson8 Hub", status: "Live", tone: "live", change: "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.", date: "Jun 2026", href: "/pricing#passes", cta: "See passes" },
+  { app: "Reson8 Hub", status: "Live", tone: "live", change: "All Resonance apps are now once-off packs — pay for what you use, no recurring app subscriptions.", date: "Jun 2026", href: "/pricing#packs", cta: "See packs" },
   { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.", date: "May 2026", href: "/pricing#epublisher", cta: "View packs" },
   { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.", date: "Apr 2026", href: "/pricing#creative-studio", cta: "View packs" },
   { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.", date: "Mar 2026", href: "/pricing#sync-vision", cta: "View packs" },
