@@ -11,6 +11,7 @@ import logoSyncVision from "@/assets/logo-sync-vision.png";
 import logoPodcast from "@/assets/logo-podcast.png";
 import logoCareerCompass from "@/assets/logo-career-compass.png";
 import logoYouTubeOptimizer from "@/assets/logo-youtube-optimizer.png";
+import resonanceAppDevAsset from "@/assets/resonance-app-dev.jpg.asset.json";
 import {
   Dialog,
   DialogContent,
@@ -1316,6 +1317,35 @@ function Index() {
       </main>
 
       <footer className="py-12 px-6 border-t border-white/5 max-w-7xl mx-auto">
+        <div className="mb-10 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center md:flex-row md:justify-between md:text-left">
+          <div className="flex items-center gap-4">
+            <img
+              src={resonanceAppDevAsset.url}
+              alt="The Resonance App Dev — brand mark"
+              width={96}
+              height={96}
+              loading="lazy"
+              className="h-16 w-16 rounded-xl object-cover shadow-[0_0_24px_rgba(217,70,239,0.35)]"
+            />
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-widest text-white/60">
+                Built by
+              </div>
+              <div className="text-lg font-semibold text-white">
+                The Resonance App Dev
+              </div>
+              <div className="text-xs text-white/70">
+                The in-house dev team designing, shipping, and maintaining every app in the Resonance ecosystem.
+              </div>
+            </div>
+          </div>
+          <a
+            href="mailto:hello@reson8.life"
+            className="text-[10px] font-mono uppercase tracking-widest text-white/70 hover:text-white transition-colors"
+          >
+            Work with the team →
+          </a>
+        </div>
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
             <img

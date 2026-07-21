@@ -171,6 +171,14 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     tagline: "Discover your career path with a rewards-based pilot.",
     includedInSuite: false,
   },
+  resonance_app_dev: {
+    key: "resonance_app_dev",
+    label: "The Resonance App Dev",
+    url: "https://reson8.life",
+    status: "live",
+    tagline: "The in-house dev team building every app in the Resonance ecosystem.",
+    includedInSuite: false,
+  },
 };
 
 /**
