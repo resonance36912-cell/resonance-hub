@@ -201,13 +201,19 @@ function SuccessPage() {
                 {secondaryTo.label}
               </AppLink>
             )}
-            <AppLink
-              to={secondaryTo.to}
-              hash={secondaryTo.hash}
-              className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
-            >
-              {secondaryTo.label}
-            </AppLink>
+            {(phase === "succeeded" ||
+              phase === "skip" ||
+              phase === "failed" ||
+              phase === "cancelled" ||
+              phase === "refunded") && (
+              <AppLink
+                to={secondaryTo.to}
+                hash={secondaryTo.hash}
+                className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
+              >
+                {secondaryTo.label}
+              </AppLink>
+            )}
           </div>
 
           {phase === "pending" && (
