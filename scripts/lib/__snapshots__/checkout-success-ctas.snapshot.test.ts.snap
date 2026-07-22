@@ -1,0 +1,109 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`checkout success CTA row snapshots pass · verifying 1`] = `
+"<!-- phase=verifying kind=pass count=1 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pass · pending 1`] = `
+"<!-- phase=pending kind=pass count=1 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pass · succeeded 1`] = `
+"<!-- phase=succeeded kind=pass count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#passes">See ecosystem passes →</AppLink>
+  <AppLink class="btn-outline" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pass · skip 1`] = `
+"<!-- phase=skip kind=pass count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#passes">See ecosystem passes →</AppLink>
+  <AppLink class="btn-outline" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pass · failed 1`] = `
+"<!-- phase=failed kind=pass count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#passes">Back to pricing</AppLink>
+  <AppLink class="btn-outline" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pass · cancelled 1`] = `
+"<!-- phase=cancelled kind=pass count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#passes">Back to pricing</AppLink>
+  <AppLink class="btn-outline" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pass · refunded 1`] = `
+"<!-- phase=refunded kind=pass count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#passes">Back to pricing</AppLink>
+  <AppLink class="btn-outline" to="/account/subscriptions">View subscriptions</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · verifying 1`] = `
+"<!-- phase=verifying kind=pack count=1 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · pending 1`] = `
+"<!-- phase=pending kind=pack count=1 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · succeeded 1`] = `
+"<!-- phase=succeeded kind=pack count=2 -->
+<div class="cta-row">
+  <a class="btn-gradient" href="https://www.resonanceonline.life">Continue to Resonance ePublisher →</a>
+  <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · skip 1`] = `
+"<!-- phase=skip kind=pack count=2 -->
+<div class="cta-row">
+  <a class="btn-gradient" href="https://www.resonanceonline.life">Continue to Resonance ePublisher →</a>
+  <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · failed 1`] = `
+"<!-- phase=failed kind=pack count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#packs">Back to pricing</AppLink>
+  <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · cancelled 1`] = `
+"<!-- phase=cancelled kind=pack count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#packs">Back to pricing</AppLink>
+  <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
+
+exports[`checkout success CTA row snapshots pack · refunded 1`] = `
+"<!-- phase=refunded kind=pack count=2 -->
+<div class="cta-row">
+  <AppLink class="btn-gradient" to="/pricing#packs">Back to pricing</AppLink>
+  <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
+</div>"
+`;
