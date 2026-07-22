@@ -4,11 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
+import { resolveCheckoutContext } from "@/lib/checkout-return";
 import {
-  resolveCheckoutContext,
-  primaryContinueHref,
-  primaryContinueLabel,
-} from "@/lib/checkout-return";
+  computeCheckoutSuccessCtas,
+  type Phase,
+} from "@/lib/checkout-success-ctas";
 import {
   getCheckoutSession,
   type CheckoutSessionView,
