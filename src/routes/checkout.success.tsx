@@ -46,8 +46,6 @@ const MAX_POLLS = 15;
 // Auto-redirect delay after the terminal state so the user sees confirmation.
 const AUTO_REDIRECT_MS = 1800;
 
-type Phase = "verifying" | "succeeded" | "failed" | "cancelled" | "refunded" | "pending" | "skip";
-
 function statusToPhase(s: CheckoutSessionView["status"]): Phase {
   if (s === "succeeded") return "succeeded";
   if (s === "failed") return "failed";
@@ -63,14 +61,11 @@ function SuccessPage() {
   const navigate = useNavigate();
   const sessionFn = useServerFn(getCheckoutSession);
 
-  const primaryHref = primaryContinueHref(ctx);
-  const primaryLabel = primaryContinueLabel(ctx);
-  const primaryIsExternal = primaryHref.startsWith("http");
-
-  const secondaryTo =
-    ctx.kind === "pack"
-      ? { to: ROUTES.pricing, hash: "packs", label: "See more packs" }
-      : { to: ROUTES.accountSubscriptions, hash: undefined, label: "View subscriptions" };
+  // Kept for the auto-redirect effect (avoids re-plumbing through the CTA specs).
+  const primaryIsExternal = ctx.returnTo
+    ? ctx.returnTo.startsWith("http")
+    : !!ctx.app;
+  const externalHref = ctx.returnTo ?? ctx.app?.url ?? "";
 
   // Without a session id we can't poll — fall back to a generic ack.
   const canPoll = !!sessionIdParam;
