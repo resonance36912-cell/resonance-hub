@@ -15,12 +15,12 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
-import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
@@ -125,11 +125,6 @@ const GovernanceRoute = GovernanceRouteImport.update({
   path: '/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ChangelogRoute = ChangelogRouteImport.update({
   id: '/changelog',
   path: '/changelog',
@@ -153,6 +148,11 @@ const LegalIndexRoute = LegalIndexRouteImport.update({
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/docs/',
   path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -237,14 +237,14 @@ const CreativeStudioPricingRoute = CreativeStudioPricingRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
-  id: '/success',
-  path: '/success',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
-  id: '/cancel',
-  path: '/cancel',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/cancel',
+  path: '/checkout/cancel',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppsSubmitRoute = AppsSubmitRouteImport.update({
   id: '/submit',
@@ -544,7 +544,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -595,6 +594,7 @@ export interface FileRoutesByFullPath {
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -631,7 +631,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -682,6 +681,7 @@ export interface FileRoutesByTo {
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/checkout': typeof CheckoutIndexRoute
   '/docs': typeof DocsIndexRoute
   '/legal': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -719,7 +719,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
-  '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -770,6 +769,7 @@ export interface FileRoutesById {
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -808,7 +808,6 @@ export interface FileRouteTypes {
     | '/'
     | '/apps'
     | '/changelog'
-    | '/checkout'
     | '/governance'
     | '/login'
     | '/mcp'
@@ -859,6 +858,7 @@ export interface FileRouteTypes {
     | '/youtube-optimizer/pricing'
     | '/account/'
     | '/admin/'
+    | '/checkout/'
     | '/docs/'
     | '/legal/'
     | '/.lovable/oauth/consent'
@@ -895,7 +895,6 @@ export interface FileRouteTypes {
     | '/'
     | '/apps'
     | '/changelog'
-    | '/checkout'
     | '/governance'
     | '/login'
     | '/mcp'
@@ -946,6 +945,7 @@ export interface FileRouteTypes {
     | '/youtube-optimizer/pricing'
     | '/account'
     | '/admin'
+    | '/checkout'
     | '/docs'
     | '/legal'
     | '/.lovable/oauth/consent'
@@ -982,7 +982,6 @@ export interface FileRouteTypes {
     | '/'
     | '/apps'
     | '/changelog'
-    | '/checkout'
     | '/governance'
     | '/login'
     | '/mcp'
@@ -1033,6 +1032,7 @@ export interface FileRouteTypes {
     | '/youtube-optimizer/pricing'
     | '/account/'
     | '/admin/'
+    | '/checkout/'
     | '/docs/'
     | '/legal/'
     | '/.lovable/oauth/consent'
@@ -1070,7 +1070,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppsRoute: typeof AppsRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
   GovernanceRoute: typeof GovernanceRouteWithChildren
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -1101,6 +1100,8 @@ export interface RootRouteChildren {
   AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   ApiChatRoute: typeof ApiChatRoute
+  CheckoutCancelRoute: typeof CheckoutCancelRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
   DocsEntitlementApiRoute: typeof DocsEntitlementApiRoute
   DocsSpokeHubControlContractRoute: typeof DocsSpokeHubControlContractRoute
@@ -1116,6 +1117,7 @@ export interface RootRouteChildren {
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -1188,13 +1190,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GovernanceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/changelog': {
       id: '/changelog'
       path: '/changelog'
@@ -1228,6 +1223,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs/'
       preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1344,17 +1346,17 @@ declare module '@tanstack/react-router' {
     }
     '/checkout/success': {
       id: '/checkout/success'
-      path: '/success'
+      path: '/checkout/success'
       fullPath: '/checkout/success'
       preLoaderRoute: typeof CheckoutSuccessRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/checkout/cancel': {
       id: '/checkout/cancel'
-      path: '/cancel'
+      path: '/checkout/cancel'
       fullPath: '/checkout/cancel'
       preLoaderRoute: typeof CheckoutCancelRouteImport
-      parentRoute: typeof CheckoutRoute
+      parentRoute: typeof rootRouteImport
     }
     '/apps/submit': {
       id: '/apps/submit'
@@ -1758,20 +1760,6 @@ const AppsRouteChildren: AppsRouteChildren = {
 
 const AppsRouteWithChildren = AppsRoute._addFileChildren(AppsRouteChildren)
 
-interface CheckoutRouteChildren {
-  CheckoutCancelRoute: typeof CheckoutCancelRoute
-  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutCancelRoute: CheckoutCancelRoute,
-  CheckoutSuccessRoute: CheckoutSuccessRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
 interface GovernanceRouteChildren {
   GovernanceLogRoute: typeof GovernanceLogRoute
 }
@@ -1825,7 +1813,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppsRoute: AppsRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
   GovernanceRoute: GovernanceRouteWithChildren,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
@@ -1857,6 +1844,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   ApiChatRoute: ApiChatRoute,
+  CheckoutCancelRoute: CheckoutCancelRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
   DocsEntitlementApiRoute: DocsEntitlementApiRoute,
   DocsSpokeHubControlContractRoute: DocsSpokeHubControlContractRoute,
@@ -1872,6 +1861,7 @@ const rootRouteChildren: RootRouteChildren = {
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AccountIndexRoute: AccountIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
