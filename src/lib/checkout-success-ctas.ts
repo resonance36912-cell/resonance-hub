@@ -16,7 +16,7 @@
  */
 import type { CheckoutContext } from "./checkout-return";
 import { primaryContinueHref, primaryContinueLabel } from "./checkout-return";
-import { ROUTES } from "./routes";
+import { ROUTES, type RoutePath } from "./routes";
 
 export type Phase =
   | "verifying"
@@ -37,7 +37,7 @@ export const TERMINAL_PHASES: readonly Phase[] = [
 
 export type CtaTarget =
   | { kind: "external"; href: string }
-  | { kind: "internal"; to: string; hash?: string };
+  | { kind: "internal"; to: RoutePath; hash?: string };
 
 export type CtaSpec = {
   /** Stable identifier used for React keys and test assertions. */
@@ -49,7 +49,7 @@ export type CtaSpec = {
 };
 
 type SecondaryTarget = {
-  to: string;
+  to: RoutePath;
   hash: string | undefined;
   label: string;
 };
