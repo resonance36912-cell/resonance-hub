@@ -4,11 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
+import { resolveCheckoutContext } from "@/lib/checkout-return";
 import {
-  resolveCheckoutContext,
-  primaryContinueHref,
-  primaryContinueLabel,
-} from "@/lib/checkout-return";
+  computeCheckoutSuccessCtas,
+  type Phase,
+} from "@/lib/checkout-success-ctas";
 import {
   getCheckoutSession,
   type CheckoutSessionView,
@@ -46,8 +46,6 @@ const MAX_POLLS = 15;
 // Auto-redirect delay after the terminal state so the user sees confirmation.
 const AUTO_REDIRECT_MS = 1800;
 
-type Phase = "verifying" | "succeeded" | "failed" | "cancelled" | "refunded" | "pending" | "skip";
-
 function statusToPhase(s: CheckoutSessionView["status"]): Phase {
   if (s === "succeeded") return "succeeded";
   if (s === "failed") return "failed";
@@ -63,14 +61,11 @@ function SuccessPage() {
   const navigate = useNavigate();
   const sessionFn = useServerFn(getCheckoutSession);
 
-  const primaryHref = primaryContinueHref(ctx);
-  const primaryLabel = primaryContinueLabel(ctx);
-  const primaryIsExternal = primaryHref.startsWith("http");
-
-  const secondaryTo =
-    ctx.kind === "pack"
-      ? { to: ROUTES.pricing, hash: "packs", label: "See more packs" }
-      : { to: ROUTES.accountSubscriptions, hash: undefined, label: "View subscriptions" };
+  // Kept for the auto-redirect effect (avoids re-plumbing through the CTA specs).
+  const primaryIsExternal = ctx.returnTo
+    ? ctx.returnTo.startsWith("http")
+    : !!ctx.app;
+  const externalHref = ctx.returnTo ?? ctx.app?.url ?? "";
 
   // Without a session id we can't poll — fall back to a generic ack.
   const canPoll = !!sessionIdParam;
@@ -117,8 +112,8 @@ function SuccessPage() {
   useEffect(() => {
     if (phase !== "succeeded") return;
     redirectTimer.current = setTimeout(() => {
-      if (primaryIsExternal) {
-        window.location.href = primaryHref;
+      if (primaryIsExternal && externalHref) {
+        window.location.href = externalHref;
       } else {
         void navigate({ to: ROUTES.pricing, hash: ctx.pricingAnchor });
       }
@@ -126,7 +121,7 @@ function SuccessPage() {
     return () => {
       if (redirectTimer.current) clearTimeout(redirectTimer.current);
     };
-  }, [phase, primaryHref, primaryIsExternal, navigate, ctx.pricingAnchor]);
+  }, [phase, externalHref, primaryIsExternal, navigate, ctx.pricingAnchor]);
 
   const { headline, body, tone, glyph } = renderCopy({ phase, ctx, session });
 
@@ -138,6 +133,8 @@ function SuccessPage() {
         : tone === "error"
           ? "border-red-500/30 bg-red-500/5"
           : "border-white/15 bg-white/5";
+
+  const ctas = computeCheckoutSuccessCtas({ phase, ctx });
 
   return (
     <div className="min-h-screen text-foreground">
@@ -167,53 +164,29 @@ function SuccessPage() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {phase === "succeeded" || phase === "skip" ? (
-              primaryIsExternal ? (
-                <a
-                  href={primaryHref}
-                  className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
-                >
-                  {primaryLabel}
-                </a>
-              ) : (
+            {ctas.map((cta) => {
+              const className =
+                cta.variant === "gradient"
+                  ? "px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
+                  : "px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold";
+              if (cta.target.kind === "external") {
+                return (
+                  <a key={cta.id} href={cta.target.href} className={className}>
+                    {cta.label}
+                  </a>
+                );
+              }
+              return (
                 <AppLink
-                  to={ROUTES.pricing}
-                  hash={ctx.pricingAnchor}
-                  className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
+                  key={cta.id}
+                  to={cta.target.to}
+                  hash={cta.target.hash}
+                  className={className}
                 >
-                  {primaryLabel}
+                  {cta.label}
                 </AppLink>
-              )
-            ) : phase === "failed" || phase === "cancelled" || phase === "refunded" ? (
-              <AppLink
-                to={ROUTES.pricing}
-                hash={ctx.pricingAnchor}
-                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
-              >
-                Back to pricing
-              </AppLink>
-            ) : (
-              <AppLink
-                to={secondaryTo.to}
-                hash={secondaryTo.hash}
-                className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
-              >
-                {secondaryTo.label}
-              </AppLink>
-            )}
-            {(phase === "succeeded" ||
-              phase === "skip" ||
-              phase === "failed" ||
-              phase === "cancelled" ||
-              phase === "refunded") && (
-              <AppLink
-                to={secondaryTo.to}
-                hash={secondaryTo.hash}
-                className="px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold"
-              >
-                {secondaryTo.label}
-              </AppLink>
-            )}
+              );
+            })}
           </div>
 
           {phase === "pending" && (

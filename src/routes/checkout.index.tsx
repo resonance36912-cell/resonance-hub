@@ -27,7 +27,7 @@ const SearchSchema = z.object({
 
 type Search = z.infer<typeof SearchSchema>;
 
-export const Route = createFileRoute("/checkout")({
+export const Route = createFileRoute("/checkout/")({
   head: () => ({
     meta: [
       { title: "Checkout — The Resonance Hub" },
