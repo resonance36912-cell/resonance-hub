@@ -55,17 +55,18 @@ function statusToPhase(s: CheckoutSessionView["status"]): Phase {
   return "verifying";
 }
 
+const CTA_CLASS = {
+  gradient:
+    "px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm",
+  outline:
+    "px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold",
+} as const;
+
 function SuccessPage() {
   const { sku, pack, session: sessionIdParam, return_to } = Route.useSearch();
   const ctx = resolveCheckoutContext({ sku, pack, return_to });
   const navigate = useNavigate();
   const sessionFn = useServerFn(getCheckoutSession);
-
-  // Kept for the auto-redirect effect (avoids re-plumbing through the CTA specs).
-  const primaryIsExternal = ctx.returnTo
-    ? ctx.returnTo.startsWith("http")
-    : !!ctx.app;
-  const externalHref = ctx.returnTo ?? ctx.app?.url ?? "";
 
   // Without a session id we can't poll — fall back to a generic ack.
   const canPoll = !!sessionIdParam;
@@ -108,20 +109,29 @@ function SuccessPage() {
     };
   }, [canPoll, sessionIdParam, sessionFn]);
 
+  const ctas = computeCheckoutSuccessCtas({ phase, ctx });
+  // Single source of truth for "where does the primary CTA point?" — the
+  // auto-redirect on success mirrors the primary button rather than
+  // recomputing it from ctx.
+  const primaryCta = ctas.find((c) => c.id === "primary") ?? null;
+
   // Auto-redirect on success only.
   useEffect(() => {
-    if (phase !== "succeeded") return;
+    if (phase !== "succeeded" || !primaryCta) return;
     redirectTimer.current = setTimeout(() => {
-      if (primaryIsExternal && externalHref) {
-        window.location.href = externalHref;
+      if (primaryCta.target.kind === "external") {
+        window.location.href = primaryCta.target.href;
       } else {
-        void navigate({ to: ROUTES.pricing, hash: ctx.pricingAnchor });
+        void navigate({
+          to: primaryCta.target.to,
+          hash: primaryCta.target.hash,
+        });
       }
     }, AUTO_REDIRECT_MS);
     return () => {
       if (redirectTimer.current) clearTimeout(redirectTimer.current);
     };
-  }, [phase, externalHref, primaryIsExternal, navigate, ctx.pricingAnchor]);
+  }, [phase, primaryCta, navigate]);
 
   const { headline, body, tone, glyph } = renderCopy({ phase, ctx, session });
 
@@ -133,8 +143,6 @@ function SuccessPage() {
         : tone === "error"
           ? "border-red-500/30 bg-red-500/5"
           : "border-white/15 bg-white/5";
-
-  const ctas = computeCheckoutSuccessCtas({ phase, ctx });
 
   return (
     <div className="min-h-screen text-foreground">
@@ -164,29 +172,26 @@ function SuccessPage() {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            {ctas.map((cta) => {
-              const className =
-                cta.variant === "gradient"
-                  ? "px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-sm"
-                  : "px-6 py-3 rounded-full border border-white/20 hover:border-white/40 text-sm font-bold";
-              if (cta.target.kind === "external") {
-                return (
-                  <a key={cta.id} href={cta.target.href} className={className}>
-                    {cta.label}
-                  </a>
-                );
-              }
-              return (
+            {ctas.map((cta) =>
+              cta.target.kind === "external" ? (
+                <a
+                  key={cta.id}
+                  href={cta.target.href}
+                  className={CTA_CLASS[cta.variant]}
+                >
+                  {cta.label}
+                </a>
+              ) : (
                 <AppLink
                   key={cta.id}
                   to={cta.target.to}
                   hash={cta.target.hash}
-                  className={className}
+                  className={CTA_CLASS[cta.variant]}
                 >
                   {cta.label}
                 </AppLink>
-              );
-            })}
+              ),
+            )}
           </div>
 
           {phase === "pending" && (
@@ -211,6 +216,7 @@ function SuccessPage() {
     </div>
   );
 }
+
 
 function renderCopy({
   phase,
