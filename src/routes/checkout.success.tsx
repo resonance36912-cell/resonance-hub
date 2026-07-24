@@ -10,6 +10,10 @@ import {
   type Phase,
 } from "@/lib/checkout-success-ctas";
 import {
+  AUTO_REDIRECT_MS,
+  scheduleCheckoutSuccessRedirect,
+} from "@/lib/checkout-success-redirect";
+import {
   getCheckoutSession,
   type CheckoutSessionView,
 } from "@/lib/checkout-session.functions";
