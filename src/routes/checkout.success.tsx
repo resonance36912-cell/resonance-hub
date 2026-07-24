@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -9,6 +9,10 @@ import {
   computeCheckoutSuccessCtas,
   type Phase,
 } from "@/lib/checkout-success-ctas";
+import {
+  AUTO_REDIRECT_MS,
+  scheduleCheckoutSuccessRedirect,
+} from "@/lib/checkout-success-redirect";
 import {
   getCheckoutSession,
   type CheckoutSessionView,
@@ -43,8 +47,8 @@ export const Route = createFileRoute("/checkout/success")({
 // Poll cadence: 15 attempts over ~30s covers common ITN-after-return races.
 const POLL_INTERVAL_MS = 2000;
 const MAX_POLLS = 15;
-// Auto-redirect delay after the terminal state so the user sees confirmation.
-const AUTO_REDIRECT_MS = 1800;
+// Auto-redirect delay lives in `@/lib/checkout-success-redirect` so the
+// exact timing and the cancel-on-unmount behavior can be unit-tested.
 
 function statusToPhase(s: CheckoutSessionView["status"]): Phase {
   if (s === "succeeded") return "succeeded";
@@ -72,7 +76,7 @@ function SuccessPage() {
   const canPoll = !!sessionIdParam;
   const [phase, setPhase] = useState<Phase>(canPoll ? "verifying" : "skip");
   const [session, setSession] = useState<CheckoutSessionView | null>(null);
-  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
 
   useEffect(() => {
     if (!canPoll || !sessionIdParam) return;
@@ -118,19 +122,17 @@ function SuccessPage() {
   // Auto-redirect on success only.
   useEffect(() => {
     if (phase !== "succeeded" || !primaryCta) return;
-    redirectTimer.current = setTimeout(() => {
-      if (primaryCta.target.kind === "external") {
-        window.location.href = primaryCta.target.href;
-      } else {
-        void navigate({
-          to: primaryCta.target.to,
-          hash: primaryCta.target.hash,
-        });
-      }
-    }, AUTO_REDIRECT_MS);
-    return () => {
-      if (redirectTimer.current) clearTimeout(redirectTimer.current);
-    };
+    const cancel = scheduleCheckoutSuccessRedirect({
+      target: primaryCta.target,
+      navigate: ({ to, hash }) =>
+        void navigate({ to: to as Parameters<typeof navigate>[0]["to"], hash }),
+      assignHref: (href) => {
+        window.location.href = href;
+      },
+      delayMs: AUTO_REDIRECT_MS,
+    });
+    
+    return cancel;
   }, [phase, primaryCta, navigate]);
 
   const { headline, body, tone, glyph } = renderCopy({ phase, ctx, session });
