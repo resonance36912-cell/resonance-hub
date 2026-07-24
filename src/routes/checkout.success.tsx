@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -76,7 +76,7 @@ function SuccessPage() {
   const canPoll = !!sessionIdParam;
   const [phase, setPhase] = useState<Phase>(canPoll ? "verifying" : "skip");
   const [session, setSession] = useState<CheckoutSessionView | null>(null);
-  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
 
   useEffect(() => {
     if (!canPoll || !sessionIdParam) return;
@@ -131,7 +131,7 @@ function SuccessPage() {
       },
       delayMs: AUTO_REDIRECT_MS,
     });
-    redirectTimer.current = null;
+    
     return cancel;
   }, [phase, primaryCta, navigate]);
 
