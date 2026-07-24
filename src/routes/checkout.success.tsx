@@ -47,8 +47,8 @@ export const Route = createFileRoute("/checkout/success")({
 // Poll cadence: 15 attempts over ~30s covers common ITN-after-return races.
 const POLL_INTERVAL_MS = 2000;
 const MAX_POLLS = 15;
-// Auto-redirect delay after the terminal state so the user sees confirmation.
-const AUTO_REDIRECT_MS = 1800;
+// Auto-redirect delay lives in `@/lib/checkout-success-redirect` so the
+// exact timing and the cancel-on-unmount behavior can be unit-tested.
 
 function statusToPhase(s: CheckoutSessionView["status"]): Phase {
   if (s === "succeeded") return "succeeded";
