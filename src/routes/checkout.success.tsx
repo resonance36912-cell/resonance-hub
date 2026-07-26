@@ -123,9 +123,29 @@ function SuccessPage() {
   // recomputing it from ctx.
   const primaryCta = ctas.find((c) => c.id === "primary") ?? null;
 
+  // Analytics kind mapping — the ingest schema uses "pass" | "pack" | "unknown".
+  const analyticsKind: "pass" | "pack" | "unknown" =
+    ctx.kind === "pack"
+      ? "pack"
+      : ctx.kind === "pass" || ctx.kind === "legacy_monthly"
+        ? "pass"
+        : "unknown";
+
   // Auto-redirect on success only.
   useEffect(() => {
     if (phase !== "succeeded" || !primaryCta) return;
+    emitCheckoutSuccessAnalytics({
+      type: "auto_redirect",
+      phase,
+      ctaId: primaryCta.id,
+      ctaLabel: primaryCta.label,
+      ...ctaTargetToAnalyticsFields(primaryCta.target),
+      delayMs: AUTO_REDIRECT_MS,
+      kind: analyticsKind,
+      sku: sku ?? null,
+      pack: pack ?? null,
+      sessionId: sessionIdParam ?? null,
+    });
     const cancel = scheduleCheckoutSuccessRedirect({
       target: primaryCta.target,
       navigate: ({ to, hash }) =>
@@ -135,9 +155,24 @@ function SuccessPage() {
       },
       delayMs: AUTO_REDIRECT_MS,
     });
-    
+
     return cancel;
-  }, [phase, primaryCta, navigate]);
+  }, [phase, primaryCta, navigate, analyticsKind, sku, pack, sessionIdParam]);
+
+  const handleCtaClick = (cta: (typeof ctas)[number]) => {
+    emitCheckoutSuccessAnalytics({
+      type: "cta_click",
+      phase,
+      ctaId: cta.id,
+      ctaLabel: cta.label,
+      ctaVariant: cta.variant,
+      ...ctaTargetToAnalyticsFields(cta.target),
+      kind: analyticsKind,
+      sku: sku ?? null,
+      pack: pack ?? null,
+      sessionId: sessionIdParam ?? null,
+    });
+  };
 
   const { headline, body, tone, glyph } = renderCopy({ phase, ctx, session });
 
