@@ -219,6 +219,7 @@ function SuccessPage() {
                   key={cta.id}
                   href={cta.target.href}
                   className={CTA_CLASS[cta.variant]}
+                  onClick={() => handleCtaClick(cta)}
                 >
                   {cta.label}
                 </a>
@@ -228,6 +229,7 @@ function SuccessPage() {
                   to={cta.target.to}
                   hash={cta.target.hash}
                   className={CTA_CLASS[cta.variant]}
+                  onClick={() => handleCtaClick(cta)}
                 >
                   {cta.label}
                 </AppLink>
