@@ -19,6 +19,10 @@ import {
 } from "@/lib/checkout-session.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
+import {
+  ctaTargetToAnalyticsFields,
+  emitCheckoutSuccessAnalytics,
+} from "@/lib/checkout-success-analytics";
 
 const Search = z.object({
   sku: z.string().optional(),
