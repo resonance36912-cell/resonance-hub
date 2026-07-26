@@ -89,6 +89,7 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/public/entitlement.health'
+import { Route as ApiPublicAnalyticsCheckoutSuccessRouteImport } from './routes/api/public/analytics/checkout-success'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
@@ -509,6 +510,12 @@ const ApiPublicEntitlementHealthRoute =
     path: '/health',
     getParentRoute: () => ApiPublicEntitlementRoute,
   } as any)
+const ApiPublicAnalyticsCheckoutSuccessRoute =
+  ApiPublicAnalyticsCheckoutSuccessRouteImport.update({
+    id: '/api/public/analytics/checkout-success',
+    path: '/api/public/analytics/checkout-success',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicAnalyticsAuthGateRouteImport.update({
     id: '/api/public/analytics/auth-gate',
@@ -606,6 +613,7 @@ export interface FileRoutesByFullPath {
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -693,6 +701,7 @@ export interface FileRoutesByTo {
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -781,6 +790,7 @@ export interface FileRoutesById {
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -870,6 +880,7 @@ export interface FileRouteTypes {
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/analytics/checkout-success'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -957,6 +968,7 @@ export interface FileRouteTypes {
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/analytics/checkout-success'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1044,6 +1056,7 @@ export interface FileRouteTypes {
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
+    | '/api/public/analytics/checkout-success'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1125,6 +1138,7 @@ export interface RootRouteChildren {
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
+  ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -1708,6 +1722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEntitlementHealthRouteImport
       parentRoute: typeof ApiPublicEntitlementRoute
     }
+    '/api/public/analytics/checkout-success': {
+      id: '/api/public/analytics/checkout-success'
+      path: '/api/public/analytics/checkout-success'
+      fullPath: '/api/public/analytics/checkout-success'
+      preLoaderRoute: typeof ApiPublicAnalyticsCheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/analytics/auth-gate': {
       id: '/api/public/analytics/auth-gate'
       path: '/api/public/analytics/auth-gate'
@@ -1869,6 +1890,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
+  ApiPublicAnalyticsCheckoutSuccessRoute:
+    ApiPublicAnalyticsCheckoutSuccessRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
