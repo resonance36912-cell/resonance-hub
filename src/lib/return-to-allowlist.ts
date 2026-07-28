@@ -21,12 +21,36 @@ const HUB_ORIGINS = [
   "https://resonance-hub.lovable.app",
 ];
 
+/**
+ * Parse a URL and return its normalized origin, or `null` if it isn't a
+ * plain http(s) absolute URL we can safely compare against the allowlist.
+ *
+ * Rejects:
+ *  - non-string / empty input
+ *  - unparseable / relative / protocol-relative URLs
+ *  - non-http(s) schemes (blocks `javascript:`, `data:`, etc.)
+ *  - URLs carrying userinfo (`https://evil.com@reson8.life/…`) — the WHATWG
+ *    URL origin ignores userinfo, so without this check an attacker could
+ *    smuggle a phishing-friendly display host past the allowlist.
+ *  - opaque origins (`"null"`)
+ *
+ * The WHATWG URL parser already lowercases the host, drops the default
+ * port, and decodes percent-encoded host characters, so trailing slashes,
+ * uppercase hosts, and `%NN` host encodings are handled by construction.
+ */
 function safeOrigin(url: string): string | null {
+  if (typeof url !== "string" || url.length === 0) return null;
+  let parsed: URL;
   try {
-    return new URL(url).origin;
+    parsed = new URL(url);
   } catch {
     return null;
   }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
+  if (parsed.username !== "" || parsed.password !== "") return null;
+  const origin = parsed.origin;
+  if (!origin || origin === "null") return null;
+  return origin;
 }
 
 export const ALLOWED_RETURN_TO_ORIGINS: readonly string[] = Array.from(
@@ -41,7 +65,7 @@ export const ALLOWED_RETURN_TO_ORIGINS: readonly string[] = Array.from(
   ),
 );
 
-/** Returns true if `url` is a parseable absolute URL whose origin is allowlisted. */
+/** Returns true if `url` is a parseable absolute http(s) URL, has no userinfo, and whose normalized origin is allowlisted. */
 export function isAllowedReturnTo(url: string | undefined | null): boolean {
   if (!url) return false;
   const origin = safeOrigin(url);
