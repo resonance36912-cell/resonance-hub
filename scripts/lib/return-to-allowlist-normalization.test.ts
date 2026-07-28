@@ -95,7 +95,7 @@ describe("isAllowedReturnTo — normalization edge cases", () => {
     for (const bad of [
       "https://evil.com@reson8.life/",
       "https://user:pass@reson8.life/account",
-      "https://@reson8.life/", // empty user, present '@'
+      "https://%65vil.com@reson8.life/", // percent-encoded userinfo
     ]) {
       test(`rejects ${bad}`, () => {
         expect(isAllowedReturnTo(bad)).toBe(false);
