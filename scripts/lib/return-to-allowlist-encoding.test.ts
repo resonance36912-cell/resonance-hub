@@ -31,7 +31,7 @@
  *   3. Attaching the same shady path/query onto a non-allowlisted host
  *      never sneaks past the check.
  */
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import {
   ALLOWED_RETURN_TO_ORIGINS,
   isAllowedReturnTo,
