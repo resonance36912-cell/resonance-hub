@@ -11,6 +11,37 @@
  *
  * We restrict `return_to` to the canonical origins of known spoke apps
  * (from APP_REGISTRY) plus the Hub itself.
+ *
+ * Full contract — accept/reject rules, normalization behavior, and
+ * enforcement points — is documented in `docs/return-to-allowlist.md`.
+ * Any change to `safeOrigin` MUST be mirrored there and in the tests
+ * under `scripts/lib/return-to-allowlist-*.test.ts`.
+ *
+ * Accept summary (origin-only, on the parser-normalized `.origin`):
+ *   • scheme ∈ { https:, http: }
+ *   • userinfo is empty (WHATWG `.origin` ignores userinfo; we reject
+ *     on the presence of `username`/`password` to block smuggling like
+ *     `https://evil.com@reson8.life/`)
+ *   • origin ∈ ALLOWED_RETURN_TO_ORIGINS (Hub + spoke `url`/`fallbackUrl`)
+ *
+ * The WHATWG parser handles these normalizations before comparison, so
+ * they are accepted transparently: trailing slash / arbitrary path /
+ * query / fragment, uppercase or mixed-case host, uppercase scheme,
+ * explicit default port (`:443` on https), percent-encoded ASCII host
+ * chars (`reson%38.life` ≡ `reson8.life`), and any percent-encoding in
+ * the path/query (origin is unaffected).
+ *
+ * Reject summary: `null`/`undefined`/empty/non-string; unparseable,
+ * relative, or protocol-relative URLs; non-http(s) schemes
+ * (`javascript:`, `data:`, `file:`, `ftp:`, `vbscript:`, …); any URL
+ * carrying userinfo (including percent-encoded); opaque origins
+ * (`"null"`); trailing-dot hosts; suffix TLD grafts; non-allowlisted
+ * subdomains; homoglyph hosts; wrong TLD; non-default ports on an
+ * allowlisted host; protocol swap/downgrade.
+ *
+ * `sanitizeReturnTo` returns the exact caller-provided string when
+ * accepted (never a mutated/normalized form) so downstream consumers
+ * keep the caller's path, query, and fragment intact.
  */
 
 import { APP_REGISTRY } from "./app-registry";
