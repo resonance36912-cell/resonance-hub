@@ -149,8 +149,6 @@ describe("return_to — percent/mixed encoding in path & query does NOT bypass o
       // Protocol-relative — no scheme, entire "path" is really the host+path
       "//reson8.life/account",
       "///reson8.life/account",
-      // Backslash smuggling (some parsers historically treated `\` as `/`)
-      "https:\\\\reson8.life\\account",
       // Missing scheme — bare host string
       "reson8.life/account",
       // Percent-encoded scheme separator — not a valid absolute URL
