@@ -135,18 +135,21 @@ async def _run_allow(pw, label: str, return_to: str, expected_host: str) -> bool
     )
     await page.goto(url, wait_until="domcontentloaded")
 
-    try:
-        await page.wait_for_url(
-            lambda u: urlparse(u).hostname == expected_host,
-            timeout=REDIRECT_MS + 5000,
-        )
-    except Exception:
+    deadline = REDIRECT_MS + 6000
+    elapsed = 0
+    step = 200
+    final = page.url
+    while elapsed < deadline:
+        final = page.url
+        if urlparse(final).hostname == expected_host:
+            break
+        await page.wait_for_timeout(step)
+        elapsed += step
+    if urlparse(final).hostname != expected_host:
         await page.screenshot(path=str(SCREENSHOTS / f"allow-{label}-fail.png"))
-        print(f"FAIL [allow/{label}]: never redirected to host={expected_host}. url={page.url}")
+        print(f"FAIL [allow/{label}]: never redirected to host={expected_host}. url={final}")
         await browser.close()
         return False
-
-    final = page.url
     await page.screenshot(path=str(SCREENSHOTS / f"allow-{label}.png"))
     await browser.close()
 
