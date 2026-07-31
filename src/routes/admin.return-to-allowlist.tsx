@@ -34,7 +34,7 @@ export const Route = createFileRoute("/admin/return-to-allowlist")({
       .maybeSingle();
     if (!role) throw redirect({ to: ROUTES.adminLogin });
   },
-  component: AdminReturnToAllowlist;
+  component: AdminReturnToAllowlist,
 });
 
 const DEFAULT_PREVIEW = [

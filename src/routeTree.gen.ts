@@ -47,6 +47,7 @@ import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-healt
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRoadmapRouteImport } from './routes/admin.roadmap'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminReturnToAllowlistRouteImport } from './routes/admin.return-to-allowlist'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -285,6 +286,11 @@ const AdminRoadmapRoute = AdminRoadmapRouteImport.update({
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReturnToAllowlistRoute = AdminReturnToAllowlistRouteImport.update({
+  id: '/admin/return-to-allowlist',
+  path: '/admin/return-to-allowlist',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
@@ -575,6 +581,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
@@ -663,6 +670,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
@@ -752,6 +760,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
@@ -842,6 +851,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
+    | '/admin/return-to-allowlist'
     | '/admin/revenue'
     | '/admin/roadmap'
     | '/admin/rop'
@@ -930,6 +940,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
+    | '/admin/return-to-allowlist'
     | '/admin/revenue'
     | '/admin/roadmap'
     | '/admin/rop'
@@ -1018,6 +1029,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
+    | '/admin/return-to-allowlist'
     | '/admin/revenue'
     | '/admin/roadmap'
     | '/admin/rop'
@@ -1107,6 +1119,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
+  AdminReturnToAllowlistRoute: typeof AdminReturnToAllowlistRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRoadmapRoute: typeof AdminRoadmapRoute
   AdminRopRoute: typeof AdminRopRoute
@@ -1426,6 +1439,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/return-to-allowlist': {
+      id: '/admin/return-to-allowlist'
+      path: '/admin/return-to-allowlist'
+      fullPath: '/admin/return-to-allowlist'
+      preLoaderRoute: typeof AdminReturnToAllowlistRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/reconciliation': {
@@ -1859,6 +1879,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
+  AdminReturnToAllowlistRoute: AdminReturnToAllowlistRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRoadmapRoute: AdminRoadmapRoute,
   AdminRopRoute: AdminRopRoute,
@@ -1917,3 +1938,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
