@@ -263,3 +263,18 @@ export function explainReturnTo(
   };
 }
 
+
+/**
+ * Structural-only check: parses as an absolute http(s) URL with no userinfo and
+ * a non-opaque origin. Does NOT consult the allowlist.
+ *
+ * Used by Zod schemas that must stay synchronous while the authoritative
+ * origin check happens after the admin-managed extras are hydrated (server
+ * handlers) or in `resolveCheckoutContext` (client routes).
+ */
+export function isStructurallySafeReturnTo(
+  url: string | undefined | null,
+): boolean {
+  if (!url) return false;
+  return safeOrigin(url) !== null;
+}
