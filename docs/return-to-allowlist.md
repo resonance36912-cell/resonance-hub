@@ -112,6 +112,27 @@ retry handlers, `listReturnToAuditLog` for admins). The trail is viewable at
 `/admin/return-to-allowlist`. Contract tests:
 `scripts/lib/return-to-audit.test.ts`.
 
+## Browser-level defence in depth (CSP + Referrer-Policy)
+
+`src/lib/security-headers.ts` adds headers to every response from
+`src/server.ts`, backing up the allowlist inside the browser:
+
+- `form-action 'self' https://www.payfast.co.za https://sandbox.payfast.co.za`
+  — injected markup cannot post a form to any other host.
+- `base-uri 'self'` — no `<base href>` hijack of relative links/forms.
+- `frame-ancestors` — Hub domains + Lovable editor/preview only.
+- `object-src 'none'`, `default-src 'self'`.
+- `Referrer-Policy: strict-origin-when-cross-origin` — cross-origin requests
+  see only `https://reson8.life`, so `sku`, `pack` and `return_to` query
+  values never leak to spokes, PayFast, or an attacker host. This mirrors the
+  origin-only rule used by the audit log.
+- `Cross-Origin-Opener-Policy: same-origin-allow-popups` (OAuth still works,
+  `window.opener` is severed), `X-Content-Type-Options: nosniff`,
+  and a deny-by-default `Permissions-Policy`.
+
+Non-HTML responses (JSON APIs, assets, RPC) receive the leakage controls only.
+Tests: `scripts/lib/security-headers.test.ts`.
+
 ## Where this is enforced
 
 - `src/lib/return-to-allowlist.ts` — `safeOrigin`, `isAllowedReturnTo`,
