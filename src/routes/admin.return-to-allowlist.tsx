@@ -289,6 +289,126 @@ function AdminReturnToAllowlist() {
           ))}
         </ul>
       </section>
+
+      <RedirectAuditLog />
     </main>
   );
 }
+
+/**
+ * Redirect audit trail. Shows the allow/deny verdict, the candidate's ORIGIN
+ * only, and the canonical target that was used. Full URLs are never stored.
+ */
+function RedirectAuditLog() {
+  const listFn = useServerFn(listReturnToAuditLog);
+  const [verdict, setVerdict] = useState<"all" | "allow" | "deny">("all");
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["admin-return-to-audit", verdict],
+    queryFn: () =>
+      listFn({
+        data: verdict === "all" ? { limit: 50 } : { verdict, limit: 50 },
+      }),
+  });
+
+  return (
+    <section className="mt-12">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-medium">Redirect audit log</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Origin-only records of every <code>return_to</code> verdict and the
+            canonical target that was used. Paths, query strings and fragments
+            of caller-supplied URLs are never stored.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {(["all", "allow", "deny"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setVerdict(v)}
+              className={`rounded-full border px-3 py-1 text-xs uppercase tracking-wide ${
+                verdict === v
+                  ? "border-primary text-primary"
+                  : "border-border text-muted-foreground"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isLoading && (
+        <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
+      )}
+      {error && (
+        <p className="mt-4 text-sm text-destructive">
+          {(error as Error).message}
+        </p>
+      )}
+
+      {data && data.length === 0 && (
+        <p className="mt-4 text-sm text-muted-foreground">
+          No redirect decisions recorded yet.
+        </p>
+      )}
+
+      {data && data.length > 0 && (
+        <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-muted/40 text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 font-medium">When</th>
+                <th className="px-3 py-2 font-medium">Surface</th>
+                <th className="px-3 py-2 font-medium">Verdict</th>
+                <th className="px-3 py-2 font-medium">Candidate origin</th>
+                <th className="px-3 py-2 font-medium">Reason</th>
+                <th className="px-3 py-2 font-medium">Target</th>
+                <th className="px-3 py-2 font-medium">Product</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row) => (
+                <tr key={row.id} className="border-t border-border">
+                  <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
+                    {new Date(row.createdAt).toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2 font-mono">{row.surface}</td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={
+                        row.verdict === "allow"
+                          ? "font-medium text-primary"
+                          : "font-medium text-destructive"
+                      }
+                    >
+                      {row.verdict.toUpperCase()}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 font-mono">
+                    {row.candidateOrigin ??
+                      (row.candidatePresent ? "—" : "(none supplied)")}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-muted-foreground">
+                    {row.reasonCode}
+                  </td>
+                  <td className="px-3 py-2 font-mono">
+                    {row.targetKind === "external"
+                      ? `${row.targetOrigin ?? ""}${row.targetPath ?? ""}`
+                      : (row.targetPath ?? "—")}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-muted-foreground">
+                    {row.pack ?? row.sku ?? "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
