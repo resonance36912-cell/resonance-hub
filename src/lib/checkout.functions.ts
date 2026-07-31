@@ -254,11 +254,14 @@ const LaunchInput = z.object({
   returnTo: z
     .string()
     .url()
-    .refine(isAllowedReturnTo, {
-      message: "returnTo must point to a known Resonance app origin",
+    // Structural check only — the authoritative origin allowlist check runs in
+    // the handler, after admin-managed extras are hydrated from the DB.
+    .refine(isStructurallySafeReturnTo, {
+      message: "returnTo must be an absolute http(s) URL without userinfo",
     })
     .optional(),
 });
+
 
 
 export type PayfastLaunch = {
