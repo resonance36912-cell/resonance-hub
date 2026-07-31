@@ -449,6 +449,16 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
+    // Authoritative allowlist check: hydrate admin-managed extras, then verify.
+    if (data.returnTo) {
+      const { hydrateReturnToAllowlist } = await import(
+        "./return-to-allowlist.functions"
+      );
+      await hydrateReturnToAllowlist();
+      if (!isAllowedReturnTo(data.returnTo)) {
+        throw new Error("returnTo must point to a known Resonance app origin");
+      }
+    }
     // Gate FIRST — server-side, DB-backed. Never trust URL params for price
     // or product identity. The RPC also enforces the grandfathered ownership
     // check so a URL like /checkout?sku=epublisher:pro:monthly cannot be used
@@ -464,9 +474,12 @@ const RetryInput = z.object({
   returnTo: z
     .string()
     .url()
-    .refine(isAllowedReturnTo, { message: "returnTo must point to a known Resonance app origin" })
+    .refine(isStructurallySafeReturnTo, {
+      message: "returnTo must be an absolute http(s) URL without userinfo",
+    })
     .optional(),
 });
+
 
 /**
  * Re-run PayFast launch creation for a user's own pending / past_due / cancelled
