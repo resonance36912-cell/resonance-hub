@@ -3,7 +3,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
-import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
+import {
+  isStructurallySafeReturnTo,
+  registerExtraReturnToOrigins,
+} from "@/lib/return-to-allowlist";
+import { listEnabledReturnToOrigins } from "@/lib/return-to-allowlist.functions";
+
 import { resolveCheckoutContext } from "@/lib/checkout-return";
 import {
   computeCheckoutSuccessCtas,
