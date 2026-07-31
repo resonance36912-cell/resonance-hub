@@ -492,7 +492,17 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => RetryInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
+    if (data.returnTo) {
+      const { hydrateReturnToAllowlist } = await import(
+        "./return-to-allowlist.functions"
+      );
+      await hydrateReturnToAllowlist();
+      if (!isAllowedReturnTo(data.returnTo)) {
+        throw new Error("returnTo must point to a known Resonance app origin");
+      }
+    }
     const { supabase, userId } = context;
+
     const { data: sub, error } = await supabase
       .from("subscriptions")
       .select("id, user_id, app, tier, billing_cycle, status")
