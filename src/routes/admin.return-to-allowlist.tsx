@@ -12,6 +12,11 @@ import {
   type ReturnToOrigin,
 } from "@/lib/return-to-allowlist.functions";
 import {
+  listReturnToAuditLog,
+  type ReturnToAuditEntry,
+} from "@/lib/return-to-audit.functions";
+
+import {
   ALLOWED_RETURN_TO_ORIGINS,
   explainReturnTo,
 } from "@/lib/return-to-allowlist";
