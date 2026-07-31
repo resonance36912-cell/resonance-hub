@@ -69,6 +69,24 @@ decisions — the check is origin-only. An attacker cannot smuggle an
 allowlisted URL through a query string or fragment on an evil origin
 (`https://evil.example/?next=https://reson8.life/…` stays rejected).
 
+## Admin-managed extra origins
+
+Beyond the code-defined base list, admins can add origins at
+`/admin/return-to-allowlist` (stored in `public.return_to_origins`, RLS:
+public read of enabled rows, admin-only write). Extras are layered onto
+the base list at runtime via `registerExtraReturnToOrigins`, hydrated by
+`hydrateReturnToAllowlist` (server) and by the `/checkout/success` and
+`/checkout/cancel` loaders (client). The admin page validates input, shows
+the normalized origin, and offers a live accept/reject preview backed by
+`explainReturnTo`.
+
+Because hydration is async, the Zod schemas on the checkout routes and the
+PayFast launch inputs use `isStructurallySafeReturnTo` (absolute http(s),
+no userinfo, non-opaque origin). The authoritative origin allowlist check
+runs after hydration — in `resolveCheckoutContext` for the routes, and
+inside the `createPayfastLaunch` / `retryPayfastLaunch` handlers, which
+throw on a non-allowlisted `returnTo`.
+
 ## Where this is enforced
 
 - `src/lib/return-to-allowlist.ts` — `safeOrigin`, `isAllowedReturnTo`,
