@@ -109,8 +109,10 @@ export const ROUTES = {
   adminPayfastAudit: routePath("/admin/payfast-audit"),
   adminReconciliation: routePath("/admin/reconciliation"),
   adminRevenue: routePath("/admin/revenue"),
+  adminReturnToAllowlist: routePath("/admin/return-to-allowlist"),
   adminRop: routePath("/admin/rop"),
   adminRoadmap: routePath("/admin/roadmap"),
+
   adminSpokeHealth: routePath("/admin/spoke-health"),
   adminWebhooks: routePath("/admin/webhooks"),
 

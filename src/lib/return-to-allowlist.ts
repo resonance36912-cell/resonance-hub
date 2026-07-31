@@ -96,11 +96,58 @@ export const ALLOWED_RETURN_TO_ORIGINS: readonly string[] = Array.from(
   ),
 );
 
+/**
+ * Admin-managed extra origins, layered on top of the code-defined
+ * `ALLOWED_RETURN_TO_ORIGINS` at runtime.
+ *
+ * These come from `public.return_to_origins` (enabled rows only) and are
+ * registered by `hydrateReturnToAllowlist()` from
+ * `src/lib/return-to-allowlist.functions.ts`. The static base list is never
+ * mutated, so an admin can only ever *widen* the allowlist, never remove a
+ * canonical Hub/spoke origin.
+ */
+const extraOrigins = new Set<string>();
+
+/**
+ * Register admin-managed origins. Values are normalized through `safeOrigin`
+ * and silently dropped when they aren't plain http(s) origins.
+ * Returns the normalized origins that were accepted.
+ */
+export function registerExtraReturnToOrigins(
+  origins: readonly (string | null | undefined)[],
+): string[] {
+  const accepted: string[] = [];
+  for (const raw of origins) {
+    if (typeof raw !== "string") continue;
+    const origin = safeOrigin(raw);
+    if (!origin) continue;
+    extraOrigins.add(origin);
+    accepted.push(origin);
+  }
+  return accepted;
+}
+
+/** Drop all admin-managed extras (used by tests and by re-hydration). */
+export function clearExtraReturnToOrigins(): void {
+  extraOrigins.clear();
+}
+
+/** Admin-managed extras currently registered (normalized origins). */
+export function getExtraReturnToOrigins(): string[] {
+  return Array.from(extraOrigins);
+}
+
+/** Effective allowlist: code-defined base ∪ admin-managed extras. */
+export function getAllowedReturnToOrigins(): string[] {
+  return Array.from(new Set([...ALLOWED_RETURN_TO_ORIGINS, ...extraOrigins]));
+}
+
 /** Returns true if `url` is a parseable absolute http(s) URL, has no userinfo, and whose normalized origin is allowlisted. */
 export function isAllowedReturnTo(url: string | undefined | null): boolean {
   if (!url) return false;
   const origin = safeOrigin(url);
-  return origin !== null && ALLOWED_RETURN_TO_ORIGINS.includes(origin);
+  if (origin === null) return false;
+  return ALLOWED_RETURN_TO_ORIGINS.includes(origin) || extraOrigins.has(origin);
 }
 
 /** Returns `url` if allowlisted, otherwise `undefined`. */
@@ -108,4 +155,126 @@ export function sanitizeReturnTo(
   url: string | undefined | null,
 ): string | undefined {
   return isAllowedReturnTo(url) ? (url as string) : undefined;
+}
+
+export type ReturnToVerdict = {
+  input: string;
+  allowed: boolean;
+  /** Normalized origin when the URL parsed as a plain http(s) URL. */
+  origin: string | null;
+  /** Machine-readable reason code. */
+  code:
+    | "allowed_base"
+    | "allowed_extra"
+    | "empty"
+    | "unparseable"
+    | "bad_scheme"
+    | "userinfo"
+    | "opaque_origin"
+    | "origin_not_allowlisted";
+  /** Human-readable explanation for the admin preview. */
+  reason: string;
+};
+
+/**
+ * Explain — rather than just decide — whether a candidate `return_to` would be
+ * accepted. Powers the live preview on `/admin/return-to-allowlist`.
+ *
+ * `extras` defaults to the currently registered admin-managed origins, but the
+ * admin UI passes the DB list directly so the preview reflects unsaved/just-saved
+ * rows without needing a re-hydration round trip.
+ */
+export function explainReturnTo(
+  input: string | null | undefined,
+  extras: readonly string[] = getExtraReturnToOrigins(),
+): ReturnToVerdict {
+  const value = typeof input === "string" ? input : "";
+  const base = { input: value, allowed: false, origin: null } as const;
+
+  if (value.trim().length === 0) {
+    return { ...base, code: "empty", reason: "Empty value — rejected." };
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return {
+      ...base,
+      code: "unparseable",
+      reason:
+        "Not an absolute URL (relative and protocol-relative values are rejected).",
+    };
+  }
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    return {
+      ...base,
+      code: "bad_scheme",
+      reason: `Scheme "${parsed.protocol}" is not http(s).`,
+    };
+  }
+
+  if (parsed.username !== "" || parsed.password !== "") {
+    return {
+      ...base,
+      code: "userinfo",
+      reason:
+        "URL carries userinfo (user:pass@host) — rejected to block display-host smuggling.",
+    };
+  }
+
+  const origin = parsed.origin;
+  if (!origin || origin === "null") {
+    return { ...base, code: "opaque_origin", reason: "Opaque origin." };
+  }
+
+  if (ALLOWED_RETURN_TO_ORIGINS.includes(origin)) {
+    return {
+      input: value,
+      allowed: true,
+      origin,
+      code: "allowed_base",
+      reason: "Origin is a built-in Hub/spoke origin.",
+    };
+  }
+
+  const normalizedExtras = new Set(
+    extras
+      .map((e) => safeOrigin(e))
+      .filter((o): o is string => o !== null),
+  );
+  if (normalizedExtras.has(origin)) {
+    return {
+      input: value,
+      allowed: true,
+      origin,
+      code: "allowed_extra",
+      reason: "Origin is an admin-managed allowlist entry.",
+    };
+  }
+
+  return {
+    input: value,
+    allowed: false,
+    origin,
+    code: "origin_not_allowlisted",
+    reason: `Origin ${origin} is not on the allowlist.`,
+  };
+}
+
+
+/**
+ * Structural-only check: parses as an absolute http(s) URL with no userinfo and
+ * a non-opaque origin. Does NOT consult the allowlist.
+ *
+ * Used by Zod schemas that must stay synchronous while the authoritative
+ * origin check happens after the admin-managed extras are hydrated (server
+ * handlers) or in `resolveCheckoutContext` (client routes).
+ */
+export function isStructurallySafeReturnTo(
+  url: string | undefined | null,
+): boolean {
+  if (!url) return false;
+  return safeOrigin(url) !== null;
 }

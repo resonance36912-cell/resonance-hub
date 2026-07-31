@@ -2063,6 +2063,39 @@ export type Database = {
         }
         Relationships: []
       }
+      return_to_origins: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          enabled: boolean
+          id: string
+          label: string | null
+          notes: string | null
+          origin: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          notes?: string | null
+          origin: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          enabled?: boolean
+          id?: string
+          label?: string | null
+          notes?: string | null
+          origin?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       roadmap_items: {
         Row: {
           app_id: string | null

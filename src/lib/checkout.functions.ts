@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { isAllowedReturnTo } from "./return-to-allowlist";
+import { isAllowedReturnTo, isStructurallySafeReturnTo } from "./return-to-allowlist";
 
 
 /**
@@ -254,11 +254,14 @@ const LaunchInput = z.object({
   returnTo: z
     .string()
     .url()
-    .refine(isAllowedReturnTo, {
-      message: "returnTo must point to a known Resonance app origin",
+    // Structural check only — the authoritative origin allowlist check runs in
+    // the handler, after admin-managed extras are hydrated from the DB.
+    .refine(isStructurallySafeReturnTo, {
+      message: "returnTo must be an absolute http(s) URL without userinfo",
     })
     .optional(),
 });
+
 
 
 export type PayfastLaunch = {
@@ -446,6 +449,16 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
+    // Authoritative allowlist check: hydrate admin-managed extras, then verify.
+    if (data.returnTo) {
+      const { hydrateReturnToAllowlist } = await import(
+        "./return-to-allowlist.functions"
+      );
+      await hydrateReturnToAllowlist();
+      if (!isAllowedReturnTo(data.returnTo)) {
+        throw new Error("returnTo must point to a known Resonance app origin");
+      }
+    }
     // Gate FIRST — server-side, DB-backed. Never trust URL params for price
     // or product identity. The RPC also enforces the grandfathered ownership
     // check so a URL like /checkout?sku=epublisher:pro:monthly cannot be used
@@ -461,9 +474,12 @@ const RetryInput = z.object({
   returnTo: z
     .string()
     .url()
-    .refine(isAllowedReturnTo, { message: "returnTo must point to a known Resonance app origin" })
+    .refine(isStructurallySafeReturnTo, {
+      message: "returnTo must be an absolute http(s) URL without userinfo",
+    })
     .optional(),
 });
+
 
 /**
  * Re-run PayFast launch creation for a user's own pending / past_due / cancelled
@@ -476,7 +492,17 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => RetryInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
+    if (data.returnTo) {
+      const { hydrateReturnToAllowlist } = await import(
+        "./return-to-allowlist.functions"
+      );
+      await hydrateReturnToAllowlist();
+      if (!isAllowedReturnTo(data.returnTo)) {
+        throw new Error("returnTo must point to a known Resonance app origin");
+      }
+    }
     const { supabase, userId } = context;
+
     const { data: sub, error } = await supabase
       .from("subscriptions")
       .select("id, user_id, app, tier, billing_cycle, status")
