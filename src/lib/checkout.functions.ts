@@ -455,10 +455,33 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
         "./return-to-allowlist.functions"
       );
       await hydrateReturnToAllowlist();
-      if (!isAllowedReturnTo(data.returnTo)) {
+      const allowed = isAllowedReturnTo(data.returnTo);
+      // Audit the verdict (origin-only) before acting on it.
+      try {
+        const [{ buildReturnToAuditRecord }, { writeReturnToAudit }] =
+          await Promise.all([
+            import("./return-to-audit"),
+            import("./return-to-audit.functions"),
+          ]);
+        await writeReturnToAudit(
+          buildReturnToAuditRecord({
+            surface: "payfast_launch",
+            candidate: data.returnTo,
+            target: allowed
+              ? { kind: "external", href: data.returnTo }
+              : { kind: "internal", to: "/pricing" },
+            sku: data.sku,
+          }),
+          context.userId,
+        );
+      } catch {
+        // Audit logging never blocks a paid checkout launch.
+      }
+      if (!allowed) {
         throw new Error("returnTo must point to a known Resonance app origin");
       }
     }
+
     // Gate FIRST — server-side, DB-backed. Never trust URL params for price
     // or product identity. The RPC also enforces the grandfathered ownership
     // check so a URL like /checkout?sku=epublisher:pro:monthly cannot be used
@@ -497,10 +520,31 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
         "./return-to-allowlist.functions"
       );
       await hydrateReturnToAllowlist();
-      if (!isAllowedReturnTo(data.returnTo)) {
+      const allowed = isAllowedReturnTo(data.returnTo);
+      try {
+        const [{ buildReturnToAuditRecord }, { writeReturnToAudit }] =
+          await Promise.all([
+            import("./return-to-audit"),
+            import("./return-to-audit.functions"),
+          ]);
+        await writeReturnToAudit(
+          buildReturnToAuditRecord({
+            surface: "payfast_retry",
+            candidate: data.returnTo,
+            target: allowed
+              ? { kind: "external", href: data.returnTo }
+              : { kind: "internal", to: "/pricing" },
+          }),
+          context.userId,
+        );
+      } catch {
+        // Audit logging never blocks a retry launch.
+      }
+      if (!allowed) {
         throw new Error("returnTo must point to a known Resonance app origin");
       }
     }
+
     const { supabase, userId } = context;
 
     const { data: sub, error } = await supabase

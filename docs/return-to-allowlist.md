@@ -87,6 +87,31 @@ runs after hydration — in `resolveCheckoutContext` for the routes, and
 inside the `createPayfastLaunch` / `retryPayfastLaunch` handlers, which
 throw on a non-allowlisted `returnTo`.
 
+## Redirect audit logging
+
+Every verdict is recorded in `public.return_to_audit_log` (admin-read only,
+no user edits/deletes; written by trusted server code).
+
+Stored per decision: `surface`
+(`checkout_success` | `checkout_cancel` | `payfast_launch` | `payfast_retry`),
+`verdict` (`allow` | `deny`), `reason_code` (from `explainReturnTo`),
+`candidate_origin` — the **normalized origin only** — `candidate_present`
+(distinguishes "denied" from "none supplied"), the canonical target
+(`target_kind`, `target_origin`, `target_path`), and the `sku`/`pack`.
+
+Never stored: the full caller-supplied URL, its path, query string, or
+fragment, and no IP addresses. Unparseable candidates yield
+`candidate_origin = NULL` and the reason code alone — the raw string is
+neither persisted nor logged. Target values are Hub/registry-derived and are
+recorded as origin + path with query/fragment stripped.
+
+Code: `src/lib/return-to-audit.ts` (pure sanitizer),
+`src/lib/return-to-audit.functions.ts` (`recordReturnToVerdict` for the public
+checkout surfaces, `writeReturnToAudit` for the authenticated PayFast launch /
+retry handlers, `listReturnToAuditLog` for admins). The trail is viewable at
+`/admin/return-to-allowlist`. Contract tests:
+`scripts/lib/return-to-audit.test.ts`.
+
 ## Where this is enforced
 
 - `src/lib/return-to-allowlist.ts` — `safeOrigin`, `isAllowedReturnTo`,

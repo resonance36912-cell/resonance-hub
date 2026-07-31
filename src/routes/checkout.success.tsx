@@ -8,6 +8,8 @@ import {
   registerExtraReturnToOrigins,
 } from "@/lib/return-to-allowlist";
 import { listEnabledReturnToOrigins } from "@/lib/return-to-allowlist.functions";
+import { recordReturnToVerdict } from "@/lib/return-to-audit.functions";
+
 
 import { resolveCheckoutContext } from "@/lib/checkout-return";
 import {
@@ -52,15 +54,34 @@ export const Route = createFileRoute("/checkout/success")({
     ],
   }),
   validateSearch: (raw: Record<string, unknown>) => Search.parse(raw),
-  loader: async () => {
+  loaderDeps: ({ search }) => ({
+    sku: search.sku ?? null,
+    pack: search.pack ?? null,
+    return_to: search.return_to ?? null,
+  }),
+  loader: async ({ deps }) => {
     // Widen the allowlist with admin-managed origins before CTA resolution.
     try {
       registerExtraReturnToOrigins(await listEnabledReturnToOrigins());
     } catch {
       // Allowlist extras are best-effort; the built-in origins still apply.
     }
+    // Audit the redirect decision (origin-only, never the full return_to).
+    try {
+      await recordReturnToVerdict({
+        data: {
+          surface: "checkout_success",
+          returnTo: deps.return_to,
+          sku: deps.sku,
+          pack: deps.pack,
+        },
+      });
+    } catch {
+      // Audit logging must never block the post-payment page.
+    }
     return null;
   },
+
   component: SuccessPage,
 });
 

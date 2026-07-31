@@ -2063,6 +2063,54 @@ export type Database = {
         }
         Relationships: []
       }
+      return_to_audit_log: {
+        Row: {
+          candidate_origin: string | null
+          candidate_present: boolean
+          created_at: string
+          id: string
+          pack: string | null
+          reason_code: string
+          sku: string | null
+          surface: string
+          target_kind: string | null
+          target_origin: string | null
+          target_path: string | null
+          user_id: string | null
+          verdict: string
+        }
+        Insert: {
+          candidate_origin?: string | null
+          candidate_present?: boolean
+          created_at?: string
+          id?: string
+          pack?: string | null
+          reason_code: string
+          sku?: string | null
+          surface: string
+          target_kind?: string | null
+          target_origin?: string | null
+          target_path?: string | null
+          user_id?: string | null
+          verdict: string
+        }
+        Update: {
+          candidate_origin?: string | null
+          candidate_present?: boolean
+          created_at?: string
+          id?: string
+          pack?: string | null
+          reason_code?: string
+          sku?: string | null
+          surface?: string
+          target_kind?: string | null
+          target_origin?: string | null
+          target_path?: string | null
+          user_id?: string | null
+          verdict?: string
+        }
+        Relationships: []
+      }
       return_to_origins: {
         Row: {
           created_at: string
