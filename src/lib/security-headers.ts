@@ -73,8 +73,8 @@ export type SecurityHeaderOptions = {
 export function buildContentSecurityPolicy(
   options: SecurityHeaderOptions = {},
 ): string {
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  const connectSrc = [...CONNECT_SRC];
+  const scriptSrc: string[] = ["'self'", "'unsafe-inline'"];
+  const connectSrc: string[] = [...CONNECT_SRC];
 
   if (options.dev) {
     scriptSrc.push("'unsafe-eval'");
