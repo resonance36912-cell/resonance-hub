@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { isAllowedReturnTo } from "./return-to-allowlist";
+import { isAllowedReturnTo, isStructurallySafeReturnTo } from "./return-to-allowlist";
 
 
 /**
