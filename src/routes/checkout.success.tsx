@@ -8,6 +8,8 @@ import {
   registerExtraReturnToOrigins,
 } from "@/lib/return-to-allowlist";
 import { listEnabledReturnToOrigins } from "@/lib/return-to-allowlist.functions";
+import { recordReturnToVerdict } from "@/lib/return-to-audit.functions";
+
 
 import { resolveCheckoutContext } from "@/lib/checkout-return";
 import {
