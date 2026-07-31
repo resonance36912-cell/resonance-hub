@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import resonanceLockup from "@/assets/resonance-lockup.png";
-import { isAllowedReturnTo } from "@/lib/return-to-allowlist";
+import {
+  isStructurallySafeReturnTo,
+  registerExtraReturnToOrigins,
+} from "@/lib/return-to-allowlist";
+import { listEnabledReturnToOrigins } from "@/lib/return-to-allowlist.functions";
 import {
   resolveCheckoutContext,
   primaryContinueHref,
@@ -17,8 +21,10 @@ const Search = z.object({
   return_to: z
     .string()
     .url()
-    .refine(isAllowedReturnTo, {
-      message: "return_to must point to a known Resonance app origin",
+    // Structural check only. The authoritative origin allowlist check runs in
+    // `resolveCheckoutContext`, after the loader hydrates admin-managed extras.
+    .refine(isStructurallySafeReturnTo, {
+      message: "return_to must be an absolute http(s) URL without userinfo",
     })
     .optional(),
 });
@@ -31,8 +37,17 @@ export const Route = createFileRoute("/checkout/cancel")({
     ],
   }),
   validateSearch: (raw: Record<string, unknown>) => Search.parse(raw),
+  loader: async () => {
+    try {
+      registerExtraReturnToOrigins(await listEnabledReturnToOrigins());
+    } catch {
+      // Allowlist extras are best-effort; the built-in origins still apply.
+    }
+    return null;
+  },
   component: CancelPage,
 });
+
 
 function CancelPage() {
   const { sku, pack, return_to } = Route.useSearch();
