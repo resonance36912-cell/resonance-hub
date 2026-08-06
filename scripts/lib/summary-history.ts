@@ -293,6 +293,132 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
 }
 
 /**
+ * Interactive variant of the chart: the same pass/fail bars and failure-rate
+ * line, plus a checkbox per suite that recomputes both series in the browser
+ * from the embedded per-suite counts. Falls back to the static chart (with a
+ * note) when the history has no per-suite pass counts to filter on.
+ *
+ * Self-contained: no external scripts, so it works from the CI artifact opened
+ * off a filesystem. The PDF renderer just gets the initial server-rendered SVG.
+ */
+export function renderSuiteFilterChart(
+  points: readonly HistoryPoint[],
+  opts: { title?: string; selected?: readonly string[] | null; idPrefix?: string } = {},
+): string {
+  const title = opts.title ?? "Pass / fail and failure rate over time";
+  const ids = listSuiteIds(points);
+  if (points.length === 0 || ids.length === 0 || !hasSuiteBreakdown(points)) {
+    const note =
+      points.length > 0 && ids.length > 0
+        ? `<p class="sub">Suite filters need per-suite pass counts; these uploads only record failures, so the chart uses run totals for all ${ids.length} suite(s).</p>`
+        : "";
+    return renderFailureRateChart(points, title) + note;
+  }
+  const prefix = opts.idPrefix ?? "sf";
+  const selected = new Set(opts.selected && opts.selected.length ? opts.selected : ids);
+  const data = points.map((p) => ({
+    label: shortLabel(p),
+    at: p.generatedAt,
+    suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
+  }));
+  const initial = applySuiteFilter(points, [...selected]);
+  const totals = suiteTotals(points);
+
+  const checkboxes = ids
+    .map((id) => {
+      const t = totals.find((x) => x.id === id);
+      return `<label class="suite-toggle"><input type="checkbox" data-suite="${escapeXml(id)}"${
+        selected.has(id) ? " checked" : ""
+      } /> <code>${escapeXml(id)}</code> <span class="sub">${t ? `${t.pass} pass · ${t.fail} fail` : ""}</span></label>`;
+    })
+    .join("\n      ");
+
+  return `<figure class="chart suite-filter-chart" id="${prefix}-root">
+  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span></figcaption>
+  <div class="suite-toggles">
+      ${checkboxes}
+      <button type="button" data-suite-all="1">All</button>
+      <button type="button" data-suite-none="1">None</button>
+  </div>
+  <div id="${prefix}-chart">${renderFailureRateChart(initial, title)}</div>
+  <p class="sub" id="${prefix}-status">Showing ${selected.size} of ${ids.length} suite(s).</p>
+  <script type="application/json" id="${prefix}-data">${JSON.stringify(data).replace(
+    /</g,
+    "\\u003c",
+  )}</script>
+  <script>
+  (function () {
+    var root = document.getElementById(${JSON.stringify(`${prefix}-root`)});
+    if (!root) return;
+    var runs = JSON.parse(document.getElementById(${JSON.stringify(`${prefix}-data`)}).textContent);
+    var host = document.getElementById(${JSON.stringify(`${prefix}-chart`)});
+    var status = document.getElementById(${JSON.stringify(`${prefix}-status`)});
+    var boxes = Array.prototype.slice.call(root.querySelectorAll("input[data-suite]"));
+    var W = 720, H = 220, PT = 18, PR = 44, PB = 30, PL = 46;
+    var plotW = W - PL - PR, plotH = H - PT - PB;
+    function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;"; }); }
+    function series(sel) {
+      return runs.map(function (r) {
+        var pass = 0, fail = 0;
+        r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
+        var total = pass + fail;
+        return { label: r.label, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+      });
+    }
+    function draw(pts) {
+      if (!pts.length) { host.innerHTML = '<p class="sub">No suites selected.</p>'; return; }
+      var n = pts.length;
+      var maxTests = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.pass + p.fail; })));
+      var maxRate = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.rate; })));
+      var slot = plotW / n, barW = Math.max(3, Math.min(26, slot * 0.6));
+      var cx = function (i) { return PL + slot * (i + 0.5); };
+      var yRate = function (v) { return PT + plotH - (v / maxRate) * plotH; };
+      var bars = pts.map(function (p, i) {
+        var passH = (p.pass / maxTests) * plotH, failH = (p.fail / maxTests) * plotH;
+        var x = cx(i) - barW / 2, passY = PT + plotH - passH, failY = passY - failH;
+        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(p.label + " — pass " + p.pass + ", fail " + p.fail + ", failure rate " + p.rate.toFixed(2) + "%") + '</title></g>';
+      }).join("");
+      var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
+      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(p.label + " — failure rate " + p.rate.toFixed(2) + "%") + '</title></circle>'; }).join("");
+      host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
+        '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<text x="4" y="' + (PT + 10) + '" font-size="10" fill="#64748b">' + maxTests + '</text>' +
+        '<text x="4" y="' + (PT + plotH) + '" font-size="10" fill="#64748b">0</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + 10) + '" font-size="10" fill="#b45309">' + maxRate.toFixed(1) + '%</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + plotH) + '" font-size="10" fill="#b45309">0%</text>' +
+        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots +
+        '<text x="' + PL + '" y="' + (H - 8) + '" font-size="10" fill="#64748b">' + esc(pts[0].label) + '</text>' +
+        '<text x="' + (W - PR) + '" y="' + (H - 8) + '" font-size="10" fill="#64748b" text-anchor="end">' + esc(pts[n - 1].label) + '</text>' +
+        '</svg>';
+    }
+    function update() {
+      var sel = {}, count = 0;
+      boxes.forEach(function (b) { if (b.checked) { sel[b.getAttribute("data-suite")] = true; count++; } });
+      draw(count === 0 ? [] : series(sel));
+      status.textContent = count === 0
+        ? "No suites selected — pick at least one."
+        : "Showing " + count + " of " + boxes.length + " suite(s).";
+    }
+    boxes.forEach(function (b) { b.addEventListener("change", update); });
+    var all = root.querySelector("[data-suite-all]"), none = root.querySelector("[data-suite-none]");
+    if (all) all.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = true; }); update(); });
+    if (none) none.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = false; }); update(); });
+    update();
+  })();
+  </script>
+</figure>`;
+}
+
+/** Styles for the suite filter controls, to inline in host pages. */
+export const SUITE_FILTER_CSS = `
+  .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
+  .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+  .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+`;
+
+
+/**
  * Markdown for the run-summary page (`$GITHUB_STEP_SUMMARY`): sparklines plus a
  * compact per-run table. GitHub strips inline SVG from step summaries, so the
  * chart itself ships in the HTML/PDF artifact and this is the textual view.
