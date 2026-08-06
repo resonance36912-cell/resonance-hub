@@ -404,18 +404,21 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
   <dl>${metaRows}</dl>
 
   <table>
-    <thead><tr><th>Suite</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Time</th><th>Status</th></tr></thead>
+    <thead><tr><th>Suite</th><th>Runner</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Time</th><th>Status</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot><tr>
       <td><strong>Total</strong></td>
+      <td></td>
       <td class="num"><strong>${totals.pass}</strong></td>
       <td class="num ${totals.fail > 0 ? "bad" : ""}"><strong>${totals.fail}</strong></td>
       <td class="num"><strong>${totals.assertions.toLocaleString("en-US")}</strong></td>
       <td class="num"></td><td></td>
     </tr></tfoot>
   </table>
+  ${assertionNote}
 
   ${green ? `<p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>` : failures}
+
 
   ${renderTrendHtml(trend)}
 
