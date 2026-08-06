@@ -312,6 +312,15 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-app-detail.ts
 
+      # Every app's rendered status badge + access line must match its
+      # registry status (regression: Sync Vision shipped but badged "Beta").
+      - name: Smoke test app status badges
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: bun run scripts/smoke-app-status-badges.ts
+
+
+
       # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
       # session with admin role is injected) renders the full CRUD surface.
       - name: E2E admin/roadmap auth + CRUD gate

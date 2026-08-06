@@ -87,7 +87,7 @@ const STATUS_STYLES: Record<AppRegistryEntry["status"], string> = {
 // Badge text and access wording live in @/lib/app-status-meaning so /apps and
 // /apps/$appKey never explain a status differently.
 
-export const Route = createFileRoute("/apps")({
+export const Route = createFileRoute("/apps/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
