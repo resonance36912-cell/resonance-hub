@@ -1,0 +1,1 @@
+{"generatedAt":"2026-08-02T10:00:00.000Z","commit":"commit20000000","totals":{"pass":142,"fail":6,"assertions":4202},"counterexamples":{"total":27,"blocked":27,"leaked":0},"suites":[{"id":"encoding","fail":0}]}

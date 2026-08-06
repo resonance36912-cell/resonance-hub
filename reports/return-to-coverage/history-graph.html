@@ -1,0 +1,40 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>return_to coverage — historical pass/fail &amp; failure rate</title>
+<style>
+  body { font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; margin: 32px; color: #0f172a; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #64748b; font-size: 12px; }
+  figure { margin: 20px 0; }
+  figcaption { font-size: 12px; color: #475569; margin-bottom: 6px; }
+  table { border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  th, td { border: 1px solid #e2e8f0; padding: 5px 10px; text-align: right; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  tr.red td { background: #fef2f2; }
+</style>
+<h1>return_to coverage — historical pass/fail &amp; failure rate</h1>
+<p class="sub">3 run(s) from 3 uploaded summary file(s).</p>
+<figure class="chart">
+  <figcaption>Pass / fail and failure rate over time — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across 3 run(s)</figcaption>
+  <svg viewBox="0 0 720 220" width="100%" height="220" role="img" aria-label="Pass / fail and failure rate over time over 3 runs">
+    <line x1="46" y1="190" x2="676" y2="190" stroke="#cbd5e1" />
+    <line x1="46" y1="18" x2="46" y2="190" stroke="#cbd5e1" />
+    <text x="4" y="28" font-size="10" fill="#64748b">148</text>
+    <text x="4" y="190" font-size="10" fill="#64748b">0</text>
+    <text x="682" y="28" font-size="10" fill="#b45309">4.1%</text>
+    <text x="682" y="190" font-size="10" fill="#b45309">0%</text>
+    <g><rect x="138.0" y="26.1" width="26.0" height="163.9" fill="#16a34a" opacity="0.75" /><rect x="138.0" y="26.1" width="26.0" height="0.0" fill="#dc2626" /><title>commit1000 — pass 141, fail 0, failure rate 0.00%</title></g><g><rect x="348.0" y="25.0" width="26.0" height="165.0" fill="#16a34a" opacity="0.75" /><rect x="348.0" y="18.0" width="26.0" height="7.0" fill="#dc2626" /><title>commit2000 — pass 142, fail 6, failure rate 4.05%</title></g><g><rect x="558.0" y="23.8" width="26.0" height="166.2" fill="#16a34a" opacity="0.75" /><rect x="558.0" y="23.8" width="26.0" height="0.0" fill="#dc2626" /><title>commit3000 — pass 143, fail 0, failure rate 0.00%</title></g>
+    <path d="M151.0,190.0 L361.0,18.0 L571.0,190.0" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3" />
+    <circle cx="151.0" cy="190.0" r="3" fill="#b45309"><title>commit1000 — failure rate 0.00%</title></circle><circle cx="361.0" cy="18.0" r="3" fill="#b45309"><title>commit2000 — failure rate 4.05%</title></circle><circle cx="571.0" cy="190.0" r="3" fill="#b45309"><title>commit3000 — failure rate 0.00%</title></circle>
+    <text x="46" y="212" font-size="10" fill="#64748b">commit1000</text>
+    <text x="676" y="212" font-size="10" fill="#64748b" text-anchor="end">commit3000</text>
+  </svg>
+</figure>
+<table>
+  <thead><tr><th>Run</th><th>Generated</th><th>Pass</th><th>Fail</th><th>Assertions</th><th>Failure rate</th></tr></thead>
+  <tbody>
+    <tr class=""><td><code>commit100000</code></td><td>2026-08-01T10:00:00.000Z</td><td>141</td><td>0</td><td>4,201</td><td>0.00%</td></tr>
+    <tr class="red"><td><code>commit200000</code></td><td>2026-08-02T10:00:00.000Z</td><td>142</td><td>6</td><td>4,202</td><td>4.05%</td></tr>
+    <tr class=""><td><code>commit300000</code></td><td>2026-08-03T10:00:00.000Z</td><td>143</td><td>0</td><td>4,203</td><td>0.00%</td></tr>
+  </tbody>
+</table>
