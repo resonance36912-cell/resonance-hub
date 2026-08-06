@@ -422,10 +422,25 @@ export const SUITE_FILTER_CSS = `
  * Markdown for the run-summary page (`$GITHUB_STEP_SUMMARY`): sparklines plus a
  * compact per-run table. GitHub strips inline SVG from step summaries, so the
  * chart itself ships in the HTML/PDF artifact and this is the textual view.
+ *
+ * Step summaries can't be interactive, so the suite filter shows up two ways:
+ * the active `selected` filter is stated up front (series already recomputed by
+ * the caller via `applySuiteFilter`), and a per-suite table lists the
+ * contribution of every suite so it's clear what toggling would change.
  */
 export function renderSummaryHistoryMarkdown(
   history: History,
-  opts: { sources?: number; skipped?: number; artifact?: string | null } = {},
+  opts: {
+    sources?: number;
+    skipped?: number;
+    artifact?: string | null;
+    /** Suite ids the series were filtered to; null/empty means all suites. */
+    selected?: readonly string[] | null;
+    /** Suite ids available before filtering (defaults to those in `history`). */
+    allSuites?: readonly string[];
+    /** Per-suite totals to tabulate (defaults to those in `history`). */
+    breakdown?: readonly { id: string; pass: number; fail: number; runs: number }[];
+  } = {},
 ): string[] {
   const pts = history.points;
   if (pts.length === 0) {
@@ -438,11 +453,25 @@ export function renderSummaryHistoryMarkdown(
   const rates = pts.map(failureRate);
   const latest = pts.at(-1)!;
   const window = pts.slice(-12);
+  const allSuites = opts.allSuites ?? listSuiteIds(pts);
+  const selected = opts.selected && opts.selected.length ? [...opts.selected] : null;
+  const filtered = selected !== null && selected.length < allSuites.length;
+  const breakdown = opts.breakdown ?? suiteTotals(pts);
   return [
     `#### Uploaded summary history (${pts.length} run(s)${
       opts.skipped ? `, ${opts.skipped} file(s) skipped` : ""
     })`,
     "",
+    ...(filtered
+      ? [
+          `> Suite filter active: **${selected!.map((id) => `\`${id}\``).join(", ")}** of ${
+            allSuites.length
+          } suite(s) — pass/fail and failure rate below cover only those suites.`,
+          "",
+        ]
+      : allSuites.length
+        ? [`_All ${allSuites.length} suite(s) included._`, ""]
+        : []),
     "| Series | Trend | Latest |",
     "| --- | --- | ---: |",
     `| Passing tests | \`${sparkline(pts.map((p) => p.totals.pass))}\` | ${latest.totals.pass} |`,
@@ -457,10 +486,27 @@ export function renderSummaryHistoryMarkdown(
           p,
         ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} |`,
     ),
-
+    ...(breakdown.length
+      ? [
+          "",
+          "<details><summary>Per-suite contribution (toggle these in the HTML chart)</summary>",
+          "",
+          "| Suite | In filter | Runs | Pass | Fail |",
+          "| --- | :-: | ---: | ---: | ---: |",
+          ...breakdown.map(
+            (s) =>
+              `| \`${s.id}\` | ${selected === null || selected.includes(s.id) ? "✅" : "—"} | ${
+                s.runs
+              } | ${s.pass} | ${s.fail} |`,
+          ),
+          "",
+          "</details>",
+        ]
+      : []),
     "",
     opts.artifact
-      ? `<sub>Chart (SVG) is in \`${opts.artifact}\` on this run.</sub>`
-      : "<sub>Chart (SVG) ships with the coverage report artifact.</sub>",
+      ? `<sub>Chart (SVG, with interactive suite filters) is in \`${opts.artifact}\` on this run.</sub>`
+      : "<sub>Chart (SVG, with interactive suite filters) ships with the coverage report artifact.</sub>",
   ];
 }
+
