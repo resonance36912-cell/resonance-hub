@@ -615,7 +615,7 @@ export function renderSuiteFilterChart(
       }).join("");
       var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
       var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(tipLines(p).join("\\n")) + '</title></circle>'; }).join("");
-      var hits = pts.map(function (p, i) { return '<rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '"><title>' + esc(tipLines(p).join("\\n")) + '</title></rect>'; }).join("");
+      var hits = pts.map(function (p, i) { return '<a href="' + esc(p.href || "#") + '"' + (p.external ? ' target="_blank" rel="noreferrer"' : "") + ' aria-label="' + esc("Open run " + (p.runId || p.label)) + '"><rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '" data-href="' + esc(p.href || "") + '"' + (p.log ? ' data-log="' + esc(p.log) + '"' : "") + '><title>' + esc(tipLines(p).join("\\n")) + '</title></rect></a>'; }).join("");
       host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
         '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
         '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
