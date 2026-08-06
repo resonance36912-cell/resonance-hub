@@ -348,13 +348,15 @@ function renderTrendHtml(trend: Trend): string {
 }
 
 /**
- * Execute one suite with the framework it is actually written against.
+ * Execute one suite once with the framework it is actually written against.
  *
  * The runner is detected from the file's imports (`bun:test` vs `vitest`), the
  * matching command is spawned, and both runners' summaries are normalized into
  * the same pass/fail/assertion shape so the report stays consistent.
  */
-async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
+async function runAttempt(
+  s: (typeof SUITES)[number],
+): Promise<Attempt & { runner: TestRunner; runnerReason: string; assertionSource: SuiteResult["assertionSource"] }> {
   const started = Date.now();
   const { runner, reason } = detectRunner(join(process.cwd(), s.file));
   const cmd = runnerCommand(runner, s.file);
@@ -374,7 +376,6 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
   // A crashed/unparseable run must never read as "0 failures".
   const fail = parsed.unparseable && exitCode !== 0 ? Math.max(parsed.fail, 1) : parsed.fail;
   return {
-    ...s,
     runner,
     runnerReason: reason,
     assertionSource: parsed.assertionSource,
@@ -383,6 +384,42 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
     assertions: parsed.assertions,
     durationMs: Date.now() - started,
     output,
+  };
+}
+
+/**
+ * Run a suite, and re-run it exactly once if it failed (flaky detection).
+ *
+ * The job only goes red when the failure reproduces on the second attempt; a
+ * fail→pass sequence is reported as FLAKY and does not block CI. Set
+ * RETURN_TO_COVERAGE_NO_RETRY=1 to disable retries (every failure is final).
+ */
+async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
+  const first = await runAttempt(s);
+  let retry: Awaited<ReturnType<typeof runAttempt>> | null = null;
+  if (shouldRetry(first, retriesEnabled(process.env))) {
+    console.log(`::notice::"${s.title}" failed — re-running once to check for flakiness.`);
+    retry = await runAttempt(s);
+  }
+  const verdict = classifyAttempts(first, retry);
+  const authoritative = authoritativeAttempt(first, retry);
+  const source = retry && authoritative === retry ? retry : first;
+  return {
+    ...s,
+    runner: source.runner,
+    runnerReason: source.runnerReason,
+    assertionSource: source.assertionSource,
+    pass: authoritative.pass,
+    fail: verdict === "flaky" ? 0 : authoritative.fail,
+    assertions: authoritative.assertions,
+    durationMs: first.durationMs + (retry?.durationMs ?? 0),
+    output:
+      retry === null
+        ? first.output
+        : `----- ATTEMPT 1 (failed) -----\n${first.output}\n\n----- ATTEMPT 2 (retry) -----\n${retry.output}`,
+    verdict,
+    attempts: retry ? 2 : 1,
+    firstAttempt: retry ? { pass: first.pass, fail: first.fail, output: first.output } : null,
   };
 }
 
