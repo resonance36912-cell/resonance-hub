@@ -864,6 +864,14 @@ export function renderSummaryHistoryMarkdown(
     opts.artifact
       ? `<sub>Chart (SVG, with interactive suite filters) is in \`${opts.artifact}\` on this run.</sub>`
       : "<sub>Chart (SVG, with interactive suite filters) ships with the coverage report artifact.</sub>",
+    ...(opts.csv === false
+      ? []
+      : [
+          `<sub>Time series CSV: \`${
+            opts.csv ?? "return-to-coverage-report/history-graph.csv"
+          }\` (one row per run) and \`history-suites.csv\` (one row per run × suite).</sub>`,
+        ]),
   ];
 }
+
 
