@@ -12,7 +12,7 @@
  * When a suite fails, its raw failure output (including fast-check
  * counterexamples) is embedded in the report and echoed to the log.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
@@ -292,7 +292,7 @@ if (summaryFile) {
     "",
     "Artifacts: `return-to-coverage-report.html` / `.pdf` on this run.",
   ].join("\n");
-  await Bun.write(summaryFile, md + "\n");
+  appendFileSync(summaryFile, md + "\n");
 }
 
 if (totals.fail > 0 || totals.pass === 0) process.exit(1);
