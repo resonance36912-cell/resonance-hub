@@ -18,6 +18,7 @@ import {
   pointTooltip,
   pointTooltipLines,
   formatRunDate,
+  runLinks,
 } from "./summary-history";
 
 const summary = (over: Record<string, unknown> = {}) =>
@@ -279,5 +280,58 @@ describe("hover tooltips", () => {
     expect(html).toContain('"date":"2026-08-01 10:00 UTC"');
     expect(html).toContain("tipLines");
     expect(html).toContain("pt-hit");
+  });
+});
+
+describe("run deep links", () => {
+  const linked = () =>
+    parseSummaryPoint(
+      summary({
+        runId: "5551212",
+        runNumber: 9,
+        suites: [{ id: "encoding", pass: 90, fail: 10, assertions: 400 }],
+        totals: { pass: 90, fail: 10, assertions: 400 },
+      }),
+    )!;
+  const opts = { server: "https://github.com", repo: "o/r" };
+
+  it("builds summary, log and artifact URLs for a known run", () => {
+    const l = runLinks(linked(), opts);
+    expect(l.summaryUrl).toBe("https://github.com/o/r/actions/runs/5551212#summary");
+    expect(l.logUrl).toBe("https://github.com/o/r/actions/runs/5551212/job");
+    expect(l.artifactsUrl).toBe("https://github.com/o/r/actions/runs/5551212#artifacts");
+    expect(l.href).toBe(l.summaryUrl);
+  });
+
+  it("falls back to an in-page anchor without a repo or run id", () => {
+    const l = runLinks(linked(), { server: "https://github.com", repo: null });
+    expect(l.summaryUrl).toBeNull();
+    expect(l.href).toBe("#run-5551212");
+    expect(runLinks(parseSummaryPoint(summary())!, opts).href).toMatch(/^#run-/);
+  });
+
+  it("links every static chart column and lists printable links", () => {
+    const svg = renderFailureRateChart([linked()], undefined, opts);
+    expect(svg).toContain('href="https://github.com/o/r/actions/runs/5551212#summary"');
+    expect(svg).toContain('target="_blank"');
+    expect(svg).toContain("Open: run summary + CI log (click)");
+    expect(svg).toContain('class="run-links"');
+    expect(svg).toContain("/actions/runs/5551212/job");
+  });
+
+  it("passes link data to the interactive chart", () => {
+    const html = renderSuiteFilterChart([linked()], { links: opts });
+    expect(html).toContain('"href":"https://github.com/o/r/actions/runs/5551212#summary"');
+    expect(html).toContain('"log":"https://github.com/o/r/actions/runs/5551212/job"');
+    expect(html).toContain('"external":true');
+  });
+
+  it("adds a Links column to the run-summary markdown table", () => {
+    const md = renderSummaryHistoryMarkdown({ points: [linked()] }, { links: opts }).join("\n");
+    expect(md).toContain("| Run | Date | Pass | Fail | Failure rate | Links |");
+    expect(md).toContain("[summary](https://github.com/o/r/actions/runs/5551212#summary)");
+    expect(md).toContain("[log](https://github.com/o/r/actions/runs/5551212/job)");
+    const local = renderSummaryHistoryMarkdown({ points: [linked()] }, { links: { repo: null } }).join("\n");
+    expect(local).toContain('<a id="run-5551212"></a>');
   });
 });

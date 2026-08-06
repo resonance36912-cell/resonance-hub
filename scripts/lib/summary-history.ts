@@ -157,6 +157,67 @@ export function pointTooltipLines(point: HistoryPoint): string[] {
 /** `pointTooltipLines` joined with newlines, for an SVG `<title>`. */
 export const pointTooltip = (point: HistoryPoint): string => pointTooltipLines(point).join("\n");
 
+/* ------------------------------------------------------------------ *
+ * Run deep links
+ *
+ * Every charted point corresponds to one CI run, so each data point links out
+ * to that run: the run-summary section (`#summary`), the job log, and the
+ * artifact list. When the repo/run id isn't known (local runs, uploads without
+ * `runId`), the link degrades to an in-page anchor so the point still jumps to
+ * that run's row in the history table.
+ * ------------------------------------------------------------------ */
+
+export interface RunLinkOptions {
+  /** e.g. `https://github.com` — defaults to `$GITHUB_SERVER_URL`. */
+  server?: string | null;
+  /** e.g. `owner/repo` — defaults to `$GITHUB_REPOSITORY`. */
+  repo?: string | null;
+}
+
+export interface RunLinks {
+  /** In-page anchor id/href for this run's row in the history table. */
+  anchorId: string;
+  anchor: string;
+  /** GitHub run page anchored at the run summary, when resolvable. */
+  summaryUrl: string | null;
+  /** GitHub job log for the run, when resolvable. */
+  logUrl: string | null;
+  /** GitHub artifact list for the run, when resolvable. */
+  artifactsUrl: string | null;
+  /** Best available href for a click on the data point. */
+  href: string;
+}
+
+const slug = (v: string): string => v.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 60);
+
+/** Resolve every deep link for one charted run. */
+export function runLinks(point: HistoryPoint, opts: RunLinkOptions = {}): RunLinks {
+  const server = (opts.server ?? process.env.GITHUB_SERVER_URL ?? "https://github.com").replace(/\/+$/, "");
+  const repo = opts.repo ?? process.env.GITHUB_REPOSITORY ?? null;
+  const anchorId = `run-${slug(point.runId ?? (point.generatedAt || shortLabel(point)))}`;
+  const anchor = `#${anchorId}`;
+  const base = repo && point.runId ? `${server}/${repo}/actions/runs/${point.runId}` : null;
+  return {
+    anchorId,
+    anchor,
+    summaryUrl: base ? `${base}#summary` : null,
+    logUrl: base ? `${base}/job` : null,
+    artifactsUrl: base ? `${base}#artifacts` : null,
+    href: base ? `${base}#summary` : anchor,
+  };
+}
+
+/** Tooltip lines plus the click hint, so the card explains where a click goes. */
+export function pointTooltipLinesWithLink(point: HistoryPoint, opts: RunLinkOptions = {}): string[] {
+  const links = runLinks(point, opts);
+  return [
+    ...pointTooltipLines(point),
+    `Open: ${links.summaryUrl ? "run summary + CI log (click)" : "this run's row (click)"}`,
+  ];
+}
+
+
+
 
 /* ------------------------------------------------------------------ *
  * Suite filters
@@ -259,8 +320,16 @@ const shortLabel = (p: HistoryPoint): string =>
 /**
  * Inline SVG: pass/fail bars plus a failure-rate line, self-contained so it can
  * be embedded in the run-summary page, the HTML report, and the printed PDF.
+ *
+ * Each column is a link: clicking a data point opens that run's summary section
+ * (and from there its CI log / artifacts), falling back to an in-page anchor for
+ * runs without a resolvable GitHub run id.
  */
-export function renderFailureRateChart(points: readonly HistoryPoint[], title = "Pass / fail and failure rate over time"): string {
+export function renderFailureRateChart(
+  points: readonly HistoryPoint[],
+  title = "Pass / fail and failure rate over time",
+  linkOpts: RunLinkOptions = {},
+): string {
   if (points.length === 0) {
     return `<figure class="chart"><figcaption>${escapeXml(title)}</figcaption><p class="sub">No summary.json files found — upload at least one to chart history.</p></figure>`;
   }
@@ -276,8 +345,8 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
   const slot = plotW / n;
   const barW = Math.max(3, Math.min(26, slot * 0.6));
   const cx = (i: number) => PAD.left + slot * (i + 0.5);
-  const yTests = (v: number) => PAD.top + plotH - (v / maxTests) * plotH;
   const yRate = (v: number) => PAD.top + plotH - (v / maxRate) * plotH;
+  const links = points.map((p) => runLinks(p, linkOpts));
 
   const bars = points
     .map((p, i) => {
@@ -304,22 +373,27 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     )
     .join("");
 
-  // Full-height transparent hit areas: hovering anywhere in a run's column shows
-  // that run's tooltip, so short/zero bars and the rate dot are still reachable.
+  // Full-height transparent hit areas wrapped in a link: hovering anywhere in a
+  // run's column shows that run's tooltip, and clicking opens that exact run.
   const hits = points
-    .map(
-      (p, i) =>
-        `<rect class="pt-hit" x="${(cx(i) - slot / 2).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(
-          1,
-        )}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
-          pointTooltipLines(p).join("|"),
-        )}"><title>${escapeXml(pointTooltip(p))}</title></rect>`,
-    )
+    .map((p, i) => {
+      const l = links[i]!;
+      const external = l.href.startsWith("http");
+      return `<a href="${escapeXml(l.href)}"${
+        external ? ' target="_blank" rel="noreferrer"' : ""
+      } aria-label="${escapeXml(`Open run ${p.runId ?? shortLabel(p)}`)}"><rect class="pt-hit" x="${(
+        cx(i) - slot / 2
+      ).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(1)}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
+        pointTooltipLinesWithLink(p, linkOpts).join("|"),
+      )}" data-href="${escapeXml(l.href)}"${
+        l.logUrl ? ` data-log="${escapeXml(l.logUrl)}"` : ""
+      }><title>${escapeXml(pointTooltip(p))}</title></rect></a>`;
+    })
     .join("");
 
   const uid = `hc${chartUid()}`;
   return `<figure class="chart" id="${uid}" style="position:relative">
-  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s). Hover a column for the exact date, run id and counts.</figcaption>
+  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s). Hover a column for the exact date, run id and counts; click it to open that run's summary.</figcaption>
   <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${escapeXml(`${title} over ${n} runs`)}">
     <line x1="${PAD.left}" y1="${PAD.top + plotH}" x2="${W - PAD.right}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
     <line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
@@ -334,9 +408,38 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     <text x="${PAD.left}" y="${H - 8}" font-size="10" fill="#64748b">${escapeXml(shortLabel(points[0]!))}</text>
     <text x="${W - PAD.right}" y="${H - 8}" font-size="10" fill="#64748b" text-anchor="end">${escapeXml(shortLabel(points[n - 1]!))}</text>
   </svg>
+  ${renderRunLinkList(points, linkOpts)}
   ${renderTooltipScript(uid)}
 </figure>`;
 }
+
+/**
+ * Printable/keyboard-accessible list of the same deep links the chart columns
+ * carry — the PDF and screen readers get real anchors, not just hover targets.
+ */
+export function renderRunLinkList(
+  points: readonly HistoryPoint[],
+  linkOpts: RunLinkOptions = {},
+): string {
+  if (points.length === 0) return "";
+  const items = points
+    .slice(-12)
+    .map((p) => {
+      const l = runLinks(p, linkOpts);
+      const label = `${shortLabel(p)}${p.runNumber !== null ? ` #${p.runNumber}` : ""}`;
+      const parts = l.summaryUrl
+        ? [
+            `<a href="${escapeXml(l.summaryUrl)}" target="_blank" rel="noreferrer">${escapeXml(label)}</a>`,
+            `<a href="${escapeXml(l.logUrl!)}" target="_blank" rel="noreferrer">log</a>`,
+            `<a href="${escapeXml(l.artifactsUrl!)}" target="_blank" rel="noreferrer">artifacts</a>`,
+          ]
+        : [`<a href="${escapeXml(l.anchor)}">${escapeXml(label)}</a>`];
+      return `<li>${parts.join(" · ")}</li>`;
+    })
+    .join("");
+  return `<ul class="run-links">${items}</ul>`;
+}
+
 
 let uidSeq = 0;
 const chartUid = (): number => ++uidSeq;
@@ -358,8 +461,8 @@ export function renderTooltipScript(hostId: string): string {
       tip.innerHTML = lines.map(function (l) {
         var i = l.indexOf(":");
         var k = i < 0 ? l : l.slice(0, i);
-        var v = i < 0 ? "" : l.slice(i + 1).trim();
         return '<div><span class="pt-k">' + k + '</span> <span class="pt-v"></span></div>';
+
       }).join("");
       var vals = tip.querySelectorAll(".pt-v");
       lines.forEach(function (l, idx) {
@@ -404,27 +507,39 @@ export const CHART_TOOLTIP_CSS = `
  */
 export function renderSuiteFilterChart(
   points: readonly HistoryPoint[],
-  opts: { title?: string; selected?: readonly string[] | null; idPrefix?: string } = {},
+  opts: {
+    title?: string;
+    selected?: readonly string[] | null;
+    idPrefix?: string;
+    links?: RunLinkOptions;
+  } = {},
 ): string {
   const title = opts.title ?? "Pass / fail and failure rate over time";
+  const linkOpts = opts.links ?? {};
   const ids = listSuiteIds(points);
   if (points.length === 0 || ids.length === 0 || !hasSuiteBreakdown(points)) {
     const note =
       points.length > 0 && ids.length > 0
         ? `<p class="sub">Suite filters need per-suite pass counts; these uploads only record failures, so the chart uses run totals for all ${ids.length} suite(s).</p>`
         : "";
-    return renderFailureRateChart(points, title) + note;
+    return renderFailureRateChart(points, title, linkOpts) + note;
   }
   const prefix = opts.idPrefix ?? "sf";
   const selected = new Set(opts.selected && opts.selected.length ? opts.selected : ids);
-  const data = points.map((p) => ({
-    label: shortLabel(p),
-    at: p.generatedAt,
-    date: formatRunDate(p.generatedAt),
-    runId: p.runId,
-    runNumber: p.runNumber,
-    suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
-  }));
+  const data = points.map((p) => {
+    const l = runLinks(p, linkOpts);
+    return {
+      label: shortLabel(p),
+      at: p.generatedAt,
+      date: formatRunDate(p.generatedAt),
+      runId: p.runId,
+      runNumber: p.runNumber,
+      href: l.href,
+      log: l.logUrl,
+      external: l.href.startsWith("http"),
+      suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
+    };
+  });
 
   const initial = applySuiteFilter(points, [...selected]);
   const totals = suiteTotals(points);
@@ -439,14 +554,16 @@ export function renderSuiteFilterChart(
     .join("\n      ");
 
   return `<figure class="chart suite-filter-chart" id="${prefix}-root" style="position:relative">
-  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate.</figcaption>
+  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate; click it to open that run's summary and CI log.</figcaption>
   <div class="suite-toggles">
       ${checkboxes}
       <button type="button" data-suite-all="1">All</button>
       <button type="button" data-suite-none="1">None</button>
   </div>
-  <div id="${prefix}-chart">${renderFailureRateChart(initial, title)}</div>
+  <div id="${prefix}-chart">${renderFailureRateChart(initial, title, linkOpts)}</div>
   <p class="sub" id="${prefix}-status">Showing ${selected.size} of ${ids.length} suite(s).</p>
+  ${renderRunLinkList(points, linkOpts)}
+
   <script type="application/json" id="${prefix}-data">${JSON.stringify(data).replace(
     /</g,
     "\\u003c",
@@ -470,7 +587,8 @@ export function renderSuiteFilterChart(
         "Commit: " + p.label,
         "Pass: " + p.pass,
         "Fail: " + p.fail,
-        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")"
+        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")",
+        "Open: " + (p.external ? "run summary + CI log (click)" : "this run's row (click)")
       ];
     }
     function series(sel) {
@@ -478,9 +596,10 @@ export function renderSuiteFilterChart(
         var pass = 0, fail = 0;
         r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
         var total = pass + fail;
-        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, href: r.href, log: r.log, external: r.external, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
       });
     }
+
     function draw(pts) {
       if (!pts.length) { host.innerHTML = '<p class="sub">No suites selected.</p>'; return; }
       var n = pts.length;
@@ -496,7 +615,7 @@ export function renderSuiteFilterChart(
       }).join("");
       var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
       var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(tipLines(p).join("\\n")) + '</title></circle>'; }).join("");
-      var hits = pts.map(function (p, i) { return '<rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '"><title>' + esc(tipLines(p).join("\\n")) + '</title></rect>'; }).join("");
+      var hits = pts.map(function (p, i) { return '<a href="' + esc(p.href || "#") + '"' + (p.external ? ' target="_blank" rel="noreferrer"' : "") + ' aria-label="' + esc("Open run " + (p.runId || p.label)) + '"><rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '" data-href="' + esc(p.href || "") + '"' + (p.log ? ' data-log="' + esc(p.log) + '"' : "") + '><title>' + esc(tipLines(p).join("\\n")) + '</title></rect></a>'; }).join("");
       host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
         '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
         '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
@@ -533,7 +652,11 @@ export const SUITE_FILTER_CSS = `
   .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
   .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
   .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  .run-links { display: flex; flex-wrap: wrap; gap: 4px 14px; list-style: none; padding: 0; margin: 6px 0 0; font-size: 11px; color: #64748b; }
+  .run-links a { color: #1d4ed8; text-decoration: none; }
+  .run-links a:hover { text-decoration: underline; }
 ${CHART_TOOLTIP_CSS}`;
+
 
 
 
@@ -559,7 +682,10 @@ export function renderSummaryHistoryMarkdown(
     allSuites?: readonly string[];
     /** Per-suite totals to tabulate (defaults to those in `history`). */
     breakdown?: readonly { id: string; pass: number; fail: number; runs: number }[];
+    /** Server/repo used to build per-run deep links (defaults to env). */
+    links?: RunLinkOptions;
   } = {},
+
 ): string[] {
   const pts = history.points;
   if (pts.length === 0) {
@@ -597,14 +723,22 @@ export function renderSummaryHistoryMarkdown(
     `| Failing tests | \`${sparkline(pts.map((p) => p.totals.fail))}\` | ${latest.totals.fail} |`,
     `| Failure rate | \`${sparkline(rates)}\` | ${rates.at(-1)!.toFixed(2)}% |`,
     "",
-    "| Run | Date | Pass | Fail | Failure rate |",
-    "| --- | --- | ---: | ---: | ---: |",
-    ...window.map(
-      (p) =>
-        `| \`${shortLabel(p)}\` | ${p.generatedAt || "—"} | ${p.totals.pass} | ${p.totals.fail} | ${failureRate(
-          p,
-        ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} |`,
-    ),
+    "| Run | Date | Pass | Fail | Failure rate | Links |",
+    "| --- | --- | ---: | ---: | ---: | --- |",
+    ...window.map((p) => {
+      const l = runLinks(p, opts.links ?? {});
+      // The anchor span makes the chart's in-page deep link land on this row.
+      const runCell = l.summaryUrl
+        ? `[\`${shortLabel(p)}\`](${l.summaryUrl})`
+        : `<a id="${l.anchorId}"></a>\`${shortLabel(p)}\``;
+      const linkCell = l.summaryUrl
+        ? `[summary](${l.summaryUrl}) · [log](${l.logUrl}) · [artifacts](${l.artifactsUrl})`
+        : "—";
+      return `| ${runCell} | ${p.generatedAt || "—"} | ${p.totals.pass} | ${p.totals.fail} | ${failureRate(
+        p,
+      ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} | ${linkCell} |`;
+    }),
+
     ...(breakdown.length
       ? [
           "",
