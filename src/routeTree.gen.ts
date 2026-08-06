@@ -27,6 +27,7 @@ import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-op
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as ToolsCodexRouteImport } from './routes/tools.codex'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
+import { Route as StatusAppsRouteImport } from './routes/status.apps'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
@@ -91,6 +92,7 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/public/entitlement.health'
+import { Route as ApiPublicAppStatusHealthRouteImport } from './routes/api/public/app-status.health'
 import { Route as ApiPublicAnalyticsCheckoutSuccessRouteImport } from './routes/api/public/analytics/checkout-success'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
@@ -186,6 +188,11 @@ const ToolsCodexRoute = ToolsCodexRouteImport.update({
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   id: '/sync-vision/pricing',
   path: '/sync-vision/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusAppsRoute = StatusAppsRouteImport.update({
+  id: '/status/apps',
+  path: '/status/apps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalTermsRoute = LegalTermsRouteImport.update({
@@ -523,6 +530,12 @@ const ApiPublicEntitlementHealthRoute =
     path: '/health',
     getParentRoute: () => ApiPublicEntitlementRoute,
   } as any)
+const ApiPublicAppStatusHealthRoute =
+  ApiPublicAppStatusHealthRouteImport.update({
+    id: '/api/public/app-status/health',
+    path: '/api/public/app-status/health',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAnalyticsCheckoutSuccessRoute =
   ApiPublicAnalyticsCheckoutSuccessRouteImport.update({
     id: '/api/public/analytics/checkout-success',
@@ -609,6 +622,7 @@ export interface FileRoutesByFullPath {
   '/legal/governance': typeof LegalGovernanceRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/status/apps': typeof StatusAppsRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -629,6 +643,7 @@ export interface FileRoutesByFullPath {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -699,6 +714,7 @@ export interface FileRoutesByTo {
   '/legal/governance': typeof LegalGovernanceRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/status/apps': typeof StatusAppsRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -719,6 +735,7 @@ export interface FileRoutesByTo {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -790,6 +807,7 @@ export interface FileRoutesById {
   '/legal/governance': typeof LegalGovernanceRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/status/apps': typeof StatusAppsRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -810,6 +828,7 @@ export interface FileRoutesById {
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -882,6 +901,7 @@ export interface FileRouteTypes {
     | '/legal/governance'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/status/apps'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -902,6 +922,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
+    | '/api/public/app-status/health'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -972,6 +993,7 @@ export interface FileRouteTypes {
     | '/legal/governance'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/status/apps'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -992,6 +1014,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
+    | '/api/public/app-status/health'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1062,6 +1085,7 @@ export interface FileRouteTypes {
     | '/legal/governance'
     | '/legal/privacy'
     | '/legal/terms'
+    | '/status/apps'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -1082,6 +1106,7 @@ export interface FileRouteTypes {
     | '/account/invoices/by-payment/$pf'
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
+    | '/api/public/app-status/health'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1152,6 +1177,7 @@ export interface RootRouteChildren {
   LegalGovernanceRoute: typeof LegalGovernanceRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
+  StatusAppsRoute: typeof StatusAppsRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   ToolsCodexRoute: typeof ToolsCodexRouteWithChildren
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
@@ -1169,6 +1195,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  ApiPublicAppStatusHealthRoute: typeof ApiPublicAppStatusHealthRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -1316,6 +1343,13 @@ declare module '@tanstack/react-router' {
       path: '/sync-vision/pricing'
       fullPath: '/sync-vision/pricing'
       preLoaderRoute: typeof SyncVisionPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status/apps': {
+      id: '/status/apps'
+      path: '/status/apps'
+      fullPath: '/status/apps'
+      preLoaderRoute: typeof StatusAppsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/terms': {
@@ -1766,6 +1800,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEntitlementHealthRouteImport
       parentRoute: typeof ApiPublicEntitlementRoute
     }
+    '/api/public/app-status/health': {
+      id: '/api/public/app-status/health'
+      path: '/api/public/app-status/health'
+      fullPath: '/api/public/app-status/health'
+      preLoaderRoute: typeof ApiPublicAppStatusHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/analytics/checkout-success': {
       id: '/api/public/analytics/checkout-success'
       path: '/api/public/analytics/checkout-success'
@@ -1909,6 +1950,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalGovernanceRoute: LegalGovernanceRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
+  StatusAppsRoute: StatusAppsRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
   ToolsCodexRoute: ToolsCodexRouteWithChildren,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
@@ -1927,6 +1969,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicAnalyticsCheckoutSuccessRoute:
     ApiPublicAnalyticsCheckoutSuccessRoute,
+  ApiPublicAppStatusHealthRoute: ApiPublicAppStatusHealthRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
