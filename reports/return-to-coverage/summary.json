@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:10:26.746Z",
+  "generatedAt": "2026-08-06T19:10:55.283Z",
   "commit": "local",
   "totals": {
-    "pass": 146,
-    "fail": 0,
-    "assertions": 4400
+    "pass": 123,
+    "fail": 1,
+    "assertions": 4273
   },
   "suites": [
     {
@@ -14,8 +14,8 @@
       "blurb": "fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.",
       "pass": 5,
       "fail": 0,
-      "assertions": 3974,
-      "durationMs": 706,
+      "assertions": 3982,
+      "durationMs": 731,
       "status": "pass"
     },
     {
@@ -26,7 +26,7 @@
       "pass": 43,
       "fail": 0,
       "assertions": 61,
-      "durationMs": 43,
+      "durationMs": 41,
       "status": "pass"
     },
     {
@@ -37,19 +37,19 @@
       "pass": 44,
       "fail": 0,
       "assertions": 159,
-      "durationMs": 40,
+      "durationMs": 46,
       "status": "pass"
     },
     {
       "id": "audit",
       "title": "Redirect audit records",
-      "file": "scripts/lib/return-to-audit.test.ts",
+      "file": "/tmp/fake.test.ts",
       "blurb": "audit rows keep origin-only candidates and path-only targets — never full URLs, query strings or fragments.",
-      "pass": 23,
-      "fail": 0,
-      "assertions": 136,
-      "durationMs": 211,
-      "status": "pass"
+      "pass": 0,
+      "fail": 1,
+      "assertions": 1,
+      "durationMs": 37,
+      "status": "fail"
     },
     {
       "id": "targets",
@@ -59,7 +59,7 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 228,
+      "durationMs": 209,
       "status": "pass"
     }
   ],
@@ -72,11 +72,17 @@
       "assertions": 4300
     },
     "delta": {
-      "pass": -4,
-      "fail": -2,
-      "assertions": 100
+      "pass": -27,
+      "fail": -1,
+      "assertions": -27
     },
-    "newFailures": [],
+    "newFailures": [
+      {
+        "id": "audit",
+        "title": "Redirect audit records",
+        "fail": 1
+      }
+    ],
     "removedSuites": [
       "legacy"
     ],
@@ -95,7 +101,7 @@
       },
       {
         "id": "audit",
-        "state": "stable"
+        "state": "new-failure"
       },
       {
         "id": "targets",
