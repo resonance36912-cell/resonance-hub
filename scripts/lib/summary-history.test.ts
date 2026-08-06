@@ -9,6 +9,12 @@ import {
   parseSummaryPoint,
   renderFailureRateChart,
   renderSummaryHistoryMarkdown,
+  applySuiteFilter,
+  hasSuiteBreakdown,
+  listSuiteIds,
+  parseSuiteFilter,
+  renderSuiteFilterChart,
+  suiteTotals,
 } from "./summary-history";
 
 const summary = (over: Record<string, unknown> = {}) =>
@@ -99,5 +105,119 @@ describe("rendering", () => {
     expect(md).toContain("10.00%");
     expect(md).toContain("1 file(s) skipped");
     expect(md).toContain("🔴");
+  });
+});
+
+const suiteSummary = (
+  commit: string,
+  at: string,
+  suites: { id: string; pass: number; fail: number }[],
+) =>
+  JSON.stringify({
+    generatedAt: at,
+    commit,
+    totals: {
+      pass: suites.reduce((n, s) => n + s.pass, 0),
+      fail: suites.reduce((n, s) => n + s.fail, 0),
+      assertions: 100,
+    },
+    counterexamples: { total: 1, blocked: 1, leaked: 0 },
+    suites,
+  });
+
+const suitePoints = () => [
+  parseSummaryPoint(
+    suiteSummary("c1", "2026-08-01T00:00:00.000Z", [
+      { id: "encoding", pass: 40, fail: 0 },
+      { id: "login", pass: 10, fail: 5 },
+    ]),
+  )!,
+  parseSummaryPoint(
+    suiteSummary("c2", "2026-08-02T00:00:00.000Z", [
+      { id: "encoding", pass: 42, fail: 2 },
+      { id: "login", pass: 15, fail: 0 },
+    ]),
+  )!,
+];
+
+describe("suite filters", () => {
+  it("keeps per-suite pass/assertion counts when present", () => {
+    const p = parseSummaryPoint(suiteSummary("c", "2026-08-01T00:00:00.000Z", [
+      { id: "login", pass: 3, fail: 1 },
+    ]))!;
+    expect(p.suites[0]).toMatchObject({ id: "login", pass: 3, fail: 1 });
+    expect(parseSummaryPoint(summary())!.suites[0]!.pass).toBeUndefined();
+  });
+
+  it("lists suite ids and per-suite totals", () => {
+    const pts = suitePoints();
+    expect(listSuiteIds(pts)).toEqual(["encoding", "login"]);
+    expect(suiteTotals(pts)).toEqual([
+      { id: "encoding", pass: 82, fail: 2, runs: 2 },
+      { id: "login", pass: 25, fail: 5, runs: 2 },
+    ]);
+    expect(hasSuiteBreakdown(pts)).toBe(true);
+    expect(hasSuiteBreakdown([parseSummaryPoint(summary())!])).toBe(false);
+  });
+
+  it("recomputes totals and failure rate from the selected suites only", () => {
+    const [a, b] = applySuiteFilter(suitePoints(), ["encoding"]);
+    expect(a!.totals).toEqual({ pass: 40, fail: 0, assertions: 0 });
+    expect(b!.totals.fail).toBe(2);
+    expect(failureRate(b!)).toBeCloseTo((2 / 44) * 100, 5);
+    const login = applySuiteFilter(suitePoints(), ["login"]);
+    expect(failureRate(login[0]!)).toBeCloseTo((5 / 15) * 100, 5);
+  });
+
+  it("passes points through for empty, full, or unfilterable selections", () => {
+    const pts = suitePoints();
+    expect(applySuiteFilter(pts, null)[0]!.totals.pass).toBe(50);
+    expect(applySuiteFilter(pts, [])[0]!.totals.pass).toBe(50);
+    expect(applySuiteFilter(pts, ["encoding", "login"])[0]!.totals.pass).toBe(50);
+    const legacy = [parseSummaryPoint(summary())!];
+    expect(applySuiteFilter(legacy, ["encoding"])[0]!.totals.pass).toBe(100);
+  });
+
+  it("parses suite filter strings and reports unknown ids", () => {
+    const known = ["encoding", "login"];
+    expect(parseSuiteFilter("login", known)).toEqual({ selected: ["login"], unknown: [] });
+    expect(parseSuiteFilter("login, nope", known)).toEqual({
+      selected: ["login"],
+      unknown: ["nope"],
+    });
+    expect(parseSuiteFilter("all", known).selected).toBeNull();
+    expect(parseSuiteFilter(null, known).selected).toBeNull();
+    expect(parseSuiteFilter("", known).selected).toBeNull();
+  });
+
+  it("renders interactive checkboxes with the initial selection applied", () => {
+    const html = renderSuiteFilterChart(suitePoints(), { selected: ["encoding"] });
+    expect(html).toContain('data-suite="encoding"');
+    expect(html).toContain('data-suite="login"');
+    expect(html).toMatch(/data-suite="encoding" checked/);
+    expect(html).not.toMatch(/data-suite="login" checked/);
+    expect(html).toContain("data-suite-all");
+    expect(html).toContain("Showing 1 of 2 suite(s).");
+    expect(html).toContain("<svg");
+  });
+
+  it("falls back to the static chart when no per-suite pass counts exist", () => {
+    const html = renderSuiteFilterChart([parseSummaryPoint(summary())!]);
+    expect(html).not.toContain("data-suite=");
+    expect(html).toContain("Suite filters need per-suite pass counts");
+  });
+
+  it("states the active filter and per-suite table in the markdown", () => {
+    const pts = suitePoints();
+    const md = renderSummaryHistoryMarkdown(
+      { points: applySuiteFilter(pts, ["encoding"]) },
+      { selected: ["encoding"], allSuites: listSuiteIds(pts), breakdown: suiteTotals(pts) },
+    ).join("\n");
+    expect(md).toContain("Suite filter active: **`encoding`** of 2 suite(s)");
+    expect(md).toContain("| `login` | — | 2 | 25 | 5 |");
+    expect(md).toContain("| `encoding` | ✅ | 2 | 82 | 2 |");
+    expect(renderSummaryHistoryMarkdown({ points: pts }).join("\n")).toContain(
+      "_All 2 suite(s) included._",
+    );
   });
 });
