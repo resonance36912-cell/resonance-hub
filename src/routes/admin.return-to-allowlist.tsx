@@ -20,6 +20,7 @@ import {
   ALLOWED_RETURN_TO_ORIGINS,
   explainReturnTo,
 } from "@/lib/return-to-allowlist";
+import { validateAdminOrigin } from "@/lib/admin-origin-validation";
 
 export const Route = createFileRoute("/admin/return-to-allowlist")({
   head: () => ({
@@ -113,10 +114,17 @@ function AdminReturnToAllowlist() {
     [data],
   );
 
-  // Live validation of the value being typed into the "add" field.
-  const draftVerdict = useMemo(
-    () => (origin.trim() ? explainReturnTo(origin.trim(), enabledExtras) : null),
-    [origin, enabledExtras],
+  // Live validation of the value being typed into the "add" field. This uses
+  // the same helper the server function enforces on save, so what the UI shows
+  // is exactly what will (or will not) be stored.
+  const draft = useMemo(
+    () => (origin.trim() ? validateAdminOrigin(origin) : null),
+    [origin],
+  );
+  const draftAlreadyAllowed = useMemo(
+    () =>
+      draft?.ok ? explainReturnTo(draft.origin, enabledExtras).allowed : false,
+    [draft, enabledExtras],
   );
 
   const previewRows = useMemo(
@@ -173,22 +181,23 @@ function AdminReturnToAllowlist() {
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
         </div>
-        {draftVerdict ? (
+        {draft ? (
           <p
+            data-testid="draft-origin-verdict"
             className={`mt-3 text-sm ${
-              draftVerdict.origin ? "text-muted-foreground" : "text-destructive"
+              draft.ok ? "text-muted-foreground" : "text-destructive"
             }`}
           >
-            {draftVerdict.origin
-              ? `Will be stored as ${draftVerdict.origin}${
-                  draftVerdict.allowed ? " (already allowlisted)" : ""
-                }`
-              : draftVerdict.reason}
+            {draft.ok
+              ? `Will be stored as ${draft.origin}${
+                  draft.hadExtraParts ? " (path/query discarded)" : ""
+                }${draftAlreadyAllowed ? " — already allowlisted" : ""}`
+              : draft.message}
           </p>
         ) : null}
         <button
           type="button"
-          disabled={!draftVerdict?.origin || add.isPending}
+          disabled={!draft?.ok || add.isPending}
           onClick={() => add.mutate()}
           className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
