@@ -3,12 +3,12 @@
 
 | Suite | Pass | Fail | Assertions | Status |
 | --- | ---: | ---: | ---: | --- |
-| Property-based fuzzing | 5 | 0 | 4,008 | PASS |
+| Property-based fuzzing | 5 | 0 | 3,985 | PASS |
 | Normalization edge cases | 43 | 0 | 61 | PASS |
 | Percent-encoding edge cases | 44 | 0 | 44 | PASS |
 | Redirect audit records | 23 | 0 | 136 | PASS |
 | Checkout success target resolution | 31 | 0 | 70 | PASS |
-| **Total** | **146** | **0** | **4,319** | PASS |
+| **Total** | **146** | **0** | **4,296** | PASS |
 
 #### Coverage trend
 
@@ -21,4 +21,4 @@ _Not enough history yet — charts appear once a second run is recorded._
 #### Reports
 - Artifacts are published on the workflow run for this commit.
 
-<sub>Commit `local` · generated 2026-08-06T19:51:32.687Z</sub>
+<sub>Commit `local` · generated 2026-08-06T19:52:17.335Z</sub>

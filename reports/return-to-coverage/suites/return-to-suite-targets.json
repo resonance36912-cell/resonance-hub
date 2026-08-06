@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T19:51:32.687Z",
+  "generatedAt": "2026-08-06T19:52:17.335Z",
   "commit": "local",
   "suite": {
     "id": "targets",
@@ -9,7 +9,7 @@
     "pass": 31,
     "fail": 0,
     "assertions": 70,
-    "durationMs": 227,
+    "durationMs": 209,
     "attempts": 1,
     "verdict": "stable-pass",
     "status": "pass",

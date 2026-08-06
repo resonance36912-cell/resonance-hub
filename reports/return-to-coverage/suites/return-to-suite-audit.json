@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T19:51:32.687Z",
+  "generatedAt": "2026-08-06T19:52:17.335Z",
   "commit": "local",
   "suite": {
     "id": "audit",
@@ -9,7 +9,7 @@
     "pass": 23,
     "fail": 0,
     "assertions": 136,
-    "durationMs": 246,
+    "durationMs": 210,
     "attempts": 1,
     "verdict": "stable-pass",
     "status": "pass",

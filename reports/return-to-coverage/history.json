@@ -6,11 +6,11 @@
       "commit": "local",
       "branch": null,
       "event": null,
-      "generatedAt": "2026-08-06T19:51:32.687Z",
+      "generatedAt": "2026-08-06T19:52:17.335Z",
       "totals": {
         "pass": 146,
         "fail": 0,
-        "assertions": 4319
+        "assertions": 4296
       },
       "counterexamples": {
         "total": 27,
