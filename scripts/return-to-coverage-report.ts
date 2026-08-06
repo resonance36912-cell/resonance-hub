@@ -36,11 +36,17 @@ import {
 } from "./lib/coverage-history";
 import { buildTrendComment } from "./lib/trend-comment";
 import {
+  applySuiteFilter,
   collectSummaryHistory,
   findSummaryFiles,
-  renderFailureRateChart,
+  listSuiteIds,
+  parseSuiteFilter,
+  renderSuiteFilterChart,
   renderSummaryHistoryMarkdown,
+  suiteTotals,
+  SUITE_FILTER_CSS,
 } from "./lib/summary-history";
+
 
 
 import {
