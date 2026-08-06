@@ -175,6 +175,9 @@ jobs:
             reports/return-to-coverage/history.json
             reports/return-to-coverage/history-graph.html
             reports/return-to-coverage/history-graph.svg
+            reports/return-to-coverage/history-graph.csv
+            reports/return-to-coverage/history-suites.csv
+
           if-no-files-found: warn
           retention-days: 30
 

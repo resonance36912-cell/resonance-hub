@@ -14,6 +14,8 @@
  *   reports/return-to-coverage/history-graph.svg   — standalone chart
  *   reports/return-to-coverage/history-graph.html  — chart + filters + table
  *   reports/return-to-coverage/history-graph.md    — markdown block
+ *   reports/return-to-coverage/history-graph.csv   — time series behind the chart
+ *   reports/return-to-coverage/history-suites.csv  — same data, one row per suite
  * and appends the markdown to $GITHUB_STEP_SUMMARY when running in Actions.
  */
 
@@ -28,6 +30,8 @@ import {
   listSuiteIds,
   parseSuiteFilter,
   renderFailureRateChart,
+  renderHistoryCsv,
+  renderSuiteHistoryCsv,
   renderSuiteFilterChart,
   renderSummaryHistoryMarkdown,
   suiteTotals,
@@ -81,6 +85,12 @@ mkdirSync(OUT_DIR, { recursive: true });
 const svg = staticChart.match(/<svg[\s\S]*<\/svg>/)?.[0] ?? "";
 writeFileSync(join(OUT_DIR, "history-graph.svg"), `${svg}\n`);
 writeFileSync(join(OUT_DIR, "history-graph.md"), `${markdown}\n`);
+// CSV exports: the filtered series matches the chart; the long form keeps every
+// suite row so a different filter can be reconstructed downstream.
+const csvPath = join(OUT_DIR, "history-graph.csv");
+const suiteCsvPath = join(OUT_DIR, "history-suites.csv");
+writeFileSync(csvPath, renderHistoryCsv(filteredPoints));
+writeFileSync(suiteCsvPath, renderSuiteHistoryCsv(history.points));
 writeFileSync(
   join(OUT_DIR, "history-graph.html"),
   `<!doctype html>
@@ -106,6 +116,9 @@ ${SUITE_FILTER_CSS}
       ? `. Initial suite filter: ${selected.map((s) => `<code>${s}</code>`).join(", ")}`
       : ""
   }.</p>
+<p class="sub">Download the underlying time series:
+  <a href="history-graph.csv" download>history-graph.csv</a> (one row per run)
+  · <a href="history-suites.csv" download>history-suites.csv</a> (one row per run × suite).</p>
 ${interactiveChart}
 <table>
   <thead><tr><th>Run</th><th>Generated</th><th>Pass</th><th>Fail</th><th>Assertions</th><th>Failure rate</th></tr></thead>
@@ -151,4 +164,5 @@ console.log(
   }${selected && filterable ? ` · filter: ${selected.join(", ")}` : ""}`,
 );
 console.log(`Chart: ${join(OUT_DIR, "history-graph.html")}`);
+console.log(`CSV:   ${csvPath}\nCSV:   ${suiteCsvPath}`);
 

@@ -18,6 +18,9 @@ import {
   pointTooltip,
   pointTooltipLines,
   formatRunDate,
+  csvField,
+  renderHistoryCsv,
+  renderSuiteHistoryCsv,
   runLinks,
 } from "./summary-history";
 
@@ -333,5 +336,77 @@ describe("run deep links", () => {
     expect(md).toContain("[log](https://github.com/o/r/actions/runs/5551212/job)");
     const local = renderSummaryHistoryMarkdown({ points: [linked()] }, { links: { repo: null } }).join("\n");
     expect(local).toContain('<a id="run-5551212"></a>');
+  });
+});
+
+describe("CSV export", () => {
+  const pts = () => [
+    parseSummaryPoint(
+      summary({
+        runId: "1001",
+        runNumber: 1,
+        commit: "aaaa1111",
+        suites: [
+          { id: "encoding", pass: 40, fail: 0, assertions: 200 },
+          { id: "login", pass: 10, fail: 1, assertions: 50 },
+        ],
+        totals: { pass: 50, fail: 1, assertions: 250 },
+      }),
+    )!,
+    parseSummaryPoint(
+      summary({
+        runId: "1002",
+        runNumber: 2,
+        commit: "bbbb2222",
+        suites: [{ id: "encoding", pass: 40, fail: 0, assertions: 200 }],
+        totals: { pass: 40, fail: 0, assertions: 200 },
+      }),
+    )!,
+  ];
+
+  it("emits one row per run with per-suite columns and failure rate", () => {
+    const rows = renderHistoryCsv(pts(), { links: { server: "https://github.com", repo: "o/r" } })
+      .trim()
+      .split("\n");
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toBe(
+      "run_index,run_id,run_number,commit,branch,event,generated_at,pass,fail,assertions,failure_rate_pct,counterexamples_total,counterexamples_blocked,counterexamples_leaked,run_url,encoding_pass,encoding_fail,login_pass,login_fail",
+    );
+    expect(rows[1]).toContain("1,1001,1,aaaa1111");
+    expect(rows[1]).toContain("https://github.com/o/r/actions/runs/1001#summary");
+    expect(rows[1]!.endsWith("40,0,10,1")).toBe(true);
+    // Run 2 never ran `login`, so those columns stay blank rather than 0.
+    expect(rows[2]!.endsWith("40,0,,")).toBe(true);
+  });
+
+  it("quotes fields containing commas or quotes", () => {
+    expect(csvField('a,b')).toBe('"a,b"');
+    expect(csvField('say "hi"')).toBe('"say ""hi"""');
+    expect(csvField(null)).toBe("");
+    expect(csvField(12)).toBe("12");
+  });
+
+  it("emits a long-format row per run and suite", () => {
+    const rows = renderSuiteHistoryCsv(pts()).trim().split("\n");
+    expect(rows[0]).toBe("run_index,run_id,commit,generated_at,suite,pass,fail,assertions");
+    expect(rows).toHaveLength(4);
+    expect(rows[1]).toContain(",encoding,40,0,200");
+    expect(rows[3]).toContain("2,1002,bbbb2222");
+  });
+
+  it("matches the charted (filtered) series row for row", () => {
+    const filtered = applySuiteFilter(pts(), ["encoding"]);
+    const rows = renderHistoryCsv(filtered).trim().split("\n").slice(1);
+    expect(rows).toHaveLength(filtered.length);
+    expect(rows[0]!.split(",")[7]).toBe("40");
+    expect(rows[0]!.split(",")[8]).toBe("0");
+  });
+
+  it("advertises the CSV in the run-summary markdown, and can hide it", () => {
+    const md = renderSummaryHistoryMarkdown({ points: pts() }).join("\n");
+    expect(md).toContain("history-graph.csv");
+    expect(renderSummaryHistoryMarkdown({ points: pts() }, { csv: false }).join("\n")).not.toContain(
+      "history-graph.csv",
+    );
   });
 });

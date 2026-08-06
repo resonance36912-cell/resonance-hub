@@ -286,6 +286,110 @@ export function applySuiteFilter(
   });
 }
 
+/* ------------------------------------------------------------------ *
+ * CSV export
+ *
+ * The chart is a picture; these two CSVs are the numbers behind it, so the
+ * time series can be opened in a spreadsheet or re-plotted elsewhere. Both are
+ * generated from the same parsed `summary.json` points the chart uses, in the
+ * same chronological order, so a row always matches a data point.
+ *
+ *  - `renderHistoryCsv`      — one row per run (wide: per-suite columns)
+ *  - `renderSuiteHistoryCsv` — one row per run × suite (long/tidy format)
+ * ------------------------------------------------------------------ */
+
+/** RFC 4180 field: quote when the value contains a comma, quote or newline. */
+export function csvField(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return "";
+  const s = String(value);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+const csvRow = (cells: readonly (string | number | null | undefined)[]): string =>
+  cells.map(csvField).join(",");
+
+/**
+ * Wide CSV: one row per charted run, with run metadata, the totals driving the
+ * pass/fail bars, the computed failure rate, counterexample stats, the run deep
+ * link, and `<suite>_pass` / `<suite>_fail` columns for every suite in the
+ * history (blank when that run didn't record the suite).
+ */
+export function renderHistoryCsv(
+  points: readonly HistoryPoint[],
+  opts: { links?: RunLinkOptions } = {},
+): string {
+  const suites = listSuiteIds(points);
+  const header = [
+    "run_index",
+    "run_id",
+    "run_number",
+    "commit",
+    "branch",
+    "event",
+    "generated_at",
+    "pass",
+    "fail",
+    "assertions",
+    "failure_rate_pct",
+    "counterexamples_total",
+    "counterexamples_blocked",
+    "counterexamples_leaked",
+    "run_url",
+    ...suites.flatMap((id) => [`${id}_pass`, `${id}_fail`]),
+  ];
+  const rows = points.map((p, i) => {
+    const byId = new Map(p.suites.map((s) => [s.id, s]));
+    const link = runLinks(p, opts.links ?? {});
+    return csvRow([
+      i + 1,
+      p.runId,
+      p.runNumber,
+      p.commit,
+      p.branch,
+      p.event,
+      p.generatedAt,
+      p.totals.pass,
+      p.totals.fail,
+      p.totals.assertions,
+      failureRate(p).toFixed(2),
+      p.counterexamples.total,
+      p.counterexamples.blocked,
+      p.counterexamples.leaked,
+      link.summaryUrl ?? "",
+      ...suites.flatMap((id) => {
+        const s = byId.get(id);
+        return s ? [s.pass ?? "", s.fail] : ["", ""];
+      }),
+    ]);
+  });
+  return [csvRow(header), ...rows].join("\n") + "\n";
+}
+
+/**
+ * Long/tidy CSV: one row per run × suite, for pivoting or per-suite plotting
+ * without parsing dynamic column names.
+ */
+export function renderSuiteHistoryCsv(points: readonly HistoryPoint[]): string {
+  const header = csvRow([
+    "run_index",
+    "run_id",
+    "commit",
+    "generated_at",
+    "suite",
+    "pass",
+    "fail",
+    "assertions",
+  ]);
+  const rows = points.flatMap((p, i) =>
+    p.suites.map((s) =>
+      csvRow([i + 1, p.runId, p.commit, p.generatedAt, s.id, s.pass ?? "", s.fail, s.assertions ?? ""]),
+    ),
+  );
+  return [header, ...rows].join("\n") + "\n";
+}
+
+
+
 /**
  * Normalize a comma/space separated suite filter (CLI flag or env var) into
  * known suite ids. Unknown ids are returned separately so the caller can warn.
@@ -684,6 +788,9 @@ export function renderSummaryHistoryMarkdown(
     breakdown?: readonly { id: string; pass: number; fail: number; runs: number }[];
     /** Server/repo used to build per-run deep links (defaults to env). */
     links?: RunLinkOptions;
+    /** CSV artifact path to advertise; `false` hides the CSV line entirely. */
+    csv?: string | false;
+
   } = {},
 
 ): string[] {
@@ -760,6 +867,14 @@ export function renderSummaryHistoryMarkdown(
     opts.artifact
       ? `<sub>Chart (SVG, with interactive suite filters) is in \`${opts.artifact}\` on this run.</sub>`
       : "<sub>Chart (SVG, with interactive suite filters) ships with the coverage report artifact.</sub>",
+    ...(opts.csv === false
+      ? []
+      : [
+          `<sub>Time series CSV: \`${
+            opts.csv ?? "return-to-coverage-report/history-graph.csv"
+          }\` (one row per run) and \`history-suites.csv\` (one row per run × suite).</sub>`,
+        ]),
   ];
 }
+
 
