@@ -93,7 +93,10 @@ export function nameSlug(name: string): string {
 function sliceArrayLiteral(src: string, declaration: string): string {
   const start = src.indexOf(declaration);
   if (start === -1) return "";
-  const open = src.indexOf("[", start);
+  // Skip past the `= ` so the `[]` inside a type annotation (`App[]`) is ignored.
+  const eq = src.indexOf("=", start + declaration.length - 1);
+  if (eq === -1) return "";
+  const open = src.indexOf("[", eq);
   if (open === -1) return "";
   let depth = 0;
   for (let i = open; i < src.length; i += 1) {
