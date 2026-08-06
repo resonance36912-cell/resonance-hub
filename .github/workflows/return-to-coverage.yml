@@ -46,13 +46,51 @@ jobs:
       # this workflow
       # on main so the report can show a pass/fail trend and flag new failures.
       # Non-blocking: with no baseline the report says "first recorded run".
-      - name: Download baseline from last successful run
+      # Baseline resolution, in order of preference:
+      #   1. the stable-named `return-to-baseline` artifact, promoted by the most
+      #      recent PASSING push to main (see the promote step below), or
+      #   2. a scan of the last successful run of this workflow on main (legacy
+      #      fallback for repos/PRs older than the first promotion).
+      # Non-blocking: with no baseline the report says "first recorded run".
+      - name: Download promoted baseline (last passing main run)
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
           mkdir -p reports/return-to-coverage/baseline
+          # Newest non-expired artifact named exactly `return-to-baseline`.
+          ART_ID="$(gh api --paginate \
+            "repos/${{ github.repository }}/actions/artifacts?per_page=100" \
+            --jq '[.artifacts[] | select(.name == "return-to-baseline" and .expired == false)] | sort_by(.created_at) | last | .id' 2>/dev/null || true)"
+          if [ -z "${ART_ID:-}" ] || [ "$ART_ID" = "null" ]; then
+            echo "No promoted baseline artifact yet — falling back to a run scan."
+            exit 0
+          fi
+          gh api "repos/${{ github.repository }}/actions/artifacts/$ART_ID/zip" > /tmp/rt-baseline.zip || {
+            echo "::warning::Could not download promoted baseline — falling back to a run scan."; exit 0; }
+          rm -rf /tmp/rt-promoted && mkdir -p /tmp/rt-promoted
+          unzip -o -q /tmp/rt-baseline.zip -d /tmp/rt-promoted || {
+            echo "::warning::Promoted baseline archive unreadable — falling back to a run scan."; exit 0; }
+          for f in summary.json history.json baseline.json; do
+            SRC="$(find /tmp/rt-promoted -name "$f" -print -quit)"
+            [ -n "$SRC" ] && cp "$SRC" "reports/return-to-coverage/baseline/$f" && echo "Promoted $f: $SRC"
+          done
+          if [ -f reports/return-to-coverage/baseline/baseline.json ]; then
+            echo "Baseline metadata:"; cat reports/return-to-coverage/baseline/baseline.json
+          fi
+
+      - name: Fall back to last successful run when no promoted baseline exists
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          mkdir -p reports/return-to-coverage/baseline
+          if [ -f reports/return-to-coverage/baseline/summary.json ]; then
+            echo "Promoted baseline already in place — skipping the run scan."; exit 0
+          fi
           RUN_ID="$(gh run list \
             --workflow "${{ github.workflow }}" \
             --branch main --status success --limit 1 \
@@ -130,6 +168,25 @@ jobs:
             reports/return-to-coverage/history.json
           if-no-files-found: warn
           retention-days: 30
+
+      # Automatic baseline update: a GREEN push to main promotes its own
+      # summary.json/history.json into the stable-named `return-to-baseline`
+      # artifact, so the next PR compares against the most recent successful
+      # main run. Failing, empty or non-main runs leave the baseline untouched.
+      - name: Stage baseline promotion
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: promote
+        run: bun run baseline:return-to-promote
+
+      - name: Upload promoted baseline
+        if: steps.promote.outputs.promoted == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-baseline
+          path: reports/return-to-coverage/promote/*.json
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: true
 
       # One artifact per suite (HTML + PDF + summary JSON) so a failing suite can
       # be downloaded and opened on its own instead of scrolling the combined
