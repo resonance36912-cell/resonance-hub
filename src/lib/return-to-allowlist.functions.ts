@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { registerExtraReturnToOrigins } from "./return-to-allowlist";
+import { normalizeAdminOriginOrThrow } from "./admin-origin-validation";
 
 /**
  * Admin-managed `return_to` allowlist entries (`public.return_to_origins`).
@@ -40,28 +41,6 @@ function mapRow(r: Row): ReturnToOrigin {
     createdAt: r.created_at as string,
     updatedAt: r.updated_at as string,
   };
-}
-
-/** Normalize an admin-entered value to a bare http(s) origin, or throw. */
-function normalizeOrigin(raw: string): string {
-  let parsed: URL;
-  try {
-    parsed = new URL(raw.trim());
-  } catch {
-    throw new Error(
-      "Enter an absolute URL, e.g. https://app.example.com (relative values are rejected).",
-    );
-  }
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
-    throw new Error(`Scheme "${parsed.protocol}" is not http(s).`);
-  }
-  if (parsed.username !== "" || parsed.password !== "") {
-    throw new Error("URLs carrying userinfo (user:pass@host) are not allowed.");
-  }
-  if (!parsed.origin || parsed.origin === "null") {
-    throw new Error("URL has an opaque origin.");
-  }
-  return parsed.origin;
 }
 
 async function assertAdmin(context: {
@@ -129,7 +108,7 @@ export const upsertReturnToOrigin = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => upsertSchema.parse(raw))
   .handler(async ({ data, context }): Promise<ReturnToOrigin> => {
     await assertAdmin(context as never);
-    const origin = normalizeOrigin(data.origin);
+    const origin = normalizeAdminOriginOrThrow(data.origin);
     const row: Record<string, unknown> = {
       origin,
       label: data.label ?? null,
