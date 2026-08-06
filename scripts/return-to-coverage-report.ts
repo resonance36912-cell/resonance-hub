@@ -55,7 +55,9 @@ import {
 import {
   counterexampleFileName,
   counterexampleLogLines,
+  counterexampleLinks,
   counterexampleMarkdown,
+
   counterexampleStoreJson,
   extractCounterexamples,
   renderCounterexamplesHtml,
