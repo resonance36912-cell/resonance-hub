@@ -587,7 +587,8 @@ export function renderSuiteFilterChart(
         "Commit: " + p.label,
         "Pass: " + p.pass,
         "Fail: " + p.fail,
-        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")"
+        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")",
+        "Open: " + (p.external ? "run summary + CI log (click)" : "this run's row (click)")
       ];
     }
     function series(sel) {
@@ -595,9 +596,10 @@ export function renderSuiteFilterChart(
         var pass = 0, fail = 0;
         r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
         var total = pass + fail;
-        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, href: r.href, log: r.log, external: r.external, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
       });
     }
+
     function draw(pts) {
       if (!pts.length) { host.innerHTML = '<p class="sub">No suites selected.</p>'; return; }
       var n = pts.length;
