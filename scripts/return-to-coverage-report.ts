@@ -21,6 +21,16 @@ import {
   runnerCommand,
   type TestRunner,
 } from "./lib/test-runner-detect";
+import {
+  appendHistoryPoint,
+  findRegressions,
+  parseHistory,
+  renderHistoryChart,
+  renderHistoryMarkdown,
+  type History,
+  type HistoryPoint,
+} from "./lib/coverage-history";
+import { sanitizeCounterexamples } from "../src/lib/return-to-counterexamples";
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
   {
@@ -81,6 +91,10 @@ const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
 const JSON_PATH = join(OUT_DIR, "summary.json");
 const COMMENT_PATH = join(OUT_DIR, "pr-comment.md");
+/** Rolling run history; CI seeds it from the previous run's artifact. */
+const HISTORY_PATH = join(OUT_DIR, "history.json");
+const HISTORY_BASELINE_PATH =
+  process.env["RETURN_TO_COVERAGE_HISTORY"] ?? join(OUT_DIR, "baseline", "history.json");
 
 /**
  * Baseline = the `summary.json` produced by the last successful run of this
@@ -199,6 +213,64 @@ const TREND_LABEL: Record<TrendState, string> = {
   stable: "unchanged",
 };
 
+/** Historical charts section: pass/fail over runs + counterexample leakage. */
+function renderHistoryHtml(history: History): string {
+  const pts = history.points;
+  const regressions = findRegressions(history);
+  const intro =
+    pts.length <= 1
+      ? `<p class="sub">Only ${pts.length} run recorded so far — charts fill in as later runs append to <code>history.json</code>.</p>`
+      : `<p class="sub">Last ${pts.length} recorded run(s), newest on the right. ${
+          regressions.length
+            ? `<strong class="bad">${regressions.length} red run(s)</strong> in this window.`
+            : "No red runs in this window."
+        }</p>`;
+  return `<section class="history">
+    <h2>Historical trend</h2>
+    ${intro}
+    ${renderHistoryChart({
+      title: "Test results per run",
+      points: pts,
+      good: (p) => p.totals.pass,
+      bad: (p) => p.totals.fail,
+      goodLabel: "passing tests",
+      badLabel: "failing tests",
+    })}
+    ${renderHistoryChart({
+      title: "Hostile counterexamples per run",
+      points: pts,
+      good: (p) => p.counterexamples.blocked,
+      bad: (p) => p.counterexamples.leaked,
+      goodLabel: "blocked",
+      badLabel: "leaked (accepted)",
+    })}
+    <table>
+      <thead><tr><th>Run</th><th>Commit</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Blocked</th><th class="num">Leaked</th><th>Status</th></tr></thead>
+      <tbody>
+      ${pts
+        .slice()
+        .reverse()
+        .map((p) => {
+          const red = p.totals.fail > 0 || p.counterexamples.leaked > 0;
+          return `<tr class="${red ? "row-bad" : ""}">
+            <td>${esc(p.runNumber ? `#${p.runNumber}` : "local")}<div class="blurb">${esc(p.generatedAt)}${
+              p.branch ? ` · ${esc(p.branch)}` : ""
+            }</div></td>
+            <td><code>${esc(p.commit.slice(0, 12))}</code></td>
+            <td class="num">${p.totals.pass}</td>
+            <td class="num ${p.totals.fail > 0 ? "bad" : ""}">${p.totals.fail}</td>
+            <td class="num">${p.totals.assertions.toLocaleString("en-US")}</td>
+            <td class="num">${p.counterexamples.blocked}/${p.counterexamples.total}</td>
+            <td class="num ${p.counterexamples.leaked > 0 ? "bad" : ""}">${p.counterexamples.leaked}</td>
+            <td><span class="pill ${red ? "bad" : "ok"}">${red ? "RED" : "GREEN"}</span></td>
+          </tr>`;
+        })
+        .join("\n")}
+      </tbody>
+    </table>
+  </section>`;
+}
+
 function renderTrendHtml(trend: Trend): string {
   if (!trend.baseline) {
     return `<section class="trend">
@@ -302,7 +374,12 @@ function esc(v: string): string {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend: Trend) {
+function renderHtml(
+  results: SuiteResult[],
+  meta: Record<string, string>,
+  trend: Trend,
+  historyHtml: string,
+) {
   const totals = results.reduce(
     (a, r) => ({
       pass: a.pass + r.pass,
@@ -378,6 +455,9 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
   .pill.muted { background: #eef0f6; color: #4b5163; }
   td.bad { color: #991b1b; font-weight: 700; }
   .trend { margin-top: 26px; page-break-inside: avoid; }
+  .history { margin-top: 26px; page-break-inside: avoid; }
+  .chart { margin: 14px 0 22px; }
+  .chart figcaption { font-size: 11.5px; color: #5b6070; margin-bottom: 6px; }
   .trend h2 { font-size: 16px; margin: 0 0 4px; letter-spacing: -0.01em; }
   .trend .sub { margin: 0 0 10px; }
   tr.row-bad td { background: #fff5f5; }
@@ -417,6 +497,7 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
 
 
   ${renderTrendHtml(trend)}
+  ${historyHtml}
 
   <footer>Contract: docs/return-to-allowlist.md · Generated by scripts/return-to-coverage-report.ts</footer>
 </body></html>`;
@@ -455,8 +536,36 @@ meta["Baseline"] = trend.baseline
   ? `${(trend.baseline.commit ?? "unknown").slice(0, 12)} · ${trend.baseline.generatedAt ?? "unknown"}`
   : "none (first recorded run)";
 
+/**
+ * Counterexample gauge: run the hostile corpus through the live policy so the
+ * history records how many inputs are blocked and (critically) how many leak.
+ */
+const counterexamples = sanitizeCounterexamples();
+const cxStats = {
+  total: counterexamples.length,
+  blocked: counterexamples.filter((c) => c.failsAt !== "none").length,
+  leaked: counterexamples.filter((c) => c.failsAt === "none").length,
+};
+
+const priorHistory = parseHistory(
+  existsSync(HISTORY_BASELINE_PATH) ? readFileSync(HISTORY_BASELINE_PATH, "utf8") : null,
+);
+const historyPoint: HistoryPoint = {
+  runId: process.env["GITHUB_RUN_ID"] ?? null,
+  runNumber: process.env["GITHUB_RUN_NUMBER"] ? Number(process.env["GITHUB_RUN_NUMBER"]) : null,
+  commit: meta.Commit ?? "local",
+  branch: process.env["GITHUB_REF_NAME"] ?? null,
+  event: process.env["GITHUB_EVENT_NAME"] ?? null,
+  generatedAt: meta.Generated ?? new Date().toISOString(),
+  totals,
+  counterexamples: cxStats,
+  suites: results.map((r) => ({ id: r.id, fail: r.fail })),
+};
+const history = appendHistoryPoint(priorHistory, historyPoint);
+
 mkdirSync(dirname(HTML_PATH), { recursive: true });
-writeFileSync(HTML_PATH, renderHtml(results, meta, trend));
+writeFileSync(HISTORY_PATH, JSON.stringify(history, null, 2) + "\n");
+writeFileSync(HTML_PATH, renderHtml(results, meta, trend, renderHistoryHtml(history)));
 writeFileSync(
   JSON_PATH,
   JSON.stringify(
@@ -476,6 +585,11 @@ writeFileSync(
         newFailures: trend.newFailures.map((r) => ({ id: r.id, title: r.title, fail: r.fail })),
         removedSuites: trend.removed.map((s) => s.id),
         suites: trend.rows.map((r) => ({ id: r.id, state: r.state })),
+      },
+      counterexamples: cxStats,
+      history: {
+        runs: history.points.length,
+        redRuns: findRegressions(history).length,
       },
     },
     null,
@@ -607,6 +721,8 @@ const summaryMd = [
   `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${totals.fail === 0 ? "PASS" : "FAIL"} |`,
   "",
   ...trendMd,
+  "",
+  ...renderHistoryMarkdown(history),
 ].join("\n");
 
 // GitHub Actions job summary (markdown table on the run page).

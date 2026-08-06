@@ -41,7 +41,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      # Pulls summary.json from the most recent SUCCESSFUL run of this workflow
+      # Pulls summary.json (trend vs last run) and history.json (rolling
+      # multi-run history for the charts) from the most recent SUCCESSFUL run of
+      # this workflow
       # on main so the report can show a pass/fail trend and flag new failures.
       # Non-blocking: with no baseline the report says "first recorded run".
       - name: Download baseline from last successful run
@@ -67,6 +69,13 @@ jobs:
             echo "Baseline: $SRC"
           else
             echo "::warning::No summary.json in baseline artifact — skipping trend."
+          fi
+          HIST="$(find /tmp/rt-baseline -name history.json -print -quit)"
+          if [ -n "$HIST" ]; then
+            cp "$HIST" reports/return-to-coverage/baseline/history.json
+            echo "History: $HIST"
+          else
+            echo "::warning::No history.json in baseline artifact — history restarts from this run."
           fi
 
 
@@ -109,6 +118,7 @@ jobs:
             reports/return-to-coverage/return-to-coverage-report.html
             reports/return-to-coverage/return-to-coverage-report.pdf
             reports/return-to-coverage/summary.json
+            reports/return-to-coverage/history.json
           if-no-files-found: warn
           retention-days: 30
 
