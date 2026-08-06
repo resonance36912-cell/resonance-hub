@@ -106,7 +106,16 @@ jobs:
           "$CHROME" --headless=new --disable-gpu --no-sandbox \
             --print-to-pdf=reports/return-to-coverage/return-to-coverage-report.pdf \
             --no-pdf-header-footer "file://$PWD/$HTML"
-          ls -l reports/return-to-coverage/
+          # One PDF per suite, next to its standalone HTML page.
+          for f in reports/return-to-coverage/suites/*.html; do
+            [ -f "$f" ] || continue
+            "$CHROME" --headless=new --disable-gpu --no-sandbox \
+              --print-to-pdf="${f%.html}.pdf" \
+              --no-pdf-header-footer "file://$PWD/$f"
+          done
+          ls -l reports/return-to-coverage/ reports/return-to-coverage/suites/
+
+
 
       - name: Upload coverage report artifacts
         if: always()
