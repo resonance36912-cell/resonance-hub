@@ -7,6 +7,11 @@ import {
 } from "@/lib/return-to-allowlist";
 import { listEnabledReturnToOrigins } from "@/lib/return-to-allowlist.functions";
 import { recordReturnToVerdict } from "@/lib/return-to-audit.functions";
+import {
+  buildReturnToDiagnostic,
+  logReturnToRejection,
+} from "@/lib/return-to-diagnostics";
+import { ReturnToRejectedNotice } from "@/components/ReturnToRejectedNotice";
 
 import {
   resolveCheckoutContext,
@@ -55,6 +60,9 @@ export const Route = createFileRoute("/checkout/cancel")({
     } catch {
       // Allowlist extras are best-effort; the built-in origins still apply.
     }
+    // Server log: explain a refused return_to (which list rejected it, and the
+    // origin received) so operators can triage from the server log alone.
+    logReturnToRejection("checkout_cancel", deps.return_to, extraOrigins);
     // Audit the redirect decision (origin-only, never the full return_to).
     try {
       await recordReturnToVerdict({
@@ -80,6 +88,7 @@ function CancelPage() {
   const { extraOrigins } = Route.useLoaderData();
   registerExtraReturnToOrigins(extraOrigins);
   const ctx = resolveCheckoutContext({ sku, pack, return_to });
+  const returnToDiagnostic = buildReturnToDiagnostic(return_to, extraOrigins);
 
   // "Try again" preserves whichever identifier we came in with.
   const retrySearch: Record<string, string> = {};
@@ -134,6 +143,12 @@ function CancelPage() {
                 {secondaryLabel}
               </AppLink>
             )}
+          </div>
+          <div className="flex justify-center">
+            <ReturnToRejectedNotice
+              diagnostic={returnToDiagnostic}
+              surface="checkout_cancel"
+            />
           </div>
         </div>
       </main>

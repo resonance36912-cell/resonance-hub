@@ -9,6 +9,11 @@ import {
 } from "@/lib/return-to-allowlist";
 import { listEnabledReturnToOrigins } from "@/lib/return-to-allowlist.functions";
 import { recordReturnToVerdict } from "@/lib/return-to-audit.functions";
+import {
+  buildReturnToDiagnostic,
+  logReturnToRejection,
+} from "@/lib/return-to-diagnostics";
+import { ReturnToRejectedNotice } from "@/components/ReturnToRejectedNotice";
 
 
 import { resolveCheckoutContext } from "@/lib/checkout-return";
@@ -73,6 +78,9 @@ export const Route = createFileRoute("/checkout/success")({
     } catch {
       // Allowlist extras are best-effort; the built-in origins still apply.
     }
+    // Server log: explain a refused return_to (which list rejected it, and the
+    // origin received) so operators can triage from the server log alone.
+    logReturnToRejection("checkout_success", deps.return_to, extraOrigins);
     // Audit the redirect decision (origin-only, never the full return_to).
     try {
       await recordReturnToVerdict({
@@ -123,6 +131,8 @@ function SuccessPage() {
   // first render so client CTAs match SSR and honor the admin allowlist.
   registerExtraReturnToOrigins(extraOrigins);
   const ctx = resolveCheckoutContext({ sku, pack, return_to });
+  // Same explanation the loader logged, rendered as a visible debug notice.
+  const returnToDiagnostic = buildReturnToDiagnostic(return_to, extraOrigins);
 
   const navigate = useNavigate();
   const sessionFn = useServerFn(getCheckoutSession);
