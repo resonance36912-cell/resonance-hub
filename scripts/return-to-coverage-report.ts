@@ -508,6 +508,16 @@ lines.push(
     12,
   )}${totals.fail === 0 ? "PASS" : "FAIL"}`,
 );
+if (results.some((r) => r.assertionSource !== "expect-calls")) {
+  lines.push(
+    "* assertion count is a lower bound — that suite's runner (vitest) does not report expect() calls.",
+  );
+}
+for (const r of results.filter((x) => x.assertionSource === "none" && x.fail > 0)) {
+  lines.push(
+    `::error::Could not parse ${RUNNER_LABEL[r.runner]} output for "${r.title}" — the suite likely crashed before reporting.`,
+  );
+}
 // ---- Coverage trend (vs last successful run) -------------------------------
 lines.push("");
 if (!trend.baseline) {
