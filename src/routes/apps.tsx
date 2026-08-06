@@ -204,6 +204,37 @@ function AppsCatalogPage() {
         ) : null}
       </div>
 
+      <section
+        aria-labelledby="status-legend-heading"
+        className="mt-6 rounded-xl border border-border bg-muted/40 p-4"
+      >
+        <h2 id="status-legend-heading" className="text-sm font-semibold">
+          What the status badges mean
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A Beta or Pilot badge describes how mature the app is — not whether you can use it.
+          Everything except “Coming soon” is deployed and available right now.
+        </p>
+        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {APP_STATUS_LEGEND.map((status) => {
+            const meaning = APP_STATUS_MEANING[status];
+            return (
+              <li key={status} className="flex gap-2 text-sm">
+                <span
+                  className={`mt-0.5 h-fit shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[status]}`}
+                >
+                  {meaning.label}
+                </span>
+                <span className="min-w-0">
+                  <span className="font-medium">{meaning.access}</span>
+                  <span className="block text-muted-foreground">{meaning.explanation}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
       <Section
         title="Paid apps"
         subtitle="Included in the Resonance All-Access pass, or available per-app."
