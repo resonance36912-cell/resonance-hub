@@ -319,24 +319,33 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
     .map(
       (r) => `<tr>
       <td><strong>${esc(r.title)}</strong><div class="blurb">${esc(r.blurb)}</div><code>${esc(r.file)}</code></td>
+      <td><span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span><div class="blurb">${esc(r.runnerReason)}</div></td>
       <td class="num">${r.pass}</td>
       <td class="num ${r.fail > 0 ? "bad" : ""}">${r.fail}</td>
-      <td class="num">${r.assertions.toLocaleString("en-US")}</td>
+      <td class="num">${r.assertions.toLocaleString("en-US")}${
+        r.assertionSource === "expect-calls" ? "" : "<sup>*</sup>"
+      }</td>
       <td class="num">${(r.durationMs / 1000).toFixed(2)}s</td>
       <td><span class="pill ${r.fail === 0 ? "ok" : "bad"}">${r.fail === 0 ? "PASS" : "FAIL"}</span></td>
     </tr>`,
     )
     .join("\n");
 
+  const assertionNote = results.some((r) => r.assertionSource !== "expect-calls")
+    ? `<p class="sub" style="margin-top:8px"><sup>*</sup> Suite ran under a runner that does not report assertion counts (vitest); its test count is used as a lower bound.</p>`
+    : "";
+
   const failures = results
     .filter((r) => r.fail > 0)
     .map(
       (r) => `<section class="failure">
-      <h3>${esc(r.title)} — ${r.fail} failing</h3>
+      <h3>${esc(r.title)} — ${r.fail} failing <span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span></h3>
       <p class="blurb">Raw runner output, including any fast-check counterexample:</p>
       <pre>${esc(r.output)}</pre>
     </section>`,
     )
+    .join("\n");
+
     .join("\n");
 
   const metaRows = Object.entries(meta)
