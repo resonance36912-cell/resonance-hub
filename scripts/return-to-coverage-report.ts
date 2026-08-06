@@ -343,7 +343,15 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>) {
   .pill { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
   .pill.ok { background: #d1fae5; color: #065f46; }
   .pill.bad { background: #fee2e2; color: #991b1b; }
+  .pill.warn { background: #fef3c7; color: #92400e; }
+  .pill.muted { background: #eef0f6; color: #4b5163; }
   td.bad { color: #991b1b; font-weight: 700; }
+  .trend { margin-top: 26px; page-break-inside: avoid; }
+  .trend h2 { font-size: 16px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .trend .sub { margin: 0 0 10px; }
+  tr.row-bad td { background: #fff5f5; }
+  .alert { background: #fee2e2; border: 1px solid #fecaca; color: #7f1d1d; border-radius: 10px;
+           padding: 9px 12px; font-size: 12px; margin: 0 0 10px; }
   .failure { margin-top: 28px; page-break-inside: avoid; }
   pre { background: #f6f7fb; border: 1px solid #e5e8f0; border-radius: 10px; padding: 12px;
         font-size: 10.5px; white-space: pre-wrap; word-break: break-word; }
