@@ -34,8 +34,7 @@ const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
     id: "encoding",
     title: "Percent-encoding edge cases",
     file: "scripts/lib/return-to-allowlist-encoding.test.ts",
-    blurb:
-      "percent-encoded hosts, userinfo smuggling, encoded path/query, homoglyph hosts.",
+    blurb: "percent-encoded hosts, userinfo smuggling, encoded path/query, homoglyph hosts.",
   },
   {
     id: "audit",
@@ -99,10 +98,7 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
 }
 
 function esc(v: string): string {
-  return v
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function renderHtml(results: SuiteResult[], meta: Record<string, string>) {
@@ -250,9 +246,7 @@ const lines: string[] = [];
 lines.push("return_to fuzz/encoding coverage");
 lines.push("");
 const pad = (v: string, n: number) => v.padEnd(n);
-lines.push(
-  `${pad("SUITE", 38)}${pad("PASS", 7)}${pad("FAIL", 7)}${pad("ASSERTIONS", 12)}STATUS`,
-);
+lines.push(`${pad("SUITE", 38)}${pad("PASS", 7)}${pad("FAIL", 7)}${pad("ASSERTIONS", 12)}STATUS`);
 for (const r of results) {
   lines.push(
     `${pad(r.title, 38)}${pad(String(r.pass), 7)}${pad(String(r.fail), 7)}${pad(
