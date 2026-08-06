@@ -554,7 +554,9 @@ function renderHtml(
 <html lang="en"><head><meta charset="utf-8" />
 <title>return_to coverage report</title>
 <style>
+${SUITE_FILTER_CSS}
   @page { size: A4; margin: 14mm; }
+
   :root { color-scheme: light; }
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
          margin: 0; padding: 24px; color: #10121a; background: #fff; }
