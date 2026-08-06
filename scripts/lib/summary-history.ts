@@ -194,7 +194,7 @@ const slug = (v: string): string => v.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0,
 export function runLinks(point: HistoryPoint, opts: RunLinkOptions = {}): RunLinks {
   const server = (opts.server ?? process.env.GITHUB_SERVER_URL ?? "https://github.com").replace(/\/+$/, "");
   const repo = opts.repo ?? process.env.GITHUB_REPOSITORY ?? null;
-  const anchorId = `run-${slug(point.runId ?? point.generatedAt || shortLabel(point))}`;
+  const anchorId = `run-${slug(point.runId ?? (point.generatedAt || shortLabel(point)))}`;
   const anchor = `#${anchorId}`;
   const base = repo && point.runId ? `${server}/${repo}/actions/runs/${point.runId}` : null;
   return {
