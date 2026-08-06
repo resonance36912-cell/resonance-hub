@@ -35,6 +35,13 @@ import {
   type HistoryPoint,
 } from "./lib/coverage-history";
 import { buildTrendComment } from "./lib/trend-comment";
+import {
+  collectSummaryHistory,
+  findSummaryFiles,
+  renderFailureRateChart,
+  renderSummaryHistoryMarkdown,
+} from "./lib/summary-history";
+
 
 import {
   VERDICT_LABEL,
