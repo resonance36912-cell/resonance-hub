@@ -74,7 +74,6 @@ export function appDetailMeta(
     { property: "og:description", content: socialDescription },
     { property: "og:type", content: "website" },
     { property: "og:url", content: appDetailUrl(entry.key) },
-    { property: "og:site_name", content: "Resonance" },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: socialTitle },
     { name: "twitter:description", content: socialDescription },
