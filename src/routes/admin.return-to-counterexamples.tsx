@@ -80,7 +80,7 @@ function AdminReturnToCounterexamples() {
             {
               id: "inspected",
               input: inspectedInput,
-              category: "scheme-abuse",
+              category: "scheme",
               attack: inspectedSuite
                 ? `Reported by CI suite "${inspectedSuite}"`
                 : "Supplied via deep link",
