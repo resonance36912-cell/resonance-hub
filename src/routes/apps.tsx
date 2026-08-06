@@ -279,6 +279,7 @@ function Section({
 
 function TileCard({ tile }: { tile: Tile }) {
   const external = tile.external;
+  const meaning = statusMeaning(tile.status);
   const shots = tile.screenshotUrls ?? [];
   return (
     <a
