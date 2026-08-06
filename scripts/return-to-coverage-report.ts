@@ -488,17 +488,22 @@ const lines: string[] = [];
 lines.push("return_to fuzz/encoding coverage");
 lines.push("");
 const pad = (v: string, n: number) => v.padEnd(n);
-lines.push(`${pad("SUITE", 38)}${pad("PASS", 7)}${pad("FAIL", 7)}${pad("ASSERTIONS", 12)}STATUS`);
+lines.push(
+  `${pad("SUITE", 38)}${pad("RUNNER", 10)}${pad("PASS", 7)}${pad("FAIL", 7)}${pad("ASSERTIONS", 12)}STATUS`,
+);
 for (const r of results) {
   lines.push(
-    `${pad(r.title, 38)}${pad(String(r.pass), 7)}${pad(String(r.fail), 7)}${pad(
-      r.assertions.toLocaleString("en-US"),
+    `${pad(r.title, 38)}${pad(RUNNER_LABEL[r.runner], 10)}${pad(String(r.pass), 7)}${pad(
+      String(r.fail),
+      7,
+    )}${pad(
+      `${r.assertions.toLocaleString("en-US")}${r.assertionSource === "expect-calls" ? "" : "*"}`,
       12,
     )}${r.fail === 0 ? "PASS" : "FAIL"}`,
   );
 }
 lines.push(
-  `${pad("TOTAL", 38)}${pad(String(totals.pass), 7)}${pad(String(totals.fail), 7)}${pad(
+  `${pad("TOTAL", 38)}${pad("", 10)}${pad(String(totals.pass), 7)}${pad(String(totals.fail), 7)}${pad(
     totals.assertions.toLocaleString("en-US"),
     12,
   )}${totals.fail === 0 ? "PASS" : "FAIL"}`,
