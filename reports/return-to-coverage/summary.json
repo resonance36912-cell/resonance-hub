@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:10:04.575Z",
+  "generatedAt": "2026-08-06T19:10:26.746Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4384
+    "assertions": 4400
   },
   "suites": [
     {
@@ -14,8 +14,8 @@
       "blurb": "fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.",
       "pass": 5,
       "fail": 0,
-      "assertions": 3958,
-      "durationMs": 802,
+      "assertions": 3974,
+      "durationMs": 706,
       "status": "pass"
     },
     {
@@ -37,7 +37,7 @@
       "pass": 44,
       "fail": 0,
       "assertions": 159,
-      "durationMs": 44,
+      "durationMs": 40,
       "status": "pass"
     },
     {
@@ -48,7 +48,7 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 260,
+      "durationMs": 211,
       "status": "pass"
     },
     {
@@ -59,37 +59,47 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 247,
+      "durationMs": 228,
       "status": "pass"
     }
   ],
   "trend": {
-    "baselineCommit": null,
-    "baselineGeneratedAt": null,
-    "baselineTotals": null,
-    "delta": null,
+    "baselineCommit": "abc123def456789",
+    "baselineGeneratedAt": "2026-08-05T10:00:00.000Z",
+    "baselineTotals": {
+      "pass": 150,
+      "fail": 2,
+      "assertions": 4300
+    },
+    "delta": {
+      "pass": -4,
+      "fail": -2,
+      "assertions": 100
+    },
     "newFailures": [],
-    "removedSuites": [],
+    "removedSuites": [
+      "legacy"
+    ],
     "suites": [
       {
         "id": "fuzz",
-        "state": "new-suite"
+        "state": "stable"
       },
       {
         "id": "normalization",
-        "state": "new-suite"
+        "state": "tests-removed"
       },
       {
         "id": "encoding",
-        "state": "new-suite"
+        "state": "fixed"
       },
       {
         "id": "audit",
-        "state": "new-suite"
+        "state": "stable"
       },
       {
         "id": "targets",
-        "state": "new-suite"
+        "state": "stable"
       }
     ]
   }
