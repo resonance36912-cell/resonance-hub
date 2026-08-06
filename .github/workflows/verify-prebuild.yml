@@ -319,6 +319,12 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-app-status-badges.ts
 
+      # Link previews must carry the same status meaning the page renders,
+      # so a "Beta" app never looks unreleased when shared.
+      - name: Smoke test app OpenGraph/Twitter status meta
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: bun run scripts/smoke-app-status-meta.ts
 
 
       # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
