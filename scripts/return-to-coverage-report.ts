@@ -154,15 +154,15 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>) {
          margin: 0; padding: 24px; color: #10121a; background: #fff; }
   h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.02em; }
   .sub { color: #5b6070; margin: 0 0 24px; font-size: 13px; }
-  .banner { border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; color: #fff;
+  .banner { border-radius: 14px; padding: 16px 20px; margin-bottom: 18px; color: #fff;
             background: ${green ? "linear-gradient(90deg,#0f766e,#10b981)" : "linear-gradient(90deg,#7f1d1d,#ef4444)"}; }
   .banner strong { font-size: 20px; display: block; }
-  dl { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px 24px; margin: 0 0 24px; }
+  dl { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px 24px; margin: 0 0 18px; }
   dl div { display: flex; gap: 8px; font-size: 12px; border-bottom: 1px solid #eceef4; padding-bottom: 6px; }
   dt { color: #5b6070; min-width: 130px; }
   dd { margin: 0; font-weight: 600; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eceef4; vertical-align: top; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #eceef4; vertical-align: top; }
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #5b6070; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   .blurb { color: #5b6070; font-size: 11.5px; margin: 3px 0; max-width: 46ch; }
