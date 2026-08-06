@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # needed to download the last successful run's summary.json baseline
 
 jobs:
   report:
@@ -38,6 +39,35 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
+
+      # Pulls summary.json from the most recent SUCCESSFUL run of this workflow
+      # on main so the report can show a pass/fail trend and flag new failures.
+      # Non-blocking: with no baseline the report says "first recorded run".
+      - name: Download baseline from last successful run
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          mkdir -p reports/return-to-coverage/baseline
+          RUN_ID="$(gh run list \
+            --workflow "${{ github.workflow }}" \
+            --branch main --status success --limit 1 \
+            --json databaseId --jq '.[0].databaseId' || true)"
+          if [ -z "${RUN_ID:-}" ] || [ "$RUN_ID" = "null" ]; then
+            echo "No previous successful run — no baseline."; exit 0
+          fi
+          echo "Baseline run: $RUN_ID"
+          gh run download "$RUN_ID" --dir /tmp/rt-baseline || {
+            echo "::warning::Baseline artifact unavailable (expired?) — skipping trend."; exit 0; }
+          SRC="$(find /tmp/rt-baseline -name summary.json -print -quit)"
+          if [ -n "$SRC" ]; then
+            cp "$SRC" reports/return-to-coverage/baseline/summary.json
+            echo "Baseline: $SRC"
+          else
+            echo "::warning::No summary.json in baseline artifact — skipping trend."
+          fi
+
 
       # Runs all five suites, prints the pass/fail table to the job log,
       # appends a markdown table to the run summary, and writes
