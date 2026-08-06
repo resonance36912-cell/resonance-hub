@@ -110,6 +110,7 @@ export const ROUTES = {
   adminReconciliation: routePath("/admin/reconciliation"),
   adminRevenue: routePath("/admin/revenue"),
   adminReturnToAllowlist: routePath("/admin/return-to-allowlist"),
+  adminReturnToCounterexamples: routePath("/admin/return-to-counterexamples"),
   adminRop: routePath("/admin/rop"),
   adminRoadmap: routePath("/admin/roadmap"),
 
