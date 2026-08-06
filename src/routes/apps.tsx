@@ -80,11 +80,12 @@ const STATUS_STYLES: Record<AppRegistryEntry["status"], string> = {
 };
 
 const STATUS_LABELS: Record<AppRegistryEntry["status"], string> = {
-  live: "Live",
-  beta: "Beta",
-  pilot: "Pilot",
-  coming_soon: "Coming soon",
+  live: APP_STATUS_MEANING.live.label,
+  beta: APP_STATUS_MEANING.beta.label,
+  pilot: APP_STATUS_MEANING.pilot.label,
+  coming_soon: APP_STATUS_MEANING.coming_soon.label,
 };
+void STATUS_LABELS;
 
 export const Route = createFileRoute("/apps")({
   validateSearch: zodValidator(searchSchema),
