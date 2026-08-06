@@ -104,7 +104,7 @@ describe("badge text per app", () => {
 });
 
 describe("catalog surfaces use the shared meaning module", () => {
-  const catalog = read("src/routes/apps.tsx");
+  const catalog = read("src/routes/apps.index.tsx");
   const detail = read("src/routes/apps.$appKey.tsx");
 
   it("/apps imports the shared module and renders the legend", () => {
