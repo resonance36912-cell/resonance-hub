@@ -127,6 +127,37 @@ export function failureRate(point: HistoryPoint): number {
   return total === 0 ? 0 : (point.totals.fail / total) * 100;
 }
 
+/** Human-readable UTC timestamp for a run, `—` when the summary had none. */
+export function formatRunDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+
+/**
+ * Hover tooltip content for one charted point: exact date, run id, pass/fail
+ * counts and the computed failure rate. Returned as lines so the SVG `<title>`
+ * (native tooltip) and the richer HTML tooltip render the same facts.
+ */
+export function pointTooltipLines(point: HistoryPoint): string[] {
+  const pass = point.totals.pass;
+  const fail = point.totals.fail;
+  const total = pass + fail;
+  return [
+    `Date: ${formatRunDate(point.generatedAt)}`,
+    `Run: ${point.runId ?? "—"}${point.runNumber !== null ? ` (#${point.runNumber})` : ""}`,
+    `Commit: ${shortLabel(point)}`,
+    `Pass: ${pass}`,
+    `Fail: ${fail}`,
+    `Failure rate: ${failureRate(point).toFixed(2)}% (${fail}/${total || 0})`,
+  ];
+}
+
+/** `pointTooltipLines` joined with newlines, for an SVG `<title>`. */
+export const pointTooltip = (point: HistoryPoint): string => pointTooltipLines(point).join("\n");
+
+
 /* ------------------------------------------------------------------ *
  * Suite filters
  *
