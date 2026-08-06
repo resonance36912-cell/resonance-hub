@@ -22,14 +22,14 @@ A `return_to` value is accepted **iff all** of the following hold:
 Because comparison happens on the WHATWG-normalized origin, these
 variants are equivalent to the canonical origin and are **accepted**:
 
-| Variant                          | Why it's fine                                  |
-|----------------------------------|------------------------------------------------|
-| Trailing slash / any path / query / fragment | Origin is unaffected by path/query/hash. |
-| Uppercase or mixed-case host (`RESON8.LIFE`) | WHATWG lowercases the host.       |
-| Uppercase scheme (`HTTPS://…`)   | WHATWG lowercases the scheme.                  |
-| Explicit default port (`https://…:443/`) | Default port collapses to canonical origin. |
-| Percent-encoded ASCII host chars (`reson%38.life` ≡ `reson8.life`) | Parser decodes host `%NN`. |
-| Percent-encoded path/query (`%2F`, `%3F`, `%2E%2E`, `%00`, …) | Path encoding does not change origin. |
+| Variant                                                            | Why it's fine                               |
+| ------------------------------------------------------------------ | ------------------------------------------- |
+| Trailing slash / any path / query / fragment                       | Origin is unaffected by path/query/hash.    |
+| Uppercase or mixed-case host (`RESON8.LIFE`)                       | WHATWG lowercases the host.                 |
+| Uppercase scheme (`HTTPS://…`)                                     | WHATWG lowercases the scheme.               |
+| Explicit default port (`https://…:443/`)                           | Default port collapses to canonical origin. |
+| Percent-encoded ASCII host chars (`reson%38.life` ≡ `reson8.life`) | Parser decodes host `%NN`.                  |
+| Percent-encoded path/query (`%2F`, `%3F`, `%2E%2E`, `%00`, …)      | Path encoding does not change origin.       |
 
 `sanitizeReturnTo` returns the **exact caller-provided string** when
 accepted (never a mutated/normalized form) so downstream consumers keep
