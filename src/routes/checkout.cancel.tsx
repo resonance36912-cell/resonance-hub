@@ -45,8 +45,13 @@ export const Route = createFileRoute("/checkout/cancel")({
     return_to: search.return_to ?? null,
   }),
   loader: async ({ deps }) => {
+    // The returned list is serialized to the client so the browser runtime
+    // registers the same admin-managed extras during hydration.
+    let extraOrigins: string[] = [];
     try {
-      registerExtraReturnToOrigins(await listEnabledReturnToOrigins());
+      extraOrigins = registerExtraReturnToOrigins(
+        await listEnabledReturnToOrigins(),
+      );
     } catch {
       // Allowlist extras are best-effort; the built-in origins still apply.
     }
@@ -63,7 +68,7 @@ export const Route = createFileRoute("/checkout/cancel")({
     } catch {
       // Audit logging must never block the cancel page.
     }
-    return null;
+    return { extraOrigins };
   },
 
   component: CancelPage,
@@ -72,6 +77,8 @@ export const Route = createFileRoute("/checkout/cancel")({
 
 function CancelPage() {
   const { sku, pack, return_to } = Route.useSearch();
+  const { extraOrigins } = Route.useLoaderData();
+  registerExtraReturnToOrigins(extraOrigins);
   const ctx = resolveCheckoutContext({ sku, pack, return_to });
 
   // "Try again" preserves whichever identifier we came in with.
