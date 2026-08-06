@@ -753,24 +753,40 @@ const counterexampleLinksHtml = renderCounterexampleLinksHtml(newFailureGroups, 
  * Uploaded summary history: any `summary.json` files dropped into
  * `reports/return-to-coverage/summaries/` (downloaded artifacts, archived runs,
  * manual uploads) are charted as pass/fail bars plus a failure-rate line. Set
- * RETURN_TO_SUMMARY_UPLOADS to point elsewhere.
+ * RETURN_TO_SUMMARY_UPLOADS to point elsewhere. RETURN_TO_HISTORY_SUITES
+ * pre-selects which suites feed the series; the HTML chart also ships
+ * interactive per-suite checkboxes.
  */
 const UPLOADS_DIR = process.env["RETURN_TO_SUMMARY_UPLOADS"] ?? join(OUT_DIR, "summaries");
 const uploadedFiles = findSummaryFiles([UPLOADS_DIR]);
 const uploaded = collectSummaryHistory(uploadedFiles);
+const uploadedSuites = listSuiteIds(uploaded.history.points);
+const uploadedFilter = parseSuiteFilter(
+  process.env["RETURN_TO_HISTORY_SUITES"] ?? null,
+  uploadedSuites,
+);
+const uploadedPoints = applySuiteFilter(uploaded.history.points, uploadedFilter.selected);
 const uploadedChartHtml = uploaded.history.points.length
-  ? renderFailureRateChart(
-      uploaded.history.points,
-      "Uploaded summary.json history — pass/fail and failure rate",
-    )
+  ? renderSuiteFilterChart(uploaded.history.points, {
+      title: "Uploaded summary.json history — pass/fail and failure rate",
+      selected: uploadedFilter.selected,
+      idPrefix: "uploaded",
+    })
   : "";
 const uploadedMd = uploaded.history.points.length
-  ? renderSummaryHistoryMarkdown(uploaded.history, {
-      sources: uploadedFiles.length,
-      skipped: uploaded.skipped.length,
-      artifact: "return-to-coverage-report.html",
-    })
+  ? renderSummaryHistoryMarkdown(
+      { points: uploadedPoints },
+      {
+        sources: uploadedFiles.length,
+        skipped: uploaded.skipped.length,
+        artifact: "return-to-coverage-report.html",
+        selected: uploadedFilter.selected,
+        allSuites: uploadedSuites,
+        breakdown: suiteTotals(uploaded.history.points),
+      },
+    )
   : [];
+
 
 writeFileSync(
   HTML_PATH,
