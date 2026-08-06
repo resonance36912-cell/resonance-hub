@@ -8,9 +8,12 @@
  *   • return-to-coverage-report.html — human-readable report (also printed to PDF in CI)
  *   • summary.json                   — machine-readable pass/fail counts
  *
- * Exit code is non-zero when any suite fails, so CI goes red on a regression.
- * When a suite fails, its raw failure output (including fast-check
- * counterexamples) is embedded in the report and echoed to the log.
+ * Flaky detection: a failing suite is re-run exactly once. The exit code is
+ * non-zero only when the failure reproduces on that second attempt — a
+ * fail→pass sequence is reported as FLAKY (job log warning, report, PR comment,
+ * summary.json) but does not fail the job. Set RETURN_TO_COVERAGE_NO_RETRY=1 to
+ * disable retries. When a suite fails, its raw failure output (including
+ * fast-check counterexamples) is embedded in the report and echoed to the log.
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
