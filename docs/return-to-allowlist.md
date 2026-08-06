@@ -22,14 +22,14 @@ A `return_to` value is accepted **iff all** of the following hold:
 Because comparison happens on the WHATWG-normalized origin, these
 variants are equivalent to the canonical origin and are **accepted**:
 
-| Variant                          | Why it's fine                                  |
-|----------------------------------|------------------------------------------------|
-| Trailing slash / any path / query / fragment | Origin is unaffected by path/query/hash. |
-| Uppercase or mixed-case host (`RESON8.LIFE`) | WHATWG lowercases the host.       |
-| Uppercase scheme (`HTTPS://…`)   | WHATWG lowercases the scheme.                  |
-| Explicit default port (`https://…:443/`) | Default port collapses to canonical origin. |
-| Percent-encoded ASCII host chars (`reson%38.life` ≡ `reson8.life`) | Parser decodes host `%NN`. |
-| Percent-encoded path/query (`%2F`, `%3F`, `%2E%2E`, `%00`, …) | Path encoding does not change origin. |
+| Variant                                                            | Why it's fine                               |
+| ------------------------------------------------------------------ | ------------------------------------------- |
+| Trailing slash / any path / query / fragment                       | Origin is unaffected by path/query/hash.    |
+| Uppercase or mixed-case host (`RESON8.LIFE`)                       | WHATWG lowercases the host.                 |
+| Uppercase scheme (`HTTPS://…`)                                     | WHATWG lowercases the scheme.               |
+| Explicit default port (`https://…:443/`)                           | Default port collapses to canonical origin. |
+| Percent-encoded ASCII host chars (`reson%38.life` ≡ `reson8.life`) | Parser decodes host `%NN`.                  |
+| Percent-encoded path/query (`%2F`, `%3F`, `%2E%2E`, `%00`, …)      | Path encoding does not change origin.       |
 
 `sanitizeReturnTo` returns the **exact caller-provided string** when
 accepted (never a mutated/normalized form) so downstream consumers keep
@@ -160,6 +160,12 @@ Tests: `scripts/lib/security-headers.test.ts`.
   `tests/e2e/checkout-success-return-to-normalization.py` — Playwright
   E2E asserting the browser never leaves the Hub origin for rejected
   inputs.
+- `tests/e2e/checkout-return-to-admin-origin.py` — Playwright E2E for an
+  admin-added (DB-backed) origin: it seeds a row in
+  `public.return_to_origins` via `scripts/e2e/return-to-origin-fixture.ts`,
+  asserts `/checkout/success` auto-redirects to the spoke and
+  `/checkout/cancel` offers a "Back to app" link to it, includes a control
+  run with the row absent, and always removes the fixture row.
 
 **Any change to the accept/reject rules above MUST update this
 document, `safeOrigin`'s JSDoc, and the corresponding test suites in the
