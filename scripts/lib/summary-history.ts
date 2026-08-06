@@ -42,10 +42,14 @@ export function parseSummaryPoint(raw: string, sourceLabel = "upload"): HistoryP
     leaked: num(cx.leaked),
   };
   const suites = Array.isArray(data.suites)
-    ? data.suites
-        .filter(isRecord)
-        .map((s) => ({ id: str(s.id) ?? "unknown", fail: num(s.fail) }))
+    ? data.suites.filter(isRecord).map((s) => ({
+        id: str(s.id) ?? "unknown",
+        fail: num(s.fail),
+        ...(typeof s.pass === "number" ? { pass: num(s.pass) } : {}),
+        ...(typeof s.assertions === "number" ? { assertions: num(s.assertions) } : {}),
+      }))
     : [];
+
   return {
     runId: str(data.runId),
     runNumber: typeof data.runNumber === "number" ? data.runNumber : null,
