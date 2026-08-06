@@ -647,6 +647,53 @@ const history = appendHistoryPoint(priorHistory, historyPoint);
 mkdirSync(dirname(HTML_PATH), { recursive: true });
 writeFileSync(HISTORY_PATH, JSON.stringify(history, null, 2) + "\n");
 writeFileSync(HTML_PATH, renderHtml(results, meta, trend, renderHistoryHtml(history)));
+
+/**
+ * Per-suite reports: one standalone HTML + summary JSON per suite, published as
+ * its own CI artifact (`return-to-suite-<id>`) so a failing suite can be opened
+ * on its own instead of scrolling the combined report.
+ */
+const SUITES_DIR = join(OUT_DIR, "suites");
+mkdirSync(SUITES_DIR, { recursive: true });
+for (const r of results) {
+  const baselineSuite = trend.baseline?.suites?.find((s) => s.id === r.id) ?? null;
+  const input: SuiteReportInput = {
+    id: r.id,
+    title: r.title,
+    file: r.file,
+    blurb: r.blurb,
+    runnerLabel: RUNNER_LABEL[r.runner],
+    runnerReason: r.runnerReason,
+    assertionSource: r.assertionSource,
+    pass: r.pass,
+    fail: r.fail,
+    assertions: r.assertions,
+    durationMs: r.durationMs,
+    output: r.output,
+    verdict: r.verdict,
+    verdictLabel: VERDICT_LABEL[r.verdict],
+    attempts: r.attempts,
+    firstAttempt: r.firstAttempt,
+    baseline: baselineSuite
+      ? {
+          pass: baselineSuite.pass,
+          fail: baselineSuite.fail,
+          assertions: baselineSuite.assertions,
+        }
+      : null,
+  };
+  writeFileSync(join(SUITES_DIR, suiteReportFileName(r.id, "html")), renderSuiteHtml(input, meta));
+  writeFileSync(
+    join(SUITES_DIR, suiteReportFileName(r.id, "json")),
+    suiteSummaryJson(input, meta),
+  );
+}
+console.log(
+  `\nPer-suite reports: ${results
+    .map((r) => `suites/${suiteReportFileName(r.id, "html")}`)
+    .join(", ")}`,
+);
+
 writeFileSync(
   JSON_PATH,
   JSON.stringify(
