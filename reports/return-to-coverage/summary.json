@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:04:12.538Z",
+  "generatedAt": "2026-08-06T19:04:40.522Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4427
+    "assertions": 4404
   },
   "suites": [
     {
@@ -14,8 +14,8 @@
       "blurb": "fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.",
       "pass": 5,
       "fail": 0,
-      "assertions": 4001,
-      "durationMs": 673,
+      "assertions": 3978,
+      "durationMs": 771,
       "status": "pass"
     },
     {
@@ -26,7 +26,7 @@
       "pass": 43,
       "fail": 0,
       "assertions": 61,
-      "durationMs": 38,
+      "durationMs": 42,
       "status": "pass"
     },
     {
@@ -37,7 +37,7 @@
       "pass": 44,
       "fail": 0,
       "assertions": 159,
-      "durationMs": 28,
+      "durationMs": 37,
       "status": "pass"
     },
     {
@@ -48,7 +48,7 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 208,
+      "durationMs": 224,
       "status": "pass"
     },
     {
@@ -59,7 +59,7 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 201,
+      "durationMs": 242,
       "status": "pass"
     }
   ]
