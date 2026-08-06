@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T19:53:36.091Z",
+  "generatedAt": "2026-08-06T20:26:27.722Z",
   "commit": "local",
   "suite": {
     "id": "encoding",
@@ -9,7 +9,7 @@
     "pass": 44,
     "fail": 0,
     "assertions": 44,
-    "durationMs": 3306,
+    "durationMs": 3761,
     "attempts": 1,
     "verdict": "stable-pass",
     "status": "pass",

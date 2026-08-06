@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-06T19:53:36.091Z",
+  "generatedAt": "2026-08-06T20:26:27.722Z",
   "commit": "local",
   "suite": {
     "id": "fuzz",
@@ -8,8 +8,8 @@
     "runner": "bun:test",
     "pass": 5,
     "fail": 0,
-    "assertions": 3987,
-    "durationMs": 813,
+    "assertions": 3972,
+    "durationMs": 1037,
     "attempts": 1,
     "verdict": "stable-pass",
     "status": "pass",
