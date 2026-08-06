@@ -315,6 +315,13 @@ function SuccessPage() {
               Reason: {session.errorMessage}
             </p>
           )}
+
+          <div className="flex justify-center">
+            <ReturnToRejectedNotice
+              diagnostic={returnToDiagnostic}
+              surface="checkout_success"
+            />
+          </div>
         </div>
       </main>
     </div>
