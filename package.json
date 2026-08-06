@@ -24,6 +24,8 @@
     "verify:honest-copy": "bun run scripts/verify-honest-copy.ts",
     "verify:catalog-parity": "bun run scripts/verify-catalog-parity.ts",
     "verify:app-registry": "bun run scripts/verify-app-registry.ts",
+    "verify:registry-status-parity": "bun run scripts/verify-registry-status-parity.ts",
+    "test:registry-status-parity": "bun test scripts/lib/registry-status-parity.test.ts",
     "verify:security": "bun run scripts/verify-security-invariants.ts",
     "verify:all-access": "bun run scripts/verify-all-access.ts",
     "verify:pricing": "bun run scripts/verify-pricing.ts",
