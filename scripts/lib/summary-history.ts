@@ -157,6 +157,67 @@ export function pointTooltipLines(point: HistoryPoint): string[] {
 /** `pointTooltipLines` joined with newlines, for an SVG `<title>`. */
 export const pointTooltip = (point: HistoryPoint): string => pointTooltipLines(point).join("\n");
 
+/* ------------------------------------------------------------------ *
+ * Run deep links
+ *
+ * Every charted point corresponds to one CI run, so each data point links out
+ * to that run: the run-summary section (`#summary`), the job log, and the
+ * artifact list. When the repo/run id isn't known (local runs, uploads without
+ * `runId`), the link degrades to an in-page anchor so the point still jumps to
+ * that run's row in the history table.
+ * ------------------------------------------------------------------ */
+
+export interface RunLinkOptions {
+  /** e.g. `https://github.com` — defaults to `$GITHUB_SERVER_URL`. */
+  server?: string | null;
+  /** e.g. `owner/repo` — defaults to `$GITHUB_REPOSITORY`. */
+  repo?: string | null;
+}
+
+export interface RunLinks {
+  /** In-page anchor id/href for this run's row in the history table. */
+  anchorId: string;
+  anchor: string;
+  /** GitHub run page anchored at the run summary, when resolvable. */
+  summaryUrl: string | null;
+  /** GitHub job log for the run, when resolvable. */
+  logUrl: string | null;
+  /** GitHub artifact list for the run, when resolvable. */
+  artifactsUrl: string | null;
+  /** Best available href for a click on the data point. */
+  href: string;
+}
+
+const slug = (v: string): string => v.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 60);
+
+/** Resolve every deep link for one charted run. */
+export function runLinks(point: HistoryPoint, opts: RunLinkOptions = {}): RunLinks {
+  const server = (opts.server ?? process.env.GITHUB_SERVER_URL ?? "https://github.com").replace(/\/+$/, "");
+  const repo = opts.repo ?? process.env.GITHUB_REPOSITORY ?? null;
+  const anchorId = `run-${slug(point.runId ?? point.generatedAt || shortLabel(point))}`;
+  const anchor = `#${anchorId}`;
+  const base = repo && point.runId ? `${server}/${repo}/actions/runs/${point.runId}` : null;
+  return {
+    anchorId,
+    anchor,
+    summaryUrl: base ? `${base}#summary` : null,
+    logUrl: base ? `${base}/job` : null,
+    artifactsUrl: base ? `${base}#artifacts` : null,
+    href: base ? `${base}#summary` : anchor,
+  };
+}
+
+/** Tooltip lines plus the click hint, so the card explains where a click goes. */
+export function pointTooltipLinesWithLink(point: HistoryPoint, opts: RunLinkOptions = {}): string[] {
+  const links = runLinks(point, opts);
+  return [
+    ...pointTooltipLines(point),
+    `Open: ${links.summaryUrl ? "run summary + CI log (click)" : "this run's row (click)"}`,
+  ];
+}
+
+
+
 
 /* ------------------------------------------------------------------ *
  * Suite filters
