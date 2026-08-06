@@ -538,8 +538,12 @@ function renderHtml(
   <p class="sub">The Resonance Hub · redirect-safety test coverage for post-checkout <code>return_to</code> handling</p>
 
   <div class="banner">
-    <strong>${green ? "All suites passing" : `${totals.fail} failing test${totals.fail === 1 ? "" : "s"}`}</strong>
-    ${totals.pass} passed · ${totals.fail} failed · ${totals.assertions.toLocaleString("en-US")} assertions across ${results.length} suites
+    <strong>${green ? (flakyCount ? `All suites passing (${flakyCount} flaky)` : "All suites passing") : `${totals.fail} failing test${totals.fail === 1 ? "" : "s"}`}</strong>
+    ${totals.pass} passed · ${totals.fail} failed · ${totals.assertions.toLocaleString("en-US")} assertions across ${results.length} suites${
+      flakyCount
+        ? ` · ${flakyCount} suite${flakyCount === 1 ? "" : "s"} failed once and passed on retry (non-blocking)`
+        : ""
+    }
   </div>
 
   <dl>${metaRows}</dl>
