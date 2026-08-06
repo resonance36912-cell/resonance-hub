@@ -127,6 +127,95 @@ export function failureRate(point: HistoryPoint): number {
   return total === 0 ? 0 : (point.totals.fail / total) * 100;
 }
 
+/* ------------------------------------------------------------------ *
+ * Suite filters
+ *
+ * The pass/fail bars and the failure-rate line normally use each run's
+ * `totals`. When a summary records per-suite counts, the same series can be
+ * recomputed from a chosen subset of suites — so a noisy suite can be toggled
+ * out to see whether the rest of the coverage is actually regressing.
+ * ------------------------------------------------------------------ */
+
+/** Every suite id seen across the history, sorted, for building filter UIs. */
+export function listSuiteIds(points: readonly HistoryPoint[]): string[] {
+  const ids = new Set<string>();
+  for (const p of points) for (const s of p.suites) ids.add(s.id);
+  return [...ids].sort();
+}
+
+/**
+ * True when at least one run records per-suite `pass` counts. Without them a
+ * filtered pass series would be a guess, so callers fall back to run totals and
+ * say so instead of charting a made-up number.
+ */
+export function hasSuiteBreakdown(points: readonly HistoryPoint[]): boolean {
+  return points.some((p) => p.suites.some((s) => typeof s.pass === "number"));
+}
+
+/** Per-suite totals across the whole history, for the filter legend. */
+export function suiteTotals(
+  points: readonly HistoryPoint[],
+): { id: string; pass: number; fail: number; runs: number }[] {
+  const acc = new Map<string, { id: string; pass: number; fail: number; runs: number }>();
+  for (const p of points) {
+    for (const s of p.suites) {
+      const row = acc.get(s.id) ?? { id: s.id, pass: 0, fail: 0, runs: 0 };
+      row.pass += s.pass ?? 0;
+      row.fail += s.fail;
+      row.runs += 1;
+      acc.set(s.id, row);
+    }
+  }
+  return [...acc.values()].sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/**
+ * Recompute each run's totals from the selected suites only. `null`/empty
+ * selection (or a history without per-suite pass counts) leaves the points
+ * untouched. Runs that contain none of the selected suites collapse to zero so
+ * the timeline keeps its shape rather than silently dropping runs.
+ */
+export function applySuiteFilter(
+  points: readonly HistoryPoint[],
+  selected: readonly string[] | null,
+): HistoryPoint[] {
+  const source = [...points];
+  if (!selected || selected.length === 0) return source;
+  const wanted = new Set(selected);
+  const all = listSuiteIds(points);
+  if (all.length > 0 && all.every((id) => wanted.has(id))) return source;
+  if (!hasSuiteBreakdown(points)) return source;
+  return source.map((p) => {
+    const kept = p.suites.filter((s) => wanted.has(s.id));
+    const pass = kept.reduce((n, s) => n + (s.pass ?? 0), 0);
+    const fail = kept.reduce((n, s) => n + s.fail, 0);
+    const assertions = kept.reduce((n, s) => n + (s.assertions ?? 0), 0);
+    return { ...p, totals: { pass, fail, assertions }, suites: kept };
+  });
+}
+
+/**
+ * Normalize a comma/space separated suite filter (CLI flag or env var) into
+ * known suite ids. Unknown ids are returned separately so the caller can warn.
+ */
+export function parseSuiteFilter(
+  raw: string | null | undefined,
+  known: readonly string[],
+): { selected: string[] | null; unknown: string[] } {
+  if (!raw) return { selected: null, unknown: [] };
+  const wanted = raw
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (wanted.length === 0 || wanted.includes("all")) return { selected: null, unknown: [] };
+  const knownSet = new Set(known);
+  return {
+    selected: wanted.filter((id) => knownSet.has(id)),
+    unknown: wanted.filter((id) => !knownSet.has(id)),
+  };
+}
+
+
 function escapeXml(v: string): string {
   return v.replace(/[<>&"]/g, (c) =>
     c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;",
