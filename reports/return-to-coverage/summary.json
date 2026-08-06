@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:05:27.236Z",
+  "generatedAt": "2026-08-06T19:10:04.575Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4415
+    "assertions": 4384
   },
   "suites": [
     {
@@ -14,8 +14,8 @@
       "blurb": "fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.",
       "pass": 5,
       "fail": 0,
-      "assertions": 3989,
-      "durationMs": 734,
+      "assertions": 3958,
+      "durationMs": 802,
       "status": "pass"
     },
     {
@@ -26,7 +26,7 @@
       "pass": 43,
       "fail": 0,
       "assertions": 61,
-      "durationMs": 41,
+      "durationMs": 43,
       "status": "pass"
     },
     {
@@ -37,7 +37,7 @@
       "pass": 44,
       "fail": 0,
       "assertions": 159,
-      "durationMs": 34,
+      "durationMs": 44,
       "status": "pass"
     },
     {
@@ -48,7 +48,7 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 192,
+      "durationMs": 260,
       "status": "pass"
     },
     {
@@ -59,8 +59,38 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 204,
+      "durationMs": 247,
       "status": "pass"
     }
-  ]
+  ],
+  "trend": {
+    "baselineCommit": null,
+    "baselineGeneratedAt": null,
+    "baselineTotals": null,
+    "delta": null,
+    "newFailures": [],
+    "removedSuites": [],
+    "suites": [
+      {
+        "id": "fuzz",
+        "state": "new-suite"
+      },
+      {
+        "id": "normalization",
+        "state": "new-suite"
+      },
+      {
+        "id": "encoding",
+        "state": "new-suite"
+      },
+      {
+        "id": "audit",
+        "state": "new-suite"
+      },
+      {
+        "id": "targets",
+        "state": "new-suite"
+      }
+    ]
+  }
 }

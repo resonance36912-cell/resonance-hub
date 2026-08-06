@@ -491,7 +491,9 @@ if (!trend.baseline) {
       `${signed(trend.delta.fail)}`,
       12,
     )}${pad(signed(trend.delta.assertions), 11)}${
-      trend.newFailures.length ? `${trend.newFailures.length} SUITE(S) NEWLY FAILING` : "no new failures"
+      trend.newFailures.length
+        ? `${trend.newFailures.length} SUITE(S) NEWLY FAILING`
+        : "no new failures"
     }`,
   );
   if (trend.removed.length) {
