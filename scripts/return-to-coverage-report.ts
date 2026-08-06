@@ -14,6 +14,13 @@
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import {
+  RUNNER_LABEL,
+  detectRunner,
+  parseRunnerOutput,
+  runnerCommand,
+  type TestRunner,
+} from "./lib/test-runner-detect";
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
   {
@@ -57,6 +64,12 @@ type SuiteResult = {
   title: string;
   file: string;
   blurb: string;
+  /** Framework detected from the suite's imports. */
+  runner: TestRunner;
+  /** Why that runner was chosen. */
+  runnerReason: string;
+  /** Whether `assertions` are real expect() calls or a test-count fallback. */
+  assertionSource: "expect-calls" | "tests" | "none";
   pass: number;
   fail: number;
   assertions: number;
@@ -245,14 +258,18 @@ function renderTrendHtml(trend: Trend): string {
   </section>`;
 }
 
-function num(re: RegExp, text: string): number {
-  const m = text.match(re);
-  return m ? Number(m[1]) : 0;
-}
-
+/**
+ * Execute one suite with the framework it is actually written against.
+ *
+ * The runner is detected from the file's imports (`bun:test` vs `vitest`), the
+ * matching command is spawned, and both runners' summaries are normalized into
+ * the same pass/fail/assertion shape so the report stays consistent.
+ */
 async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
   const started = Date.now();
-  const proc = Bun.spawn(["bun", "test", s.file], {
+  const { runner, reason } = detectRunner(join(process.cwd(), s.file));
+  const cmd = runnerCommand(runner, s.file);
+  const proc = Bun.spawn(cmd, {
     stdout: "pipe",
     stderr: "pipe",
     env: process.env,
@@ -261,14 +278,20 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
     new Response(proc.stdout).text(),
     new Response(proc.stderr).text(),
   ]);
-  await proc.exited;
-  // Bun's test reporter writes its summary to stderr.
-  const output = `${out}${err}`.trim();
+  const exitCode = await proc.exited;
+  // Both reporters split output across stdout/stderr; parse the combination.
+  const output = `$ ${cmd.join(" ")}\n\n${`${out}${err}`.trim()}`;
+  const parsed = parseRunnerOutput(runner, output);
+  // A crashed/unparseable run must never read as "0 failures".
+  const fail = parsed.unparseable && exitCode !== 0 ? Math.max(parsed.fail, 1) : parsed.fail;
   return {
     ...s,
-    pass: num(/(\d+)\s+pass/, output),
-    fail: num(/(\d+)\s+fail/, output),
-    assertions: num(/(\d+)\s+expect\(\) calls/, output),
+    runner,
+    runnerReason: reason,
+    assertionSource: parsed.assertionSource,
+    pass: parsed.pass,
+    fail,
+    assertions: parsed.assertions,
     durationMs: Date.now() - started,
     output,
   };
@@ -293,20 +316,27 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
     .map(
       (r) => `<tr>
       <td><strong>${esc(r.title)}</strong><div class="blurb">${esc(r.blurb)}</div><code>${esc(r.file)}</code></td>
+      <td><span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span><div class="blurb">${esc(r.runnerReason)}</div></td>
       <td class="num">${r.pass}</td>
       <td class="num ${r.fail > 0 ? "bad" : ""}">${r.fail}</td>
-      <td class="num">${r.assertions.toLocaleString("en-US")}</td>
+      <td class="num">${r.assertions.toLocaleString("en-US")}${
+        r.assertionSource === "expect-calls" ? "" : "<sup>*</sup>"
+      }</td>
       <td class="num">${(r.durationMs / 1000).toFixed(2)}s</td>
       <td><span class="pill ${r.fail === 0 ? "ok" : "bad"}">${r.fail === 0 ? "PASS" : "FAIL"}</span></td>
     </tr>`,
     )
     .join("\n");
 
+  const assertionNote = results.some((r) => r.assertionSource !== "expect-calls")
+    ? `<p class="sub" style="margin-top:8px"><sup>*</sup> Suite ran under a runner that does not report assertion counts (vitest); its test count is used as a lower bound.</p>`
+    : "";
+
   const failures = results
     .filter((r) => r.fail > 0)
     .map(
       (r) => `<section class="failure">
-      <h3>${esc(r.title)} — ${r.fail} failing</h3>
+      <h3>${esc(r.title)} — ${r.fail} failing <span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span></h3>
       <p class="blurb">Raw runner output, including any fast-check counterexample:</p>
       <pre>${esc(r.output)}</pre>
     </section>`,
@@ -369,18 +399,21 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
   <dl>${metaRows}</dl>
 
   <table>
-    <thead><tr><th>Suite</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Time</th><th>Status</th></tr></thead>
+    <thead><tr><th>Suite</th><th>Runner</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Time</th><th>Status</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot><tr>
       <td><strong>Total</strong></td>
+      <td></td>
       <td class="num"><strong>${totals.pass}</strong></td>
       <td class="num ${totals.fail > 0 ? "bad" : ""}"><strong>${totals.fail}</strong></td>
       <td class="num"><strong>${totals.assertions.toLocaleString("en-US")}</strong></td>
       <td class="num"></td><td></td>
     </tr></tfoot>
   </table>
+  ${assertionNote}
 
   ${green ? `<p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>` : failures}
+
 
   ${renderTrendHtml(trend)}
 
@@ -405,7 +438,14 @@ const meta: Record<string, string> = {
   Commit: process.env.GITHUB_SHA ?? "local",
   Ref: process.env.GITHUB_REF ?? "local",
   Workflow: process.env.GITHUB_WORKFLOW ?? "local run",
-  Runner: `bun ${Bun.version}`,
+  Host: `bun ${Bun.version}`,
+  Runners: Array.from(
+    new Set(
+      results.map(
+        (r) => `${RUNNER_LABEL[r.runner]} (${results.filter((x) => x.runner === r.runner).length})`,
+      ),
+    ),
+  ).join(" · "),
   Suites: String(results.length),
 };
 
@@ -447,21 +487,36 @@ const lines: string[] = [];
 lines.push("return_to fuzz/encoding coverage");
 lines.push("");
 const pad = (v: string, n: number) => v.padEnd(n);
-lines.push(`${pad("SUITE", 38)}${pad("PASS", 7)}${pad("FAIL", 7)}${pad("ASSERTIONS", 12)}STATUS`);
+lines.push(
+  `${pad("SUITE", 38)}${pad("RUNNER", 10)}${pad("PASS", 7)}${pad("FAIL", 7)}${pad("ASSERTIONS", 12)}STATUS`,
+);
 for (const r of results) {
   lines.push(
-    `${pad(r.title, 38)}${pad(String(r.pass), 7)}${pad(String(r.fail), 7)}${pad(
-      r.assertions.toLocaleString("en-US"),
+    `${pad(r.title, 38)}${pad(RUNNER_LABEL[r.runner], 10)}${pad(String(r.pass), 7)}${pad(
+      String(r.fail),
+      7,
+    )}${pad(
+      `${r.assertions.toLocaleString("en-US")}${r.assertionSource === "expect-calls" ? "" : "*"}`,
       12,
     )}${r.fail === 0 ? "PASS" : "FAIL"}`,
   );
 }
 lines.push(
-  `${pad("TOTAL", 38)}${pad(String(totals.pass), 7)}${pad(String(totals.fail), 7)}${pad(
+  `${pad("TOTAL", 38)}${pad("", 10)}${pad(String(totals.pass), 7)}${pad(String(totals.fail), 7)}${pad(
     totals.assertions.toLocaleString("en-US"),
     12,
   )}${totals.fail === 0 ? "PASS" : "FAIL"}`,
 );
+if (results.some((r) => r.assertionSource !== "expect-calls")) {
+  lines.push(
+    "* assertion count is a lower bound — that suite's runner (vitest) does not report expect() calls.",
+  );
+}
+for (const r of results.filter((x) => x.assertionSource === "none" && x.fail > 0)) {
+  lines.push(
+    `::error::Could not parse ${RUNNER_LABEL[r.runner]} output for "${r.title}" — the suite likely crashed before reporting.`,
+  );
+}
 // ---- Coverage trend (vs last successful run) -------------------------------
 lines.push("");
 if (!trend.baseline) {

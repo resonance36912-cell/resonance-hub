@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:11:06.836Z",
+  "generatedAt": "2026-08-06T19:21:59.280Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4385
+    "assertions": 4286
   },
   "suites": [
     {
@@ -12,10 +12,13 @@
       "title": "Property-based fuzzing",
       "file": "scripts/lib/return-to-allowlist-fuzz.test.ts",
       "blurb": "fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.",
+      "runner": "bun",
+      "runnerReason": "imports \"bun:test\"",
+      "assertionSource": "expect-calls",
       "pass": 5,
       "fail": 0,
-      "assertions": 3959,
-      "durationMs": 736,
+      "assertions": 3975,
+      "durationMs": 829,
       "status": "pass"
     },
     {
@@ -23,6 +26,9 @@
       "title": "Normalization edge cases",
       "file": "scripts/lib/return-to-allowlist-normalization.test.ts",
       "blurb": "trailing slashes, uppercase/mixed-case hosts, explicit default ports, trailing-dot hosts, suffix grafts.",
+      "runner": "bun",
+      "runnerReason": "imports \"bun:test\"",
+      "assertionSource": "expect-calls",
       "pass": 43,
       "fail": 0,
       "assertions": 61,
@@ -34,10 +40,13 @@
       "title": "Percent-encoding edge cases",
       "file": "scripts/lib/return-to-allowlist-encoding.test.ts",
       "blurb": "percent-encoded hosts, userinfo smuggling, encoded path/query, homoglyph hosts.",
+      "runner": "vitest",
+      "runnerReason": "imports \"vitest\"",
+      "assertionSource": "tests",
       "pass": 44,
       "fail": 0,
-      "assertions": 159,
-      "durationMs": 33,
+      "assertions": 44,
+      "durationMs": 3264,
       "status": "pass"
     },
     {
@@ -45,10 +54,13 @@
       "title": "Redirect audit records",
       "file": "scripts/lib/return-to-audit.test.ts",
       "blurb": "audit rows keep origin-only candidates and path-only targets — never full URLs, query strings or fragments.",
+      "runner": "bun",
+      "runnerReason": "imports \"bun:test\"",
+      "assertionSource": "expect-calls",
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 219,
+      "durationMs": 293,
       "status": "pass"
     },
     {
@@ -56,10 +68,13 @@
       "title": "Checkout success target resolution",
       "file": "scripts/lib/checkout-success-return-to-allowlist.test.ts",
       "blurb": "allowlisted spoke origins drive the primary CTA / auto-redirect; anything else falls back to a safe Hub target.",
+      "runner": "bun",
+      "runnerReason": "imports \"bun:test\"",
+      "assertionSource": "expect-calls",
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 242,
+      "durationMs": 253,
       "status": "pass"
     }
   ],
