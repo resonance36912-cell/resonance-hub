@@ -461,8 +461,8 @@ export function renderTooltipScript(hostId: string): string {
       tip.innerHTML = lines.map(function (l) {
         var i = l.indexOf(":");
         var k = i < 0 ? l : l.slice(0, i);
-        var v = i < 0 ? "" : l.slice(i + 1).trim();
         return '<div><span class="pt-k">' + k + '</span> <span class="pt-v"></span></div>';
+
       }).join("");
       var vals = tip.querySelectorAll(".pt-v");
       lines.forEach(function (l, idx) {
