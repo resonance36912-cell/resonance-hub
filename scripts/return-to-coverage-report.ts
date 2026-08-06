@@ -643,9 +643,18 @@ writeFileSync(
       generatedAt: meta.Generated,
       commit: meta.Commit,
       totals,
+      flaky: {
+        retriesEnabled: retriesEnabled(process.env),
+        suites: flakySuites.map((r) => ({
+          id: r.id,
+          title: r.title,
+          firstAttemptFail: r.firstAttempt?.fail ?? 0,
+        })),
+      },
       suites: results.map(({ output, ...r }) => ({
         ...r,
-        status: r.fail === 0 ? "pass" : "fail",
+        status:
+          r.verdict === "stable-pass" ? "pass" : r.verdict === "flaky" ? "flaky" : "fail",
       })),
       trend: {
         baselineCommit: trend.baseline?.commit ?? null,
