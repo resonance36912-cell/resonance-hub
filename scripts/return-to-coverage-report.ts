@@ -462,6 +462,46 @@ lines.push(
     12,
   )}${totals.fail === 0 ? "PASS" : "FAIL"}`,
 );
+// ---- Coverage trend (vs last successful run) -------------------------------
+lines.push("");
+if (!trend.baseline) {
+  lines.push(
+    "TREND: no baseline (last successful run's summary.json unavailable) — this run becomes the baseline.",
+  );
+} else {
+  lines.push(
+    `TREND vs last successful run (${(trend.baseline.commit ?? "unknown").slice(0, 12)} @ ${
+      trend.baseline.generatedAt ?? "unknown"
+    })`,
+  );
+  lines.push("");
+  lines.push(`${pad("SUITE", 38)}${pad("PASS", 14)}${pad("FAIL", 12)}${pad("Δ ASSERT", 11)}TREND`);
+  for (const r of trend.rows) {
+    lines.push(
+      `${pad(r.title, 38)}${pad(`${r.basePass ?? "-"} -> ${r.pass}`, 14)}${pad(
+        `${r.baseFail ?? "-"} -> ${r.fail}`,
+        12,
+      )}${pad(r.baseAssertions === null ? "-" : signed(r.assertions - r.baseAssertions), 11)}${
+        r.state === "new-failure" ? "NEW FAILURE" : TREND_LABEL[r.state]
+      }`,
+    );
+  }
+  lines.push(
+    `${pad("TOTAL", 38)}${pad(`${signed(trend.delta.pass)}`, 14)}${pad(
+      `${signed(trend.delta.fail)}`,
+      12,
+    )}${pad(signed(trend.delta.assertions), 11)}${
+      trend.newFailures.length ? `${trend.newFailures.length} SUITE(S) NEWLY FAILING` : "no new failures"
+    }`,
+  );
+  if (trend.removed.length) {
+    lines.push(`WARNING: suites missing vs baseline: ${trend.removed.map((s) => s.id).join(", ")}`);
+  }
+  for (const r of trend.newFailures) {
+    lines.push(`::error::New return_to failure in "${r.title}" — ${r.fail} failing test(s).`);
+  }
+}
+
 console.log(lines.join("\n"));
 console.log(`\nHTML report: ${HTML_PATH}`);
 console.log(`Summary JSON: ${JSON_PATH}`);
@@ -474,6 +514,30 @@ for (const r of results.filter((x) => x.fail > 0)) {
 // GitHub Actions job summary (markdown table on the run page).
 const summaryFile = process.env.GITHUB_STEP_SUMMARY;
 if (summaryFile) {
+  const trendMd = !trend.baseline
+    ? ["#### Coverage trend", "", "_No baseline yet — this run becomes the baseline._"]
+    : [
+        `#### Coverage trend vs last successful run (\`${(trend.baseline.commit ?? "unknown").slice(0, 12)}\`)`,
+        "",
+        ...(trend.newFailures.length
+          ? [
+              `> ⚠️ **New failures:** ${trend.newFailures.map((r) => `${r.title} (${r.fail})`).join(", ")}`,
+              "",
+            ]
+          : ["No new failures versus the last successful run.", ""]),
+        "| Suite | Pass (was → now) | Fail (was → now) | Δ assertions | Trend |",
+        "| --- | ---: | ---: | ---: | --- |",
+        ...trend.rows.map(
+          (r) =>
+            `| ${r.title} | ${r.basePass ?? "—"} → ${r.pass} | ${r.baseFail ?? "—"} → ${r.fail} | ${
+              r.baseAssertions === null ? "—" : signed(r.assertions - r.baseAssertions)
+            } | ${r.state === "new-failure" ? "🔴 NEW FAILURE" : TREND_LABEL[r.state]} |`,
+        ),
+        `| **Total** | **${signed(trend.delta.pass)}** | **${signed(trend.delta.fail)}** | **${signed(trend.delta.assertions)}** | ${trend.newFailures.length ? "🔴 regression" : "✅ no new failures"} |`,
+        ...(trend.removed.length
+          ? ["", `> ⚠️ Suites missing vs baseline: ${trend.removed.map((s) => s.id).join(", ")}`]
+          : []),
+      ];
   const md = [
     `### return_to fuzz & encoding coverage — ${totals.fail === 0 ? "✅ all passing" : `❌ ${totals.fail} failing`}`,
     "",
@@ -484,6 +548,8 @@ if (summaryFile) {
         `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${r.fail === 0 ? "PASS" : "FAIL"} |`,
     ),
     `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${totals.fail === 0 ? "PASS" : "FAIL"} |`,
+    "",
+    ...trendMd,
     "",
     "Artifacts: `return-to-coverage-report.html` / `.pdf` on this run.",
   ].join("\n");
