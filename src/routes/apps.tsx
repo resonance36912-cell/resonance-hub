@@ -11,6 +11,11 @@ import {
   type AppRegistryEntry,
   type EcosystemEntry,
 } from "@/lib/app-registry";
+import {
+  APP_STATUS_LEGEND,
+  APP_STATUS_MEANING,
+  statusMeaning,
+} from "@/lib/app-status-meaning";
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
@@ -79,12 +84,8 @@ const STATUS_STYLES: Record<AppRegistryEntry["status"], string> = {
   coming_soon: "bg-muted text-muted-foreground border-border",
 };
 
-const STATUS_LABELS: Record<AppRegistryEntry["status"], string> = {
-  live: "Live",
-  beta: "Beta",
-  pilot: "Pilot",
-  coming_soon: "Coming soon",
-};
+// Badge text and access wording live in @/lib/app-status-meaning so /apps and
+// /apps/$appKey never explain a status differently.
 
 export const Route = createFileRoute("/apps")({
   validateSearch: zodValidator(searchSchema),
@@ -204,6 +205,37 @@ function AppsCatalogPage() {
         ) : null}
       </div>
 
+      <section
+        aria-labelledby="status-legend-heading"
+        className="mt-6 rounded-xl border border-border bg-muted/40 p-4"
+      >
+        <h2 id="status-legend-heading" className="text-sm font-semibold">
+          What the status badges mean
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A Beta or Pilot badge describes how mature the app is — not whether you can use it.
+          Everything except “Coming soon” is deployed and available right now.
+        </p>
+        <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {APP_STATUS_LEGEND.map((status) => {
+            const meaning = APP_STATUS_MEANING[status];
+            return (
+              <li key={status} className="flex gap-2 text-sm">
+                <span
+                  className={`mt-0.5 h-fit shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[status]}`}
+                >
+                  {meaning.label}
+                </span>
+                <span className="min-w-0">
+                  <span className="font-medium">{meaning.access}</span>
+                  <span className="block text-muted-foreground">{meaning.explanation}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
       <Section
         title="Paid apps"
         subtitle="Included in the Resonance All-Access pass, or available per-app."
@@ -279,6 +311,7 @@ function Section({
 
 function TileCard({ tile }: { tile: Tile }) {
   const external = tile.external;
+  const meaning = statusMeaning(tile.status);
   const shots = tile.screenshotUrls ?? [];
   return (
     <a
@@ -321,11 +354,16 @@ function TileCard({ tile }: { tile: Tile }) {
             </h3>
           </div>
           <span
+            title={meaning.explanation}
             className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[tile.status]}`}
           >
-            {tile.badge ?? STATUS_LABELS[tile.status]}
+            {tile.badge ?? meaning.label}
           </span>
         </div>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">
+          {meaning.accessible ? "✓ " : "· "}
+          {meaning.access}
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">{tile.tagline}</p>
         {tile.useCase ? (
           <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
