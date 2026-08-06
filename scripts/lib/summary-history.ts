@@ -652,7 +652,11 @@ export const SUITE_FILTER_CSS = `
   .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
   .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
   .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  .run-links { display: flex; flex-wrap: wrap; gap: 4px 14px; list-style: none; padding: 0; margin: 6px 0 0; font-size: 11px; color: #64748b; }
+  .run-links a { color: #1d4ed8; text-decoration: none; }
+  .run-links a:hover { text-decoration: underline; }
 ${CHART_TOOLTIP_CSS}`;
+
 
 
 
