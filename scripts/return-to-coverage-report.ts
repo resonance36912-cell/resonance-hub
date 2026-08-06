@@ -741,10 +741,40 @@ if (newFailureGroups.length) {
 }
 const counterexampleLinksHtml = renderCounterexampleLinksHtml(newFailureGroups, LINK_OPTS);
 
+/*
+ * Uploaded summary history: any `summary.json` files dropped into
+ * `reports/return-to-coverage/summaries/` (downloaded artifacts, archived runs,
+ * manual uploads) are charted as pass/fail bars plus a failure-rate line. Set
+ * RETURN_TO_SUMMARY_UPLOADS to point elsewhere.
+ */
+const UPLOADS_DIR = process.env["RETURN_TO_SUMMARY_UPLOADS"] ?? join(OUT_DIR, "summaries");
+const uploadedFiles = findSummaryFiles([UPLOADS_DIR]);
+const uploaded = collectSummaryHistory(uploadedFiles);
+const uploadedChartHtml = uploaded.history.points.length
+  ? renderFailureRateChart(
+      uploaded.history.points,
+      "Uploaded summary.json history — pass/fail and failure rate",
+    )
+  : "";
+const uploadedMd = uploaded.history.points.length
+  ? renderSummaryHistoryMarkdown(uploaded.history, {
+      sources: uploadedFiles.length,
+      skipped: uploaded.skipped.length,
+      artifact: "return-to-coverage-report.html",
+    })
+  : [];
+
 writeFileSync(
   HTML_PATH,
-  renderHtml(results, meta, trend, renderHistoryHtml(history), counterexampleLinksHtml),
+  renderHtml(
+    results,
+    meta,
+    trend,
+    renderHistoryHtml(history) + uploadedChartHtml,
+    counterexampleLinksHtml,
+  ),
 );
+
 
 /**
  * Per-suite reports: one standalone HTML + summary JSON per suite, published as
