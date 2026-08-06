@@ -1048,6 +1048,8 @@ const summaryMd = [
   ...trendMd,
   "",
   ...renderHistoryMarkdown(history),
+  ...(uploadedMd.length ? ["", ...uploadedMd] : []),
+
 ].join("\n");
 
 // GitHub Actions job summary (markdown table on the run page).
