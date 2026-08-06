@@ -1,10 +1,14 @@
 {
-  "generatedAt": "2026-08-06T19:42:17.705Z",
+  "generatedAt": "2026-08-06T19:48:29.134Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4302
+    "assertions": 4306
+  },
+  "flaky": {
+    "retriesEnabled": true,
+    "suites": []
   },
   "suites": [
     {
@@ -17,8 +21,11 @@
       "assertionSource": "expect-calls",
       "pass": 5,
       "fail": 0,
-      "assertions": 3991,
-      "durationMs": 903,
+      "assertions": 3995,
+      "durationMs": 789,
+      "verdict": "stable-pass",
+      "attempts": 1,
+      "firstAttempt": null,
       "status": "pass"
     },
     {
@@ -32,7 +39,10 @@
       "pass": 43,
       "fail": 0,
       "assertions": 61,
-      "durationMs": 54,
+      "durationMs": 43,
+      "verdict": "stable-pass",
+      "attempts": 1,
+      "firstAttempt": null,
       "status": "pass"
     },
     {
@@ -46,7 +56,10 @@
       "pass": 44,
       "fail": 0,
       "assertions": 44,
-      "durationMs": 3656,
+      "durationMs": 3166,
+      "verdict": "stable-pass",
+      "attempts": 1,
+      "firstAttempt": null,
       "status": "pass"
     },
     {
@@ -60,7 +73,10 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 240,
+      "durationMs": 233,
+      "verdict": "stable-pass",
+      "attempts": 1,
+      "firstAttempt": null,
       "status": "pass"
     },
     {
@@ -74,7 +90,10 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 202,
+      "durationMs": 234,
+      "verdict": "stable-pass",
+      "attempts": 1,
+      "firstAttempt": null,
       "status": "pass"
     }
   ],
@@ -114,7 +133,7 @@
     "leaked": 0
   },
   "history": {
-    "runs": 7,
-    "redRuns": 2
+    "runs": 1,
+    "redRuns": 0
   }
 }
