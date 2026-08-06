@@ -42,11 +42,11 @@
 
   <div class="banner ok">
     <strong>Suite passing</strong>
-    23 passed · 0 failed · 136 assertions · 0.24s · 1 attempt
+    23 passed · 0 failed · 136 assertions · 0.23s · 1 attempt
   </div>
 
   <p class="blurb">audit rows keep origin-only candidates and path-only targets — never full URLs, query strings or fragments.</p>
-  <dl><div><dt>Suite</dt><dd>Redirect audit records</dd></div><div><dt>File</dt><dd>scripts/lib/return-to-audit.test.ts</dd></div><div><dt>Generated</dt><dd>2026-08-06T19:53:36.091Z</dd></div><div><dt>Commit</dt><dd>local</dd></div><div><dt>Ref</dt><dd>local</dd></div><div><dt>Workflow</dt><dd>local run</dd></div><div><dt>Host</dt><dd>bun 1.3.3</dd></div><div><dt>Runners</dt><dd>bun:test (4) · vitest (1)</dd></div><div><dt>Suites</dt><dd>5</dd></div><div><dt>Baseline</dt><dd>none (first recorded run)</dd></div></dl>
+  <dl><div><dt>Suite</dt><dd>Redirect audit records</dd></div><div><dt>File</dt><dd>scripts/lib/return-to-audit.test.ts</dd></div><div><dt>Generated</dt><dd>2026-08-06T20:26:27.722Z</dd></div><div><dt>Commit</dt><dd>local</dd></div><div><dt>Ref</dt><dd>local</dd></div><div><dt>Workflow</dt><dd>local run</dd></div><div><dt>Host</dt><dd>bun 1.3.3</dd></div><div><dt>Runners</dt><dd>bun:test (4) · vitest (1)</dd></div><div><dt>Suites</dt><dd>5</dd></div><div><dt>Baseline</dt><dd>none (first recorded run)</dd></div></dl>
   <p class="blurb">Runner: <span class="pill muted">bun:test</span> imports "bun:test"</p>
   <p><span class="pill ok">PASS</span></p>
 
@@ -66,34 +66,34 @@
 bun test v1.3.3 (274e01c7)
 
 scripts/lib/return-to-audit.test.ts:
-(pass) buildReturnToAuditRecord — verdicts &gt; records an allow verdict with origin only for an allowlisted candidate [0.55ms]
-(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for https://evil.example/phish?token=abc#x [0.08ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; records an allow verdict with origin only for an allowlisted candidate [0.85ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for https://evil.example/phish?token=abc#x [0.11ms]
 (pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for https://reson8.life.evil.example/steal?jwt=eyJ [0.03ms]
 (pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for https://user:pass@reson8.life/account [0.02ms]
-(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for http://reson8.life/account [0.01ms]
-(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for javascript:alert(1) [0.01ms]
-(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for //reson8.life/account [0.08ms]
-(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for /account [0.01ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for http://reson8.life/account [0.02ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for javascript:alert(1) [0.02ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for //reson8.life/account [0.10ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for /account [0.02ms]
 (pass) buildReturnToAuditRecord — verdicts &gt; records a deny verdict for not a url [0.01ms]
-(pass) buildReturnToAuditRecord — verdicts &gt; distinguishes 'no return_to supplied' from a denial [0.04ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://reson8.life/account?token=SUPERSECRET#frag [0.10ms]
+(pass) buildReturnToAuditRecord — verdicts &gt; distinguishes 'no return_to supplied' from a denial [0.06ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://reson8.life/account?token=SUPERSECRET#frag [0.31ms]
 (pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://www.resonanceonline.life/doc/abc123?email=a%40b.com&amp;token=zzz#s [0.03ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://evil.example/phish?token=abc#x [0.02ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://evil.example/phish?token=abc#x [0.03ms]
 (pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://reson8.life.evil.example/steal?jwt=eyJ [0.02ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://user:pass@reson8.life/account [0.03ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of http://reson8.life/account [0.02ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of javascript:alert(1) [0.02ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of https://user:pass@reson8.life/account [0.04ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of http://reson8.life/account [0.03ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of javascript:alert(1) [0.03ms]
 (pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of //reson8.life/account [0.02ms]
 (pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of /account [0.02ms]
 (pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; never stores path/query/fragment of not a url [0.02ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; keeps the canonical target as origin + path with no query or fragment [0.05ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; keeps the canonical target as origin + path with no query or fragment [0.08ms]
 (pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; records internal pricing fallbacks as a path + hash [0.07ms]
-(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; target for a denied candidate never derives from the attacker input [0.13ms]
+(pass) buildReturnToAuditRecord — no sensitive URL data is retained &gt; target for a denied candidate never derives from the attacker input [0.16ms]
 
  23 pass
  0 fail
  136 expect() calls
-Ran 23 tests across 1 file. [227.00ms]</pre>
+Ran 23 tests across 1 file. [220.00ms]</pre>
 
   <footer>Contract: docs/return-to-allowlist.md · Generated by scripts/return-to-coverage-report.ts · Combined report: return-to-coverage-report.html</footer>
 </body></html>

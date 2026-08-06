@@ -29,8 +29,13 @@ export type HistoryPoint = {
   generatedAt: string;
   totals: { pass: number; fail: number; assertions: number };
   counterexamples: CounterexampleStats;
-  /** Per-suite failure counts, for locating which suite regressed. */
-  suites: { id: string; fail: number }[];
+  /**
+   * Per-suite counts, for locating which suite regressed and for filtering the
+   * historical graph down to a subset of suites. `pass`/`assertions` are
+   * optional because older summaries only recorded failures.
+   */
+  suites: { id: string; fail: number; pass?: number; assertions?: number }[];
+
 };
 
 export type History = { points: HistoryPoint[] };

@@ -42,10 +42,14 @@ export function parseSummaryPoint(raw: string, sourceLabel = "upload"): HistoryP
     leaked: num(cx.leaked),
   };
   const suites = Array.isArray(data.suites)
-    ? data.suites
-        .filter(isRecord)
-        .map((s) => ({ id: str(s.id) ?? "unknown", fail: num(s.fail) }))
+    ? data.suites.filter(isRecord).map((s) => ({
+        id: str(s.id) ?? "unknown",
+        fail: num(s.fail),
+        ...(typeof s.pass === "number" ? { pass: num(s.pass) } : {}),
+        ...(typeof s.assertions === "number" ? { assertions: num(s.assertions) } : {}),
+      }))
     : [];
+
   return {
     runId: str(data.runId),
     runNumber: typeof data.runNumber === "number" ? data.runNumber : null,
@@ -122,6 +126,95 @@ export function failureRate(point: HistoryPoint): number {
   const total = point.totals.pass + point.totals.fail;
   return total === 0 ? 0 : (point.totals.fail / total) * 100;
 }
+
+/* ------------------------------------------------------------------ *
+ * Suite filters
+ *
+ * The pass/fail bars and the failure-rate line normally use each run's
+ * `totals`. When a summary records per-suite counts, the same series can be
+ * recomputed from a chosen subset of suites — so a noisy suite can be toggled
+ * out to see whether the rest of the coverage is actually regressing.
+ * ------------------------------------------------------------------ */
+
+/** Every suite id seen across the history, sorted, for building filter UIs. */
+export function listSuiteIds(points: readonly HistoryPoint[]): string[] {
+  const ids = new Set<string>();
+  for (const p of points) for (const s of p.suites) ids.add(s.id);
+  return [...ids].sort();
+}
+
+/**
+ * True when at least one run records per-suite `pass` counts. Without them a
+ * filtered pass series would be a guess, so callers fall back to run totals and
+ * say so instead of charting a made-up number.
+ */
+export function hasSuiteBreakdown(points: readonly HistoryPoint[]): boolean {
+  return points.some((p) => p.suites.some((s) => typeof s.pass === "number"));
+}
+
+/** Per-suite totals across the whole history, for the filter legend. */
+export function suiteTotals(
+  points: readonly HistoryPoint[],
+): { id: string; pass: number; fail: number; runs: number }[] {
+  const acc = new Map<string, { id: string; pass: number; fail: number; runs: number }>();
+  for (const p of points) {
+    for (const s of p.suites) {
+      const row = acc.get(s.id) ?? { id: s.id, pass: 0, fail: 0, runs: 0 };
+      row.pass += s.pass ?? 0;
+      row.fail += s.fail;
+      row.runs += 1;
+      acc.set(s.id, row);
+    }
+  }
+  return [...acc.values()].sort((a, b) => a.id.localeCompare(b.id));
+}
+
+/**
+ * Recompute each run's totals from the selected suites only. `null`/empty
+ * selection (or a history without per-suite pass counts) leaves the points
+ * untouched. Runs that contain none of the selected suites collapse to zero so
+ * the timeline keeps its shape rather than silently dropping runs.
+ */
+export function applySuiteFilter(
+  points: readonly HistoryPoint[],
+  selected: readonly string[] | null,
+): HistoryPoint[] {
+  const source = [...points];
+  if (!selected || selected.length === 0) return source;
+  const wanted = new Set(selected);
+  const all = listSuiteIds(points);
+  if (all.length > 0 && all.every((id) => wanted.has(id))) return source;
+  if (!hasSuiteBreakdown(points)) return source;
+  return source.map((p) => {
+    const kept = p.suites.filter((s) => wanted.has(s.id));
+    const pass = kept.reduce((n, s) => n + (s.pass ?? 0), 0);
+    const fail = kept.reduce((n, s) => n + s.fail, 0);
+    const assertions = kept.reduce((n, s) => n + (s.assertions ?? 0), 0);
+    return { ...p, totals: { pass, fail, assertions }, suites: kept };
+  });
+}
+
+/**
+ * Normalize a comma/space separated suite filter (CLI flag or env var) into
+ * known suite ids. Unknown ids are returned separately so the caller can warn.
+ */
+export function parseSuiteFilter(
+  raw: string | null | undefined,
+  known: readonly string[],
+): { selected: string[] | null; unknown: string[] } {
+  if (!raw) return { selected: null, unknown: [] };
+  const wanted = raw
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (wanted.length === 0 || wanted.includes("all")) return { selected: null, unknown: [] };
+  const knownSet = new Set(known);
+  return {
+    selected: wanted.filter((id) => knownSet.has(id)),
+    unknown: wanted.filter((id) => !knownSet.has(id)),
+  };
+}
+
 
 function escapeXml(v: string): string {
   return v.replace(/[<>&"]/g, (c) =>
@@ -200,13 +293,154 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
 }
 
 /**
+ * Interactive variant of the chart: the same pass/fail bars and failure-rate
+ * line, plus a checkbox per suite that recomputes both series in the browser
+ * from the embedded per-suite counts. Falls back to the static chart (with a
+ * note) when the history has no per-suite pass counts to filter on.
+ *
+ * Self-contained: no external scripts, so it works from the CI artifact opened
+ * off a filesystem. The PDF renderer just gets the initial server-rendered SVG.
+ */
+export function renderSuiteFilterChart(
+  points: readonly HistoryPoint[],
+  opts: { title?: string; selected?: readonly string[] | null; idPrefix?: string } = {},
+): string {
+  const title = opts.title ?? "Pass / fail and failure rate over time";
+  const ids = listSuiteIds(points);
+  if (points.length === 0 || ids.length === 0 || !hasSuiteBreakdown(points)) {
+    const note =
+      points.length > 0 && ids.length > 0
+        ? `<p class="sub">Suite filters need per-suite pass counts; these uploads only record failures, so the chart uses run totals for all ${ids.length} suite(s).</p>`
+        : "";
+    return renderFailureRateChart(points, title) + note;
+  }
+  const prefix = opts.idPrefix ?? "sf";
+  const selected = new Set(opts.selected && opts.selected.length ? opts.selected : ids);
+  const data = points.map((p) => ({
+    label: shortLabel(p),
+    at: p.generatedAt,
+    suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
+  }));
+  const initial = applySuiteFilter(points, [...selected]);
+  const totals = suiteTotals(points);
+
+  const checkboxes = ids
+    .map((id) => {
+      const t = totals.find((x) => x.id === id);
+      return `<label class="suite-toggle"><input type="checkbox" data-suite="${escapeXml(id)}"${
+        selected.has(id) ? " checked" : ""
+      } /> <code>${escapeXml(id)}</code> <span class="sub">${t ? `${t.pass} pass · ${t.fail} fail` : ""}</span></label>`;
+    })
+    .join("\n      ");
+
+  return `<figure class="chart suite-filter-chart" id="${prefix}-root">
+  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span></figcaption>
+  <div class="suite-toggles">
+      ${checkboxes}
+      <button type="button" data-suite-all="1">All</button>
+      <button type="button" data-suite-none="1">None</button>
+  </div>
+  <div id="${prefix}-chart">${renderFailureRateChart(initial, title)}</div>
+  <p class="sub" id="${prefix}-status">Showing ${selected.size} of ${ids.length} suite(s).</p>
+  <script type="application/json" id="${prefix}-data">${JSON.stringify(data).replace(
+    /</g,
+    "\\u003c",
+  )}</script>
+  <script>
+  (function () {
+    var root = document.getElementById(${JSON.stringify(`${prefix}-root`)});
+    if (!root) return;
+    var runs = JSON.parse(document.getElementById(${JSON.stringify(`${prefix}-data`)}).textContent);
+    var host = document.getElementById(${JSON.stringify(`${prefix}-chart`)});
+    var status = document.getElementById(${JSON.stringify(`${prefix}-status`)});
+    var boxes = Array.prototype.slice.call(root.querySelectorAll("input[data-suite]"));
+    var W = 720, H = 220, PT = 18, PR = 44, PB = 30, PL = 46;
+    var plotW = W - PL - PR, plotH = H - PT - PB;
+    function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;"; }); }
+    function series(sel) {
+      return runs.map(function (r) {
+        var pass = 0, fail = 0;
+        r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
+        var total = pass + fail;
+        return { label: r.label, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+      });
+    }
+    function draw(pts) {
+      if (!pts.length) { host.innerHTML = '<p class="sub">No suites selected.</p>'; return; }
+      var n = pts.length;
+      var maxTests = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.pass + p.fail; })));
+      var maxRate = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.rate; })));
+      var slot = plotW / n, barW = Math.max(3, Math.min(26, slot * 0.6));
+      var cx = function (i) { return PL + slot * (i + 0.5); };
+      var yRate = function (v) { return PT + plotH - (v / maxRate) * plotH; };
+      var bars = pts.map(function (p, i) {
+        var passH = (p.pass / maxTests) * plotH, failH = (p.fail / maxTests) * plotH;
+        var x = cx(i) - barW / 2, passY = PT + plotH - passH, failY = passY - failH;
+        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(p.label + " — pass " + p.pass + ", fail " + p.fail + ", failure rate " + p.rate.toFixed(2) + "%") + '</title></g>';
+      }).join("");
+      var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
+      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(p.label + " — failure rate " + p.rate.toFixed(2) + "%") + '</title></circle>'; }).join("");
+      host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
+        '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<text x="4" y="' + (PT + 10) + '" font-size="10" fill="#64748b">' + maxTests + '</text>' +
+        '<text x="4" y="' + (PT + plotH) + '" font-size="10" fill="#64748b">0</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + 10) + '" font-size="10" fill="#b45309">' + maxRate.toFixed(1) + '%</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + plotH) + '" font-size="10" fill="#b45309">0%</text>' +
+        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots +
+        '<text x="' + PL + '" y="' + (H - 8) + '" font-size="10" fill="#64748b">' + esc(pts[0].label) + '</text>' +
+        '<text x="' + (W - PR) + '" y="' + (H - 8) + '" font-size="10" fill="#64748b" text-anchor="end">' + esc(pts[n - 1].label) + '</text>' +
+        '</svg>';
+    }
+    function update() {
+      var sel = {}, count = 0;
+      boxes.forEach(function (b) { if (b.checked) { sel[b.getAttribute("data-suite")] = true; count++; } });
+      draw(count === 0 ? [] : series(sel));
+      status.textContent = count === 0
+        ? "No suites selected — pick at least one."
+        : "Showing " + count + " of " + boxes.length + " suite(s).";
+    }
+    boxes.forEach(function (b) { b.addEventListener("change", update); });
+    var all = root.querySelector("[data-suite-all]"), none = root.querySelector("[data-suite-none]");
+    if (all) all.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = true; }); update(); });
+    if (none) none.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = false; }); update(); });
+    update();
+  })();
+  </script>
+</figure>`;
+}
+
+/** Styles for the suite filter controls, to inline in host pages. */
+export const SUITE_FILTER_CSS = `
+  .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
+  .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+  .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+`;
+
+
+/**
  * Markdown for the run-summary page (`$GITHUB_STEP_SUMMARY`): sparklines plus a
  * compact per-run table. GitHub strips inline SVG from step summaries, so the
  * chart itself ships in the HTML/PDF artifact and this is the textual view.
+ *
+ * Step summaries can't be interactive, so the suite filter shows up two ways:
+ * the active `selected` filter is stated up front (series already recomputed by
+ * the caller via `applySuiteFilter`), and a per-suite table lists the
+ * contribution of every suite so it's clear what toggling would change.
  */
 export function renderSummaryHistoryMarkdown(
   history: History,
-  opts: { sources?: number; skipped?: number; artifact?: string | null } = {},
+  opts: {
+    sources?: number;
+    skipped?: number;
+    artifact?: string | null;
+    /** Suite ids the series were filtered to; null/empty means all suites. */
+    selected?: readonly string[] | null;
+    /** Suite ids available before filtering (defaults to those in `history`). */
+    allSuites?: readonly string[];
+    /** Per-suite totals to tabulate (defaults to those in `history`). */
+    breakdown?: readonly { id: string; pass: number; fail: number; runs: number }[];
+  } = {},
 ): string[] {
   const pts = history.points;
   if (pts.length === 0) {
@@ -219,11 +453,25 @@ export function renderSummaryHistoryMarkdown(
   const rates = pts.map(failureRate);
   const latest = pts.at(-1)!;
   const window = pts.slice(-12);
+  const allSuites = opts.allSuites ?? listSuiteIds(pts);
+  const selected = opts.selected && opts.selected.length ? [...opts.selected] : null;
+  const filtered = selected !== null && selected.length < allSuites.length;
+  const breakdown = opts.breakdown ?? suiteTotals(pts);
   return [
     `#### Uploaded summary history (${pts.length} run(s)${
       opts.skipped ? `, ${opts.skipped} file(s) skipped` : ""
     })`,
     "",
+    ...(filtered
+      ? [
+          `> Suite filter active: **${selected!.map((id) => `\`${id}\``).join(", ")}** of ${
+            allSuites.length
+          } suite(s) — pass/fail and failure rate below cover only those suites.`,
+          "",
+        ]
+      : allSuites.length
+        ? [`_All ${allSuites.length} suite(s) included._`, ""]
+        : []),
     "| Series | Trend | Latest |",
     "| --- | --- | ---: |",
     `| Passing tests | \`${sparkline(pts.map((p) => p.totals.pass))}\` | ${latest.totals.pass} |`,
@@ -238,10 +486,27 @@ export function renderSummaryHistoryMarkdown(
           p,
         ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} |`,
     ),
-
+    ...(breakdown.length
+      ? [
+          "",
+          "<details><summary>Per-suite contribution (toggle these in the HTML chart)</summary>",
+          "",
+          "| Suite | In filter | Runs | Pass | Fail |",
+          "| --- | :-: | ---: | ---: | ---: |",
+          ...breakdown.map(
+            (s) =>
+              `| \`${s.id}\` | ${selected === null || selected.includes(s.id) ? "✅" : "—"} | ${
+                s.runs
+              } | ${s.pass} | ${s.fail} |`,
+          ),
+          "",
+          "</details>",
+        ]
+      : []),
     "",
     opts.artifact
-      ? `<sub>Chart (SVG) is in \`${opts.artifact}\` on this run.</sub>`
-      : "<sub>Chart (SVG) ships with the coverage report artifact.</sub>",
+      ? `<sub>Chart (SVG, with interactive suite filters) is in \`${opts.artifact}\` on this run.</sub>`
+      : "<sub>Chart (SVG, with interactive suite filters) ships with the coverage report artifact.</sub>",
   ];
 }
+

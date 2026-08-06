@@ -36,11 +36,17 @@ import {
 } from "./lib/coverage-history";
 import { buildTrendComment } from "./lib/trend-comment";
 import {
+  applySuiteFilter,
   collectSummaryHistory,
   findSummaryFiles,
-  renderFailureRateChart,
+  listSuiteIds,
+  parseSuiteFilter,
+  renderSuiteFilterChart,
   renderSummaryHistoryMarkdown,
+  suiteTotals,
+  SUITE_FILTER_CSS,
 } from "./lib/summary-history";
+
 
 
 import {
@@ -548,7 +554,9 @@ function renderHtml(
 <html lang="en"><head><meta charset="utf-8" />
 <title>return_to coverage report</title>
 <style>
+${SUITE_FILTER_CSS}
   @page { size: A4; margin: 14mm; }
+
   :root { color-scheme: light; }
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
          margin: 0; padding: 24px; color: #10121a; background: #fff; }
@@ -694,7 +702,15 @@ const historyPoint: HistoryPoint = {
   generatedAt: meta.Generated ?? new Date().toISOString(),
   totals,
   counterexamples: cxStats,
-  suites: results.map((r) => ({ id: r.id, fail: r.fail })),
+  // pass/assertions are recorded per suite so the historical graph can filter
+  // the pass/fail and failure-rate series down to a subset of suites.
+  suites: results.map((r) => ({
+    id: r.id,
+    fail: r.fail,
+    pass: r.pass,
+    assertions: r.assertions,
+  })),
+
 };
 const history = appendHistoryPoint(priorHistory, historyPoint);
 
@@ -745,24 +761,40 @@ const counterexampleLinksHtml = renderCounterexampleLinksHtml(newFailureGroups, 
  * Uploaded summary history: any `summary.json` files dropped into
  * `reports/return-to-coverage/summaries/` (downloaded artifacts, archived runs,
  * manual uploads) are charted as pass/fail bars plus a failure-rate line. Set
- * RETURN_TO_SUMMARY_UPLOADS to point elsewhere.
+ * RETURN_TO_SUMMARY_UPLOADS to point elsewhere. RETURN_TO_HISTORY_SUITES
+ * pre-selects which suites feed the series; the HTML chart also ships
+ * interactive per-suite checkboxes.
  */
 const UPLOADS_DIR = process.env["RETURN_TO_SUMMARY_UPLOADS"] ?? join(OUT_DIR, "summaries");
 const uploadedFiles = findSummaryFiles([UPLOADS_DIR]);
 const uploaded = collectSummaryHistory(uploadedFiles);
+const uploadedSuites = listSuiteIds(uploaded.history.points);
+const uploadedFilter = parseSuiteFilter(
+  process.env["RETURN_TO_HISTORY_SUITES"] ?? null,
+  uploadedSuites,
+);
+const uploadedPoints = applySuiteFilter(uploaded.history.points, uploadedFilter.selected);
 const uploadedChartHtml = uploaded.history.points.length
-  ? renderFailureRateChart(
-      uploaded.history.points,
-      "Uploaded summary.json history — pass/fail and failure rate",
-    )
+  ? renderSuiteFilterChart(uploaded.history.points, {
+      title: "Uploaded summary.json history — pass/fail and failure rate",
+      selected: uploadedFilter.selected,
+      idPrefix: "uploaded",
+    })
   : "";
 const uploadedMd = uploaded.history.points.length
-  ? renderSummaryHistoryMarkdown(uploaded.history, {
-      sources: uploadedFiles.length,
-      skipped: uploaded.skipped.length,
-      artifact: "return-to-coverage-report.html",
-    })
+  ? renderSummaryHistoryMarkdown(
+      { points: uploadedPoints },
+      {
+        sources: uploadedFiles.length,
+        skipped: uploaded.skipped.length,
+        artifact: "return-to-coverage-report.html",
+        selected: uploadedFilter.selected,
+        allSuites: uploadedSuites,
+        breakdown: suiteTotals(uploaded.history.points),
+      },
+    )
   : [];
+
 
 writeFileSync(
   HTML_PATH,
