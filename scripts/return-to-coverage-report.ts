@@ -95,6 +95,12 @@ type SuiteResult = {
   assertions: number;
   durationMs: number;
   output: string;
+  /** stable-pass | flaky (failed then passed on one retry) | reproduced-failure. */
+  verdict: FlakyVerdict;
+  /** 1 when the suite passed first time, 2 when it was re-run. */
+  attempts: number;
+  /** Failing first-attempt output, kept for flaky suites so the noise is visible. */
+  firstAttempt: { pass: number; fail: number; output: string } | null;
 };
 
 const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
