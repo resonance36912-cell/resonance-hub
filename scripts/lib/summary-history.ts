@@ -507,27 +507,39 @@ export const CHART_TOOLTIP_CSS = `
  */
 export function renderSuiteFilterChart(
   points: readonly HistoryPoint[],
-  opts: { title?: string; selected?: readonly string[] | null; idPrefix?: string } = {},
+  opts: {
+    title?: string;
+    selected?: readonly string[] | null;
+    idPrefix?: string;
+    links?: RunLinkOptions;
+  } = {},
 ): string {
   const title = opts.title ?? "Pass / fail and failure rate over time";
+  const linkOpts = opts.links ?? {};
   const ids = listSuiteIds(points);
   if (points.length === 0 || ids.length === 0 || !hasSuiteBreakdown(points)) {
     const note =
       points.length > 0 && ids.length > 0
         ? `<p class="sub">Suite filters need per-suite pass counts; these uploads only record failures, so the chart uses run totals for all ${ids.length} suite(s).</p>`
         : "";
-    return renderFailureRateChart(points, title) + note;
+    return renderFailureRateChart(points, title, linkOpts) + note;
   }
   const prefix = opts.idPrefix ?? "sf";
   const selected = new Set(opts.selected && opts.selected.length ? opts.selected : ids);
-  const data = points.map((p) => ({
-    label: shortLabel(p),
-    at: p.generatedAt,
-    date: formatRunDate(p.generatedAt),
-    runId: p.runId,
-    runNumber: p.runNumber,
-    suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
-  }));
+  const data = points.map((p) => {
+    const l = runLinks(p, linkOpts);
+    return {
+      label: shortLabel(p),
+      at: p.generatedAt,
+      date: formatRunDate(p.generatedAt),
+      runId: p.runId,
+      runNumber: p.runNumber,
+      href: l.href,
+      log: l.logUrl,
+      external: l.href.startsWith("http"),
+      suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
+    };
+  });
 
   const initial = applySuiteFilter(points, [...selected]);
   const totals = suiteTotals(points);
@@ -542,14 +554,16 @@ export function renderSuiteFilterChart(
     .join("\n      ");
 
   return `<figure class="chart suite-filter-chart" id="${prefix}-root" style="position:relative">
-  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate.</figcaption>
+  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate; click it to open that run's summary and CI log.</figcaption>
   <div class="suite-toggles">
       ${checkboxes}
       <button type="button" data-suite-all="1">All</button>
       <button type="button" data-suite-none="1">None</button>
   </div>
-  <div id="${prefix}-chart">${renderFailureRateChart(initial, title)}</div>
+  <div id="${prefix}-chart">${renderFailureRateChart(initial, title, linkOpts)}</div>
   <p class="sub" id="${prefix}-status">Showing ${selected.size} of ${ids.length} suite(s).</p>
+  ${renderRunLinkList(points, linkOpts)}
+
   <script type="application/json" id="${prefix}-data">${JSON.stringify(data).replace(
     /</g,
     "\\u003c",
