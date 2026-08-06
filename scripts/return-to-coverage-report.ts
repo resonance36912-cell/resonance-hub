@@ -14,6 +14,14 @@
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import {
+  RUNNER_LABEL,
+  detectRunner,
+  parseRunnerOutput,
+  runnerCommand,
+  type TestRunner,
+} from "./lib/test-runner-detect";
+
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
   {
