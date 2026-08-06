@@ -47,6 +47,8 @@
     "smoke:app-detail": "bun run scripts/smoke-app-detail.ts",
     "report:return-to-coverage": "bun run scripts/return-to-coverage-report.ts",
     "baseline:return-to-promote": "bun run scripts/return-to-baseline-promote.ts",
+    "report:return-to-history-graph": "bun run scripts/return-to-history-graph.ts",
+
     "prebuild": "bun run typecheck && bun run scripts/verify-deps-pinned.ts && bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts && bun run scripts/verify-no-stale-domains.ts && bun run scripts/verify-bundle-copy.ts && bun run scripts/verify-honest-copy.ts && bun run scripts/verify-catalog-parity.ts && bun run scripts/verify-security-invariants.ts && bun run scripts/verify-all-access.ts && bun run scripts/verify-pricing.ts && bun run scripts/verify-pricing-packs.ts && bun run scripts/verify-transparency-copy.ts && bun run scripts/verify-route-strings.ts && bun run test:route-registry && bun run test:legal-roadmap"
   },
   "dependencies": {
