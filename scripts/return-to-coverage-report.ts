@@ -60,6 +60,7 @@ import {
   type LinkBaseOptions,
   type StoredCounterexample,
 } from "./lib/counterexample-links";
+import { describeBaseline, type BaselineMetadata } from "./lib/baseline-promote";
 import { sanitizeCounterexamples } from "../src/lib/return-to-counterexamples";
 
 
@@ -178,6 +179,21 @@ type Trend = {
   newFailures: TrendRow[];
   delta: Totals;
 };
+
+/**
+ * Sidecar written by scripts/return-to-baseline-promote.ts when a green push to
+ * main promoted its summary. Logged so a run always states which successful run
+ * it is comparing against.
+ */
+function loadBaselineMetadata(): BaselineMetadata | null {
+  try {
+    const path = join(dirname(BASELINE_PATH), "baseline.json");
+    if (!existsSync(path)) return null;
+    return JSON.parse(readFileSync(path, "utf8")) as BaselineMetadata;
+  } catch {
+    return null;
+  }
+}
 
 function loadBaseline(): Baseline | null {
   try {
@@ -906,7 +922,8 @@ if (!trend.baseline) {
 }
 
 console.log(lines.join("\n"));
-console.log(`\nHTML report: ${HTML_PATH}`);
+console.log(`\nBaseline: ${describeBaseline(loadBaselineMetadata())}`);
+console.log(`HTML report: ${HTML_PATH}`);
 console.log(`Summary JSON: ${JSON_PATH}`);
 
 for (const r of results.filter((x) => x.verdict !== "stable-pass")) {
