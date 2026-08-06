@@ -193,8 +193,9 @@ export const RETURN_TO_COUNTEREXAMPLES: readonly Counterexample[] = [
   {
     id: "crlf-injection",
     category: "encoding",
-    input: "https://reson8.life/%0d%0aSet-Cookie:%20a=b",
-    attack: "CRLF sequence aimed at header injection downstream.",
+    input: "https://evil.example/%0d%0aSet-Cookie:%20a=b",
+    attack:
+      "CRLF sequence aimed at header injection from an untrusted origin (the same encoding on a trusted origin is accepted — origin is what decides).",
   },
   {
     id: "null-byte",
