@@ -682,7 +682,10 @@ export function renderSummaryHistoryMarkdown(
     allSuites?: readonly string[];
     /** Per-suite totals to tabulate (defaults to those in `history`). */
     breakdown?: readonly { id: string; pass: number; fail: number; runs: number }[];
+    /** Server/repo used to build per-run deep links (defaults to env). */
+    links?: RunLinkOptions;
   } = {},
+
 ): string[] {
   const pts = history.points;
   if (pts.length === 0) {
