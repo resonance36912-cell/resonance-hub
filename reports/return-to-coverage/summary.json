@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:21:12.987Z",
+  "generatedAt": "2026-08-06T19:21:59.280Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4293
+    "assertions": 4286
   },
   "suites": [
     {
@@ -17,8 +17,8 @@
       "assertionSource": "expect-calls",
       "pass": 5,
       "fail": 0,
-      "assertions": 3982,
-      "durationMs": 698,
+      "assertions": 3975,
+      "durationMs": 829,
       "status": "pass"
     },
     {
@@ -32,7 +32,7 @@
       "pass": 43,
       "fail": 0,
       "assertions": 61,
-      "durationMs": 35,
+      "durationMs": 40,
       "status": "pass"
     },
     {
@@ -46,7 +46,7 @@
       "pass": 44,
       "fail": 0,
       "assertions": 44,
-      "durationMs": 3039,
+      "durationMs": 3264,
       "status": "pass"
     },
     {
@@ -60,7 +60,7 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 236,
+      "durationMs": 293,
       "status": "pass"
     },
     {
@@ -74,7 +74,7 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 194,
+      "durationMs": 253,
       "status": "pass"
     }
   ],

@@ -8,11 +8,11 @@ import {
 } from "./test-runner-detect";
 
 describe("detectRunner", () => {
-  it('picks bun for a bun:test import', () => {
+  it("picks bun for a bun:test import", () => {
     expect(detectRunner("x.test.ts", 'import { it } from "bun:test";').runner).toBe("bun");
   });
 
-  it('picks vitest for a vitest import', () => {
+  it("picks vitest for a vitest import", () => {
     const d = detectRunner("x.test.ts", 'import { describe, it } from "vitest";');
     expect(d.runner).toBe("vitest");
     expect(d.reason).toContain("vitest");

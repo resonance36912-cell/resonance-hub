@@ -22,7 +22,6 @@ import {
   type TestRunner,
 } from "./lib/test-runner-detect";
 
-
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
   {
     id: "fuzz",
@@ -77,7 +76,6 @@ type SuiteResult = {
   durationMs: number;
   output: string;
 };
-
 
 const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
@@ -299,7 +297,6 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
   };
 }
 
-
 function esc(v: string): string {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -443,7 +440,11 @@ const meta: Record<string, string> = {
   Workflow: process.env.GITHUB_WORKFLOW ?? "local run",
   Host: `bun ${Bun.version}`,
   Runners: Array.from(
-    new Set(results.map((r) => `${RUNNER_LABEL[r.runner]} (${results.filter((x) => x.runner === r.runner).length})`)),
+    new Set(
+      results.map(
+        (r) => `${RUNNER_LABEL[r.runner]} (${results.filter((x) => x.runner === r.runner).length})`,
+      ),
+    ),
   ).join(" · "),
   Suites: String(results.length),
 };
