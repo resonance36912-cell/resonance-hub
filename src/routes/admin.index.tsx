@@ -104,6 +104,7 @@ function AdminHome() {
     { to: ROUTES.adminEmailDomain, label: "Email Domain", desc: "Sending domain configuration and DNS." },
     { to: ROUTES.adminAppSubmissions, label: "App Submissions", desc: "Review and publish community-submitted apps to the catalog." },
     { to: ROUTES.adminReturnToAllowlist, label: "return_to Allowlist", desc: "Manage allowed post-checkout return origins with a live accept/reject preview." },
+    { to: ROUTES.adminReturnToCounterexamples, label: "return_to Counterexamples", desc: "Hostile return_to inputs with sanitized fields and the exact failing verdict." },
 
   ] as const;
 
