@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-08-06T19:04:00.198Z",
+  "commit": "local",
+  "totals": {
+    "pass": 146,
+    "fail": 0,
+    "assertions": 4420
+  },
+  "suites": [
+    {
+      "id": "fuzz",
+      "title": "Property-based fuzzing",
+      "file": "scripts/lib/return-to-allowlist-fuzz.test.ts",
+      "blurb": "fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.",
+      "pass": 5,
+      "fail": 0,
+      "assertions": 3994,
+      "durationMs": 668,
+      "status": "pass"
+    },
+    {
+      "id": "normalization",
+      "title": "Normalization edge cases",
+      "file": "scripts/lib/return-to-allowlist-normalization.test.ts",
+      "blurb": "trailing slashes, uppercase/mixed-case hosts, explicit default ports, trailing-dot hosts, suffix grafts.",
+      "pass": 43,
+      "fail": 0,
+      "assertions": 61,
+      "durationMs": 33,
+      "status": "pass"
+    },
+    {
+      "id": "encoding",
+      "title": "Percent-encoding edge cases",
+      "file": "scripts/lib/return-to-allowlist-encoding.test.ts",
+      "blurb": "percent-encoded hosts, userinfo smuggling, encoded path/query, homoglyph hosts.",
+      "pass": 44,
+      "fail": 0,
+      "assertions": 159,
+      "durationMs": 36,
+      "status": "pass"
+    },
+    {
+      "id": "audit",
+      "title": "Redirect audit records",
+      "file": "scripts/lib/return-to-audit.test.ts",
+      "blurb": "audit rows keep origin-only candidates and path-only targets — never full URLs, query strings or fragments.",
+      "pass": 23,
+      "fail": 0,
+      "assertions": 136,
+      "durationMs": 195,
+      "status": "pass"
+    },
+    {
+      "id": "targets",
+      "title": "Checkout success target resolution",
+      "file": "scripts/lib/checkout-success-return-to-allowlist.test.ts",
+      "blurb": "allowlisted spoke origins drive the primary CTA / auto-redirect; anything else falls back to a safe Hub target.",
+      "pass": 31,
+      "fail": 0,
+      "assertions": 70,
+      "durationMs": 173,
+      "status": "pass"
+    }
+  ]
+}
