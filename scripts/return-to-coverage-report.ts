@@ -65,12 +65,19 @@ type SuiteResult = {
   title: string;
   file: string;
   blurb: string;
+  /** Framework detected from the suite's imports. */
+  runner: TestRunner;
+  /** Why that runner was chosen. */
+  runnerReason: string;
+  /** Whether `assertions` are real expect() calls or a test-count fallback. */
+  assertionSource: "expect-calls" | "tests" | "none";
   pass: number;
   fail: number;
   assertions: number;
   durationMs: number;
   output: string;
 };
+
 
 const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
