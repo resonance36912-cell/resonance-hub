@@ -420,8 +420,12 @@ export function renderSuiteFilterChart(
   const data = points.map((p) => ({
     label: shortLabel(p),
     at: p.generatedAt,
+    date: formatRunDate(p.generatedAt),
+    runId: p.runId,
+    runNumber: p.runNumber,
     suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
   }));
+
   const initial = applySuiteFilter(points, [...selected]);
   const totals = suiteTotals(points);
 
