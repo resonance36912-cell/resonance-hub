@@ -16,11 +16,11 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as ChangelogRouteImport } from './routes/changelog'
-import { Route as AppsRouteImport } from './routes/apps'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
+import { Route as AppsIndexRouteImport } from './routes/apps.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
@@ -133,11 +133,6 @@ const ChangelogRoute = ChangelogRouteImport.update({
   path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppsRoute = AppsRouteImport.update({
-  id: '/apps',
-  path: '/apps',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -156,6 +151,11 @@ const DocsIndexRoute = DocsIndexRouteImport.update({
 const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   id: '/checkout/',
   path: '/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsIndexRoute = AppsIndexRouteImport.update({
+  id: '/apps/',
+  path: '/apps/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -250,14 +250,14 @@ const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppsSubmitRoute = AppsSubmitRouteImport.update({
-  id: '/submit',
-  path: '/submit',
-  getParentRoute: () => AppsRoute,
+  id: '/apps/submit',
+  path: '/apps/submit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppsAppKeyRoute = AppsAppKeyRouteImport.update({
-  id: '/$appKey',
-  path: '/$appKey',
-  getParentRoute: () => AppsRoute,
+  id: '/apps/$appKey',
+  path: '/apps/$appKey',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
@@ -404,9 +404,9 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppsSubmissionsIdRoute = AppsSubmissionsIdRouteImport.update({
-  id: '/submissions/$id',
-  path: '/submissions/$id',
-  getParentRoute: () => AppsRoute,
+  id: '/apps/submissions/$id',
+  path: '/apps/submissions/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicEntitlementRoute = ApiPublicEntitlementRouteImport.update({
   id: '/api/public/entitlement',
@@ -562,7 +562,6 @@ const ApiPublicGenerateCreativeStudioPosterRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
@@ -616,6 +615,7 @@ export interface FileRoutesByFullPath {
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/apps/': typeof AppsIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
@@ -652,7 +652,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
@@ -706,6 +705,7 @@ export interface FileRoutesByTo {
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/apps': typeof AppsIndexRoute
   '/checkout': typeof CheckoutIndexRoute
   '/docs': typeof DocsIndexRoute
   '/legal': typeof LegalIndexRoute
@@ -743,7 +743,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/apps': typeof AppsRouteWithChildren
   '/changelog': typeof ChangelogRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
@@ -797,6 +796,7 @@ export interface FileRoutesById {
   '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
   '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/apps/': typeof AppsIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
@@ -835,7 +835,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/apps'
     | '/changelog'
     | '/governance'
     | '/login'
@@ -889,6 +888,7 @@ export interface FileRouteTypes {
     | '/youtube-optimizer/pricing'
     | '/account/'
     | '/admin/'
+    | '/apps/'
     | '/checkout/'
     | '/docs/'
     | '/legal/'
@@ -925,7 +925,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/apps'
     | '/changelog'
     | '/governance'
     | '/login'
@@ -979,6 +978,7 @@ export interface FileRouteTypes {
     | '/youtube-optimizer/pricing'
     | '/account'
     | '/admin'
+    | '/apps'
     | '/checkout'
     | '/docs'
     | '/legal'
@@ -1015,7 +1015,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/apps'
     | '/changelog'
     | '/governance'
     | '/login'
@@ -1069,6 +1068,7 @@ export interface FileRouteTypes {
     | '/youtube-optimizer/pricing'
     | '/account/'
     | '/admin/'
+    | '/apps/'
     | '/checkout/'
     | '/docs/'
     | '/legal/'
@@ -1106,7 +1106,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppsRoute: typeof AppsRouteWithChildren
   ChangelogRoute: typeof ChangelogRoute
   GovernanceRoute: typeof GovernanceRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -1140,6 +1139,8 @@ export interface RootRouteChildren {
   AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
   ApiChatRoute: typeof ApiChatRoute
+  AppsAppKeyRoute: typeof AppsAppKeyRoute
+  AppsSubmitRoute: typeof AppsSubmitRoute
   CheckoutCancelRoute: typeof CheckoutCancelRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
@@ -1157,12 +1158,14 @@ export interface RootRouteChildren {
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AccountIndexRoute: typeof AccountIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AppsIndexRoute: typeof AppsIndexRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
+  AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
@@ -1238,13 +1241,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/apps': {
-      id: '/apps'
-      path: '/apps'
-      fullPath: '/apps'
-      preLoaderRoute: typeof AppsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -1271,6 +1267,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout/'
       preLoaderRoute: typeof CheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/': {
+      id: '/apps/'
+      path: '/apps'
+      fullPath: '/apps/'
+      preLoaderRoute: typeof AppsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1401,17 +1404,17 @@ declare module '@tanstack/react-router' {
     }
     '/apps/submit': {
       id: '/apps/submit'
-      path: '/submit'
+      path: '/apps/submit'
       fullPath: '/apps/submit'
       preLoaderRoute: typeof AppsSubmitRouteImport
-      parentRoute: typeof AppsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/apps/$appKey': {
       id: '/apps/$appKey'
-      path: '/$appKey'
+      path: '/apps/$appKey'
       fullPath: '/apps/$appKey'
       preLoaderRoute: typeof AppsAppKeyRouteImport
-      parentRoute: typeof AppsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
       id: '/api/chat'
@@ -1611,10 +1614,10 @@ declare module '@tanstack/react-router' {
     }
     '/apps/submissions/$id': {
       id: '/apps/submissions/$id'
-      path: '/submissions/$id'
+      path: '/apps/submissions/$id'
       fullPath: '/apps/submissions/$id'
       preLoaderRoute: typeof AppsSubmissionsIdRouteImport
-      parentRoute: typeof AppsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/entitlement': {
       id: '/api/public/entitlement'
@@ -1808,20 +1811,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppsRouteChildren {
-  AppsAppKeyRoute: typeof AppsAppKeyRoute
-  AppsSubmitRoute: typeof AppsSubmitRoute
-  AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
-}
-
-const AppsRouteChildren: AppsRouteChildren = {
-  AppsAppKeyRoute: AppsAppKeyRoute,
-  AppsSubmitRoute: AppsSubmitRoute,
-  AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
-}
-
-const AppsRouteWithChildren = AppsRoute._addFileChildren(AppsRouteChildren)
-
 interface GovernanceRouteChildren {
   GovernanceLogRoute: typeof GovernanceLogRoute
 }
@@ -1873,7 +1862,6 @@ const ApiPublicEntitlementRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppsRoute: AppsRouteWithChildren,
   ChangelogRoute: ChangelogRoute,
   GovernanceRoute: GovernanceRouteWithChildren,
   LoginRoute: LoginRoute,
@@ -1908,6 +1896,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSpokeHealthRoute: AdminSpokeHealthRoute,
   AdminWebhooksRoute: AdminWebhooksRoute,
   ApiChatRoute: ApiChatRoute,
+  AppsAppKeyRoute: AppsAppKeyRoute,
+  AppsSubmitRoute: AppsSubmitRoute,
   CheckoutCancelRoute: CheckoutCancelRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   CreativeStudioPricingRoute: CreativeStudioPricingRoute,
@@ -1925,12 +1915,14 @@ const rootRouteChildren: RootRouteChildren = {
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AccountIndexRoute: AccountIndexRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AppsIndexRoute: AppsIndexRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
+  AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicAnalyticsCheckoutSuccessRoute:
