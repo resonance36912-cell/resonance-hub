@@ -563,7 +563,7 @@ function renderHtml(
   </table>
   ${assertionNote}
 
-  ${green ? `<p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>` : failures}
+  ${green && !flakyCount ? `<p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>` : failures}
 
 
   ${renderTrendHtml(trend)}
