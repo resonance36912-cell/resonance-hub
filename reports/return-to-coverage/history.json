@@ -6,11 +6,11 @@
       "commit": "local",
       "branch": null,
       "event": null,
-      "generatedAt": "2026-08-06T19:48:29.134Z",
+      "generatedAt": "2026-08-06T19:48:48.680Z",
       "totals": {
-        "pass": 146,
+        "pass": 147,
         "fail": 0,
-        "assertions": 4306
+        "assertions": 4287
       },
       "counterexamples": {
         "total": 27,
@@ -18,6 +18,10 @@
         "leaked": 0
       },
       "suites": [
+        {
+          "id": "tmpflaky",
+          "fail": 0
+        },
         {
           "id": "fuzz",
           "fail": 0
