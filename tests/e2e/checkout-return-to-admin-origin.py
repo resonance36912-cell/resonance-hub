@@ -35,7 +35,7 @@ from urllib.parse import quote
 
 from playwright.async_api import async_playwright, Route
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 BASE_URL = os.environ.get("E2E_BASE_URL", "http://localhost:8080")
 SCREENSHOTS = Path("/tmp/browser/checkout-return-to-admin-origin/screenshots")
 SCREENSHOTS.mkdir(parents=True, exist_ok=True)
