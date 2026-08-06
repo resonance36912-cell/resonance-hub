@@ -9,11 +9,21 @@ import { listReturnToOrigins } from "@/lib/return-to-allowlist.functions";
 import {
   COUNTEREXAMPLE_CATEGORY_LABELS,
   RETURN_TO_COUNTEREXAMPLES,
+  sanitizeCounterexample,
   sanitizeCounterexamples,
   type CounterexampleCategory,
 } from "@/lib/return-to-counterexamples";
 
+/**
+ * `?input=` deep link: the CI coverage report links each NEW FAILURE
+ * counterexample straight here with the exact stored input, so an admin can see
+ * the live verdict for that value without hunting the corpus table.
+ */
 export const Route = createFileRoute("/admin/return-to-counterexamples")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    input: typeof search["input"] === "string" ? search["input"].slice(0, 2048) : undefined,
+    suite: typeof search["suite"] === "string" ? search["suite"].slice(0, 120) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "return_to counterexamples — Admin" },
@@ -45,6 +55,8 @@ function AdminReturnToCounterexamples() {
     queryFn: () => listFn(),
   });
 
+  const { input: inspectedInput, suite: inspectedSuite } = Route.useSearch();
+
   const [category, setCategory] = useState<"all" | CounterexampleCategory>(
     "all",
   );
@@ -60,6 +72,24 @@ function AdminReturnToCounterexamples() {
       ? all
       : all.filter((r) => r.category === category);
   }, [extras, category]);
+
+  const inspected = useMemo(
+    () =>
+      inspectedInput
+        ? sanitizeCounterexample(
+            {
+              id: "inspected",
+              input: inspectedInput,
+              category: "scheme",
+              attack: inspectedSuite
+                ? `Reported by CI suite "${inspectedSuite}"`
+                : "Supplied via deep link",
+            },
+            extras,
+          )
+        : null,
+    [inspectedInput, inspectedSuite, extras],
+  );
 
   const unexpectedlyAllowed = rows.filter((r) => r.failsAt === "none");
 
@@ -93,6 +123,45 @@ function AdminReturnToCounterexamples() {
           under the current policy.
         </p>
       )}
+
+      {inspected ? (
+        <section
+          id="inspected-input"
+          className={`mt-6 rounded-md border px-4 py-3 text-sm ${
+            inspected.failsAt === "none"
+              ? "border-destructive bg-destructive/10"
+              : "border-border bg-muted"
+          }`}
+        >
+          <h2 className="text-sm font-semibold">
+            Inspected input{inspectedSuite ? ` — CI suite ${inspectedSuite}` : ""}
+          </h2>
+          <p className="mt-1 break-all font-mono text-xs">{inspected.input}</p>
+          <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+            <div>
+              <dt className="text-muted-foreground">Origin</dt>
+              <dd className="font-mono">{inspected.origin ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Shape</dt>
+              <dd>{inspected.shape}</dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Fails at</dt>
+              <dd className="font-medium">
+                {inspected.failsAt === "none" ? "not refused" : inspected.failsAt}
+              </dd>
+            </div>
+            <div className="sm:col-span-3">
+              <dt className="text-muted-foreground">Verdict</dt>
+              <dd>
+                <span className="font-mono">{inspected.verdict.code}</span> —{" "}
+                {inspected.verdict.reason}
+              </dd>
+            </div>
+          </dl>
+        </section>
+      ) : null}
 
       <div className="mt-8 flex flex-wrap gap-2">
         <FilterButton

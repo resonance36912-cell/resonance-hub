@@ -134,6 +134,17 @@ jobs:
       # One artifact per suite (HTML + PDF + summary JSON) so a failing suite can
       # be downloaded and opened on its own instead of scrolling the combined
       # report. Suite ids come from SUITES in scripts/return-to-coverage-report.ts.
+      # Exact stored inputs for any NEW FAILURE suite; the CI log and the HTML
+      # report link straight into these files.
+      - name: Upload counterexample inputs (new failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-counterexamples-${{ github.run_id }}
+          path: reports/return-to-coverage/counterexamples/**
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Upload per-suite report — fuzz
         if: always()
         uses: actions/upload-artifact@v4
