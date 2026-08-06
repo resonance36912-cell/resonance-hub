@@ -30,9 +30,12 @@ import {
   parseHistory,
   renderHistoryChart,
   renderHistoryMarkdown,
+  sparkline,
   type History,
   type HistoryPoint,
 } from "./lib/coverage-history";
+import { buildTrendComment } from "./lib/trend-comment";
+
 import {
   VERDICT_LABEL,
   authoritativeAttempt,
@@ -52,7 +55,9 @@ import {
 import {
   counterexampleFileName,
   counterexampleLogLines,
+  counterexampleLinks,
   counterexampleMarkdown,
+
   counterexampleStoreJson,
   extractCounterexamples,
   renderCounterexamplesHtml,
@@ -129,6 +134,9 @@ const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
 const JSON_PATH = join(OUT_DIR, "summary.json");
 const COMMENT_PATH = join(OUT_DIR, "pr-comment.md");
+/** Short trend-only digest, posted as its own sticky comment on every run. */
+const TREND_COMMENT_PATH = join(OUT_DIR, "trend-comment.md");
+
 /** Rolling run history; CI seeds it from the previous run's artifact. */
 const HISTORY_PATH = join(OUT_DIR, "history.json");
 const HISTORY_BASELINE_PATH =
@@ -1052,6 +1060,37 @@ const commentMd = [
 ].join("\n");
 writeFileSync(COMMENT_PATH, commentMd + "\n");
 console.log(`PR comment body: ${COMMENT_PATH}`);
+
+/*
+ * Concise trend digest (`trend-comment.md`) — posted as a second, short sticky
+ * comment whenever the workflow finishes, so the trend is readable at a glance.
+ */
+writeFileSync(
+  TREND_COMMENT_PATH,
+  buildTrendComment({
+    status: reproducedFailures.length ? "fail" : flakySuites.length ? "flaky" : "pass",
+    totals: { pass: totals.pass, fail: totals.fail, assertions: totals.assertions },
+    baselineCommit: trend.baseline?.commit ?? null,
+    delta: trend.baseline ? trend.delta : null,
+    newFailures: trend.newFailures.map((r) => ({ title: r.title, fail: r.fail })),
+    removedSuites: trend.removed.map((s) => s.id),
+    counterexamples: historyPoint.counterexamples,
+    passSparkline: sparkline(history.points.map((p) => p.totals.pass)),
+    runs: history.points.length,
+    commit: meta.Commit ?? null,
+    runUrl,
+    failureLinks: newFailureGroups.flatMap((g) =>
+      g.items.map((cx) => ({
+        label: `${g.suiteTitle} input #${cx.index}: ${
+          cx.input.length > 60 ? `${cx.input.slice(0, 60)}…` : cx.input
+        }`,
+        url: counterexampleLinks(cx, LINK_OPTS).admin,
+      })),
+    ),
+  }) + "\n",
+);
+console.log(`Trend comment body: ${TREND_COMMENT_PATH}`);
+
 
 // Only reproduced failures (failed twice) fail the job; flaky suites are
 // reported but non-blocking. An empty run is always a failure.
