@@ -3,6 +3,8 @@ import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { AppLink } from "@/components/AppLink";
 import { APP_REGISTRY, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
 import { statusMeaning } from "@/lib/app-status-meaning";
+import { appDetailMeta, appDetailUrl } from "@/lib/app-status-meta";
+
 import { ROUTES } from "@/lib/routes";
 
 type Capability = { title: string; body: string };
@@ -54,19 +56,11 @@ export const Route = createFileRoute("/apps/$appKey")({
       };
     }
     const { entry } = loaderData;
-    const title = `${entry.label} — Resonance Apps`;
     return {
-      meta: [
-        { title },
-        { name: "description", content: entry.tagline },
-        { property: "og:title", content: title },
-        { property: "og:description", content: entry.tagline },
-        { property: "og:type", content: "website" },
-        { property: "og:url", content: `https://reson8.life/apps/${entry.key}` },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-      links: [{ rel: "canonical", href: `https://reson8.life/apps/${entry.key}` }],
+      meta: appDetailMeta(entry),
+      links: [{ rel: "canonical", href: appDetailUrl(entry.key) }],
     };
+
   },
   notFoundComponent: () => (
     <main className="mx-auto max-w-3xl p-6">

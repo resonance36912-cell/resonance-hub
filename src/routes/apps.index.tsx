@@ -104,7 +104,15 @@ export const Route = createFileRoute("/apps/")({
           "Browse and search the Resonance app suite: publishing, creative, video, and growth tools built on one billing spine.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://reson8.life/apps" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Resonance Apps — Ecosystem Catalog" },
+      {
+        name: "twitter:description",
+        content:
+          "Browse and search the Resonance app suite: publishing, creative, video, and growth tools built on one billing spine.",
+      },
+
     ],
   }),
   component: AppsCatalogPage,
