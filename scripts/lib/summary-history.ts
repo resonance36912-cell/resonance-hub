@@ -720,14 +720,22 @@ export function renderSummaryHistoryMarkdown(
     `| Failing tests | \`${sparkline(pts.map((p) => p.totals.fail))}\` | ${latest.totals.fail} |`,
     `| Failure rate | \`${sparkline(rates)}\` | ${rates.at(-1)!.toFixed(2)}% |`,
     "",
-    "| Run | Date | Pass | Fail | Failure rate |",
-    "| --- | --- | ---: | ---: | ---: |",
-    ...window.map(
-      (p) =>
-        `| \`${shortLabel(p)}\` | ${p.generatedAt || "—"} | ${p.totals.pass} | ${p.totals.fail} | ${failureRate(
-          p,
-        ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} |`,
-    ),
+    "| Run | Date | Pass | Fail | Failure rate | Links |",
+    "| --- | --- | ---: | ---: | ---: | --- |",
+    ...window.map((p) => {
+      const l = runLinks(p, opts.links ?? {});
+      // The anchor span makes the chart's in-page deep link land on this row.
+      const runCell = l.summaryUrl
+        ? `[\`${shortLabel(p)}\`](${l.summaryUrl})`
+        : `<a id="${l.anchorId}"></a>\`${shortLabel(p)}\``;
+      const linkCell = l.summaryUrl
+        ? `[summary](${l.summaryUrl}) · [log](${l.logUrl}) · [artifacts](${l.artifactsUrl})`
+        : "—";
+      return `| ${runCell} | ${p.generatedAt || "—"} | ${p.totals.pass} | ${p.totals.fail} | ${failureRate(
+        p,
+      ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} | ${linkCell} |`;
+    }),
+
     ...(breakdown.length
       ? [
           "",
