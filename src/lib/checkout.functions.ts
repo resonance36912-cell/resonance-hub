@@ -456,6 +456,10 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
       );
       await hydrateReturnToAllowlist();
       const allowed = isAllowedReturnTo(data.returnTo);
+      if (!allowed) {
+        const { logReturnToRejection } = await import("./return-to-diagnostics");
+        logReturnToRejection("payfast_launch", data.returnTo);
+      }
       // Audit the verdict (origin-only) before acting on it.
       try {
         const [{ buildReturnToAuditRecord }, { writeReturnToAudit }] =
@@ -521,6 +525,10 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
       );
       await hydrateReturnToAllowlist();
       const allowed = isAllowedReturnTo(data.returnTo);
+      if (!allowed) {
+        const { logReturnToRejection } = await import("./return-to-diagnostics");
+        logReturnToRejection("payfast_retry", data.returnTo);
+      }
       try {
         const [{ buildReturnToAuditRecord }, { writeReturnToAudit }] =
           await Promise.all([
