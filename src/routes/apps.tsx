@@ -79,13 +79,8 @@ const STATUS_STYLES: Record<AppRegistryEntry["status"], string> = {
   coming_soon: "bg-muted text-muted-foreground border-border",
 };
 
-const STATUS_LABELS: Record<AppRegistryEntry["status"], string> = {
-  live: APP_STATUS_MEANING.live.label,
-  beta: APP_STATUS_MEANING.beta.label,
-  pilot: APP_STATUS_MEANING.pilot.label,
-  coming_soon: APP_STATUS_MEANING.coming_soon.label,
-};
-void STATUS_LABELS;
+// Badge text and access wording live in @/lib/app-status-meaning so /apps and
+// /apps/$appKey never explain a status differently.
 
 export const Route = createFileRoute("/apps")({
   validateSearch: zodValidator(searchSchema),
