@@ -1,34 +1,27 @@
 <!-- return-to-coverage-report -->
-### return_to fuzz & encoding coverage — ✅ all passing
+### return_to fuzz & encoding coverage — ⚠️ all passing (1 flaky)
 
 | Suite | Pass | Fail | Assertions | Status |
 | --- | ---: | ---: | ---: | --- |
-| Property-based fuzzing | 5 | 0 | 3,991 | PASS |
+| Temp flaky probe | 1 | 0 | 1 | ⚠️ FLAKY (passed on retry) |
+| Property-based fuzzing | 5 | 0 | 3,975 | PASS |
 | Normalization edge cases | 43 | 0 | 61 | PASS |
 | Percent-encoding edge cases | 44 | 0 | 44 | PASS |
 | Redirect audit records | 23 | 0 | 136 | PASS |
 | Checkout success target resolution | 31 | 0 | 70 | PASS |
-| **Total** | **146** | **0** | **4,302** | PASS |
+| **Total** | **147** | **0** | **4,287** | PASS |
+
+> ⚠️ **Flaky (re-run once, then passed — not blocking):** Temp flaky probe (1 failing on attempt 1)
 
 #### Coverage trend
 
 _No baseline yet — this run becomes the baseline._
 
-#### Historical trend (last 7 run(s))
+#### Historical trend
 
-| Series | Trend | Latest |
-| --- | --- | ---: |
-| Passing tests | `▁▂▃▅▆▇█` | 146 |
-| Failing tests | `▁▁█▁▁▁▁` | 0 |
-| Assertions | `▁▁▁▁▁▁█` | 4,302 |
-| Counterexamples blocked | `████▁██` | 27/27 |
-| Counterexamples leaked | `▁▁▁▁█▁▁` | 0 |
-
-> ⚠️ **2 red run(s) in the window:** `abc2def0` (3 failing, 0 leaked), `abc4def0` (0 failing, 1 leaked)
-
-<sub>Window: `abc0def0` → `local`. Full charts are in the HTML/PDF report artifact.</sub>
+_Not enough history yet — charts appear once a second run is recorded._
 
 #### Reports
 - Artifacts are published on the workflow run for this commit.
 
-<sub>Commit `local` · generated 2026-08-06T19:42:17.705Z</sub>
+<sub>Commit `local` · generated 2026-08-06T19:48:48.680Z</sub>

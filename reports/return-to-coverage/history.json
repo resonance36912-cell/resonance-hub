@@ -1,256 +1,16 @@
 {
   "points": [
     {
-      "runId": "1000",
-      "runNumber": 1000,
-      "commit": "abc0def0000",
-      "branch": null,
-      "event": null,
-      "generatedAt": "2026-08-06T19:41:53.879Z",
-      "totals": {
-        "pass": 140,
-        "fail": 0,
-        "assertions": 4295
-      },
-      "counterexamples": {
-        "total": 27,
-        "blocked": 27,
-        "leaked": 0
-      },
-      "suites": [
-        {
-          "id": "fuzz",
-          "fail": 0
-        },
-        {
-          "id": "normalization",
-          "fail": 0
-        },
-        {
-          "id": "encoding",
-          "fail": 0
-        },
-        {
-          "id": "audit",
-          "fail": 0
-        },
-        {
-          "id": "targets",
-          "fail": 0
-        }
-      ]
-    },
-    {
-      "runId": "1001",
-      "runNumber": 1001,
-      "commit": "abc1def0000",
-      "branch": null,
-      "event": null,
-      "generatedAt": "2026-08-06T19:41:53.879Z",
-      "totals": {
-        "pass": 141,
-        "fail": 0,
-        "assertions": 4295
-      },
-      "counterexamples": {
-        "total": 27,
-        "blocked": 27,
-        "leaked": 0
-      },
-      "suites": [
-        {
-          "id": "fuzz",
-          "fail": 0
-        },
-        {
-          "id": "normalization",
-          "fail": 0
-        },
-        {
-          "id": "encoding",
-          "fail": 0
-        },
-        {
-          "id": "audit",
-          "fail": 0
-        },
-        {
-          "id": "targets",
-          "fail": 0
-        }
-      ]
-    },
-    {
-      "runId": "1002",
-      "runNumber": 1002,
-      "commit": "abc2def0000",
-      "branch": null,
-      "event": null,
-      "generatedAt": "2026-08-06T19:41:53.879Z",
-      "totals": {
-        "pass": 142,
-        "fail": 3,
-        "assertions": 4295
-      },
-      "counterexamples": {
-        "total": 27,
-        "blocked": 27,
-        "leaked": 0
-      },
-      "suites": [
-        {
-          "id": "fuzz",
-          "fail": 0
-        },
-        {
-          "id": "normalization",
-          "fail": 0
-        },
-        {
-          "id": "encoding",
-          "fail": 0
-        },
-        {
-          "id": "audit",
-          "fail": 0
-        },
-        {
-          "id": "targets",
-          "fail": 0
-        }
-      ]
-    },
-    {
-      "runId": "1003",
-      "runNumber": 1003,
-      "commit": "abc3def0000",
-      "branch": null,
-      "event": null,
-      "generatedAt": "2026-08-06T19:41:53.879Z",
-      "totals": {
-        "pass": 143,
-        "fail": 0,
-        "assertions": 4295
-      },
-      "counterexamples": {
-        "total": 27,
-        "blocked": 27,
-        "leaked": 0
-      },
-      "suites": [
-        {
-          "id": "fuzz",
-          "fail": 0
-        },
-        {
-          "id": "normalization",
-          "fail": 0
-        },
-        {
-          "id": "encoding",
-          "fail": 0
-        },
-        {
-          "id": "audit",
-          "fail": 0
-        },
-        {
-          "id": "targets",
-          "fail": 0
-        }
-      ]
-    },
-    {
-      "runId": "1004",
-      "runNumber": 1004,
-      "commit": "abc4def0000",
-      "branch": null,
-      "event": null,
-      "generatedAt": "2026-08-06T19:41:53.879Z",
-      "totals": {
-        "pass": 144,
-        "fail": 0,
-        "assertions": 4295
-      },
-      "counterexamples": {
-        "total": 27,
-        "blocked": 26,
-        "leaked": 1
-      },
-      "suites": [
-        {
-          "id": "fuzz",
-          "fail": 0
-        },
-        {
-          "id": "normalization",
-          "fail": 0
-        },
-        {
-          "id": "encoding",
-          "fail": 0
-        },
-        {
-          "id": "audit",
-          "fail": 0
-        },
-        {
-          "id": "targets",
-          "fail": 0
-        }
-      ]
-    },
-    {
-      "runId": "1005",
-      "runNumber": 1005,
-      "commit": "abc5def0000",
-      "branch": null,
-      "event": null,
-      "generatedAt": "2026-08-06T19:41:53.879Z",
-      "totals": {
-        "pass": 145,
-        "fail": 0,
-        "assertions": 4295
-      },
-      "counterexamples": {
-        "total": 27,
-        "blocked": 27,
-        "leaked": 0
-      },
-      "suites": [
-        {
-          "id": "fuzz",
-          "fail": 0
-        },
-        {
-          "id": "normalization",
-          "fail": 0
-        },
-        {
-          "id": "encoding",
-          "fail": 0
-        },
-        {
-          "id": "audit",
-          "fail": 0
-        },
-        {
-          "id": "targets",
-          "fail": 0
-        }
-      ]
-    },
-    {
       "runId": null,
       "runNumber": null,
       "commit": "local",
       "branch": null,
       "event": null,
-      "generatedAt": "2026-08-06T19:42:17.705Z",
+      "generatedAt": "2026-08-06T19:48:48.680Z",
       "totals": {
-        "pass": 146,
+        "pass": 147,
         "fail": 0,
-        "assertions": 4302
+        "assertions": 4287
       },
       "counterexamples": {
         "total": 27,
@@ -258,6 +18,10 @@
         "leaked": 0
       },
       "suites": [
+        {
+          "id": "tmpflaky",
+          "fail": 0
+        },
         {
           "id": "fuzz",
           "fail": 0

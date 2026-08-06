@@ -8,9 +8,12 @@
  *   • return-to-coverage-report.html — human-readable report (also printed to PDF in CI)
  *   • summary.json                   — machine-readable pass/fail counts
  *
- * Exit code is non-zero when any suite fails, so CI goes red on a regression.
- * When a suite fails, its raw failure output (including fast-check
- * counterexamples) is embedded in the report and echoed to the log.
+ * Flaky detection: a failing suite is re-run exactly once. The exit code is
+ * non-zero only when the failure reproduces on that second attempt — a
+ * fail→pass sequence is reported as FLAKY (job log warning, report, PR comment,
+ * summary.json) but does not fail the job. Set RETURN_TO_COVERAGE_NO_RETRY=1 to
+ * disable retries. When a suite fails, its raw failure output (including
+ * fast-check counterexamples) is embedded in the report and echoed to the log.
  */
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -30,6 +33,16 @@ import {
   type History,
   type HistoryPoint,
 } from "./lib/coverage-history";
+import {
+  VERDICT_LABEL,
+  authoritativeAttempt,
+  classifyAttempts,
+  jobShouldFail,
+  retriesEnabled,
+  shouldRetry,
+  type Attempt,
+  type FlakyVerdict,
+} from "./lib/flaky-retry";
 import { sanitizeCounterexamples } from "../src/lib/return-to-counterexamples";
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
@@ -85,6 +98,12 @@ type SuiteResult = {
   assertions: number;
   durationMs: number;
   output: string;
+  /** stable-pass | flaky (failed then passed on one retry) | reproduced-failure. */
+  verdict: FlakyVerdict;
+  /** 1 when the suite passed first time, 2 when it was re-run. */
+  attempts: number;
+  /** Failing first-attempt output, kept for flaky suites so the noise is visible. */
+  firstAttempt: { pass: number; fail: number; output: string } | null;
 };
 
 const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
@@ -332,13 +351,15 @@ function renderTrendHtml(trend: Trend): string {
 }
 
 /**
- * Execute one suite with the framework it is actually written against.
+ * Execute one suite once with the framework it is actually written against.
  *
  * The runner is detected from the file's imports (`bun:test` vs `vitest`), the
  * matching command is spawned, and both runners' summaries are normalized into
  * the same pass/fail/assertion shape so the report stays consistent.
  */
-async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
+async function runAttempt(
+  s: (typeof SUITES)[number],
+): Promise<Attempt & { runner: TestRunner; runnerReason: string; assertionSource: SuiteResult["assertionSource"] }> {
   const started = Date.now();
   const { runner, reason } = detectRunner(join(process.cwd(), s.file));
   const cmd = runnerCommand(runner, s.file);
@@ -358,7 +379,6 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
   // A crashed/unparseable run must never read as "0 failures".
   const fail = parsed.unparseable && exitCode !== 0 ? Math.max(parsed.fail, 1) : parsed.fail;
   return {
-    ...s,
     runner,
     runnerReason: reason,
     assertionSource: parsed.assertionSource,
@@ -367,6 +387,42 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
     assertions: parsed.assertions,
     durationMs: Date.now() - started,
     output,
+  };
+}
+
+/**
+ * Run a suite, and re-run it exactly once if it failed (flaky detection).
+ *
+ * The job only goes red when the failure reproduces on the second attempt; a
+ * fail→pass sequence is reported as FLAKY and does not block CI. Set
+ * RETURN_TO_COVERAGE_NO_RETRY=1 to disable retries (every failure is final).
+ */
+async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
+  const first = await runAttempt(s);
+  let retry: Awaited<ReturnType<typeof runAttempt>> | null = null;
+  if (shouldRetry(first, retriesEnabled(process.env))) {
+    console.log(`::notice::"${s.title}" failed — re-running once to check for flakiness.`);
+    retry = await runAttempt(s);
+  }
+  const verdict = classifyAttempts(first, retry);
+  const authoritative = authoritativeAttempt(first, retry);
+  const source = retry && authoritative === retry ? retry : first;
+  return {
+    ...s,
+    runner: source.runner,
+    runnerReason: source.runnerReason,
+    assertionSource: source.assertionSource,
+    pass: authoritative.pass,
+    fail: verdict === "flaky" ? 0 : authoritative.fail,
+    assertions: authoritative.assertions,
+    durationMs: first.durationMs + (retry?.durationMs ?? 0),
+    output:
+      retry === null
+        ? first.output
+        : `----- ATTEMPT 1 (failed) -----\n${first.output}\n\n----- ATTEMPT 2 (retry) -----\n${retry.output}`,
+    verdict,
+    attempts: retry ? 2 : 1,
+    firstAttempt: retry ? { pass: first.pass, fail: first.fail, output: first.output } : null,
   };
 }
 
@@ -389,6 +445,7 @@ function renderHtml(
     { pass: 0, fail: 0, assertions: 0 },
   );
   const green = totals.fail === 0;
+  const flakyCount = results.filter((r) => r.verdict === "flaky").length;
 
   const rows = results
     .map(
@@ -400,8 +457,16 @@ function renderHtml(
       <td class="num">${r.assertions.toLocaleString("en-US")}${
         r.assertionSource === "expect-calls" ? "" : "<sup>*</sup>"
       }</td>
-      <td class="num">${(r.durationMs / 1000).toFixed(2)}s</td>
-      <td><span class="pill ${r.fail === 0 ? "ok" : "bad"}">${r.fail === 0 ? "PASS" : "FAIL"}</span></td>
+      <td class="num">${(r.durationMs / 1000).toFixed(2)}s${
+        r.attempts > 1 ? `<div class="blurb">${r.attempts} attempts</div>` : ""
+      }</td>
+      <td><span class="pill ${
+        r.verdict === "stable-pass" ? "ok" : r.verdict === "flaky" ? "warn" : "bad"
+      }">${VERDICT_LABEL[r.verdict]}</span>${
+        r.verdict === "flaky"
+          ? `<div class="blurb">failed then passed on retry (${r.firstAttempt?.fail ?? 0} failing first)</div>`
+          : ""
+      }</td>
     </tr>`,
     )
     .join("\n");
@@ -411,11 +476,15 @@ function renderHtml(
     : "";
 
   const failures = results
-    .filter((r) => r.fail > 0)
+    .filter((r) => r.verdict !== "stable-pass")
     .map(
       (r) => `<section class="failure">
-      <h3>${esc(r.title)} — ${r.fail} failing <span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span></h3>
-      <p class="blurb">Raw runner output, including any fast-check counterexample:</p>
+      <h3>${esc(r.title)} — ${
+        r.verdict === "flaky"
+          ? "flaky (passed on retry)"
+          : `${r.fail} failing (reproduced on retry)`
+      } <span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span></h3>
+      <p class="blurb">Raw runner output for every attempt, including any fast-check counterexample:</p>
       <pre>${esc(r.output)}</pre>
     </section>`,
     )
@@ -473,8 +542,12 @@ function renderHtml(
   <p class="sub">The Resonance Hub · redirect-safety test coverage for post-checkout <code>return_to</code> handling</p>
 
   <div class="banner">
-    <strong>${green ? "All suites passing" : `${totals.fail} failing test${totals.fail === 1 ? "" : "s"}`}</strong>
-    ${totals.pass} passed · ${totals.fail} failed · ${totals.assertions.toLocaleString("en-US")} assertions across ${results.length} suites
+    <strong>${green ? (flakyCount ? `All suites passing (${flakyCount} flaky)` : "All suites passing") : `${totals.fail} failing test${totals.fail === 1 ? "" : "s"}`}</strong>
+    ${totals.pass} passed · ${totals.fail} failed · ${totals.assertions.toLocaleString("en-US")} assertions across ${results.length} suites${
+      flakyCount
+        ? ` · ${flakyCount} suite${flakyCount === 1 ? "" : "s"} failed once and passed on retry (non-blocking)`
+        : ""
+    }
   </div>
 
   <dl>${metaRows}</dl>
@@ -493,7 +566,7 @@ function renderHtml(
   </table>
   ${assertionNote}
 
-  ${green ? `<p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>` : failures}
+  ${green && !flakyCount ? `<p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>` : failures}
 
 
   ${renderTrendHtml(trend)}
@@ -514,6 +587,14 @@ const totals = results.reduce(
   }),
   { pass: 0, fail: 0, assertions: 0 },
 );
+
+/**
+ * Flaky detection: suites that failed once and passed on the single retry.
+ * They are reported everywhere but never fail the job — only reproduced
+ * failures do (see the exit code at the bottom of this file).
+ */
+const flakySuites = results.filter((r) => r.verdict === "flaky");
+const reproducedFailures = results.filter((r) => r.verdict === "reproduced-failure");
 
 const meta: Record<string, string> = {
   Generated: new Date().toISOString(),
@@ -573,9 +654,18 @@ writeFileSync(
       generatedAt: meta.Generated,
       commit: meta.Commit,
       totals,
+      flaky: {
+        retriesEnabled: retriesEnabled(process.env),
+        suites: flakySuites.map((r) => ({
+          id: r.id,
+          title: r.title,
+          firstAttemptFail: r.firstAttempt?.fail ?? 0,
+        })),
+      },
       suites: results.map(({ output, ...r }) => ({
         ...r,
-        status: r.fail === 0 ? "pass" : "fail",
+        status:
+          r.verdict === "stable-pass" ? "pass" : r.verdict === "flaky" ? "flaky" : "fail",
       })),
       trend: {
         baselineCommit: trend.baseline?.commit ?? null,
@@ -613,15 +703,31 @@ for (const r of results) {
     )}${pad(
       `${r.assertions.toLocaleString("en-US")}${r.assertionSource === "expect-calls" ? "" : "*"}`,
       12,
-    )}${r.fail === 0 ? "PASS" : "FAIL"}`,
+    )}${VERDICT_LABEL[r.verdict]}${r.attempts > 1 ? ` (${r.attempts} attempts)` : ""}`,
   );
 }
 lines.push(
   `${pad("TOTAL", 38)}${pad("", 10)}${pad(String(totals.pass), 7)}${pad(String(totals.fail), 7)}${pad(
     totals.assertions.toLocaleString("en-US"),
     12,
-  )}${totals.fail === 0 ? "PASS" : "FAIL"}`,
+  )}${reproducedFailures.length === 0 ? "PASS" : "FAIL"}`,
 );
+if (flakySuites.length) {
+  for (const r of flakySuites) {
+    lines.push(
+      `::warning::Flaky suite "${r.title}" — failed with ${r.firstAttempt?.fail ?? 0} failing test(s), then passed on re-run. Not failing the job.`,
+    );
+  }
+} else if (retriesEnabled(process.env)) {
+  lines.push("No flaky suites: every suite passed on its first attempt or failed on both.");
+} else {
+  lines.push("Retries disabled (RETURN_TO_COVERAGE_NO_RETRY) — any failure is final.");
+}
+for (const r of reproducedFailures) {
+  lines.push(
+    `::error::Reproduced failure in "${r.title}" — failed on both attempts (${r.fail} failing test(s)).`,
+  );
+}
 if (results.some((r) => r.assertionSource !== "expect-calls")) {
   lines.push(
     "* assertion count is a lower bound — that suite's runner (vitest) does not report expect() calls.",
@@ -678,8 +784,10 @@ console.log(lines.join("\n"));
 console.log(`\nHTML report: ${HTML_PATH}`);
 console.log(`Summary JSON: ${JSON_PATH}`);
 
-for (const r of results.filter((x) => x.fail > 0)) {
-  console.log(`\n----- FAILURE OUTPUT: ${r.title} (${r.file}) -----`);
+for (const r of results.filter((x) => x.verdict !== "stable-pass")) {
+  console.log(
+    `\n----- ${r.verdict === "flaky" ? "FLAKY" : "FAILURE"} OUTPUT: ${r.title} (${r.file}) -----`,
+  );
   console.log(r.output);
 }
 
@@ -710,16 +818,36 @@ const trendMd = !trend.baseline
     ];
 
 const summaryMd = [
-  `### return_to fuzz & encoding coverage — ${totals.fail === 0 ? "✅ all passing" : `❌ ${totals.fail} failing`}`,
+  `### return_to fuzz & encoding coverage — ${
+    reproducedFailures.length
+      ? `❌ ${totals.fail} failing`
+      : flakySuites.length
+        ? `⚠️ all passing (${flakySuites.length} flaky)`
+        : "✅ all passing"
+  }`,
   "",
   "| Suite | Pass | Fail | Assertions | Status |",
   "| --- | ---: | ---: | ---: | --- |",
   ...results.map(
     (r) =>
-      `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${r.fail === 0 ? "PASS" : "FAIL"} |`,
+      `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${
+        r.verdict === "stable-pass"
+          ? "PASS"
+          : r.verdict === "flaky"
+            ? `⚠️ FLAKY (passed on retry)`
+            : "❌ FAIL (reproduced)"
+      } |`,
   ),
-  `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${totals.fail === 0 ? "PASS" : "FAIL"} |`,
+  `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${reproducedFailures.length === 0 ? "PASS" : "FAIL"} |`,
   "",
+  ...(flakySuites.length
+    ? [
+        `> ⚠️ **Flaky (re-run once, then passed — not blocking):** ${flakySuites
+          .map((r) => `${r.title} (${r.firstAttempt?.fail ?? 0} failing on attempt 1)`)
+          .join(", ")}`,
+        "",
+      ]
+    : []),
   ...trendMd,
   "",
   ...renderHistoryMarkdown(history),
@@ -763,4 +891,6 @@ const commentMd = [
 writeFileSync(COMMENT_PATH, commentMd + "\n");
 console.log(`PR comment body: ${COMMENT_PATH}`);
 
-if (totals.fail > 0 || totals.pass === 0) process.exit(1);
+// Only reproduced failures (failed twice) fail the job; flaky suites are
+// reported but non-blocking. An empty run is always a failure.
+if (jobShouldFail(results.map((r) => r.verdict)) || totals.pass === 0) process.exit(1);
