@@ -585,6 +585,14 @@ const totals = results.reduce(
   { pass: 0, fail: 0, assertions: 0 },
 );
 
+/**
+ * Flaky detection: suites that failed once and passed on the single retry.
+ * They are reported everywhere but never fail the job — only reproduced
+ * failures do (see the exit code at the bottom of this file).
+ */
+const flakySuites = results.filter((r) => r.verdict === "flaky");
+const reproducedFailures = results.filter((r) => r.verdict === "reproduced-failure");
+
 const meta: Record<string, string> = {
   Generated: new Date().toISOString(),
   Commit: process.env.GITHUB_SHA ?? "local",
@@ -692,15 +700,31 @@ for (const r of results) {
     )}${pad(
       `${r.assertions.toLocaleString("en-US")}${r.assertionSource === "expect-calls" ? "" : "*"}`,
       12,
-    )}${r.fail === 0 ? "PASS" : "FAIL"}`,
+    )}${VERDICT_LABEL[r.verdict]}${r.attempts > 1 ? ` (${r.attempts} attempts)` : ""}`,
   );
 }
 lines.push(
   `${pad("TOTAL", 38)}${pad("", 10)}${pad(String(totals.pass), 7)}${pad(String(totals.fail), 7)}${pad(
     totals.assertions.toLocaleString("en-US"),
     12,
-  )}${totals.fail === 0 ? "PASS" : "FAIL"}`,
+  )}${reproducedFailures.length === 0 ? "PASS" : "FAIL"}`,
 );
+if (flakySuites.length) {
+  for (const r of flakySuites) {
+    lines.push(
+      `::warning::Flaky suite "${r.title}" — failed with ${r.firstAttempt?.fail ?? 0} failing test(s), then passed on re-run. Not failing the job.`,
+    );
+  }
+} else if (retriesEnabled(process.env)) {
+  lines.push("No flaky suites: every suite passed on its first attempt or failed on both.");
+} else {
+  lines.push("Retries disabled (RETURN_TO_COVERAGE_NO_RETRY) — any failure is final.");
+}
+for (const r of reproducedFailures) {
+  lines.push(
+    `::error::Reproduced failure in "${r.title}" — failed on both attempts (${r.fail} failing test(s)).`,
+  );
+}
 if (results.some((r) => r.assertionSource !== "expect-calls")) {
   lines.push(
     "* assertion count is a lower bound — that suite's runner (vitest) does not report expect() calls.",
@@ -757,8 +781,10 @@ console.log(lines.join("\n"));
 console.log(`\nHTML report: ${HTML_PATH}`);
 console.log(`Summary JSON: ${JSON_PATH}`);
 
-for (const r of results.filter((x) => x.fail > 0)) {
-  console.log(`\n----- FAILURE OUTPUT: ${r.title} (${r.file}) -----`);
+for (const r of results.filter((x) => x.verdict !== "stable-pass")) {
+  console.log(
+    `\n----- ${r.verdict === "flaky" ? "FLAKY" : "FAILURE"} OUTPUT: ${r.title} (${r.file}) -----`,
+  );
   console.log(r.output);
 }
 
@@ -789,16 +815,36 @@ const trendMd = !trend.baseline
     ];
 
 const summaryMd = [
-  `### return_to fuzz & encoding coverage — ${totals.fail === 0 ? "✅ all passing" : `❌ ${totals.fail} failing`}`,
+  `### return_to fuzz & encoding coverage — ${
+    reproducedFailures.length
+      ? `❌ ${totals.fail} failing`
+      : flakySuites.length
+        ? `⚠️ all passing (${flakySuites.length} flaky)`
+        : "✅ all passing"
+  }`,
   "",
   "| Suite | Pass | Fail | Assertions | Status |",
   "| --- | ---: | ---: | ---: | --- |",
   ...results.map(
     (r) =>
-      `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${r.fail === 0 ? "PASS" : "FAIL"} |`,
+      `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${
+        r.verdict === "stable-pass"
+          ? "PASS"
+          : r.verdict === "flaky"
+            ? `⚠️ FLAKY (passed on retry)`
+            : "❌ FAIL (reproduced)"
+      } |`,
   ),
-  `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${totals.fail === 0 ? "PASS" : "FAIL"} |`,
+  `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${reproducedFailures.length === 0 ? "PASS" : "FAIL"} |`,
   "",
+  ...(flakySuites.length
+    ? [
+        `> ⚠️ **Flaky (re-run once, then passed — not blocking):** ${flakySuites
+          .map((r) => `${r.title} (${r.firstAttempt?.fail ?? 0} failing on attempt 1)`)
+          .join(", ")}`,
+        "",
+      ]
+    : []),
   ...trendMd,
   "",
   ...renderHistoryMarkdown(history),
@@ -842,4 +888,6 @@ const commentMd = [
 writeFileSync(COMMENT_PATH, commentMd + "\n");
 console.log(`PR comment body: ${COMMENT_PATH}`);
 
-if (totals.fail > 0 || totals.pass === 0) process.exit(1);
+// Only reproduced failures (failed twice) fail the job; flaky suites are
+// reported but non-blocking. An empty run is always a failure.
+if (jobShouldFail(results.map((r) => r.verdict)) || totals.pass === 0) process.exit(1);
