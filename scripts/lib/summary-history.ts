@@ -438,8 +438,8 @@ export function renderSuiteFilterChart(
     })
     .join("\n      ");
 
-  return `<figure class="chart suite-filter-chart" id="${prefix}-root">
-  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span></figcaption>
+  return `<figure class="chart suite-filter-chart" id="${prefix}-root" style="position:relative">
+  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate.</figcaption>
   <div class="suite-toggles">
       ${checkboxes}
       <button type="button" data-suite-all="1">All</button>
@@ -462,12 +462,23 @@ export function renderSuiteFilterChart(
     var W = 720, H = 220, PT = 18, PR = 44, PB = 30, PL = 46;
     var plotW = W - PL - PR, plotH = H - PT - PB;
     function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;"; }); }
+    function tipLines(p) {
+      var total = p.pass + p.fail;
+      return [
+        "Date: " + (p.date || "—"),
+        "Run: " + (p.runId || "—") + (p.runNumber != null ? " (#" + p.runNumber + ")" : ""),
+        "Commit: " + p.label,
+        "Pass: " + p.pass,
+        "Fail: " + p.fail,
+        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")"
+      ];
+    }
     function series(sel) {
       return runs.map(function (r) {
         var pass = 0, fail = 0;
         r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
         var total = pass + fail;
-        return { label: r.label, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
       });
     }
     function draw(pts) {
@@ -481,10 +492,11 @@ export function renderSuiteFilterChart(
       var bars = pts.map(function (p, i) {
         var passH = (p.pass / maxTests) * plotH, failH = (p.fail / maxTests) * plotH;
         var x = cx(i) - barW / 2, passY = PT + plotH - passH, failY = passY - failH;
-        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(p.label + " — pass " + p.pass + ", fail " + p.fail + ", failure rate " + p.rate.toFixed(2) + "%") + '</title></g>';
+        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(tipLines(p).join("\\n")) + '</title></g>';
       }).join("");
       var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
-      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(p.label + " — failure rate " + p.rate.toFixed(2) + "%") + '</title></circle>'; }).join("");
+      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(tipLines(p).join("\\n")) + '</title></circle>'; }).join("");
+      var hits = pts.map(function (p, i) { return '<rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '"><title>' + esc(tipLines(p).join("\\n")) + '</title></rect>'; }).join("");
       host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
         '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
         '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
@@ -492,7 +504,7 @@ export function renderSuiteFilterChart(
         '<text x="4" y="' + (PT + plotH) + '" font-size="10" fill="#64748b">0</text>' +
         '<text x="' + (W - PR + 6) + '" y="' + (PT + 10) + '" font-size="10" fill="#b45309">' + maxRate.toFixed(1) + '%</text>' +
         '<text x="' + (W - PR + 6) + '" y="' + (PT + plotH) + '" font-size="10" fill="#b45309">0%</text>' +
-        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots +
+        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots + hits +
         '<text x="' + PL + '" y="' + (H - 8) + '" font-size="10" fill="#64748b">' + esc(pts[0].label) + '</text>' +
         '<text x="' + (W - PR) + '" y="' + (H - 8) + '" font-size="10" fill="#64748b" text-anchor="end">' + esc(pts[n - 1].label) + '</text>' +
         '</svg>';
@@ -512,6 +524,7 @@ export function renderSuiteFilterChart(
     update();
   })();
   </script>
+  ${renderTooltipScript(`${prefix}-root`)}
 </figure>`;
 }
 
@@ -520,7 +533,8 @@ export const SUITE_FILTER_CSS = `
   .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
   .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
   .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
-`;
+${CHART_TOOLTIP_CSS}`;
+
 
 
 /**
