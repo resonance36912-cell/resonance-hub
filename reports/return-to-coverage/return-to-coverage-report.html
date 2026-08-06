@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8" />
+<title>return_to coverage report</title>
+<style>
+  @page { size: A4; margin: 14mm; }
+  :root { color-scheme: light; }
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         margin: 0; padding: 24px; color: #10121a; background: #fff; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: #5b6070; margin: 0 0 24px; font-size: 13px; }
+  .banner { border-radius: 14px; padding: 16px 20px; margin-bottom: 18px; color: #fff;
+            background: linear-gradient(90deg,#0f766e,#10b981); }
+  .banner strong { font-size: 20px; display: block; }
+  dl { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px 24px; margin: 0 0 18px; }
+  dl div { display: flex; gap: 8px; font-size: 12px; border-bottom: 1px solid #eceef4; padding-bottom: 6px; }
+  dt { color: #5b6070; min-width: 130px; }
+  dd { margin: 0; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #eceef4; vertical-align: top; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #5b6070; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .blurb { color: #5b6070; font-size: 11.5px; margin: 3px 0; max-width: 46ch; }
+  code { font-size: 11px; color: #3b3f52; }
+  .pill { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+  .pill.ok { background: #d1fae5; color: #065f46; }
+  .pill.bad { background: #fee2e2; color: #991b1b; }
+  td.bad { color: #991b1b; font-weight: 700; }
+  .failure { margin-top: 28px; page-break-inside: avoid; }
+  pre { background: #f6f7fb; border: 1px solid #e5e8f0; border-radius: 10px; padding: 12px;
+        font-size: 10.5px; white-space: pre-wrap; word-break: break-word; }
+  footer { margin-top: 16px; font-size: 11px; color: #7a8092; }
+</style></head>
+<body>
+  <h1>return_to allowlist — fuzz &amp; encoding coverage</h1>
+  <p class="sub">The Resonance Hub · redirect-safety test coverage for post-checkout <code>return_to</code> handling</p>
+
+  <div class="banner">
+    <strong>All suites passing</strong>
+    146 passed · 0 failed · 4,415 assertions across 5 suites
+  </div>
+
+  <dl><div><dt>Generated</dt><dd>2026-08-06T19:05:27.236Z</dd></div><div><dt>Commit</dt><dd>local</dd></div><div><dt>Ref</dt><dd>local</dd></div><div><dt>Workflow</dt><dd>local run</dd></div><div><dt>Runner</dt><dd>bun 1.3.3</dd></div><div><dt>Suites</dt><dd>5</dd></div></dl>
+
+  <table>
+    <thead><tr><th>Suite</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Time</th><th>Status</th></tr></thead>
+    <tbody><tr>
+      <td><strong>Property-based fuzzing</strong><div class="blurb">fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.</div><code>scripts/lib/return-to-allowlist-fuzz.test.ts</code></td>
+      <td class="num">5</td>
+      <td class="num ">0</td>
+      <td class="num">3,989</td>
+      <td class="num">0.73s</td>
+      <td><span class="pill ok">PASS</span></td>
+    </tr>
+<tr>
+      <td><strong>Normalization edge cases</strong><div class="blurb">trailing slashes, uppercase/mixed-case hosts, explicit default ports, trailing-dot hosts, suffix grafts.</div><code>scripts/lib/return-to-allowlist-normalization.test.ts</code></td>
+      <td class="num">43</td>
+      <td class="num ">0</td>
+      <td class="num">61</td>
+      <td class="num">0.04s</td>
+      <td><span class="pill ok">PASS</span></td>
+    </tr>
+<tr>
+      <td><strong>Percent-encoding edge cases</strong><div class="blurb">percent-encoded hosts, userinfo smuggling, encoded path/query, homoglyph hosts.</div><code>scripts/lib/return-to-allowlist-encoding.test.ts</code></td>
+      <td class="num">44</td>
+      <td class="num ">0</td>
+      <td class="num">159</td>
+      <td class="num">0.03s</td>
+      <td><span class="pill ok">PASS</span></td>
+    </tr>
+<tr>
+      <td><strong>Redirect audit records</strong><div class="blurb">audit rows keep origin-only candidates and path-only targets — never full URLs, query strings or fragments.</div><code>scripts/lib/return-to-audit.test.ts</code></td>
+      <td class="num">23</td>
+      <td class="num ">0</td>
+      <td class="num">136</td>
+      <td class="num">0.19s</td>
+      <td><span class="pill ok">PASS</span></td>
+    </tr>
+<tr>
+      <td><strong>Checkout success target resolution</strong><div class="blurb">allowlisted spoke origins drive the primary CTA / auto-redirect; anything else falls back to a safe Hub target.</div><code>scripts/lib/checkout-success-return-to-allowlist.test.ts</code></td>
+      <td class="num">31</td>
+      <td class="num ">0</td>
+      <td class="num">70</td>
+      <td class="num">0.20s</td>
+      <td><span class="pill ok">PASS</span></td>
+    </tr></tbody>
+    <tfoot><tr>
+      <td><strong>Total</strong></td>
+      <td class="num"><strong>146</strong></td>
+      <td class="num "><strong>0</strong></td>
+      <td class="num"><strong>4,415</strong></td>
+      <td class="num"></td><td></td>
+    </tr></tfoot>
+  </table>
+
+  <p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>
+
+  <footer>Contract: docs/return-to-allowlist.md · Generated by scripts/return-to-coverage-report.ts</footer>
+</body></html>
