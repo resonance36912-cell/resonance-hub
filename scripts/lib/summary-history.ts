@@ -320,8 +320,16 @@ const shortLabel = (p: HistoryPoint): string =>
 /**
  * Inline SVG: pass/fail bars plus a failure-rate line, self-contained so it can
  * be embedded in the run-summary page, the HTML report, and the printed PDF.
+ *
+ * Each column is a link: clicking a data point opens that run's summary section
+ * (and from there its CI log / artifacts), falling back to an in-page anchor for
+ * runs without a resolvable GitHub run id.
  */
-export function renderFailureRateChart(points: readonly HistoryPoint[], title = "Pass / fail and failure rate over time"): string {
+export function renderFailureRateChart(
+  points: readonly HistoryPoint[],
+  title = "Pass / fail and failure rate over time",
+  linkOpts: RunLinkOptions = {},
+): string {
   if (points.length === 0) {
     return `<figure class="chart"><figcaption>${escapeXml(title)}</figcaption><p class="sub">No summary.json files found — upload at least one to chart history.</p></figure>`;
   }
@@ -337,8 +345,8 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
   const slot = plotW / n;
   const barW = Math.max(3, Math.min(26, slot * 0.6));
   const cx = (i: number) => PAD.left + slot * (i + 0.5);
-  const yTests = (v: number) => PAD.top + plotH - (v / maxTests) * plotH;
   const yRate = (v: number) => PAD.top + plotH - (v / maxRate) * plotH;
+  const links = points.map((p) => runLinks(p, linkOpts));
 
   const bars = points
     .map((p, i) => {
@@ -365,22 +373,27 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     )
     .join("");
 
-  // Full-height transparent hit areas: hovering anywhere in a run's column shows
-  // that run's tooltip, so short/zero bars and the rate dot are still reachable.
+  // Full-height transparent hit areas wrapped in a link: hovering anywhere in a
+  // run's column shows that run's tooltip, and clicking opens that exact run.
   const hits = points
-    .map(
-      (p, i) =>
-        `<rect class="pt-hit" x="${(cx(i) - slot / 2).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(
-          1,
-        )}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
-          pointTooltipLines(p).join("|"),
-        )}"><title>${escapeXml(pointTooltip(p))}</title></rect>`,
-    )
+    .map((p, i) => {
+      const l = links[i]!;
+      const external = l.href.startsWith("http");
+      return `<a href="${escapeXml(l.href)}"${
+        external ? ' target="_blank" rel="noreferrer"' : ""
+      } aria-label="${escapeXml(`Open run ${p.runId ?? shortLabel(p)}`)}"><rect class="pt-hit" x="${(
+        cx(i) - slot / 2
+      ).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(1)}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
+        pointTooltipLinesWithLink(p, linkOpts).join("|"),
+      )}" data-href="${escapeXml(l.href)}"${
+        l.logUrl ? ` data-log="${escapeXml(l.logUrl)}"` : ""
+      }><title>${escapeXml(pointTooltip(p))}</title></rect></a>`;
+    })
     .join("");
 
   const uid = `hc${chartUid()}`;
   return `<figure class="chart" id="${uid}" style="position:relative">
-  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s). Hover a column for the exact date, run id and counts.</figcaption>
+  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s). Hover a column for the exact date, run id and counts; click it to open that run's summary.</figcaption>
   <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${escapeXml(`${title} over ${n} runs`)}">
     <line x1="${PAD.left}" y1="${PAD.top + plotH}" x2="${W - PAD.right}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
     <line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
@@ -395,9 +408,38 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     <text x="${PAD.left}" y="${H - 8}" font-size="10" fill="#64748b">${escapeXml(shortLabel(points[0]!))}</text>
     <text x="${W - PAD.right}" y="${H - 8}" font-size="10" fill="#64748b" text-anchor="end">${escapeXml(shortLabel(points[n - 1]!))}</text>
   </svg>
+  ${renderRunLinkList(points, linkOpts)}
   ${renderTooltipScript(uid)}
 </figure>`;
 }
+
+/**
+ * Printable/keyboard-accessible list of the same deep links the chart columns
+ * carry — the PDF and screen readers get real anchors, not just hover targets.
+ */
+export function renderRunLinkList(
+  points: readonly HistoryPoint[],
+  linkOpts: RunLinkOptions = {},
+): string {
+  if (points.length === 0) return "";
+  const items = points
+    .slice(-12)
+    .map((p) => {
+      const l = runLinks(p, linkOpts);
+      const label = `${shortLabel(p)}${p.runNumber !== null ? ` #${p.runNumber}` : ""}`;
+      const parts = l.summaryUrl
+        ? [
+            `<a href="${escapeXml(l.summaryUrl)}" target="_blank" rel="noreferrer">${escapeXml(label)}</a>`,
+            `<a href="${escapeXml(l.logUrl!)}" target="_blank" rel="noreferrer">log</a>`,
+            `<a href="${escapeXml(l.artifactsUrl!)}" target="_blank" rel="noreferrer">artifacts</a>`,
+          ]
+        : [`<a href="${escapeXml(l.anchor)}">${escapeXml(label)}</a>`];
+      return `<li>${parts.join(" · ")}</li>`;
+    })
+    .join("");
+  return `<ul class="run-links">${items}</ul>`;
+}
+
 
 let uidSeq = 0;
 const chartUid = (): number => ++uidSeq;
