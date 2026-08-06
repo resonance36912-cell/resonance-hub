@@ -453,6 +453,7 @@ function renderHtml(
   meta: Record<string, string>,
   trend: Trend,
   historyHtml: string,
+  counterexampleLinksHtml = "",
 ) {
   const totals = results.reduce(
     (a, r) => ({
@@ -550,6 +551,10 @@ function renderHtml(
   tr.row-bad td { background: #fff5f5; }
   .alert { background: #fee2e2; border: 1px solid #fecaca; color: #7f1d1d; border-radius: 10px;
            padding: 9px 12px; font-size: 12px; margin: 0 0 10px; }
+  .cx-links { margin-top: 8px; }
+  .cx-links ul { margin: 4px 0 0 18px; padding: 0; }
+  .cx-links li { margin: 2px 0; }
+  .cx-links a { color: #7f1d1d; }
   .failure { margin-top: 28px; page-break-inside: avoid; }
   pre { background: #f6f7fb; border: 1px solid #e5e8f0; border-radius: 10px; padding: 12px;
         font-size: 10.5px; white-space: pre-wrap; word-break: break-word; }
@@ -664,7 +669,51 @@ const history = appendHistoryPoint(priorHistory, historyPoint);
 
 mkdirSync(dirname(HTML_PATH), { recursive: true });
 writeFileSync(HISTORY_PATH, JSON.stringify(history, null, 2) + "\n");
-writeFileSync(HTML_PATH, renderHtml(results, meta, trend, renderHistoryHtml(history)));
+
+/*
+ * Stored counterexample inputs for NEW FAILURE suites.
+ *
+ * For every suite the trend marks as newly failing, the exact inputs are parsed
+ * out of the runner output and written to `counterexamples/` as JSON + an
+ * anchored HTML page, so the CI log, the HTML report and the PR comment can all
+ * link straight to the offending value instead of a wall of runner output.
+ */
+const COUNTEREXAMPLES_DIR = join(OUT_DIR, "counterexamples");
+const LINK_OPTS: LinkBaseOptions = {
+  reportBaseUrl: process.env["RETURN_TO_REPORT_BASE_URL"] ?? null,
+  hubUrl: process.env["RETURN_TO_HUB_URL"] ?? null,
+};
+const newFailureGroups: {
+  suiteId: string;
+  suiteTitle: string;
+  items: StoredCounterexample[];
+}[] = trend.newFailures.map((r) => {
+  const suite = results.find((x) => x.id === r.id);
+  return {
+    suiteId: r.id,
+    suiteTitle: r.title,
+    items: extractCounterexamples(r.id, suite?.output ?? ""),
+  };
+});
+if (newFailureGroups.length) {
+  mkdirSync(COUNTEREXAMPLES_DIR, { recursive: true });
+  for (const g of newFailureGroups) {
+    writeFileSync(
+      join(COUNTEREXAMPLES_DIR, counterexampleFileName(g.suiteId, "html")),
+      renderCounterexamplesHtml(g.suiteId, g.suiteTitle, g.items, meta, LINK_OPTS),
+    );
+    writeFileSync(
+      join(COUNTEREXAMPLES_DIR, counterexampleFileName(g.suiteId, "json")),
+      counterexampleStoreJson(g.suiteId, g.suiteTitle, g.items, meta, LINK_OPTS),
+    );
+  }
+}
+const counterexampleLinksHtml = renderCounterexampleLinksHtml(newFailureGroups, LINK_OPTS);
+
+writeFileSync(
+  HTML_PATH,
+  renderHtml(results, meta, trend, renderHistoryHtml(history), counterexampleLinksHtml),
+);
 
 /**
  * Per-suite reports: one standalone HTML + summary JSON per suite, published as
@@ -842,6 +891,17 @@ if (!trend.baseline) {
   }
   for (const r of trend.newFailures) {
     lines.push(`::error::New return_to failure in "${r.title}" — ${r.fail} failing test(s).`);
+    const g = newFailureGroups.find((x) => x.suiteId === r.id);
+    if (g?.items.length) {
+      lines.push(
+        `  stored inputs: counterexamples/${counterexampleFileName(r.id, "html")} (JSON: counterexamples/${counterexampleFileName(r.id, "json")})`,
+      );
+      lines.push(...counterexampleLogLines(r.title, g.items, LINK_OPTS));
+    } else {
+      lines.push(
+        `  no counterexample input could be parsed for "${r.title}" — see suites/${suiteReportFileName(r.id, "html")}.`,
+      );
+    }
   }
 }
 
@@ -866,6 +926,16 @@ const trendMd = !trend.baseline
         ? [
             `> ⚠️ **New failures:** ${trend.newFailures.map((r) => `${r.title} (${r.fail})`).join(", ")}`,
             "",
+            ...(newFailureGroups.some((g) => g.items.length)
+              ? [
+                  "**Stored counterexample inputs (click to open the exact input):**",
+                  "",
+                  ...newFailureGroups.flatMap((g) =>
+                    counterexampleMarkdown(g.suiteTitle, g.items, LINK_OPTS),
+                  ),
+                  "",
+                ]
+              : []),
           ]
         : ["No new failures versus the last successful run.", ""]),
       "| Suite | Pass (was → now) | Fail (was → now) | Δ assertions | Trend |",
