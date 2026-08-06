@@ -160,6 +160,12 @@ Tests: `scripts/lib/security-headers.test.ts`.
   `tests/e2e/checkout-success-return-to-normalization.py` — Playwright
   E2E asserting the browser never leaves the Hub origin for rejected
   inputs.
+- `tests/e2e/checkout-return-to-admin-origin.py` — Playwright E2E for an
+  admin-added (DB-backed) origin: it seeds a row in
+  `public.return_to_origins` via `scripts/e2e/return-to-origin-fixture.ts`,
+  asserts `/checkout/success` auto-redirects to the spoke and
+  `/checkout/cancel` offers a "Back to app" link to it, includes a control
+  run with the row absent, and always removes the fixture row.
 
 **Any change to the accept/reject rules above MUST update this
 document, `safeOrigin`'s JSDoc, and the corresponding test suites in the
