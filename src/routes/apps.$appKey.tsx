@@ -120,13 +120,33 @@ function AppDetailPage() {
             className="h-3 w-12 rounded-full"
             style={{ backgroundColor: entry.accentColor }}
           />
-          <span className="rounded-full border border-border px-2 py-0.5 text-xs uppercase tracking-wide text-muted-foreground">
-            {STATUS_LABELS[entry.status]}
+          <span
+            title={meaning.explanation}
+            className="rounded-full border border-border px-2 py-0.5 text-xs uppercase tracking-wide text-muted-foreground"
+          >
+            {meaning.label}
+          </span>
+          <span className="text-xs font-medium text-muted-foreground">
+            {meaning.accessible ? "✓ " : "· "}
+            {meaning.access}
           </span>
         </div>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight">{entry.label}</h1>
         <p className="mt-3 max-w-2xl text-lg text-muted-foreground">{entry.tagline}</p>
         <p className="mt-1 text-sm text-muted-foreground">Use case: {entry.useCase}</p>
+
+        <p
+          className="mt-4 max-w-2xl rounded-lg border border-border bg-muted/40 p-3 text-sm text-muted-foreground"
+          aria-label={`${meaning.label} status explanation`}
+        >
+          <span className="font-medium text-foreground">
+            {meaning.label} — {meaning.access}.
+          </span>{" "}
+          {meaning.explanation}{" "}
+          <AppLink to={ROUTES.apps} className="text-primary underline underline-offset-2">
+            See all status badges →
+          </AppLink>
+        </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <a
