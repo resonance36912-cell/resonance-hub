@@ -61,8 +61,15 @@ export const Route = createFileRoute("/checkout/success")({
   }),
   loader: async ({ deps }) => {
     // Widen the allowlist with admin-managed origins before CTA resolution.
+    // The returned list is also serialized to the client so the browser
+    // runtime registers the same extras during hydration — otherwise the
+    // client-side allowlist would be narrower than SSR's and admin-added
+    // return_to origins would silently fall back to /pricing.
+    let extraOrigins: string[] = [];
     try {
-      registerExtraReturnToOrigins(await listEnabledReturnToOrigins());
+      extraOrigins = registerExtraReturnToOrigins(
+        await listEnabledReturnToOrigins(),
+      );
     } catch {
       // Allowlist extras are best-effort; the built-in origins still apply.
     }
@@ -79,8 +86,9 @@ export const Route = createFileRoute("/checkout/success")({
     } catch {
       // Audit logging must never block the post-payment page.
     }
-    return null;
+    return { extraOrigins };
   },
+
 
   component: SuccessPage,
 });
