@@ -43,7 +43,14 @@ import {
   type Attempt,
   type FlakyVerdict,
 } from "./lib/flaky-retry";
+import {
+  renderSuiteHtml,
+  suiteReportFileName,
+  suiteSummaryJson,
+  type SuiteReportInput,
+} from "./lib/suite-report";
 import { sanitizeCounterexamples } from "../src/lib/return-to-counterexamples";
+
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
   {
