@@ -47,6 +47,7 @@ import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-healt
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRoadmapRouteImport } from './routes/admin.roadmap'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
+import { Route as AdminReturnToCounterexamplesRouteImport } from './routes/admin.return-to-counterexamples'
 import { Route as AdminReturnToAllowlistRouteImport } from './routes/admin.return-to-allowlist'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
@@ -288,6 +289,12 @@ const AdminRevenueRoute = AdminRevenueRouteImport.update({
   path: '/admin/revenue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminReturnToCounterexamplesRoute =
+  AdminReturnToCounterexamplesRouteImport.update({
+    id: '/admin/return-to-counterexamples',
+    path: '/admin/return-to-counterexamples',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AdminReturnToAllowlistRoute = AdminReturnToAllowlistRouteImport.update({
   id: '/admin/return-to-allowlist',
   path: '/admin/return-to-allowlist',
@@ -582,6 +589,7 @@ export interface FileRoutesByFullPath {
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
+  '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
@@ -671,6 +679,7 @@ export interface FileRoutesByTo {
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
+  '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
@@ -761,6 +770,7 @@ export interface FileRoutesById {
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
+  '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/roadmap': typeof AdminRoadmapRoute
   '/admin/rop': typeof AdminRopRoute
@@ -852,6 +862,7 @@ export interface FileRouteTypes {
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
+    | '/admin/return-to-counterexamples'
     | '/admin/revenue'
     | '/admin/roadmap'
     | '/admin/rop'
@@ -941,6 +952,7 @@ export interface FileRouteTypes {
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
+    | '/admin/return-to-counterexamples'
     | '/admin/revenue'
     | '/admin/roadmap'
     | '/admin/rop'
@@ -1030,6 +1042,7 @@ export interface FileRouteTypes {
     | '/admin/payfast-audit'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
+    | '/admin/return-to-counterexamples'
     | '/admin/revenue'
     | '/admin/roadmap'
     | '/admin/rop'
@@ -1120,6 +1133,7 @@ export interface RootRouteChildren {
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReturnToAllowlistRoute: typeof AdminReturnToAllowlistRoute
+  AdminReturnToCounterexamplesRoute: typeof AdminReturnToCounterexamplesRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRoadmapRoute: typeof AdminRoadmapRoute
   AdminRopRoute: typeof AdminRopRoute
@@ -1439,6 +1453,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/revenue'
       fullPath: '/admin/revenue'
       preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/return-to-counterexamples': {
+      id: '/admin/return-to-counterexamples'
+      path: '/admin/return-to-counterexamples'
+      fullPath: '/admin/return-to-counterexamples'
+      preLoaderRoute: typeof AdminReturnToCounterexamplesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/return-to-allowlist': {
@@ -1880,6 +1901,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReturnToAllowlistRoute: AdminReturnToAllowlistRoute,
+  AdminReturnToCounterexamplesRoute: AdminReturnToCounterexamplesRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRoadmapRoute: AdminRoadmapRoute,
   AdminRopRoute: AdminRopRoute,
