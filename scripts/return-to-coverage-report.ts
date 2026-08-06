@@ -346,8 +346,6 @@ function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend:
     )
     .join("\n");
 
-    .join("\n");
-
   const metaRows = Object.entries(meta)
     .map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`)
     .join("");
