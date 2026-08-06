@@ -694,7 +694,15 @@ const historyPoint: HistoryPoint = {
   generatedAt: meta.Generated ?? new Date().toISOString(),
   totals,
   counterexamples: cxStats,
-  suites: results.map((r) => ({ id: r.id, fail: r.fail })),
+  // pass/assertions are recorded per suite so the historical graph can filter
+  // the pass/fail and failure-rate series down to a subset of suites.
+  suites: results.map((r) => ({
+    id: r.id,
+    fail: r.fail,
+    pass: r.pass,
+    assertions: r.assertions,
+  })),
+
 };
 const history = appendHistoryPoint(priorHistory, historyPoint);
 
