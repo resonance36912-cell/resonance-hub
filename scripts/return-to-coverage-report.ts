@@ -260,14 +260,18 @@ function renderTrendHtml(trend: Trend): string {
   </section>`;
 }
 
-function num(re: RegExp, text: string): number {
-  const m = text.match(re);
-  return m ? Number(m[1]) : 0;
-}
-
+/**
+ * Execute one suite with the framework it is actually written against.
+ *
+ * The runner is detected from the file's imports (`bun:test` vs `vitest`), the
+ * matching command is spawned, and both runners' summaries are normalized into
+ * the same pass/fail/assertion shape so the report stays consistent.
+ */
 async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
   const started = Date.now();
-  const proc = Bun.spawn(["bun", "test", s.file], {
+  const { runner, reason } = detectRunner(join(process.cwd(), s.file));
+  const cmd = runnerCommand(runner, s.file);
+  const proc = Bun.spawn(cmd, {
     stdout: "pipe",
     stderr: "pipe",
     env: process.env,
@@ -276,18 +280,25 @@ async function runSuite(s: (typeof SUITES)[number]): Promise<SuiteResult> {
     new Response(proc.stdout).text(),
     new Response(proc.stderr).text(),
   ]);
-  await proc.exited;
-  // Bun's test reporter writes its summary to stderr.
-  const output = `${out}${err}`.trim();
+  const exitCode = await proc.exited;
+  // Both reporters split output across stdout/stderr; parse the combination.
+  const output = `$ ${cmd.join(" ")}\n\n${`${out}${err}`.trim()}`;
+  const parsed = parseRunnerOutput(runner, output);
+  // A crashed/unparseable run must never read as "0 failures".
+  const fail = parsed.unparseable && exitCode !== 0 ? Math.max(parsed.fail, 1) : parsed.fail;
   return {
     ...s,
-    pass: num(/(\d+)\s+pass/, output),
-    fail: num(/(\d+)\s+fail/, output),
-    assertions: num(/(\d+)\s+expect\(\) calls/, output),
+    runner,
+    runnerReason: reason,
+    assertionSource: parsed.assertionSource,
+    pass: parsed.pass,
+    fail,
+    assertions: parsed.assertions,
     durationMs: Date.now() - started,
     output,
   };
 }
+
 
 function esc(v: string): string {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
