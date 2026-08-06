@@ -30,6 +30,7 @@ Run:
 
 import asyncio
 import gzip
+import html as htmllib
 import re
 import subprocess
 import sys
@@ -86,7 +87,11 @@ def _ssr_anchors(url: str) -> tuple[list[tuple[str, str]], str]:
         if res.headers.get("content-encoding") == "gzip":
             raw = gzip.decompress(raw)
     html = raw.decode("utf-8", "replace")
-    anchors = [(h, _norm_label(t)) for h, t in ANCHOR_RE.findall(html)]
+    # SSR serializes hrefs with HTML entities (&amp;); the DOM reports them decoded.
+    anchors = [
+        (htmllib.unescape(h), _norm_label(htmllib.unescape(t)))
+        for h, t in ANCHOR_RE.findall(html)
+    ]
     return anchors, html
 
 
@@ -217,7 +222,9 @@ async def main() -> int:
                     pw,
                     name="success-verifying",
                     path=success_session,
-                    expect_spoke=True,
+                    # The `verifying` phase renders no navigation CTAs yet — the
+                    # point of this case is that SSR and client agree on that.
+                    expect_spoke=False,
                     stall=True,
                 )
             )
