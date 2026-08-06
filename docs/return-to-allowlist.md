@@ -166,6 +166,15 @@ Tests: `scripts/lib/security-headers.test.ts`.
   asserts `/checkout/success` auto-redirects to the spoke and
   `/checkout/cancel` offers a "Back to app" link to it, includes a control
   run with the row absent, and always removes the fixture row.
+- `tests/e2e/checkout-hydration-consistency.py` — Playwright E2E asserting the
+  SSR HTML and the post-hydration DOM render an identical anchor set (href +
+  label) on `/checkout/success` and `/checkout/cancel` for an admin-allowlisted
+  origin, that the spoke link is present on both sides or neither, and that
+  React logs no hydration warnings. This guards the loader `extraOrigins` →
+  `registerExtraReturnToOrigins` handoff that keeps the client allowlist as
+  wide as SSR's.
+
+
 
 **Any change to the accept/reject rules above MUST update this
 document, `safeOrigin`'s JSDoc, and the corresponding test suites in the
