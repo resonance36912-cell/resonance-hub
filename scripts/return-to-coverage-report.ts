@@ -278,7 +278,7 @@ function esc(v: string): string {
   return v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function renderHtml(results: SuiteResult[], meta: Record<string, string>) {
+function renderHtml(results: SuiteResult[], meta: Record<string, string>, trend: Trend) {
   const totals = results.reduce(
     (a, r) => ({
       pass: a.pass + r.pass,
