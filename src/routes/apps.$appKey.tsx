@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { AppLink } from "@/components/AppLink";
 import { APP_REGISTRY, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
+import { statusMeaning } from "@/lib/app-status-meaning";
 import { ROUTES } from "@/lib/routes";
 
 type Capability = { title: string; body: string };
