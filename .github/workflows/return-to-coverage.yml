@@ -155,6 +155,13 @@ jobs:
 
 
 
+      # Historical pass/fail + failure-rate graph from any summary.json files
+      # placed in reports/return-to-coverage/summaries/ (downloaded artifacts or
+      # manual uploads). Also appends its table to the run-summary page.
+      - name: Build historical graph from uploaded summaries
+        if: always() && hashFiles('reports/return-to-coverage/summaries/**/*.json') != ''
+        run: bun run report:return-to-history-graph
+
       - name: Upload coverage report artifacts
         if: always()
         id: upload
@@ -166,8 +173,11 @@ jobs:
             reports/return-to-coverage/return-to-coverage-report.pdf
             reports/return-to-coverage/summary.json
             reports/return-to-coverage/history.json
+            reports/return-to-coverage/history-graph.html
+            reports/return-to-coverage/history-graph.svg
           if-no-files-found: warn
           retention-days: 30
+
 
       # Automatic baseline update: a GREEN push to main promotes its own
       # summary.json/history.json into the stable-named `return-to-baseline`
