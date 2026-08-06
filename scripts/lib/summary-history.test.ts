@@ -15,6 +15,9 @@ import {
   parseSuiteFilter,
   renderSuiteFilterChart,
   suiteTotals,
+  pointTooltip,
+  pointTooltipLines,
+  formatRunDate,
 } from "./summary-history";
 
 const summary = (over: Record<string, unknown> = {}) =>
@@ -219,5 +222,62 @@ describe("suite filters", () => {
     expect(renderSummaryHistoryMarkdown({ points: pts }).join("\n")).toContain(
       "_All 2 suite(s) included._",
     );
+  });
+});
+
+describe("hover tooltips", () => {
+  const point = () =>
+    parseSummaryPoint(
+      summary({
+        runId: "1234567890",
+        runNumber: 42,
+        totals: { pass: 90, fail: 10, assertions: 400 },
+      }),
+    )!;
+
+  it("formats the exact date, run id, counts and failure rate", () => {
+    const lines = pointTooltipLines(point());
+    expect(lines).toEqual([
+      "Date: 2026-08-01 10:00 UTC",
+      "Run: 1234567890 (#42)",
+      "Commit: aaaaaaaaaa",
+      "Pass: 90",
+      "Fail: 10",
+      "Failure rate: 10.00% (10/100)",
+    ]);
+    expect(pointTooltip(point())).toContain("\n");
+  });
+
+  it("degrades gracefully without a run id or timestamp", () => {
+    const p = parseSummaryPoint(summary({ generatedAt: "", runId: null }))!;
+    const lines = pointTooltipLines(p);
+    expect(lines[0]).toBe("Date: —");
+    expect(lines[1]).toBe("Run: —");
+    expect(formatRunDate("nonsense")).toBe("nonsense");
+  });
+
+  it("renders hover hit areas and the tooltip card in the static chart", () => {
+    const svg = renderFailureRateChart([point()]);
+    expect(svg).toContain('class="pt-hit"');
+    expect(svg).toContain("data-tip=");
+    expect(svg).toContain("Failure rate: 10.00%");
+    expect(svg).toContain('class="pt-tip"');
+  });
+
+  it("carries date/run id into the interactive chart data and tooltips", () => {
+    const html = renderSuiteFilterChart([
+      parseSummaryPoint(
+        summary({
+          runId: "999",
+          runNumber: 7,
+          suites: [{ id: "encoding", pass: 90, fail: 10, assertions: 400 }],
+          totals: { pass: 90, fail: 10, assertions: 400 },
+        }),
+      )!,
+    ]);
+    expect(html).toContain('"runId":"999"');
+    expect(html).toContain('"date":"2026-08-01 10:00 UTC"');
+    expect(html).toContain("tipLines");
+    expect(html).toContain("pt-hit");
   });
 });

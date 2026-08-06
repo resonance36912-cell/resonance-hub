@@ -127,6 +127,37 @@ export function failureRate(point: HistoryPoint): number {
   return total === 0 ? 0 : (point.totals.fail / total) * 100;
 }
 
+/** Human-readable UTC timestamp for a run, `—` when the summary had none. */
+export function formatRunDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+
+/**
+ * Hover tooltip content for one charted point: exact date, run id, pass/fail
+ * counts and the computed failure rate. Returned as lines so the SVG `<title>`
+ * (native tooltip) and the richer HTML tooltip render the same facts.
+ */
+export function pointTooltipLines(point: HistoryPoint): string[] {
+  const pass = point.totals.pass;
+  const fail = point.totals.fail;
+  const total = pass + fail;
+  return [
+    `Date: ${formatRunDate(point.generatedAt)}`,
+    `Run: ${point.runId ?? "—"}${point.runNumber !== null ? ` (#${point.runNumber})` : ""}`,
+    `Commit: ${shortLabel(point)}`,
+    `Pass: ${pass}`,
+    `Fail: ${fail}`,
+    `Failure rate: ${failureRate(point).toFixed(2)}% (${fail}/${total || 0})`,
+  ];
+}
+
+/** `pointTooltipLines` joined with newlines, for an SVG `<title>`. */
+export const pointTooltip = (point: HistoryPoint): string => pointTooltipLines(point).join("\n");
+
+
 /* ------------------------------------------------------------------ *
  * Suite filters
  *
@@ -255,10 +286,9 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
       const x = cx(i) - barW / 2;
       const passY = PAD.top + plotH - passH;
       const failY = passY - failH;
-      const tip = escapeXml(
-        `${shortLabel(p)} — pass ${p.totals.pass}, fail ${p.totals.fail}, failure rate ${failureRate(p).toFixed(2)}%`,
-      );
-      return `<g><rect x="${x.toFixed(1)}" y="${passY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, passH).toFixed(1)}" fill="#16a34a" opacity="0.75" /><rect x="${x.toFixed(1)}" y="${failY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, failH).toFixed(1)}" fill="#dc2626" /><title>${tip}</title></g>`;
+      return `<g><rect x="${x.toFixed(1)}" y="${passY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, passH).toFixed(1)}" fill="#16a34a" opacity="0.75" /><rect x="${x.toFixed(1)}" y="${failY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, failH).toFixed(1)}" fill="#dc2626" /><title>${escapeXml(
+        pointTooltip(p),
+      )}</title></g>`;
     })
     .join("");
 
@@ -269,13 +299,27 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     .map(
       (v, i) =>
         `<circle cx="${cx(i).toFixed(1)}" cy="${yRate(v).toFixed(1)}" r="3" fill="#b45309"><title>${escapeXml(
-          `${shortLabel(points[i]!)} — failure rate ${v.toFixed(2)}%`,
+          pointTooltip(points[i]!),
         )}</title></circle>`,
     )
     .join("");
 
-  return `<figure class="chart">
-  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s)</figcaption>
+  // Full-height transparent hit areas: hovering anywhere in a run's column shows
+  // that run's tooltip, so short/zero bars and the rate dot are still reachable.
+  const hits = points
+    .map(
+      (p, i) =>
+        `<rect class="pt-hit" x="${(cx(i) - slot / 2).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(
+          1,
+        )}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
+          pointTooltipLines(p).join("|"),
+        )}"><title>${escapeXml(pointTooltip(p))}</title></rect>`,
+    )
+    .join("");
+
+  const uid = `hc${chartUid()}`;
+  return `<figure class="chart" id="${uid}" style="position:relative">
+  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s). Hover a column for the exact date, run id and counts.</figcaption>
   <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${escapeXml(`${title} over ${n} runs`)}">
     <line x1="${PAD.left}" y1="${PAD.top + plotH}" x2="${W - PAD.right}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
     <line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
@@ -286,11 +330,68 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     ${bars}
     <path d="${line}" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3" />
     ${dots}
+    ${hits}
     <text x="${PAD.left}" y="${H - 8}" font-size="10" fill="#64748b">${escapeXml(shortLabel(points[0]!))}</text>
     <text x="${W - PAD.right}" y="${H - 8}" font-size="10" fill="#64748b" text-anchor="end">${escapeXml(shortLabel(points[n - 1]!))}</text>
   </svg>
+  ${renderTooltipScript(uid)}
 </figure>`;
 }
+
+let uidSeq = 0;
+const chartUid = (): number => ++uidSeq;
+
+/**
+ * Self-contained hover tooltip: reads `data-tip` (pipe separated lines) off any
+ * `.pt-hit` element inside the host and shows a positioned HTML card. Native
+ * `<title>` stays in the SVG as the no-JS/PDF fallback.
+ */
+export function renderTooltipScript(hostId: string): string {
+  return `<div class="pt-tip" id="${hostId}-tip" hidden></div>
+  <script>
+  (function () {
+    var host = document.getElementById(${JSON.stringify(hostId)});
+    var tip = document.getElementById(${JSON.stringify(`${hostId}-tip`)});
+    if (!host || !tip) return;
+    function show(el, ev) {
+      var lines = (el.getAttribute("data-tip") || "").split("|");
+      tip.innerHTML = lines.map(function (l) {
+        var i = l.indexOf(":");
+        var k = i < 0 ? l : l.slice(0, i);
+        var v = i < 0 ? "" : l.slice(i + 1).trim();
+        return '<div><span class="pt-k">' + k + '</span> <span class="pt-v"></span></div>';
+      }).join("");
+      var vals = tip.querySelectorAll(".pt-v");
+      lines.forEach(function (l, idx) {
+        var i = l.indexOf(":");
+        if (vals[idx]) vals[idx].textContent = i < 0 ? "" : l.slice(i + 1).trim();
+      });
+      var r = host.getBoundingClientRect();
+      tip.hidden = false;
+      var x = ev.clientX - r.left + 12;
+      var y = ev.clientY - r.top + 12;
+      tip.style.left = Math.min(x, Math.max(0, r.width - tip.offsetWidth - 8)) + "px";
+      tip.style.top = Math.min(y, Math.max(0, r.height - tip.offsetHeight - 8)) + "px";
+    }
+    host.addEventListener("mousemove", function (ev) {
+      var el = ev.target && ev.target.closest ? ev.target.closest(".pt-hit") : null;
+      if (el) show(el, ev); else tip.hidden = true;
+    });
+    host.addEventListener("mouseleave", function () { tip.hidden = true; });
+  })();
+  </script>`;
+}
+
+/** Styles for the hover tooltip card, to inline in host pages. */
+export const CHART_TOOLTIP_CSS = `
+  .pt-tip { position: absolute; z-index: 5; pointer-events: none; background: #0f172a; color: #f8fafc; border-radius: 6px; padding: 6px 8px; font-size: 11px; line-height: 1.45; box-shadow: 0 6px 18px rgba(15,23,42,.28); max-width: 280px; }
+  .pt-tip[hidden] { display: none; }
+  .pt-tip .pt-k { color: #94a3b8; }
+  .pt-tip .pt-v { font-weight: 600; }
+  .pt-hit { cursor: crosshair; }
+  .pt-hit:hover { fill: rgba(148,163,184,.14); }
+`;
+
 
 /**
  * Interactive variant of the chart: the same pass/fail bars and failure-rate
@@ -319,8 +420,12 @@ export function renderSuiteFilterChart(
   const data = points.map((p) => ({
     label: shortLabel(p),
     at: p.generatedAt,
+    date: formatRunDate(p.generatedAt),
+    runId: p.runId,
+    runNumber: p.runNumber,
     suites: p.suites.map((s) => ({ id: s.id, pass: s.pass ?? 0, fail: s.fail })),
   }));
+
   const initial = applySuiteFilter(points, [...selected]);
   const totals = suiteTotals(points);
 
@@ -333,8 +438,8 @@ export function renderSuiteFilterChart(
     })
     .join("\n      ");
 
-  return `<figure class="chart suite-filter-chart" id="${prefix}-root">
-  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span></figcaption>
+  return `<figure class="chart suite-filter-chart" id="${prefix}-root" style="position:relative">
+  <figcaption>${escapeXml(title)} — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate.</figcaption>
   <div class="suite-toggles">
       ${checkboxes}
       <button type="button" data-suite-all="1">All</button>
@@ -357,12 +462,23 @@ export function renderSuiteFilterChart(
     var W = 720, H = 220, PT = 18, PR = 44, PB = 30, PL = 46;
     var plotW = W - PL - PR, plotH = H - PT - PB;
     function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;"; }); }
+    function tipLines(p) {
+      var total = p.pass + p.fail;
+      return [
+        "Date: " + (p.date || "—"),
+        "Run: " + (p.runId || "—") + (p.runNumber != null ? " (#" + p.runNumber + ")" : ""),
+        "Commit: " + p.label,
+        "Pass: " + p.pass,
+        "Fail: " + p.fail,
+        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")"
+      ];
+    }
     function series(sel) {
       return runs.map(function (r) {
         var pass = 0, fail = 0;
         r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
         var total = pass + fail;
-        return { label: r.label, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
       });
     }
     function draw(pts) {
@@ -376,10 +492,11 @@ export function renderSuiteFilterChart(
       var bars = pts.map(function (p, i) {
         var passH = (p.pass / maxTests) * plotH, failH = (p.fail / maxTests) * plotH;
         var x = cx(i) - barW / 2, passY = PT + plotH - passH, failY = passY - failH;
-        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(p.label + " — pass " + p.pass + ", fail " + p.fail + ", failure rate " + p.rate.toFixed(2) + "%") + '</title></g>';
+        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(tipLines(p).join("\\n")) + '</title></g>';
       }).join("");
       var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
-      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(p.label + " — failure rate " + p.rate.toFixed(2) + "%") + '</title></circle>'; }).join("");
+      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(tipLines(p).join("\\n")) + '</title></circle>'; }).join("");
+      var hits = pts.map(function (p, i) { return '<rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '"><title>' + esc(tipLines(p).join("\\n")) + '</title></rect>'; }).join("");
       host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
         '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
         '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
@@ -387,7 +504,7 @@ export function renderSuiteFilterChart(
         '<text x="4" y="' + (PT + plotH) + '" font-size="10" fill="#64748b">0</text>' +
         '<text x="' + (W - PR + 6) + '" y="' + (PT + 10) + '" font-size="10" fill="#b45309">' + maxRate.toFixed(1) + '%</text>' +
         '<text x="' + (W - PR + 6) + '" y="' + (PT + plotH) + '" font-size="10" fill="#b45309">0%</text>' +
-        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots +
+        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots + hits +
         '<text x="' + PL + '" y="' + (H - 8) + '" font-size="10" fill="#64748b">' + esc(pts[0].label) + '</text>' +
         '<text x="' + (W - PR) + '" y="' + (H - 8) + '" font-size="10" fill="#64748b" text-anchor="end">' + esc(pts[n - 1].label) + '</text>' +
         '</svg>';
@@ -407,6 +524,7 @@ export function renderSuiteFilterChart(
     update();
   })();
   </script>
+  ${renderTooltipScript(`${prefix}-root`)}
 </figure>`;
 }
 
@@ -415,7 +533,8 @@ export const SUITE_FILTER_CSS = `
   .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
   .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
   .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
-`;
+${CHART_TOOLTIP_CSS}`;
+
 
 
 /**
