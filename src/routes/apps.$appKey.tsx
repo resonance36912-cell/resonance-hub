@@ -34,12 +34,8 @@ const CAPABILITIES: Record<ResonanceAppKey, Capability[]> = {
   ],
 };
 
-const STATUS_LABELS = {
-  live: "Live",
-  beta: "Beta",
-  pilot: "Pilot",
-  coming_soon: "Coming soon",
-} as const;
+// Badge text and access wording come from @/lib/app-status-meaning so the
+// catalog and this page never contradict each other.
 
 export const Route = createFileRoute("/apps/$appKey")({
   loader: ({ params }): { entry: AppRegistryEntry } => {
