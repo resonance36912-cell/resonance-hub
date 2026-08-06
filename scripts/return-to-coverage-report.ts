@@ -453,8 +453,16 @@ function renderHtml(
       <td class="num">${r.assertions.toLocaleString("en-US")}${
         r.assertionSource === "expect-calls" ? "" : "<sup>*</sup>"
       }</td>
-      <td class="num">${(r.durationMs / 1000).toFixed(2)}s</td>
-      <td><span class="pill ${r.fail === 0 ? "ok" : "bad"}">${r.fail === 0 ? "PASS" : "FAIL"}</span></td>
+      <td class="num">${(r.durationMs / 1000).toFixed(2)}s${
+        r.attempts > 1 ? `<div class="blurb">${r.attempts} attempts</div>` : ""
+      }</td>
+      <td><span class="pill ${
+        r.verdict === "stable-pass" ? "ok" : r.verdict === "flaky" ? "warn" : "bad"
+      }">${VERDICT_LABEL[r.verdict]}</span>${
+        r.verdict === "flaky"
+          ? `<div class="blurb">failed then passed on retry (${r.firstAttempt?.fail ?? 0} failing first)</div>`
+          : ""
+      }</td>
     </tr>`,
     )
     .join("\n");
@@ -464,11 +472,15 @@ function renderHtml(
     : "";
 
   const failures = results
-    .filter((r) => r.fail > 0)
+    .filter((r) => r.verdict !== "stable-pass")
     .map(
       (r) => `<section class="failure">
-      <h3>${esc(r.title)} — ${r.fail} failing <span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span></h3>
-      <p class="blurb">Raw runner output, including any fast-check counterexample:</p>
+      <h3>${esc(r.title)} — ${
+        r.verdict === "flaky"
+          ? "flaky (passed on retry)"
+          : `${r.fail} failing (reproduced on retry)`
+      } <span class="pill muted">${esc(RUNNER_LABEL[r.runner])}</span></h3>
+      <p class="blurb">Raw runner output for every attempt, including any fast-check counterexample:</p>
       <pre>${esc(r.output)}</pre>
     </section>`,
     )
