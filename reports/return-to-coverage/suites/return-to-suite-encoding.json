@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-06T19:51:32.687Z",
+  "commit": "local",
+  "suite": {
+    "id": "encoding",
+    "title": "Percent-encoding edge cases",
+    "file": "scripts/lib/return-to-allowlist-encoding.test.ts",
+    "runner": "vitest",
+    "pass": 44,
+    "fail": 0,
+    "assertions": 44,
+    "durationMs": 3092,
+    "attempts": 1,
+    "verdict": "stable-pass",
+    "status": "pass",
+    "firstAttemptFail": null
+  },
+  "baseline": null
+}

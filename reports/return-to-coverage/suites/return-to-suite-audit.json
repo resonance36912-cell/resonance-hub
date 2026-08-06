@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-06T19:51:32.687Z",
+  "commit": "local",
+  "suite": {
+    "id": "audit",
+    "title": "Redirect audit records",
+    "file": "scripts/lib/return-to-audit.test.ts",
+    "runner": "bun:test",
+    "pass": 23,
+    "fail": 0,
+    "assertions": 136,
+    "durationMs": 246,
+    "attempts": 1,
+    "verdict": "stable-pass",
+    "status": "pass",
+    "firstAttemptFail": null
+  },
+  "baseline": null
+}

@@ -46,30 +46,21 @@
   <p class="sub">The Resonance Hub · redirect-safety test coverage for post-checkout <code>return_to</code> handling</p>
 
   <div class="banner">
-    <strong>All suites passing (1 flaky)</strong>
-    147 passed · 0 failed · 4,287 assertions across 6 suites · 1 suite failed once and passed on retry (non-blocking)
+    <strong>All suites passing</strong>
+    146 passed · 0 failed · 4,319 assertions across 5 suites
   </div>
 
-  <dl><div><dt>Generated</dt><dd>2026-08-06T19:48:48.680Z</dd></div><div><dt>Commit</dt><dd>local</dd></div><div><dt>Ref</dt><dd>local</dd></div><div><dt>Workflow</dt><dd>local run</dd></div><div><dt>Host</dt><dd>bun 1.3.3</dd></div><div><dt>Runners</dt><dd>bun:test (5) · vitest (1)</dd></div><div><dt>Suites</dt><dd>6</dd></div><div><dt>Baseline</dt><dd>none (first recorded run)</dd></div></dl>
+  <dl><div><dt>Generated</dt><dd>2026-08-06T19:51:32.687Z</dd></div><div><dt>Commit</dt><dd>local</dd></div><div><dt>Ref</dt><dd>local</dd></div><div><dt>Workflow</dt><dd>local run</dd></div><div><dt>Host</dt><dd>bun 1.3.3</dd></div><div><dt>Runners</dt><dd>bun:test (4) · vitest (1)</dd></div><div><dt>Suites</dt><dd>5</dd></div><div><dt>Baseline</dt><dd>none (first recorded run)</dd></div></dl>
 
   <table>
     <thead><tr><th>Suite</th><th>Runner</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Time</th><th>Status</th></tr></thead>
     <tbody><tr>
-      <td><strong>Temp flaky probe</strong><div class="blurb">probe</div><code>scripts/lib/tmpflaky/flaky.test.ts</code></td>
-      <td><span class="pill muted">bun:test</span><div class="blurb">imports "bun:test"</div></td>
-      <td class="num">1</td>
-      <td class="num ">0</td>
-      <td class="num">1</td>
-      <td class="num">0.09s<div class="blurb">2 attempts</div></td>
-      <td><span class="pill warn">FLAKY</span><div class="blurb">failed then passed on retry (1 failing first)</div></td>
-    </tr>
-<tr>
       <td><strong>Property-based fuzzing</strong><div class="blurb">fast-check generators throw arbitrary strings, hosts and schemes at the allowlist; no input may resolve to an unallowlisted navigation.</div><code>scripts/lib/return-to-allowlist-fuzz.test.ts</code></td>
       <td><span class="pill muted">bun:test</span><div class="blurb">imports "bun:test"</div></td>
       <td class="num">5</td>
       <td class="num ">0</td>
-      <td class="num">3,975</td>
-      <td class="num">0.70s</td>
+      <td class="num">4,008</td>
+      <td class="num">0.68s</td>
       <td><span class="pill ok">PASS</span></td>
     </tr>
 <tr>
@@ -87,7 +78,7 @@
       <td class="num">44</td>
       <td class="num ">0</td>
       <td class="num">44<sup>*</sup></td>
-      <td class="num">3.01s</td>
+      <td class="num">3.09s</td>
       <td><span class="pill ok">PASS</span></td>
     </tr>
 <tr>
@@ -96,7 +87,7 @@
       <td class="num">23</td>
       <td class="num ">0</td>
       <td class="num">136</td>
-      <td class="num">0.21s</td>
+      <td class="num">0.25s</td>
       <td><span class="pill ok">PASS</span></td>
     </tr>
 <tr>
@@ -111,56 +102,15 @@
     <tfoot><tr>
       <td><strong>Total</strong></td>
       <td></td>
-      <td class="num"><strong>147</strong></td>
+      <td class="num"><strong>146</strong></td>
       <td class="num "><strong>0</strong></td>
-      <td class="num"><strong>4,287</strong></td>
+      <td class="num"><strong>4,319</strong></td>
       <td class="num"></td><td></td>
     </tr></tfoot>
   </table>
   <p class="sub" style="margin-top:8px"><sup>*</sup> Suite ran under a runner that does not report assertion counts (vitest); its test count is used as a lower bound.</p>
 
-  <section class="failure">
-      <h3>Temp flaky probe — flaky (passed on retry) <span class="pill muted">bun:test</span></h3>
-      <p class="blurb">Raw runner output for every attempt, including any fast-check counterexample:</p>
-      <pre>----- ATTEMPT 1 (failed) -----
-$ bun test scripts/lib/tmpflaky/flaky.test.ts
-
-bun test v1.3.3 (274e01c7)
-
-scripts/lib/tmpflaky/flaky.test.ts:
-2 | import { existsSync, writeFileSync } from "node:fs";
-3 | const m = "/tmp/flaky-marker";
-4 | it("flaky", () =&gt; {
-5 |   const seen = existsSync(m);
-6 |   writeFileSync(m, "1");
-7 |   expect(seen).toBe(true);
-                   ^
-error: expect(received).toBe(expected)
-
-Expected: true
-Received: false
-
-      at &lt;anonymous&gt; (/dev-server/scripts/lib/tmpflaky/flaky.test.ts:7:16)
-(fail) flaky [2.28ms]
-
- 0 pass
- 1 fail
- 1 expect() calls
-Ran 1 test across 1 file. [39.00ms]
-
------ ATTEMPT 2 (retry) -----
-$ bun test scripts/lib/tmpflaky/flaky.test.ts
-
-bun test v1.3.3 (274e01c7)
-
-scripts/lib/tmpflaky/flaky.test.ts:
-(pass) flaky [1.78ms]
-
- 1 pass
- 0 fail
- 1 expect() calls
-Ran 1 test across 1 file. [38.00ms]</pre>
-    </section>
+  <p class="sub" style="margin-top:18px">No counterexamples were produced — every fuzzed, normalized and percent-encoded input resolved to an allowlisted origin or a safe Hub fallback.</p>
 
 
   <section class="trend">
@@ -175,11 +125,11 @@ Ran 1 test across 1 file. [38.00ms]</pre>
   <svg viewBox="0 0 720 200" width="100%" height="200" role="img" aria-label="Test results per run over 1 runs">
     <line x1="44" y1="172" x2="704" y2="172" stroke="#cbd5e1" />
     <line x1="44" y1="16" x2="44" y2="172" stroke="#cbd5e1" />
-    <text x="4" y="26" font-size="10" fill="#64748b">147</text>
+    <text x="4" y="26" font-size="10" fill="#64748b">146</text>
     <text x="4" y="172" font-size="10" fill="#64748b">0</text>
     
     <path d="M374.0,16.0" fill="none" stroke="#2563eb" stroke-width="2" />
-    <circle cx="374.0" cy="16.0" r="3" fill="#2563eb"><title>local (2026-08-06T19:48:48.680Z) — passing tests: 147, failing tests: 0</title></circle>
+    <circle cx="374.0" cy="16.0" r="3" fill="#2563eb"><title>local (2026-08-06T19:51:32.687Z) — passing tests: 146, failing tests: 0</title></circle>
     <text x="44" y="192" font-size="10" fill="#64748b">local</text>
     <text x="704" y="192" font-size="10" fill="#64748b" text-anchor="end">local</text>
   </svg>
@@ -193,7 +143,7 @@ Ran 1 test across 1 file. [38.00ms]</pre>
     <text x="4" y="172" font-size="10" fill="#64748b">0</text>
     
     <path d="M374.0,16.0" fill="none" stroke="#2563eb" stroke-width="2" />
-    <circle cx="374.0" cy="16.0" r="3" fill="#2563eb"><title>local (2026-08-06T19:48:48.680Z) — blocked: 27, leaked (accepted): 0</title></circle>
+    <circle cx="374.0" cy="16.0" r="3" fill="#2563eb"><title>local (2026-08-06T19:51:32.687Z) — blocked: 27, leaked (accepted): 0</title></circle>
     <text x="44" y="192" font-size="10" fill="#64748b">local</text>
     <text x="704" y="192" font-size="10" fill="#64748b" text-anchor="end">local</text>
   </svg>
@@ -202,11 +152,11 @@ Ran 1 test across 1 file. [38.00ms]</pre>
       <thead><tr><th>Run</th><th>Commit</th><th class="num">Pass</th><th class="num">Fail</th><th class="num">Assertions</th><th class="num">Blocked</th><th class="num">Leaked</th><th>Status</th></tr></thead>
       <tbody>
       <tr class="">
-            <td>local<div class="blurb">2026-08-06T19:48:48.680Z</div></td>
+            <td>local<div class="blurb">2026-08-06T19:51:32.687Z</div></td>
             <td><code>local</code></td>
-            <td class="num">147</td>
+            <td class="num">146</td>
             <td class="num ">0</td>
-            <td class="num">4,287</td>
+            <td class="num">4,319</td>
             <td class="num">27/27</td>
             <td class="num ">0</td>
             <td><span class="pill ok">GREEN</span></td>
