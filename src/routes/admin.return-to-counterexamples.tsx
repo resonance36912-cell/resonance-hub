@@ -84,7 +84,6 @@ function AdminReturnToCounterexamples() {
               attack: inspectedSuite
                 ? `Reported by CI suite "${inspectedSuite}"`
                 : "Supplied via deep link",
-              expectation: "Should be refused before a return_url is signed.",
             },
             extras,
           )
