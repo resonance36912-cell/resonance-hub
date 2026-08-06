@@ -132,6 +132,9 @@ const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
 const JSON_PATH = join(OUT_DIR, "summary.json");
 const COMMENT_PATH = join(OUT_DIR, "pr-comment.md");
+/** Short trend-only digest, posted as its own sticky comment on every run. */
+const TREND_COMMENT_PATH = join(OUT_DIR, "trend-comment.md");
+
 /** Rolling run history; CI seeds it from the previous run's artifact. */
 const HISTORY_PATH = join(OUT_DIR, "history.json");
 const HISTORY_BASELINE_PATH =
