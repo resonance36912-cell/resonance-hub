@@ -103,7 +103,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
     key: "sync_vision",
     label: "Resonance Sync Vision",
     url: "https://www.syncvision.life",
-    status: "beta",
+    status: "live",
     accentColor: "#06B6D4",
     entitlementAppKey: "sync_vision",
     tagline: "Plan AI-driven music videos and cinematic storyboards.",
