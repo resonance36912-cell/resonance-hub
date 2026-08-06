@@ -11,6 +11,11 @@ import {
   type AppRegistryEntry,
   type EcosystemEntry,
 } from "@/lib/app-registry";
+import {
+  APP_STATUS_LEGEND,
+  APP_STATUS_MEANING,
+  statusMeaning,
+} from "@/lib/app-status-meaning";
 import { listPublishedSubmissions } from "@/lib/app-submissions.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
