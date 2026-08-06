@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-06T19:53:36.091Z",
+  "commit": "local",
+  "suite": {
+    "id": "fuzz",
+    "title": "Property-based fuzzing",
+    "file": "scripts/lib/return-to-allowlist-fuzz.test.ts",
+    "runner": "bun:test",
+    "pass": 5,
+    "fail": 0,
+    "assertions": 3987,
+    "durationMs": 813,
+    "attempts": 1,
+    "verdict": "stable-pass",
+    "status": "pass",
+    "firstAttemptFail": null
+  },
+  "baseline": null
+}

@@ -1,43 +1,16 @@
 {
-  "generatedAt": "2026-08-06T19:48:48.680Z",
+  "generatedAt": "2026-08-06T19:53:36.091Z",
   "commit": "local",
   "totals": {
-    "pass": 147,
+    "pass": 146,
     "fail": 0,
-    "assertions": 4287
+    "assertions": 4298
   },
   "flaky": {
     "retriesEnabled": true,
-    "suites": [
-      {
-        "id": "tmpflaky",
-        "title": "Temp flaky probe",
-        "firstAttemptFail": 1
-      }
-    ]
+    "suites": []
   },
   "suites": [
-    {
-      "id": "tmpflaky",
-      "title": "Temp flaky probe",
-      "file": "scripts/lib/tmpflaky/flaky.test.ts",
-      "blurb": "probe",
-      "runner": "bun",
-      "runnerReason": "imports \"bun:test\"",
-      "assertionSource": "expect-calls",
-      "pass": 1,
-      "fail": 0,
-      "assertions": 1,
-      "durationMs": 94,
-      "verdict": "flaky",
-      "attempts": 2,
-      "firstAttempt": {
-        "pass": 0,
-        "fail": 1,
-        "output": "$ bun test scripts/lib/tmpflaky/flaky.test.ts\n\nbun test v1.3.3 (274e01c7)\n\nscripts/lib/tmpflaky/flaky.test.ts:\n2 | import { existsSync, writeFileSync } from \"node:fs\";\n3 | const m = \"/tmp/flaky-marker\";\n4 | it(\"flaky\", () => {\n5 |   const seen = existsSync(m);\n6 |   writeFileSync(m, \"1\");\n7 |   expect(seen).toBe(true);\n                   ^\nerror: expect(received).toBe(expected)\n\nExpected: true\nReceived: false\n\n      at <anonymous> (/dev-server/scripts/lib/tmpflaky/flaky.test.ts:7:16)\n(fail) flaky [2.28ms]\n\n 0 pass\n 1 fail\n 1 expect() calls\nRan 1 test across 1 file. [39.00ms]"
-      },
-      "status": "flaky"
-    },
     {
       "id": "fuzz",
       "title": "Property-based fuzzing",
@@ -48,8 +21,8 @@
       "assertionSource": "expect-calls",
       "pass": 5,
       "fail": 0,
-      "assertions": 3975,
-      "durationMs": 704,
+      "assertions": 3987,
+      "durationMs": 813,
       "verdict": "stable-pass",
       "attempts": 1,
       "firstAttempt": null,
@@ -66,7 +39,7 @@
       "pass": 43,
       "fail": 0,
       "assertions": 61,
-      "durationMs": 31,
+      "durationMs": 48,
       "verdict": "stable-pass",
       "attempts": 1,
       "firstAttempt": null,
@@ -83,7 +56,7 @@
       "pass": 44,
       "fail": 0,
       "assertions": 44,
-      "durationMs": 3009,
+      "durationMs": 3306,
       "verdict": "stable-pass",
       "attempts": 1,
       "firstAttempt": null,
@@ -100,7 +73,7 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 212,
+      "durationMs": 240,
       "verdict": "stable-pass",
       "attempts": 1,
       "firstAttempt": null,
@@ -117,7 +90,7 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 230,
+      "durationMs": 204,
       "verdict": "stable-pass",
       "attempts": 1,
       "firstAttempt": null,
@@ -132,10 +105,6 @@
     "newFailures": [],
     "removedSuites": [],
     "suites": [
-      {
-        "id": "tmpflaky",
-        "state": "new-suite"
-      },
       {
         "id": "fuzz",
         "state": "new-suite"

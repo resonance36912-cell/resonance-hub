@@ -106,7 +106,16 @@ jobs:
           "$CHROME" --headless=new --disable-gpu --no-sandbox \
             --print-to-pdf=reports/return-to-coverage/return-to-coverage-report.pdf \
             --no-pdf-header-footer "file://$PWD/$HTML"
-          ls -l reports/return-to-coverage/
+          # One PDF per suite, next to its standalone HTML page.
+          for f in reports/return-to-coverage/suites/*.html; do
+            [ -f "$f" ] || continue
+            "$CHROME" --headless=new --disable-gpu --no-sandbox \
+              --print-to-pdf="${f%.html}.pdf" \
+              --no-pdf-header-footer "file://$PWD/$f"
+          done
+          ls -l reports/return-to-coverage/ reports/return-to-coverage/suites/
+
+
 
       - name: Upload coverage report artifacts
         if: always()
@@ -121,6 +130,56 @@ jobs:
             reports/return-to-coverage/history.json
           if-no-files-found: warn
           retention-days: 30
+
+      # One artifact per suite (HTML + PDF + summary JSON) so a failing suite can
+      # be downloaded and opened on its own instead of scrolling the combined
+      # report. Suite ids come from SUITES in scripts/return-to-coverage-report.ts.
+      - name: Upload per-suite report — fuzz
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-suite-fuzz-${{ github.run_id }}
+          path: reports/return-to-coverage/suites/return-to-suite-fuzz.*
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload per-suite report — normalization
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-suite-normalization-${{ github.run_id }}
+          path: reports/return-to-coverage/suites/return-to-suite-normalization.*
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload per-suite report — encoding
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-suite-encoding-${{ github.run_id }}
+          path: reports/return-to-coverage/suites/return-to-suite-encoding.*
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload per-suite report — audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-suite-audit-${{ github.run_id }}
+          path: reports/return-to-coverage/suites/return-to-suite-audit.*
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload per-suite report — targets
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: return-to-suite-targets-${{ github.run_id }}
+          path: reports/return-to-coverage/suites/return-to-suite-targets.*
+          if-no-files-found: warn
+          retention-days: 30
+
+
 
       # Posts the pass/fail summary + report links as ONE sticky comment per PR:
       # the marker `<!-- return-to-coverage-report -->` in pr-comment.md is used

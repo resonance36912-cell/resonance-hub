@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-06T19:53:36.091Z",
+  "commit": "local",
+  "suite": {
+    "id": "normalization",
+    "title": "Normalization edge cases",
+    "file": "scripts/lib/return-to-allowlist-normalization.test.ts",
+    "runner": "bun:test",
+    "pass": 43,
+    "fail": 0,
+    "assertions": 61,
+    "durationMs": 48,
+    "attempts": 1,
+    "verdict": "stable-pass",
+    "status": "pass",
+    "firstAttemptFail": null
+  },
+  "baseline": null
+}

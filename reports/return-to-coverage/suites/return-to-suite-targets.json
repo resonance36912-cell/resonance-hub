@@ -1,0 +1,19 @@
+{
+  "generatedAt": "2026-08-06T19:53:36.091Z",
+  "commit": "local",
+  "suite": {
+    "id": "targets",
+    "title": "Checkout success target resolution",
+    "file": "scripts/lib/checkout-success-return-to-allowlist.test.ts",
+    "runner": "bun:test",
+    "pass": 31,
+    "fail": 0,
+    "assertions": 70,
+    "durationMs": 204,
+    "attempts": 1,
+    "verdict": "stable-pass",
+    "status": "pass",
+    "firstAttemptFail": null
+  },
+  "baseline": null
+}
