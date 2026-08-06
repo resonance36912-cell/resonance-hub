@@ -80,6 +80,7 @@ type SuiteResult = {
 const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
 const JSON_PATH = join(OUT_DIR, "summary.json");
+const COMMENT_PATH = join(OUT_DIR, "pr-comment.md");
 
 /**
  * Baseline = the `summary.json` produced by the last successful run of this
@@ -568,49 +569,82 @@ for (const r of results.filter((x) => x.fail > 0)) {
   console.log(r.output);
 }
 
+// ---- Shared markdown (job summary page + PR comment) -----------------------
+const trendMd = !trend.baseline
+  ? ["#### Coverage trend", "", "_No baseline yet — this run becomes the baseline._"]
+  : [
+      `#### Coverage trend vs last successful run (\`${(trend.baseline.commit ?? "unknown").slice(0, 12)}\`)`,
+      "",
+      ...(trend.newFailures.length
+        ? [
+            `> ⚠️ **New failures:** ${trend.newFailures.map((r) => `${r.title} (${r.fail})`).join(", ")}`,
+            "",
+          ]
+        : ["No new failures versus the last successful run.", ""]),
+      "| Suite | Pass (was → now) | Fail (was → now) | Δ assertions | Trend |",
+      "| --- | ---: | ---: | ---: | --- |",
+      ...trend.rows.map(
+        (r) =>
+          `| ${r.title} | ${r.basePass ?? "—"} → ${r.pass} | ${r.baseFail ?? "—"} → ${r.fail} | ${
+            r.baseAssertions === null ? "—" : signed(r.assertions - r.baseAssertions)
+          } | ${r.state === "new-failure" ? "🔴 NEW FAILURE" : TREND_LABEL[r.state]} |`,
+      ),
+      `| **Total** | **${signed(trend.delta.pass)}** | **${signed(trend.delta.fail)}** | **${signed(trend.delta.assertions)}** | ${trend.newFailures.length ? "🔴 regression" : "✅ no new failures"} |`,
+      ...(trend.removed.length
+        ? ["", `> ⚠️ Suites missing vs baseline: ${trend.removed.map((s) => s.id).join(", ")}`]
+        : []),
+    ];
+
+const summaryMd = [
+  `### return_to fuzz & encoding coverage — ${totals.fail === 0 ? "✅ all passing" : `❌ ${totals.fail} failing`}`,
+  "",
+  "| Suite | Pass | Fail | Assertions | Status |",
+  "| --- | ---: | ---: | ---: | --- |",
+  ...results.map(
+    (r) =>
+      `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${r.fail === 0 ? "PASS" : "FAIL"} |`,
+  ),
+  `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${totals.fail === 0 ? "PASS" : "FAIL"} |`,
+  "",
+  ...trendMd,
+].join("\n");
+
 // GitHub Actions job summary (markdown table on the run page).
 const summaryFile = process.env.GITHUB_STEP_SUMMARY;
 if (summaryFile) {
-  const trendMd = !trend.baseline
-    ? ["#### Coverage trend", "", "_No baseline yet — this run becomes the baseline._"]
-    : [
-        `#### Coverage trend vs last successful run (\`${(trend.baseline.commit ?? "unknown").slice(0, 12)}\`)`,
-        "",
-        ...(trend.newFailures.length
-          ? [
-              `> ⚠️ **New failures:** ${trend.newFailures.map((r) => `${r.title} (${r.fail})`).join(", ")}`,
-              "",
-            ]
-          : ["No new failures versus the last successful run.", ""]),
-        "| Suite | Pass (was → now) | Fail (was → now) | Δ assertions | Trend |",
-        "| --- | ---: | ---: | ---: | --- |",
-        ...trend.rows.map(
-          (r) =>
-            `| ${r.title} | ${r.basePass ?? "—"} → ${r.pass} | ${r.baseFail ?? "—"} → ${r.fail} | ${
-              r.baseAssertions === null ? "—" : signed(r.assertions - r.baseAssertions)
-            } | ${r.state === "new-failure" ? "🔴 NEW FAILURE" : TREND_LABEL[r.state]} |`,
-        ),
-        `| **Total** | **${signed(trend.delta.pass)}** | **${signed(trend.delta.fail)}** | **${signed(trend.delta.assertions)}** | ${trend.newFailures.length ? "🔴 regression" : "✅ no new failures"} |`,
-        ...(trend.removed.length
-          ? ["", `> ⚠️ Suites missing vs baseline: ${trend.removed.map((s) => s.id).join(", ")}`]
-          : []),
-      ];
-  const md = [
-    `### return_to fuzz & encoding coverage — ${totals.fail === 0 ? "✅ all passing" : `❌ ${totals.fail} failing`}`,
-    "",
-    "| Suite | Pass | Fail | Assertions | Status |",
-    "| --- | ---: | ---: | ---: | --- |",
-    ...results.map(
-      (r) =>
-        `| ${r.title} | ${r.pass} | ${r.fail} | ${r.assertions.toLocaleString("en-US")} | ${r.fail === 0 ? "PASS" : "FAIL"} |`,
-    ),
-    `| **Total** | **${totals.pass}** | **${totals.fail}** | **${totals.assertions.toLocaleString("en-US")}** | ${totals.fail === 0 ? "PASS" : "FAIL"} |`,
-    "",
-    ...trendMd,
-    "",
-    "Artifacts: `return-to-coverage-report.html` / `.pdf` on this run.",
-  ].join("\n");
-  appendFileSync(summaryFile, md + "\n");
+  appendFileSync(
+    summaryFile,
+    `${summaryMd}\n\nArtifacts: \`return-to-coverage-report.html\` / \`.pdf\` on this run.\n`,
+  );
 }
+
+/*
+ * PR comment body (`pr-comment.md`).
+ *
+ * The workflow posts this as a single sticky comment per pull request (keyed by
+ * the HTML marker below, so re-runs edit the same comment instead of piling up)
+ * and appends the artifact/run links, which only exist once the artifact has
+ * been uploaded.
+ */
+const server = process.env.GITHUB_SERVER_URL ?? "https://github.com";
+const repo = process.env.GITHUB_REPOSITORY;
+const runId = process.env.GITHUB_RUN_ID;
+const runUrl = repo && runId ? `${server}/${repo}/actions/runs/${runId}` : null;
+const commentMd = [
+  "<!-- return-to-coverage-report -->",
+  summaryMd,
+  "",
+  "#### Reports",
+  ...(runUrl
+    ? [
+        `- [Coverage report artifact (HTML + PDF)](${runUrl}#artifacts) — \`return-to-coverage-report.html\`, \`return-to-coverage-report.pdf\`, \`summary.json\``,
+        `- [Full job log](${runUrl})`,
+      ]
+    : ["- Artifacts are published on the workflow run for this commit."]),
+  "",
+  `<sub>Commit \`${(meta.Commit ?? "unknown").slice(0, 12)}\` · generated ${meta.Generated}</sub>`,
+].join("\n");
+writeFileSync(COMMENT_PATH, commentMd + "\n");
+console.log(`PR comment body: ${COMMENT_PATH}`);
 
 if (totals.fail > 0 || totals.pass === 0) process.exit(1);
