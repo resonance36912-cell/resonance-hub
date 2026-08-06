@@ -1,0 +1,125 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>return_to coverage — historical pass/fail &amp; failure rate</title>
+<style>
+  body { font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; margin: 32px; color: #0f172a; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #64748b; font-size: 12px; }
+  figure { margin: 20px 0; }
+  figcaption { font-size: 12px; color: #475569; margin-bottom: 6px; }
+  table { border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  th, td { border: 1px solid #e2e8f0; padding: 5px 10px; text-align: right; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  tr.red td { background: #fef2f2; }
+
+  .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
+  .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+  .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+
+</style>
+<h1>return_to coverage — historical pass/fail &amp; failure rate</h1>
+<p class="sub">3 run(s) from 3 uploaded summary file(s). Initial suite filter: <code>login</code>.</p>
+<figure class="chart suite-filter-chart" id="history-root">
+  <figcaption>Pass / fail and failure rate over time — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span></figcaption>
+  <div class="suite-toggles">
+      <label class="suite-toggle"><input type="checkbox" data-suite="encoding" /> <code>encoding</code> <span class="sub">306 pass · 0 fail</span></label>
+      <label class="suite-toggle"><input type="checkbox" data-suite="login" checked /> <code>login</code> <span class="sub">120 pass · 6 fail</span></label>
+      <button type="button" data-suite-all="1">All</button>
+      <button type="button" data-suite-none="1">None</button>
+  </div>
+  <div id="history-chart"><figure class="chart">
+  <figcaption>Pass / fail and failure rate over time — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across 3 run(s)</figcaption>
+  <svg viewBox="0 0 720 220" width="100%" height="220" role="img" aria-label="Pass / fail and failure rate over time over 3 runs">
+    <line x1="46" y1="190" x2="676" y2="190" stroke="#cbd5e1" />
+    <line x1="46" y1="18" x2="46" y2="190" stroke="#cbd5e1" />
+    <text x="4" y="28" font-size="10" fill="#64748b">46</text>
+    <text x="4" y="190" font-size="10" fill="#64748b">0</text>
+    <text x="682" y="28" font-size="10" fill="#b45309">13.0%</text>
+    <text x="682" y="190" font-size="10" fill="#b45309">0%</text>
+    <g><rect x="138.0" y="40.4" width="26.0" height="149.6" fill="#16a34a" opacity="0.75" /><rect x="138.0" y="40.4" width="26.0" height="0.0" fill="#dc2626" /><title>commit1000 — pass 40, fail 0, failure rate 0.00%</title></g><g><rect x="348.0" y="40.4" width="26.0" height="149.6" fill="#16a34a" opacity="0.75" /><rect x="348.0" y="18.0" width="26.0" height="22.4" fill="#dc2626" /><title>commit2000 — pass 40, fail 6, failure rate 13.04%</title></g><g><rect x="558.0" y="40.4" width="26.0" height="149.6" fill="#16a34a" opacity="0.75" /><rect x="558.0" y="40.4" width="26.0" height="0.0" fill="#dc2626" /><title>commit3000 — pass 40, fail 0, failure rate 0.00%</title></g>
+    <path d="M151.0,190.0 L361.0,18.0 L571.0,190.0" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3" />
+    <circle cx="151.0" cy="190.0" r="3" fill="#b45309"><title>commit1000 — failure rate 0.00%</title></circle><circle cx="361.0" cy="18.0" r="3" fill="#b45309"><title>commit2000 — failure rate 13.04%</title></circle><circle cx="571.0" cy="190.0" r="3" fill="#b45309"><title>commit3000 — failure rate 0.00%</title></circle>
+    <text x="46" y="212" font-size="10" fill="#64748b">commit1000</text>
+    <text x="676" y="212" font-size="10" fill="#64748b" text-anchor="end">commit3000</text>
+  </svg>
+</figure></div>
+  <p class="sub" id="history-status">Showing 1 of 2 suite(s).</p>
+  <script type="application/json" id="history-data">[{"label":"commit1000","at":"2026-08-01T10:00:00.000Z","suites":[{"id":"encoding","pass":101,"fail":0},{"id":"login","pass":40,"fail":0}]},{"label":"commit2000","at":"2026-08-02T10:00:00.000Z","suites":[{"id":"encoding","pass":102,"fail":0},{"id":"login","pass":40,"fail":6}]},{"label":"commit3000","at":"2026-08-03T10:00:00.000Z","suites":[{"id":"encoding","pass":103,"fail":0},{"id":"login","pass":40,"fail":0}]}]</script>
+  <script>
+  (function () {
+    var root = document.getElementById("history-root");
+    if (!root) return;
+    var runs = JSON.parse(document.getElementById("history-data").textContent);
+    var host = document.getElementById("history-chart");
+    var status = document.getElementById("history-status");
+    var boxes = Array.prototype.slice.call(root.querySelectorAll("input[data-suite]"));
+    var W = 720, H = 220, PT = 18, PR = 44, PB = 30, PL = 46;
+    var plotW = W - PL - PR, plotH = H - PT - PB;
+    function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;"; }); }
+    function series(sel) {
+      return runs.map(function (r) {
+        var pass = 0, fail = 0;
+        r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
+        var total = pass + fail;
+        return { label: r.label, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+      });
+    }
+    function draw(pts) {
+      if (!pts.length) { host.innerHTML = '<p class="sub">No suites selected.</p>'; return; }
+      var n = pts.length;
+      var maxTests = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.pass + p.fail; })));
+      var maxRate = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.rate; })));
+      var slot = plotW / n, barW = Math.max(3, Math.min(26, slot * 0.6));
+      var cx = function (i) { return PL + slot * (i + 0.5); };
+      var yRate = function (v) { return PT + plotH - (v / maxRate) * plotH; };
+      var bars = pts.map(function (p, i) {
+        var passH = (p.pass / maxTests) * plotH, failH = (p.fail / maxTests) * plotH;
+        var x = cx(i) - barW / 2, passY = PT + plotH - passH, failY = passY - failH;
+        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(p.label + " — pass " + p.pass + ", fail " + p.fail + ", failure rate " + p.rate.toFixed(2) + "%") + '</title></g>';
+      }).join("");
+      var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
+      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(p.label + " — failure rate " + p.rate.toFixed(2) + "%") + '</title></circle>'; }).join("");
+      host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
+        '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<text x="4" y="' + (PT + 10) + '" font-size="10" fill="#64748b">' + maxTests + '</text>' +
+        '<text x="4" y="' + (PT + plotH) + '" font-size="10" fill="#64748b">0</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + 10) + '" font-size="10" fill="#b45309">' + maxRate.toFixed(1) + '%</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + plotH) + '" font-size="10" fill="#b45309">0%</text>' +
+        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots +
+        '<text x="' + PL + '" y="' + (H - 8) + '" font-size="10" fill="#64748b">' + esc(pts[0].label) + '</text>' +
+        '<text x="' + (W - PR) + '" y="' + (H - 8) + '" font-size="10" fill="#64748b" text-anchor="end">' + esc(pts[n - 1].label) + '</text>' +
+        '</svg>';
+    }
+    function update() {
+      var sel = {}, count = 0;
+      boxes.forEach(function (b) { if (b.checked) { sel[b.getAttribute("data-suite")] = true; count++; } });
+      draw(count === 0 ? [] : series(sel));
+      status.textContent = count === 0
+        ? "No suites selected — pick at least one."
+        : "Showing " + count + " of " + boxes.length + " suite(s).";
+    }
+    boxes.forEach(function (b) { b.addEventListener("change", update); });
+    var all = root.querySelector("[data-suite-all]"), none = root.querySelector("[data-suite-none]");
+    if (all) all.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = true; }); update(); });
+    if (none) none.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = false; }); update(); });
+    update();
+  })();
+  </script>
+</figure>
+<table>
+  <thead><tr><th>Run</th><th>Generated</th><th>Pass</th><th>Fail</th><th>Assertions</th><th>Failure rate</th></tr></thead>
+  <tbody>
+    <tr class=""><td><code>commit100000</code></td><td>2026-08-01T10:00:00.000Z</td><td>40</td><td>0</td><td>1,200</td><td>0.00%</td></tr>
+    <tr class="red"><td><code>commit200000</code></td><td>2026-08-02T10:00:00.000Z</td><td>40</td><td>6</td><td>1,200</td><td>13.04%</td></tr>
+    <tr class=""><td><code>commit300000</code></td><td>2026-08-03T10:00:00.000Z</td><td>40</td><td>0</td><td>1,200</td><td>0.00%</td></tr>
+  </tbody>
+</table>
+<h2 style="font-size:15px">Per-suite contribution</h2>
+<table>
+  <thead><tr><th>Suite</th><th>Runs</th><th>Pass</th><th>Fail</th></tr></thead>
+  <tbody>
+    <tr><td><code>encoding</code></td><td>3</td><td>306</td><td>0</td></tr>
+    <tr><td><code>login</code></td><td>3</td><td>120</td><td>6</td></tr>
+  </tbody>
+</table>
