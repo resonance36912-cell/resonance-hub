@@ -409,8 +409,13 @@ const meta: Record<string, string> = {
   Suites: String(results.length),
 };
 
+const trend = computeTrend(results, loadBaseline());
+meta["Baseline"] = trend.baseline
+  ? `${(trend.baseline.commit ?? "unknown").slice(0, 12)} · ${trend.baseline.generatedAt ?? "unknown"}`
+  : "none (first recorded run)";
+
 mkdirSync(dirname(HTML_PATH), { recursive: true });
-writeFileSync(HTML_PATH, renderHtml(results, meta));
+writeFileSync(HTML_PATH, renderHtml(results, meta, trend));
 writeFileSync(
   JSON_PATH,
   JSON.stringify(
@@ -422,6 +427,15 @@ writeFileSync(
         ...r,
         status: r.fail === 0 ? "pass" : "fail",
       })),
+      trend: {
+        baselineCommit: trend.baseline?.commit ?? null,
+        baselineGeneratedAt: trend.baseline?.generatedAt ?? null,
+        baselineTotals: trend.baseline?.totals ?? null,
+        delta: trend.baseline ? trend.delta : null,
+        newFailures: trend.newFailures.map((r) => ({ id: r.id, title: r.title, fail: r.fail })),
+        removedSuites: trend.removed.map((s) => s.id),
+        suites: trend.rows.map((r) => ({ id: r.id, state: r.state })),
+      },
     },
     null,
     2,
