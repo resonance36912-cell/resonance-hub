@@ -912,7 +912,9 @@ const summaryFile = process.env.GITHUB_STEP_SUMMARY;
 if (summaryFile) {
   appendFileSync(
     summaryFile,
-    `${summaryMd}\n\nArtifacts: \`return-to-coverage-report.html\` / \`.pdf\` on this run.\n`,
+    `${summaryMd}\n\nArtifacts: \`return-to-coverage-report.html\` / \`.pdf\` plus one per-suite artifact each (\`${results
+      .map((r) => `return-to-suite-${r.id}`)
+      .join("`, `")}\`) on this run.\n`,
   );
 }
 
@@ -937,6 +939,14 @@ const commentMd = [
     ? [
         `- [Coverage report artifact (HTML + PDF)](${runUrl}#artifacts) — \`return-to-coverage-report.html\`, \`return-to-coverage-report.pdf\`, \`summary.json\``,
         `- [Full job log](${runUrl})`,
+        `- Per-suite artifacts (HTML + PDF each, faster to debug): ${results
+          .map(
+            (r) =>
+              `\`return-to-suite-${r.id}\` ${
+                r.verdict === "stable-pass" ? "✅" : r.verdict === "flaky" ? "⚠️" : "❌"
+              }`,
+          )
+          .join(" · ")}`,
       ]
     : ["- Artifacts are published on the workflow run for this commit."]),
   "",
