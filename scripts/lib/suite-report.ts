@@ -80,7 +80,9 @@ const CSS = `
   @page { size: A4; margin: 14mm; }
   :root { color-scheme: light; }
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-         margin: 0; padding: 24px; color: #10121a; background: #fff; }
+         margin: 0; padding: 24px; color: #10121a; background: #fff;
+         /* keep banner/pill fills when printed to PDF in CI */
+         -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   h1 { font-size: 23px; margin: 0 0 4px; letter-spacing: -0.02em; }
   h2 { font-size: 15px; margin: 26px 0 6px; letter-spacing: -0.01em; }
   .sub { color: #5b6070; margin: 0 0 20px; font-size: 13px; }
