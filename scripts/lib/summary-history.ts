@@ -233,11 +233,12 @@ export function renderSummaryHistoryMarkdown(
     "| Run | Date | Pass | Fail | Failure rate |",
     "| --- | --- | ---: | ---: | ---: |",
     ...window.map(
-      (p, i) =>
+      (p) =>
         `| \`${shortLabel(p)}\` | ${p.generatedAt || "—"} | ${p.totals.pass} | ${p.totals.fail} | ${failureRate(
           p,
-        ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} |`.replace("| |", `| ${i >= 0 ? "" : ""}|`),
+        ).toFixed(2)}%${p.totals.fail > 0 ? " 🔴" : ""} |`,
     ),
+
     "",
     opts.artifact
       ? `<sub>Chart (SVG) is in \`${opts.artifact}\` on this run.</sub>`
