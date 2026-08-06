@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-06T19:38:48.340Z",
+  "generatedAt": "2026-08-06T19:41:53.879Z",
   "commit": "local",
   "totals": {
     "pass": 146,
     "fail": 0,
-    "assertions": 4282
+    "assertions": 4295
   },
   "suites": [
     {
@@ -17,8 +17,8 @@
       "assertionSource": "expect-calls",
       "pass": 5,
       "fail": 0,
-      "assertions": 3971,
-      "durationMs": 913,
+      "assertions": 3984,
+      "durationMs": 800,
       "status": "pass"
     },
     {
@@ -46,7 +46,7 @@
       "pass": 44,
       "fail": 0,
       "assertions": 44,
-      "durationMs": 3165,
+      "durationMs": 3350,
       "status": "pass"
     },
     {
@@ -60,7 +60,7 @@
       "pass": 23,
       "fail": 0,
       "assertions": 136,
-      "durationMs": 225,
+      "durationMs": 234,
       "status": "pass"
     },
     {
@@ -74,7 +74,7 @@
       "pass": 31,
       "fail": 0,
       "assertions": 70,
-      "durationMs": 229,
+      "durationMs": 234,
       "status": "pass"
     }
   ],
@@ -107,5 +107,14 @@
         "state": "new-suite"
       }
     ]
+  },
+  "counterexamples": {
+    "total": 27,
+    "blocked": 27,
+    "leaked": 0
+  },
+  "history": {
+    "runs": 1,
+    "redRuns": 0
   }
 }

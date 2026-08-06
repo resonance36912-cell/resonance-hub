@@ -1,0 +1,44 @@
+{
+  "points": [
+    {
+      "runId": null,
+      "runNumber": null,
+      "commit": "local",
+      "branch": null,
+      "event": null,
+      "generatedAt": "2026-08-06T19:41:53.879Z",
+      "totals": {
+        "pass": 146,
+        "fail": 0,
+        "assertions": 4295
+      },
+      "counterexamples": {
+        "total": 27,
+        "blocked": 27,
+        "leaked": 0
+      },
+      "suites": [
+        {
+          "id": "fuzz",
+          "fail": 0
+        },
+        {
+          "id": "normalization",
+          "fail": 0
+        },
+        {
+          "id": "encoding",
+          "fail": 0
+        },
+        {
+          "id": "audit",
+          "fail": 0
+        },
+        {
+          "id": "targets",
+          "fail": 0
+        }
+      ]
+    }
+  ]
+}
