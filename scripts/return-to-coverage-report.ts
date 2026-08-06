@@ -68,6 +68,183 @@ const OUT_DIR = join(process.cwd(), "reports", "return-to-coverage");
 const HTML_PATH = join(OUT_DIR, "return-to-coverage-report.html");
 const JSON_PATH = join(OUT_DIR, "summary.json");
 
+/**
+ * Baseline = the `summary.json` produced by the last successful run of this
+ * report (CI downloads it from that run's artifact into
+ * reports/return-to-coverage/baseline/). When it is absent the trend section
+ * simply reports "no baseline" instead of failing.
+ */
+const BASELINE_PATH =
+  process.env["RETURN_TO_COVERAGE_BASELINE"] ?? join(OUT_DIR, "baseline", "summary.json");
+
+type Totals = { pass: number; fail: number; assertions: number };
+type BaselineSuite = { id: string; title?: string; pass: number; fail: number; assertions: number };
+type Baseline = {
+  generatedAt?: string;
+  commit?: string;
+  totals: Totals;
+  suites: BaselineSuite[];
+};
+
+type TrendState =
+  | "new-failure"
+  | "still-failing"
+  | "fixed"
+  | "tests-removed"
+  | "new-suite"
+  | "stable";
+
+type TrendRow = {
+  id: string;
+  title: string;
+  pass: number;
+  fail: number;
+  assertions: number;
+  basePass: number | null;
+  baseFail: number | null;
+  baseAssertions: number | null;
+  state: TrendState;
+};
+
+type Trend = {
+  baseline: Baseline | null;
+  rows: TrendRow[];
+  removed: BaselineSuite[];
+  newFailures: TrendRow[];
+  delta: Totals;
+};
+
+function loadBaseline(): Baseline | null {
+  try {
+    if (!existsSync(BASELINE_PATH)) return null;
+    const parsed = JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as Baseline;
+    if (!parsed?.totals || !Array.isArray(parsed.suites)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function computeTrend(results: SuiteResult[], baseline: Baseline | null): Trend {
+  const byId = new Map((baseline?.suites ?? []).map((s) => [s.id, s]));
+  const rows: TrendRow[] = results.map((r) => {
+    const base = byId.get(r.id);
+    let state: TrendState;
+    if (!base) state = r.fail > 0 ? "new-failure" : "new-suite";
+    else if (r.fail > 0 && base.fail === 0) state = "new-failure";
+    else if (r.fail > 0) state = "still-failing";
+    else if (base.fail > 0) state = "fixed";
+    else if (r.pass < base.pass) state = "tests-removed";
+    else state = "stable";
+    return {
+      id: r.id,
+      title: r.title,
+      pass: r.pass,
+      fail: r.fail,
+      assertions: r.assertions,
+      basePass: base ? base.pass : null,
+      baseFail: base ? base.fail : null,
+      baseAssertions: base ? base.assertions : null,
+      state,
+    };
+  });
+  const seen = new Set(results.map((r) => r.id));
+  const removed = (baseline?.suites ?? []).filter((s) => !seen.has(s.id));
+  const current = results.reduce<Totals>(
+    (a, r) => ({
+      pass: a.pass + r.pass,
+      fail: a.fail + r.fail,
+      assertions: a.assertions + r.assertions,
+    }),
+    { pass: 0, fail: 0, assertions: 0 },
+  );
+  const delta: Totals = baseline
+    ? {
+        pass: current.pass - baseline.totals.pass,
+        fail: current.fail - baseline.totals.fail,
+        assertions: current.assertions - baseline.totals.assertions,
+      }
+    : { pass: 0, fail: 0, assertions: 0 };
+  return {
+    baseline,
+    rows,
+    removed,
+    newFailures: rows.filter((r) => r.state === "new-failure"),
+    delta,
+  };
+}
+
+const signed = (n: number) => (n > 0 ? `+${n.toLocaleString("en-US")}` : n.toLocaleString("en-US"));
+
+const TREND_LABEL: Record<TrendState, string> = {
+  "new-failure": "NEW FAILURE",
+  "still-failing": "still failing",
+  fixed: "fixed",
+  "tests-removed": "tests removed",
+  "new-suite": "new suite",
+  stable: "unchanged",
+};
+
+function renderTrendHtml(trend: Trend): string {
+  if (!trend.baseline) {
+    return `<section class="trend">
+    <h2>Coverage trend</h2>
+    <p class="sub">No baseline available — this is the first recorded run, or the last successful run's <code>summary.json</code> artifact has expired. The next run will compare against this one.</p>
+  </section>`;
+  }
+  const rows = trend.rows
+    .map((r) => {
+      const cls =
+        r.state === "new-failure"
+          ? "bad"
+          : r.state === "fixed"
+            ? "ok"
+            : r.state === "still-failing" || r.state === "tests-removed"
+              ? "warn"
+              : "";
+      const dPass = r.basePass === null ? "—" : signed(r.pass - r.basePass);
+      const dFail = r.baseFail === null ? "—" : signed(r.fail - r.baseFail);
+      const dAsserts = r.baseAssertions === null ? "—" : signed(r.assertions - r.baseAssertions);
+      return `<tr class="${cls === "bad" ? "row-bad" : ""}">
+      <td>${esc(r.title)}</td>
+      <td class="num">${r.basePass === null ? "—" : r.basePass} → ${r.pass}</td>
+      <td class="num">${dPass}</td>
+      <td class="num ${r.fail > 0 ? "bad" : ""}">${r.baseFail === null ? "—" : r.baseFail} → ${r.fail}</td>
+      <td class="num">${dFail}</td>
+      <td class="num">${dAsserts}</td>
+      <td><span class="pill ${cls || "muted"}">${TREND_LABEL[r.state]}</span></td>
+    </tr>`;
+    })
+    .join("\n");
+
+  const removed = trend.removed.length
+    ? `<p class="sub"><strong>Suites present in the baseline but missing now:</strong> ${trend.removed
+        .map((s) => esc(s.title ?? s.id))
+        .join(", ")} — redirect-safety coverage was deleted or renamed.</p>`
+    : "";
+
+  const alert = trend.newFailures.length
+    ? `<div class="alert">New failures since the last successful run: ${trend.newFailures
+        .map((r) => `<strong>${esc(r.title)}</strong> (${r.fail} failing)`)
+        .join(", ")}</div>`
+    : `<p class="sub">No new failures versus the last successful run.</p>`;
+
+  return `<section class="trend">
+    <h2>Coverage trend</h2>
+    <p class="sub">Compared against the last successful run — commit <code>${esc(
+      (trend.baseline.commit ?? "unknown").slice(0, 12),
+    )}</code>, generated ${esc(trend.baseline.generatedAt ?? "unknown")}. Totals moved
+      ${signed(trend.delta.pass)} passing, ${signed(trend.delta.fail)} failing,
+      ${signed(trend.delta.assertions)} assertions.</p>
+    ${alert}
+    <table>
+      <thead><tr><th>Suite</th><th class="num">Pass (was → now)</th><th class="num">Δ</th><th class="num">Fail (was → now)</th><th class="num">Δ</th><th class="num">Δ assertions</th><th>Trend</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${removed}
+  </section>`;
+}
+
 function num(re: RegExp, text: string): number {
   const m = text.match(re);
   return m ? Number(m[1]) : 0;
