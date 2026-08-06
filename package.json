@@ -26,6 +26,8 @@
     "verify:app-registry": "bun run scripts/verify-app-registry.ts",
     "verify:registry-status-parity": "bun run scripts/verify-registry-status-parity.ts",
     "test:registry-status-parity": "bun test scripts/lib/registry-status-parity.test.ts",
+    "verify:published-feed-status": "bun run scripts/verify-published-feed-status.ts",
+    "test:published-feed-status": "bun test scripts/lib/published-feed-parity.test.ts",
     "test:app-status-badge": "bun test scripts/lib/app-status-badge.test.ts",
     "verify:security": "bun run scripts/verify-security-invariants.ts",
     "verify:all-access": "bun run scripts/verify-all-access.ts",
