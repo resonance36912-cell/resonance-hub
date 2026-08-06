@@ -30,6 +30,16 @@ import {
   type History,
   type HistoryPoint,
 } from "./lib/coverage-history";
+import {
+  VERDICT_LABEL,
+  authoritativeAttempt,
+  classifyAttempts,
+  jobShouldFail,
+  retriesEnabled,
+  shouldRetry,
+  type Attempt,
+  type FlakyVerdict,
+} from "./lib/flaky-retry";
 import { sanitizeCounterexamples } from "../src/lib/return-to-counterexamples";
 
 const SUITES: { id: string; title: string; file: string; blurb: string }[] = [
