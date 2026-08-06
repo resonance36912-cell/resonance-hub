@@ -15,6 +15,9 @@
   .suite-toggles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 4px 0 10px; font-size: 12px; }
   .suite-toggle { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 9px; cursor: pointer; }
   .suite-toggles button { font: inherit; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+  .run-links { display: flex; flex-wrap: wrap; gap: 4px 14px; list-style: none; padding: 0; margin: 6px 0 0; font-size: 11px; color: #64748b; }
+  .run-links a { color: #1d4ed8; text-decoration: none; }
+  .run-links a:hover { text-decoration: underline; }
 
   .pt-tip { position: absolute; z-index: 5; pointer-events: none; background: #0f172a; color: #f8fafc; border-radius: 6px; padding: 6px 8px; font-size: 11px; line-height: 1.45; box-shadow: 0 6px 18px rgba(15,23,42,.28); max-width: 280px; }
   .pt-tip[hidden] { display: none; }
@@ -25,12 +28,240 @@
 
 </style>
 <h1>return_to coverage — historical pass/fail &amp; failure rate</h1>
-<p class="sub">0 run(s) from 0 uploaded summary file(s).</p>
-<figure class="chart"><figcaption>Pass / fail and failure rate over time</figcaption><p class="sub">No summary.json files found — upload at least one to chart history.</p></figure>
+<p class="sub">3 run(s) from 3 uploaded summary file(s).</p>
+<p class="sub">Download the underlying time series:
+  <a href="history-graph.csv" download>history-graph.csv</a> (one row per run)
+  · <a href="history-suites.csv" download>history-suites.csv</a> (one row per run × suite).</p>
+<figure class="chart suite-filter-chart" id="history-root" style="position:relative">
+  <figcaption>Pass / fail and failure rate over time — toggle suites to recompute the <span style="color:#16a34a">passing</span>/<span style="color:#dc2626">failing</span> bars and the <span style="color:#b45309">failure rate</span>. Hover a column for the exact date, run id, counts and failure rate; click it to open that run's summary and CI log.</figcaption>
+  <div class="suite-toggles">
+      <label class="suite-toggle"><input type="checkbox" data-suite="encoding" checked /> <code>encoding</code> <span class="sub">124 pass · 4 fail</span></label>
+      <label class="suite-toggle"><input type="checkbox" data-suite="login" checked /> <code>login</code> <span class="sub">30 pass · 0 fail</span></label>
+      <button type="button" data-suite-all="1">All</button>
+      <button type="button" data-suite-none="1">None</button>
+  </div>
+  <div id="history-chart"><figure class="chart" id="hc2" style="position:relative">
+  <figcaption>Pass / fail and failure rate over time — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across 3 run(s). Hover a column for the exact date, run id and counts; click it to open that run's summary.</figcaption>
+  <svg viewBox="0 0 720 220" width="100%" height="220" role="img" aria-label="Pass / fail and failure rate over time over 3 runs">
+    <line x1="46" y1="190" x2="676" y2="190" stroke="#cbd5e1" />
+    <line x1="46" y1="18" x2="46" y2="190" stroke="#cbd5e1" />
+    <text x="4" y="28" font-size="10" fill="#64748b">55</text>
+    <text x="4" y="190" font-size="10" fill="#64748b">0</text>
+    <text x="682" y="28" font-size="10" fill="#b45309">5.5%</text>
+    <text x="682" y="190" font-size="10" fill="#b45309">0%</text>
+    <g><rect x="138.0" y="33.6" width="26.0" height="156.4" fill="#16a34a" opacity="0.75" /><rect x="138.0" y="30.5" width="26.0" height="3.1" fill="#dc2626" /><title>Date: 2026-08-01 10:00 UTC
+Run: 1001 (#1)
+Commit: aaaa1111
+Pass: 50
+Fail: 1
+Failure rate: 1.96% (1/51)</title></g><g><rect x="348.0" y="27.4" width="26.0" height="162.6" fill="#16a34a" opacity="0.75" /><rect x="348.0" y="27.4" width="26.0" height="0.0" fill="#dc2626" /><title>Date: 2026-08-02 10:00 UTC
+Run: 1002 (#2)
+Commit: bbbb2222
+Pass: 52
+Fail: 0
+Failure rate: 0.00% (0/52)</title></g><g><rect x="558.0" y="27.4" width="26.0" height="162.6" fill="#16a34a" opacity="0.75" /><rect x="558.0" y="18.0" width="26.0" height="9.4" fill="#dc2626" /><title>Date: 2026-08-03 10:00 UTC
+Run: 1003 (#3)
+Commit: cccc3333
+Pass: 52
+Fail: 3
+Failure rate: 5.45% (3/55)</title></g>
+    <path d="M151.0,128.2 L361.0,190.0 L571.0,18.0" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3" />
+    <circle cx="151.0" cy="128.2" r="3" fill="#b45309"><title>Date: 2026-08-01 10:00 UTC
+Run: 1001 (#1)
+Commit: aaaa1111
+Pass: 50
+Fail: 1
+Failure rate: 1.96% (1/51)</title></circle><circle cx="361.0" cy="190.0" r="3" fill="#b45309"><title>Date: 2026-08-02 10:00 UTC
+Run: 1002 (#2)
+Commit: bbbb2222
+Pass: 52
+Fail: 0
+Failure rate: 0.00% (0/52)</title></circle><circle cx="571.0" cy="18.0" r="3" fill="#b45309"><title>Date: 2026-08-03 10:00 UTC
+Run: 1003 (#3)
+Commit: cccc3333
+Pass: 52
+Fail: 3
+Failure rate: 5.45% (3/55)</title></circle>
+    <a href="https://github.com/o/r/actions/runs/1001#summary" target="_blank" rel="noreferrer" aria-label="Open run 1001"><rect class="pt-hit" x="46.0" y="18" width="210.0" height="172" fill="transparent" data-tip="Date: 2026-08-01 10:00 UTC|Run: 1001 (#1)|Commit: aaaa1111|Pass: 50|Fail: 1|Failure rate: 1.96% (1/51)|Open: run summary + CI log (click)" data-href="https://github.com/o/r/actions/runs/1001#summary" data-log="https://github.com/o/r/actions/runs/1001/job"><title>Date: 2026-08-01 10:00 UTC
+Run: 1001 (#1)
+Commit: aaaa1111
+Pass: 50
+Fail: 1
+Failure rate: 1.96% (1/51)</title></rect></a><a href="https://github.com/o/r/actions/runs/1002#summary" target="_blank" rel="noreferrer" aria-label="Open run 1002"><rect class="pt-hit" x="256.0" y="18" width="210.0" height="172" fill="transparent" data-tip="Date: 2026-08-02 10:00 UTC|Run: 1002 (#2)|Commit: bbbb2222|Pass: 52|Fail: 0|Failure rate: 0.00% (0/52)|Open: run summary + CI log (click)" data-href="https://github.com/o/r/actions/runs/1002#summary" data-log="https://github.com/o/r/actions/runs/1002/job"><title>Date: 2026-08-02 10:00 UTC
+Run: 1002 (#2)
+Commit: bbbb2222
+Pass: 52
+Fail: 0
+Failure rate: 0.00% (0/52)</title></rect></a><a href="https://github.com/o/r/actions/runs/1003#summary" target="_blank" rel="noreferrer" aria-label="Open run 1003"><rect class="pt-hit" x="466.0" y="18" width="210.0" height="172" fill="transparent" data-tip="Date: 2026-08-03 10:00 UTC|Run: 1003 (#3)|Commit: cccc3333|Pass: 52|Fail: 3|Failure rate: 5.45% (3/55)|Open: run summary + CI log (click)" data-href="https://github.com/o/r/actions/runs/1003#summary" data-log="https://github.com/o/r/actions/runs/1003/job"><title>Date: 2026-08-03 10:00 UTC
+Run: 1003 (#3)
+Commit: cccc3333
+Pass: 52
+Fail: 3
+Failure rate: 5.45% (3/55)</title></rect></a>
+    <text x="46" y="212" font-size="10" fill="#64748b">aaaa1111</text>
+    <text x="676" y="212" font-size="10" fill="#64748b" text-anchor="end">cccc3333</text>
+  </svg>
+  <ul class="run-links"><li><a href="https://github.com/o/r/actions/runs/1001#summary" target="_blank" rel="noreferrer">aaaa1111 #1</a> · <a href="https://github.com/o/r/actions/runs/1001/job" target="_blank" rel="noreferrer">log</a> · <a href="https://github.com/o/r/actions/runs/1001#artifacts" target="_blank" rel="noreferrer">artifacts</a></li><li><a href="https://github.com/o/r/actions/runs/1002#summary" target="_blank" rel="noreferrer">bbbb2222 #2</a> · <a href="https://github.com/o/r/actions/runs/1002/job" target="_blank" rel="noreferrer">log</a> · <a href="https://github.com/o/r/actions/runs/1002#artifacts" target="_blank" rel="noreferrer">artifacts</a></li><li><a href="https://github.com/o/r/actions/runs/1003#summary" target="_blank" rel="noreferrer">cccc3333 #3</a> · <a href="https://github.com/o/r/actions/runs/1003/job" target="_blank" rel="noreferrer">log</a> · <a href="https://github.com/o/r/actions/runs/1003#artifacts" target="_blank" rel="noreferrer">artifacts</a></li></ul>
+  <div class="pt-tip" id="hc2-tip" hidden></div>
+  <script>
+  (function () {
+    var host = document.getElementById("hc2");
+    var tip = document.getElementById("hc2-tip");
+    if (!host || !tip) return;
+    function show(el, ev) {
+      var lines = (el.getAttribute("data-tip") || "").split("|");
+      tip.innerHTML = lines.map(function (l) {
+        var i = l.indexOf(":");
+        var k = i < 0 ? l : l.slice(0, i);
+        return '<div><span class="pt-k">' + k + '</span> <span class="pt-v"></span></div>';
+
+      }).join("");
+      var vals = tip.querySelectorAll(".pt-v");
+      lines.forEach(function (l, idx) {
+        var i = l.indexOf(":");
+        if (vals[idx]) vals[idx].textContent = i < 0 ? "" : l.slice(i + 1).trim();
+      });
+      var r = host.getBoundingClientRect();
+      tip.hidden = false;
+      var x = ev.clientX - r.left + 12;
+      var y = ev.clientY - r.top + 12;
+      tip.style.left = Math.min(x, Math.max(0, r.width - tip.offsetWidth - 8)) + "px";
+      tip.style.top = Math.min(y, Math.max(0, r.height - tip.offsetHeight - 8)) + "px";
+    }
+    host.addEventListener("mousemove", function (ev) {
+      var el = ev.target && ev.target.closest ? ev.target.closest(".pt-hit") : null;
+      if (el) show(el, ev); else tip.hidden = true;
+    });
+    host.addEventListener("mouseleave", function () { tip.hidden = true; });
+  })();
+  </script>
+</figure></div>
+  <p class="sub" id="history-status">Showing 2 of 2 suite(s).</p>
+  <ul class="run-links"><li><a href="https://github.com/o/r/actions/runs/1001#summary" target="_blank" rel="noreferrer">aaaa1111 #1</a> · <a href="https://github.com/o/r/actions/runs/1001/job" target="_blank" rel="noreferrer">log</a> · <a href="https://github.com/o/r/actions/runs/1001#artifacts" target="_blank" rel="noreferrer">artifacts</a></li><li><a href="https://github.com/o/r/actions/runs/1002#summary" target="_blank" rel="noreferrer">bbbb2222 #2</a> · <a href="https://github.com/o/r/actions/runs/1002/job" target="_blank" rel="noreferrer">log</a> · <a href="https://github.com/o/r/actions/runs/1002#artifacts" target="_blank" rel="noreferrer">artifacts</a></li><li><a href="https://github.com/o/r/actions/runs/1003#summary" target="_blank" rel="noreferrer">cccc3333 #3</a> · <a href="https://github.com/o/r/actions/runs/1003/job" target="_blank" rel="noreferrer">log</a> · <a href="https://github.com/o/r/actions/runs/1003#artifacts" target="_blank" rel="noreferrer">artifacts</a></li></ul>
+
+  <script type="application/json" id="history-data">[{"label":"aaaa1111","at":"2026-08-01T10:00:00.000Z","date":"2026-08-01 10:00 UTC","runId":"1001","runNumber":1,"href":"https://github.com/o/r/actions/runs/1001#summary","log":"https://github.com/o/r/actions/runs/1001/job","external":true,"suites":[{"id":"encoding","pass":40,"fail":1},{"id":"login","pass":10,"fail":0}]},{"label":"bbbb2222","at":"2026-08-02T10:00:00.000Z","date":"2026-08-02 10:00 UTC","runId":"1002","runNumber":2,"href":"https://github.com/o/r/actions/runs/1002#summary","log":"https://github.com/o/r/actions/runs/1002/job","external":true,"suites":[{"id":"encoding","pass":42,"fail":0},{"id":"login","pass":10,"fail":0}]},{"label":"cccc3333","at":"2026-08-03T10:00:00.000Z","date":"2026-08-03 10:00 UTC","runId":"1003","runNumber":3,"href":"https://github.com/o/r/actions/runs/1003#summary","log":"https://github.com/o/r/actions/runs/1003/job","external":true,"suites":[{"id":"encoding","pass":42,"fail":3},{"id":"login","pass":10,"fail":0}]}]</script>
+  <script>
+  (function () {
+    var root = document.getElementById("history-root");
+    if (!root) return;
+    var runs = JSON.parse(document.getElementById("history-data").textContent);
+    var host = document.getElementById("history-chart");
+    var status = document.getElementById("history-status");
+    var boxes = Array.prototype.slice.call(root.querySelectorAll("input[data-suite]"));
+    var W = 720, H = 220, PT = 18, PR = 44, PB = 30, PL = 46;
+    var plotW = W - PL - PR, plotH = H - PT - PB;
+    function esc(s) { return String(s).replace(/[<>&"]/g, function (c) { return c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : "&quot;"; }); }
+    function tipLines(p) {
+      var total = p.pass + p.fail;
+      return [
+        "Date: " + (p.date || "—"),
+        "Run: " + (p.runId || "—") + (p.runNumber != null ? " (#" + p.runNumber + ")" : ""),
+        "Commit: " + p.label,
+        "Pass: " + p.pass,
+        "Fail: " + p.fail,
+        "Failure rate: " + p.rate.toFixed(2) + "% (" + p.fail + "/" + total + ")",
+        "Open: " + (p.external ? "run summary + CI log (click)" : "this run's row (click)")
+      ];
+    }
+    function series(sel) {
+      return runs.map(function (r) {
+        var pass = 0, fail = 0;
+        r.suites.forEach(function (s) { if (sel[s.id]) { pass += s.pass; fail += s.fail; } });
+        var total = pass + fail;
+        return { label: r.label, date: r.date, runId: r.runId, runNumber: r.runNumber, href: r.href, log: r.log, external: r.external, pass: pass, fail: fail, rate: total === 0 ? 0 : (fail / total) * 100 };
+      });
+    }
+
+    function draw(pts) {
+      if (!pts.length) { host.innerHTML = '<p class="sub">No suites selected.</p>'; return; }
+      var n = pts.length;
+      var maxTests = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.pass + p.fail; })));
+      var maxRate = Math.max.apply(null, [1].concat(pts.map(function (p) { return p.rate; })));
+      var slot = plotW / n, barW = Math.max(3, Math.min(26, slot * 0.6));
+      var cx = function (i) { return PL + slot * (i + 0.5); };
+      var yRate = function (v) { return PT + plotH - (v / maxRate) * plotH; };
+      var bars = pts.map(function (p, i) {
+        var passH = (p.pass / maxTests) * plotH, failH = (p.fail / maxTests) * plotH;
+        var x = cx(i) - barW / 2, passY = PT + plotH - passH, failY = passY - failH;
+        return '<g><rect x="' + x.toFixed(1) + '" y="' + passY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(1, passH).toFixed(1) + '" fill="#16a34a" opacity="0.75"/><rect x="' + x.toFixed(1) + '" y="' + failY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + Math.max(0, failH).toFixed(1) + '" fill="#dc2626"/><title>' + esc(tipLines(p).join("\n")) + '</title></g>';
+      }).join("");
+      var line = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + cx(i).toFixed(1) + "," + yRate(p.rate).toFixed(1); }).join(" ");
+      var dots = pts.map(function (p, i) { return '<circle cx="' + cx(i).toFixed(1) + '" cy="' + yRate(p.rate).toFixed(1) + '" r="3" fill="#b45309"><title>' + esc(tipLines(p).join("\n")) + '</title></circle>'; }).join("");
+      var hits = pts.map(function (p, i) { return '<a href="' + esc(p.href || "#") + '"' + (p.external ? ' target="_blank" rel="noreferrer"' : "") + ' aria-label="' + esc("Open run " + (p.runId || p.label)) + '"><rect class="pt-hit" x="' + (cx(i) - slot / 2).toFixed(1) + '" y="' + PT + '" width="' + slot.toFixed(1) + '" height="' + plotH + '" fill="transparent" data-tip="' + esc(tipLines(p).join("|")) + '" data-href="' + esc(p.href || "") + '"' + (p.log ? ' data-log="' + esc(p.log) + '"' : "") + '><title>' + esc(tipLines(p).join("\n")) + '</title></rect></a>'; }).join("");
+      host.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img">' +
+        '<line x1="' + PL + '" y1="' + (PT + plotH) + '" x2="' + (W - PR) + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<line x1="' + PL + '" y1="' + PT + '" x2="' + PL + '" y2="' + (PT + plotH) + '" stroke="#cbd5e1"/>' +
+        '<text x="4" y="' + (PT + 10) + '" font-size="10" fill="#64748b">' + maxTests + '</text>' +
+        '<text x="4" y="' + (PT + plotH) + '" font-size="10" fill="#64748b">0</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + 10) + '" font-size="10" fill="#b45309">' + maxRate.toFixed(1) + '%</text>' +
+        '<text x="' + (W - PR + 6) + '" y="' + (PT + plotH) + '" font-size="10" fill="#b45309">0%</text>' +
+        bars + '<path d="' + line + '" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3"/>' + dots + hits +
+        '<text x="' + PL + '" y="' + (H - 8) + '" font-size="10" fill="#64748b">' + esc(pts[0].label) + '</text>' +
+        '<text x="' + (W - PR) + '" y="' + (H - 8) + '" font-size="10" fill="#64748b" text-anchor="end">' + esc(pts[n - 1].label) + '</text>' +
+        '</svg>';
+    }
+    function update() {
+      var sel = {}, count = 0;
+      boxes.forEach(function (b) { if (b.checked) { sel[b.getAttribute("data-suite")] = true; count++; } });
+      draw(count === 0 ? [] : series(sel));
+      status.textContent = count === 0
+        ? "No suites selected — pick at least one."
+        : "Showing " + count + " of " + boxes.length + " suite(s).";
+    }
+    boxes.forEach(function (b) { b.addEventListener("change", update); });
+    var all = root.querySelector("[data-suite-all]"), none = root.querySelector("[data-suite-none]");
+    if (all) all.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = true; }); update(); });
+    if (none) none.addEventListener("click", function () { boxes.forEach(function (b) { b.checked = false; }); update(); });
+    update();
+  })();
+  </script>
+  <div class="pt-tip" id="history-root-tip" hidden></div>
+  <script>
+  (function () {
+    var host = document.getElementById("history-root");
+    var tip = document.getElementById("history-root-tip");
+    if (!host || !tip) return;
+    function show(el, ev) {
+      var lines = (el.getAttribute("data-tip") || "").split("|");
+      tip.innerHTML = lines.map(function (l) {
+        var i = l.indexOf(":");
+        var k = i < 0 ? l : l.slice(0, i);
+        return '<div><span class="pt-k">' + k + '</span> <span class="pt-v"></span></div>';
+
+      }).join("");
+      var vals = tip.querySelectorAll(".pt-v");
+      lines.forEach(function (l, idx) {
+        var i = l.indexOf(":");
+        if (vals[idx]) vals[idx].textContent = i < 0 ? "" : l.slice(i + 1).trim();
+      });
+      var r = host.getBoundingClientRect();
+      tip.hidden = false;
+      var x = ev.clientX - r.left + 12;
+      var y = ev.clientY - r.top + 12;
+      tip.style.left = Math.min(x, Math.max(0, r.width - tip.offsetWidth - 8)) + "px";
+      tip.style.top = Math.min(y, Math.max(0, r.height - tip.offsetHeight - 8)) + "px";
+    }
+    host.addEventListener("mousemove", function (ev) {
+      var el = ev.target && ev.target.closest ? ev.target.closest(".pt-hit") : null;
+      if (el) show(el, ev); else tip.hidden = true;
+    });
+    host.addEventListener("mouseleave", function () { tip.hidden = true; });
+  })();
+  </script>
+</figure>
 <table>
   <thead><tr><th>Run</th><th>Generated</th><th>Pass</th><th>Fail</th><th>Assertions</th><th>Failure rate</th></tr></thead>
   <tbody>
-    
+    <tr class="red"><td><code>aaaa1111</code></td><td>2026-08-01T10:00:00.000Z</td><td>50</td><td>1</td><td>1,000</td><td>1.96%</td></tr>
+    <tr class=""><td><code>bbbb2222</code></td><td>2026-08-02T10:00:00.000Z</td><td>52</td><td>0</td><td>1,040</td><td>0.00%</td></tr>
+    <tr class="red"><td><code>cccc3333</code></td><td>2026-08-03T10:00:00.000Z</td><td>52</td><td>3</td><td>1,040</td><td>5.45%</td></tr>
   </tbody>
 </table>
-
+<h2 style="font-size:15px">Per-suite contribution</h2>
+<table>
+  <thead><tr><th>Suite</th><th>Runs</th><th>Pass</th><th>Fail</th></tr></thead>
+  <tbody>
+    <tr><td><code>encoding</code></td><td>3</td><td>124</td><td>4</td></tr>
+    <tr><td><code>login</code></td><td>3</td><td>30</td><td>0</td></tr>
+  </tbody>
+</table>

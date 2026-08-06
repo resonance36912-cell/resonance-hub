@@ -1,0 +1,4 @@
+run_index,run_id,run_number,commit,branch,event,generated_at,pass,fail,assertions,failure_rate_pct,counterexamples_total,counterexamples_blocked,counterexamples_leaked,run_url,encoding_pass,encoding_fail,login_pass,login_fail
+1,1001,1,aaaa1111,main,push,2026-08-01T10:00:00.000Z,50,1,1000,1.96,27,27,0,https://github.com/o/r/actions/runs/1001#summary,40,1,10,0
+2,1002,2,bbbb2222,main,push,2026-08-02T10:00:00.000Z,52,0,1040,0.00,27,27,0,https://github.com/o/r/actions/runs/1002#summary,42,0,10,0
+3,1003,3,cccc3333,main,push,2026-08-03T10:00:00.000Z,52,3,1040,5.45,27,27,0,https://github.com/o/r/actions/runs/1003#summary,42,3,10,0
