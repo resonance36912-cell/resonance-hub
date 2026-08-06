@@ -97,6 +97,7 @@ export const Route = createFileRoute("/apps/$appKey")({
 
 function AppDetailPage() {
   const { entry } = Route.useLoaderData() as { entry: AppRegistryEntry };
+  const meaning = statusMeaning(entry.status);
   const capabilities: Capability[] = CAPABILITIES[entry.key];
   const pricingRoute =
     entry.key === "epublisher"
