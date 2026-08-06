@@ -788,6 +788,9 @@ export function renderSummaryHistoryMarkdown(
     breakdown?: readonly { id: string; pass: number; fail: number; runs: number }[];
     /** Server/repo used to build per-run deep links (defaults to env). */
     links?: RunLinkOptions;
+    /** CSV artifact path to advertise; `false` hides the CSV line entirely. */
+    csv?: string | false;
+
   } = {},
 
 ): string[] {
