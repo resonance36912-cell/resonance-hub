@@ -321,11 +321,16 @@ function TileCard({ tile }: { tile: Tile }) {
             </h3>
           </div>
           <span
+            title={meaning.explanation}
             className={`shrink-0 rounded-full border px-2 py-0.5 text-xs ${STATUS_STYLES[tile.status]}`}
           >
-            {tile.badge ?? STATUS_LABELS[tile.status]}
+            {tile.badge ?? meaning.label}
           </span>
         </div>
+        <p className="mt-1 text-xs font-medium text-muted-foreground">
+          {meaning.accessible ? "✓ " : "· "}
+          {meaning.access}
+        </p>
         <p className="mt-2 text-sm text-muted-foreground">{tile.tagline}</p>
         {tile.useCase ? (
           <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
