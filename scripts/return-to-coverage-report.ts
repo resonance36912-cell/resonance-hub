@@ -443,7 +443,10 @@ const meta: Record<string, string> = {
   Commit: process.env.GITHUB_SHA ?? "local",
   Ref: process.env.GITHUB_REF ?? "local",
   Workflow: process.env.GITHUB_WORKFLOW ?? "local run",
-  Runner: `bun ${Bun.version}`,
+  Host: `bun ${Bun.version}`,
+  Runners: Array.from(
+    new Set(results.map((r) => `${RUNNER_LABEL[r.runner]} (${results.filter((x) => x.runner === r.runner).length})`)),
+  ).join(" · "),
   Suites: String(results.length),
 };
 
