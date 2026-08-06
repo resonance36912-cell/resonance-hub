@@ -30,9 +30,12 @@ import {
   parseHistory,
   renderHistoryChart,
   renderHistoryMarkdown,
+  sparkline,
   type History,
   type HistoryPoint,
 } from "./lib/coverage-history";
+import { buildTrendComment } from "./lib/trend-comment";
+
 import {
   VERDICT_LABEL,
   authoritativeAttempt,
