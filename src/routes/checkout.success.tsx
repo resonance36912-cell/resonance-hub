@@ -118,7 +118,12 @@ const CTA_CLASS = {
 
 function SuccessPage() {
   const { sku, pack, session: sessionIdParam, return_to } = Route.useSearch();
+  const { extraOrigins } = Route.useLoaderData();
+  // Register admin-managed origins on this runtime (idempotent) before the
+  // first render so client CTAs match SSR and honor the admin allowlist.
+  registerExtraReturnToOrigins(extraOrigins);
   const ctx = resolveCheckoutContext({ sku, pack, return_to });
+
   const navigate = useNavigate();
   const sessionFn = useServerFn(getCheckoutSession);
 
