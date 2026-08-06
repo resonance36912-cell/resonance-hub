@@ -442,6 +442,7 @@ function renderHtml(
     { pass: 0, fail: 0, assertions: 0 },
   );
   const green = totals.fail === 0;
+  const flakyCount = results.filter((r) => r.verdict === "flaky").length;
 
   const rows = results
     .map(
