@@ -286,10 +286,9 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
       const x = cx(i) - barW / 2;
       const passY = PAD.top + plotH - passH;
       const failY = passY - failH;
-      const tip = escapeXml(
-        `${shortLabel(p)} — pass ${p.totals.pass}, fail ${p.totals.fail}, failure rate ${failureRate(p).toFixed(2)}%`,
-      );
-      return `<g><rect x="${x.toFixed(1)}" y="${passY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, passH).toFixed(1)}" fill="#16a34a" opacity="0.75" /><rect x="${x.toFixed(1)}" y="${failY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, failH).toFixed(1)}" fill="#dc2626" /><title>${tip}</title></g>`;
+      return `<g><rect x="${x.toFixed(1)}" y="${passY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(1, passH).toFixed(1)}" fill="#16a34a" opacity="0.75" /><rect x="${x.toFixed(1)}" y="${failY.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(0, failH).toFixed(1)}" fill="#dc2626" /><title>${escapeXml(
+        pointTooltip(p),
+      )}</title></g>`;
     })
     .join("");
 
@@ -300,13 +299,27 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     .map(
       (v, i) =>
         `<circle cx="${cx(i).toFixed(1)}" cy="${yRate(v).toFixed(1)}" r="3" fill="#b45309"><title>${escapeXml(
-          `${shortLabel(points[i]!)} — failure rate ${v.toFixed(2)}%`,
+          pointTooltip(points[i]!),
         )}</title></circle>`,
     )
     .join("");
 
-  return `<figure class="chart">
-  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s)</figcaption>
+  // Full-height transparent hit areas: hovering anywhere in a run's column shows
+  // that run's tooltip, so short/zero bars and the rate dot are still reachable.
+  const hits = points
+    .map(
+      (p, i) =>
+        `<rect class="pt-hit" x="${(cx(i) - slot / 2).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(
+          1,
+        )}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
+          pointTooltipLines(p).join("|"),
+        )}"><title>${escapeXml(pointTooltip(p))}</title></rect>`,
+    )
+    .join("");
+
+  const uid = `hc${chartUid()}`;
+  return `<figure class="chart" id="${uid}" style="position:relative">
+  <figcaption>${escapeXml(title)} — <span style="color:#16a34a">passing</span> / <span style="color:#dc2626">failing</span> tests with <span style="color:#b45309">failure rate</span> across ${n} run(s). Hover a column for the exact date, run id and counts.</figcaption>
   <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${escapeXml(`${title} over ${n} runs`)}">
     <line x1="${PAD.left}" y1="${PAD.top + plotH}" x2="${W - PAD.right}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
     <line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top + plotH}" stroke="#cbd5e1" />
@@ -317,11 +330,68 @@ export function renderFailureRateChart(points: readonly HistoryPoint[], title = 
     ${bars}
     <path d="${line}" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="4 3" />
     ${dots}
+    ${hits}
     <text x="${PAD.left}" y="${H - 8}" font-size="10" fill="#64748b">${escapeXml(shortLabel(points[0]!))}</text>
     <text x="${W - PAD.right}" y="${H - 8}" font-size="10" fill="#64748b" text-anchor="end">${escapeXml(shortLabel(points[n - 1]!))}</text>
   </svg>
+  ${renderTooltipScript(uid)}
 </figure>`;
 }
+
+let uidSeq = 0;
+const chartUid = (): number => ++uidSeq;
+
+/**
+ * Self-contained hover tooltip: reads `data-tip` (pipe separated lines) off any
+ * `.pt-hit` element inside the host and shows a positioned HTML card. Native
+ * `<title>` stays in the SVG as the no-JS/PDF fallback.
+ */
+export function renderTooltipScript(hostId: string): string {
+  return `<div class="pt-tip" id="${hostId}-tip" hidden></div>
+  <script>
+  (function () {
+    var host = document.getElementById(${JSON.stringify(hostId)});
+    var tip = document.getElementById(${JSON.stringify(`${hostId}-tip`)});
+    if (!host || !tip) return;
+    function show(el, ev) {
+      var lines = (el.getAttribute("data-tip") || "").split("|");
+      tip.innerHTML = lines.map(function (l) {
+        var i = l.indexOf(":");
+        var k = i < 0 ? l : l.slice(0, i);
+        var v = i < 0 ? "" : l.slice(i + 1).trim();
+        return '<div><span class="pt-k">' + k + '</span> <span class="pt-v"></span></div>';
+      }).join("");
+      var vals = tip.querySelectorAll(".pt-v");
+      lines.forEach(function (l, idx) {
+        var i = l.indexOf(":");
+        if (vals[idx]) vals[idx].textContent = i < 0 ? "" : l.slice(i + 1).trim();
+      });
+      var r = host.getBoundingClientRect();
+      tip.hidden = false;
+      var x = ev.clientX - r.left + 12;
+      var y = ev.clientY - r.top + 12;
+      tip.style.left = Math.min(x, Math.max(0, r.width - tip.offsetWidth - 8)) + "px";
+      tip.style.top = Math.min(y, Math.max(0, r.height - tip.offsetHeight - 8)) + "px";
+    }
+    host.addEventListener("mousemove", function (ev) {
+      var el = ev.target && ev.target.closest ? ev.target.closest(".pt-hit") : null;
+      if (el) show(el, ev); else tip.hidden = true;
+    });
+    host.addEventListener("mouseleave", function () { tip.hidden = true; });
+  })();
+  </script>`;
+}
+
+/** Styles for the hover tooltip card, to inline in host pages. */
+export const CHART_TOOLTIP_CSS = `
+  .pt-tip { position: absolute; z-index: 5; pointer-events: none; background: #0f172a; color: #f8fafc; border-radius: 6px; padding: 6px 8px; font-size: 11px; line-height: 1.45; box-shadow: 0 6px 18px rgba(15,23,42,.28); max-width: 280px; }
+  .pt-tip[hidden] { display: none; }
+  .pt-tip .pt-k { color: #94a3b8; }
+  .pt-tip .pt-v { font-weight: 600; }
+  .pt-hit { cursor: crosshair; }
+  .pt-hit:hover { fill: rgba(148,163,184,.14); }
+`;
+
 
 /**
  * Interactive variant of the chart: the same pass/fail bars and failure-rate
