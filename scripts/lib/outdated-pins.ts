@@ -131,6 +131,168 @@ export function reportFingerprint(report: OutdatedReport): string {
     .join(";");
 }
 
+/* ------------------------------------------------------------------ *
+ * Applying the plan (pure text surgery — see apply-outdated-pins.ts)  *
+ * ------------------------------------------------------------------ */
+
+/** Which offenders to take. `low-risk` is patch + minor, the batchable group. */
+export type ApplyGroup = "low-risk" | "patch" | "minor" | "major" | "all";
+
+const GROUP_BUMPS: Record<ApplyGroup, Bump[]> = {
+  "low-risk": ["patch", "minor"],
+  patch: ["patch"],
+  minor: ["minor"],
+  major: ["major"],
+  all: ["patch", "minor", "major", "prerelease"],
+};
+
+export function selectForApply(
+  deps: OutdatedDep[],
+  opts: { group?: ApplyGroup; only?: string[] } = {},
+): OutdatedDep[] {
+  const bumps = GROUP_BUMPS[opts.group ?? "low-risk"];
+  const only = opts.only?.length ? new Set(opts.only) : null;
+  return sortOutdated(
+    deps.filter((d) => bumps.includes(d.bump) && (!only || only.has(d.name))),
+  );
+}
+
+export type ApplyResult = {
+  text: string;
+  applied: OutdatedDep[];
+  /** Pins whose `"name": "current"` line was not found where expected. */
+  missed: (OutdatedDep & { reason: string })[];
+};
+
+/** Locates a top-level section's body so a rewrite can't stray into another one. */
+function sectionRange(text: string, section: string): { start: number; end: number } | null {
+  const head = new RegExp(`"${section}"\\s*:\\s*\\{`).exec(text);
+  if (!head) return null;
+  let depth = 1;
+  let i = head.index + head[0].length;
+  for (; i < text.length && depth > 0; i += 1) {
+    if (text[i] === "{") depth += 1;
+    else if (text[i] === "}") depth -= 1;
+  }
+  return depth === 0 ? { start: head.index + head[0].length, end: i - 1 } : null;
+}
+
+/**
+ * Rewrites ONLY the requested pins, in place, in the raw package.json text.
+ *
+ * Text surgery rather than JSON.parse + stringify on purpose: a reparse would
+ * reformat and reorder the whole file, making the resulting PR diff impossible
+ * to review and touching packages nobody planned to update. Each edit must match
+ * the exact `"name": "<current>"` pair inside its own section, so a stale plan
+ * (someone already bumped the pin) is reported as missed instead of clobbering
+ * a newer version.
+ */
+export function applyPins(text: string, deps: OutdatedDep[]): ApplyResult {
+  let out = text;
+  const applied: OutdatedDep[] = [];
+  const missed: (OutdatedDep & { reason: string })[] = [];
+
+  for (const dep of sortOutdated(deps)) {
+    const range = sectionRange(out, dep.section);
+    if (!range) {
+      missed.push({ ...dep, reason: `no "${dep.section}" section in package.json` });
+      continue;
+    }
+    const body = out.slice(range.start, range.end);
+    const entry = new RegExp(
+      `("${dep.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"\\s*:\\s*")${dep.current.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`,
+    );
+    const matches = body.match(new RegExp(entry.source, "g"));
+    if (!matches) {
+      missed.push({
+        ...dep,
+        reason: `"${dep.name}": "${dep.current}" not found in ${dep.section} (already changed?)`,
+      });
+      continue;
+    }
+    if (matches.length > 1) {
+      missed.push({ ...dep, reason: `"${dep.name}" appears ${matches.length}× in ${dep.section}` });
+      continue;
+    }
+    out =
+      out.slice(0, range.start) +
+      body.replace(entry, `$1${dep.latest}$2`) +
+      out.slice(range.end);
+    applied.push(dep);
+  }
+
+  return { text: out, applied, missed };
+}
+
+/** Deterministic branch name: same plan → same branch, so reruns update one PR. */
+export function branchNameFor(deps: OutdatedDep[], group: ApplyGroup): string {
+  const rows = sortOutdated(deps);
+  const stamp = rows.map((d) => `${d.name}@${d.latest}`).join(",");
+  let hash = 0;
+  for (let i = 0; i < stamp.length; i += 1) hash = (hash * 31 + stamp.charCodeAt(i)) >>> 0;
+  return `deps/outdated-pins-${group}-${hash.toString(36)}`;
+}
+
+export function prTitleFor(deps: OutdatedDep[], group: ApplyGroup): string {
+  const rows = sortOutdated(deps);
+  if (rows.length === 1) {
+    return `deps: bump ${rows[0]!.name} to ${rows[0]!.latest}`;
+  }
+  return `deps: update ${rows.length} pinned ${group === "major" ? "major " : ""}dependenc${rows.length === 1 ? "y" : "ies"}`;
+}
+
+/** PR body: exactly what moved, what did not, and how it was verified. */
+export function renderPrBody(
+  result: ApplyResult,
+  opts: { group: ApplyGroup; total: number; runUrl?: string; issueUrl?: string } = {
+    group: "low-risk",
+    total: 0,
+  },
+): string {
+  const parts: string[] = [
+    PR_MARKER,
+    "",
+    `Applies the **${opts.group}** group from the scheduled outdated-pin audit.`,
+    "",
+    `${result.applied.length} pin(s) updated out of ${opts.total} audited. No other package.json entries were touched — each pin was rewritten in place by exact \`"name": "version"\` match.`,
+    "",
+    table(result.applied),
+    "",
+    "### Verified before opening",
+    "",
+    "```sh",
+    "bun install",
+    "bun run scripts/sync-overrides-from-lock.ts",
+    "bun run scripts/verify-deps-pinned.ts",
+    "bun run prebuild",
+    "```",
+    "",
+    "`package.json` and `bun.lock` are committed together, so the frozen-lockfile step at the top of `prebuild` stays green.",
+    "",
+  ];
+
+  if (result.missed.length) {
+    parts.push(
+      `### Skipped (${result.missed.length})`,
+      "",
+      ...result.missed.map((m) => `- \`${m.name}\` — ${m.reason}`),
+      "",
+    );
+  }
+
+  const links: string[] = [];
+  if (opts.issueUrl) links.push(`[Update plan](${opts.issueUrl})`);
+  if (opts.runUrl) links.push(`[Audit run](${opts.runUrl})`);
+  if (links.length) parts.push("---", "", links.join(" · "), "");
+
+  parts.push(
+    `Majors are intentionally excluded from the low-risk group; each one gets its own PR after a changelog read.`,
+  );
+  return parts.join("\n");
+}
+
+
+
 function table(rows: OutdatedDep[]): string {
   const lines = [
     "| Dependency | Section | Pinned | Latest | Bump |",
