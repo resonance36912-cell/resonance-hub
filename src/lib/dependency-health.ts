@@ -97,7 +97,7 @@ export function parseDependencyHealth(md: string): DependencyHealthReport {
     );
     if (checked) {
       totalPins = Number(checked[1]);
-      checkedAt = checked[2] ?? null;
+      checkedAt = (checked[2] ?? "").replace(/\.$/, "") || null;
       continue;
     }
 
