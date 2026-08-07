@@ -70,6 +70,49 @@ export const Route = createFileRoute("/api/public/app-status/health")({
           ...APP_STATUS_MEANING[status],
         }));
 
+        const checkedAt = new Date().toISOString();
+
+        const format = new URL(request.url).searchParams.get("format")?.toLowerCase();
+        if (format === "csv") {
+          const rows: AppStatusCsvRow[] = [
+            ...apps.map((a) => ({
+              scope: "app" as const,
+              key: a.key,
+              label: a.label,
+              status: a.status,
+              badgeLabel: a.badgeLabel,
+              access: a.access,
+              accessible: a.accessible,
+              explanation: a.explanation,
+              url: a.url,
+              detailPath: a.detailPath,
+            })),
+            ...ecosystem.map((e) => ({
+              scope: "ecosystem" as const,
+              key: e.key,
+              label: e.label,
+              status: e.status,
+              badgeLabel: e.badgeLabel,
+              access: e.access,
+              accessible: e.accessible,
+              explanation: e.explanation,
+              url: e.url,
+              detailPath: "",
+            })),
+          ];
+
+          return new Response(appStatusCsv(rows), {
+            status: 200,
+            headers: {
+              ...CORS,
+              "Content-Type": "text/csv; charset=utf-8",
+              "Content-Disposition": `attachment; filename="${appStatusCsvFilename(checkedAt)}"`,
+              "Cache-Control": "public, max-age=60",
+            },
+          });
+        }
+
+
         return new Response(
           JSON.stringify(
             {
