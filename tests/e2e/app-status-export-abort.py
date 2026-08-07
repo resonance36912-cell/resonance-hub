@@ -84,24 +84,24 @@ class TruncatingServer(threading.Thread):
         self.sock.bind(("127.0.0.1", 0))
         self.sock.listen(8)
         self.port = self.sock.getsockname()[1]
-        self._stop = threading.Event()
+        self._shutdown = threading.Event()
 
     def stop(self) -> None:
-        self._stop.set()
+        self._shutdown.set()
         try:
             self.sock.close()
         except OSError:
             pass
 
     def run(self) -> None:
-        while not self._stop.is_set():
+        while not self._shutdown.is_set():
             try:
                 conn, _ = self.sock.accept()
             except OSError:
                 return
-            threading.Thread(target=self._handle, args=(conn,), daemon=True).start()
+            threading.Thread(target=self.serve_conn, args=(conn,), daemon=True).start()
 
-    def _handle(self, conn: socket.socket) -> None:
+    def serve_conn(self, conn: socket.socket) -> None:
         try:
             conn.settimeout(5)
             raw = b""
