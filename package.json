@@ -57,6 +57,7 @@
     "test:lighthouse-scores": "bun test scripts/lib/lighthouse-scores.test.ts",
     "test:pinned-deps": "bun test scripts/lib/pinned-deps.test.ts",
     "deps:outdated": "bun run scripts/check-outdated-pins.ts",
+    "deps:apply": "bun run scripts/apply-outdated-pins.ts",
     "test:outdated-pins": "vitest run scripts/lib/outdated-pins.test.ts",
     "verify:not-found-jsonld-live": "bun run scripts/verify-not-found-jsonld-live.ts",
     "check:app-status-drift": "bun run scripts/check-app-status-drift.ts",
