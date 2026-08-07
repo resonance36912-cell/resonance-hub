@@ -26,14 +26,7 @@ function distance(a: string, b: string): number {
   return prev[b.length];
 }
 
-function similarity(a: string, b: string): number {
-  if (!a || !b) return 0;
-  const max = Math.max(a.length, b.length);
-  const base = 1 - distance(a, b) / max;
-  // Reward substring containment ("sync" -> "syncvision").
-  const contained = a.includes(b) || b.includes a ? 0 : 0;
-  return base + contained;
-}
+
 
 /**
  * Suggest the closest matching registry apps for an unknown slug.
