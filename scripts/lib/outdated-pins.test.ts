@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   ISSUE_MARKER,
+  PR_MARKER,
+  applyPins,
+  branchNameFor,
+  prTitleFor,
+  renderPrBody,
+  selectForApply,
   ISSUE_TITLE,
   classifyBump,
   collectPins,
@@ -278,5 +284,123 @@ describe("renderSlackText", () => {
 
   it("reports a clean audit", () => {
     expect(renderSlackText(report({ total: 4 }))).toContain("all 4 pins are current");
+  });
+});
+
+const PKG = `{
+  "name": "app",
+  "dependencies": {
+    "react": "19.0.0",
+    "zod": "4.0.0"
+  },
+  "devDependencies": {
+    "react": "19.0.0",
+    "vitest": "4.1.10"
+  },
+  "overrides": {
+    "zod": "4.0.0"
+  }
+}
+`;
+
+describe("selectForApply", () => {
+  const deps = [
+    dep({ name: "a", bump: "patch" }),
+    dep({ name: "b", bump: "minor" }),
+    dep({ name: "c", bump: "major" }),
+  ];
+
+  it("defaults to the low-risk group (patch + minor)", () => {
+    expect(selectForApply(deps).map((d) => d.name)).toEqual(["b", "a"]);
+  });
+
+  it("selects a single bump group", () => {
+    expect(selectForApply(deps, { group: "major" }).map((d) => d.name)).toEqual(["c"]);
+    expect(selectForApply(deps, { group: "all" }).map((d) => d.name)).toEqual(["c", "b", "a"]);
+  });
+
+  it("narrows to explicit package names", () => {
+    expect(selectForApply(deps, { group: "all", only: ["a"] }).map((d) => d.name)).toEqual(["a"]);
+  });
+});
+
+describe("applyPins", () => {
+  it("rewrites only the requested pin, in its own section", () => {
+    const r = applyPins(PKG, [
+      dep({ section: "dependencies", name: "react", current: "19.0.0", latest: "19.2.0" }),
+    ]);
+    expect(r.applied).toHaveLength(1);
+    expect(r.missed).toEqual([]);
+    expect(r.text).toContain(`"react": "19.2.0",\n    "zod": "4.0.0"`);
+    // devDependencies react and overrides zod are untouched.
+    expect(r.text).toContain(`"devDependencies": {\n    "react": "19.0.0"`);
+    expect(r.text).toContain(`"overrides": {\n    "zod": "4.0.0"`);
+  });
+
+  it("preserves formatting and key order everywhere else", () => {
+    const r = applyPins(PKG, [dep({ section: "dependencies", name: "zod", current: "4.0.0", latest: "4.1.0" })]);
+    expect(r.text).toBe(PKG.replace(`"zod": "4.0.0"\n  },`, `"zod": "4.1.0"\n  },`));
+  });
+
+  it("skips a stale plan instead of clobbering a newer version", () => {
+    const r = applyPins(PKG, [
+      dep({ section: "dependencies", name: "react", current: "18.0.0", latest: "19.2.0" }),
+    ]);
+    expect(r.applied).toEqual([]);
+    expect(r.text).toBe(PKG);
+    expect(r.missed[0]!.reason).toContain("not found in dependencies");
+  });
+
+  it("reports a missing section rather than inventing one", () => {
+    const r = applyPins(`{"dependencies":{"react":"19.0.0"}}`, [
+      dep({ section: "devDependencies", name: "react", current: "19.0.0", latest: "19.2.0" }),
+    ]);
+    expect(r.missed[0]!.reason).toContain('no "devDependencies" section');
+  });
+
+  it("applies several pins across sections in one pass", () => {
+    const r = applyPins(PKG, [
+      dep({ section: "dependencies", name: "react", current: "19.0.0", latest: "19.2.0" }),
+      dep({ section: "devDependencies", name: "vitest", current: "4.1.10", latest: "4.2.0" }),
+    ]);
+    expect(r.applied).toHaveLength(2);
+    expect(r.text).toContain(`"vitest": "4.2.0"`);
+    expect(JSON.parse(r.text).dependencies.react).toBe("19.2.0");
+  });
+});
+
+describe("branchNameFor / prTitleFor", () => {
+  it("is deterministic for the same plan and differs when it changes", () => {
+    const a = [dep({ name: "react", latest: "19.2.0" })];
+    const b = [dep({ name: "react", latest: "19.3.0" })];
+    expect(branchNameFor(a, "low-risk")).toBe(branchNameFor(a, "low-risk"));
+    expect(branchNameFor(a, "low-risk")).not.toBe(branchNameFor(b, "low-risk"));
+    expect(branchNameFor(a, "low-risk")).toMatch(/^deps\/outdated-pins-low-risk-[a-z0-9]+$/);
+  });
+
+  it("names the single package when only one moves", () => {
+    expect(prTitleFor([dep({ name: "react", latest: "19.2.0" })], "low-risk")).toBe(
+      "deps: bump react to 19.2.0",
+    );
+    expect(prTitleFor([dep({ name: "a" }), dep({ name: "b" })], "low-risk")).toBe(
+      "deps: update 2 pinned dependencies",
+    );
+  });
+});
+
+describe("renderPrBody", () => {
+  it("lists applied pins, verification, skips and the marker", () => {
+    const applied = [dep({ name: "react", current: "19.0.0", latest: "19.2.0", bump: "minor" })];
+    const body = renderPrBody(
+      { text: "", applied, missed: [{ ...dep({ name: "zod" }), reason: "already changed" }] },
+      { group: "low-risk", total: 92, issueUrl: "https://gh.test/i/7" },
+    );
+    expect(body).toContain(PR_MARKER);
+    expect(body).toContain("1 pin(s) updated out of 92 audited");
+    expect(body).toContain("`react`");
+    expect(body).toContain("bun run scripts/verify-deps-pinned.ts");
+    expect(body).toContain("Skipped (1)");
+    expect(body).toContain("`zod` — already changed");
+    expect(body).toContain("[Update plan](https://gh.test/i/7)");
   });
 });
