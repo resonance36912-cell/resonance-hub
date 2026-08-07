@@ -334,6 +334,17 @@ jobs:
           E2E_BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: python3 tests/e2e/admin-roadmap-auth-gate.py
 
+      # Share/SEO head tags on /apps/<unknown-slug>: required tag set, single
+      # instance of each, title ≤60 / description ≤160, og/twitter/canonical
+      # parity, noindex+follow, real 404 status, and hostile slugs staying
+      # escaped — asserted on both SSR HTML and the hydrated DOM.
+      - name: E2E not-found share + SEO meta tags
+        if: steps.smoke_target.outputs.needs_local == 'true'
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+        run: python3 tests/e2e/app-not-found-share-meta.py
+
+
 
 
 
