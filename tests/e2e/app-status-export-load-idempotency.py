@@ -88,8 +88,13 @@ PER_WORKER_MS = 260  # added to every budget for each concurrent worker
 BANDS = growth.band_limits({"fds": 10, "sockets": CONCURRENCY + 4, "threads": 4})
 FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
 # Per-minute growth-slope limits; override via GROWTH_*_SLOPE_PER_MIN /
-# GROWTH_SLOPE_TOLERANCE (see tests/e2e/harness/growth_thresholds.py).
-SLOPE_LIMITS = growth.slope_limits("minute", {"fds": 6.0, "sockets": 4.0, "threads": 2.0})
+# GROWTH_SLOPE_TOLERANCE (see tests/e2e/harness/growth_thresholds.py). When
+# baselines/growth-thresholds.json holds calibrated limits for this profile
+# they take precedence over the defaults below (see growth_calibrate.py).
+SLOPE_DEFAULTS = {"fds": 6.0, "sockets": 4.0, "threads": 2.0}
+CALIBRATION_PROFILE = os.environ.get("GROWTH_PROFILE", "export-load-idempotency")
+SLOPE_LIMITS = growth.slope_limits("minute", SLOPE_DEFAULTS, profile=CALIBRATION_PROFILE)
+
 RSS_HEADROOM_MB = int(float(os.environ.get("RSS_HEADROOM_MB", "1200")))
 
 
