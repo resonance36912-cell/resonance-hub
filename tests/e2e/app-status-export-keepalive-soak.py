@@ -41,6 +41,7 @@ import sys
 import time
 import zipfile
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path("/tmp/browser/app-status-keepalive-soak")
@@ -265,9 +266,9 @@ def fault_query(chunks: list) -> str:
     parts = []
     for chunk in chunks:
         if isinstance(chunk, (list, tuple)):
-            parts.append("faultAt=" + ",".join(str(x) for x in chunk))
+            parts.append("faultAt=" + ",".join(quote(str(x), safe="") for x in chunk))
         else:
-            parts.append(f"faultAt={chunk}")
+            parts.append(f"faultAt={quote(str(chunk), safe='')}")
     return "&".join(parts)
 
 
