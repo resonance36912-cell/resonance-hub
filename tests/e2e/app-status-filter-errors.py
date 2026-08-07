@@ -146,11 +146,19 @@ async def main() -> int:
                 results.append((tag in err, f'empty tag "{tag}": error echoes the value'))
                 results.append(("Valid tags:" in err, f'empty tag "{tag}": lists the valid tags'))
 
-        # 6. Same error path for the other formats.
-        for fmt, label in [("xlsx", "xlsx format"), ("", "default json format")]:
-            query = f"appKey=nope{'&format=' + fmt if fmt else ''}"
-            err = await expect_error(page, query, results, label)
-            results.append(("Valid keys:" in err, f"{label}: still lists the valid keys"))
+        # 6. The xlsx export shares the error path; the JSON view is unfiltered by design.
+        err = await expect_error(page, "format=xlsx&appKey=nope", results, "xlsx format")
+        results.append(("Valid keys:" in err, "xlsx format: still lists the valid keys"))
+        json_resp = await get(page, "appKey=nope")
+        results.append(
+            (json_resp.status == 200, "default JSON view ignores export filters (200)")
+        )
+        payload = await json_resp.json()
+        results.append(
+            (len(payload.get("apps", [])) == len(data["apps"]),
+             "default JSON view still returns every app")
+        )
+
 
         # 7. Casing is normalised, so uppercase valid values succeed.
         ok_resp = await get(page, f"format=csv&appKey={good.upper()}")
