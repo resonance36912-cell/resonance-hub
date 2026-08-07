@@ -13,6 +13,12 @@ import {
   appDetailDescription,
   appDetailSocialDescription,
 } from "@/lib/app-status-meta";
+import {
+  appStatusCsv,
+  appStatusCsvFilename,
+  type AppStatusCsvRow,
+} from "@/lib/app-status-csv";
+
 
 /**
  * Unauthenticated status probe: every app's registry status, the badge
