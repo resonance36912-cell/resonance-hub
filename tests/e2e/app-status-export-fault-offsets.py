@@ -61,7 +61,7 @@ async def get_with_retry(req, target: str, attempts: int = 4):
     last = None
     for i in range(attempts):
         try:
-            return await get_with_retry(req, target)
+            return await req.get(target)
         except Exception as exc:  # ECONNRESET / socket hang up
             last = exc
             await asyncio.sleep(0.4 * (i + 1))
