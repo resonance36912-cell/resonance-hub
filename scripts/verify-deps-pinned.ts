@@ -13,6 +13,7 @@
  * exactly what to run without hunting through raw script output.
  */
 import { spawnSync } from "node:child_process";
+import { auditPinsFromDisk, describeIssue, formatIssueTable, type PinIssue } from "./lib/pinned-deps";
 
 type Step = { label: string; cmd: string; args: string[] };
 
@@ -40,17 +41,49 @@ function run(step: Step): boolean {
   return r.status === 0;
 }
 
+/**
+ * Re-audits package.json ↔ bun.lock so the remediation block names the exact
+ * offenders and the version bun.lock expects. Never throws: a malformed or
+ * missing bun.lock is itself a plausible reason the step failed, and the
+ * generic guidance below still applies.
+ */
+function safeAudit(): PinIssue[] {
+  try {
+    return auditPinsFromDisk();
+  } catch {
+    return [];
+  }
+}
+
 function fail(step: Step): never {
   const bar = "─".repeat(72);
+  const issues = safeAudit();
+
+  let detail = "";
+  if (issues.length) {
+    const plural = issues.length === 1 ? "y" : "ies";
+    detail =
+      `Offending entr${plural} (${issues.length}) — declared vs. what bun.lock resolves:\n\n` +
+      `${formatIssueTable(issues)}\n\n` +
+      issues.map((i) => `  - ${describeIssue(i)}\n`).join("") +
+      `\n`;
+  } else {
+    detail =
+      `No package.json ↔ bun.lock mismatch was detectable from the files on\n` +
+      `disk, so the failure is in the install/consistency step itself — read the\n` +
+      `step output above (e.g. a lockfile bun refused to install with\n` +
+      `--frozen-lockfile, or overrides that shift on re-resolution).\n\n`;
+  }
+
   process.stderr.write(
     `\n${bar}\n` +
       `❌ Dependency pinning check FAILED at: ${step.label}\n` +
       `${bar}\n\n` +
+      detail +
       `Every dependency in package.json must be pinned to an EXACT version\n` +
       `(no ^, ~, >=, ranges, *, or "latest"), and bun.lock must resolve to\n` +
       `that same version. Fix locally with:\n\n` +
-      `  1. Replace any \`^x.y.z\` / \`~x.y.z\` in package.json with the exact\n` +
-      `     version currently in bun.lock.\n` +
+      `  1. Apply the exact versions listed above to package.json.\n` +
       `  2. Re-sync overrides + lockfile:\n\n` +
       `       bun run scripts/sync-overrides-from-lock.ts\n` +
       `       bun install\n\n` +

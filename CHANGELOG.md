@@ -16,6 +16,11 @@ to the PR or issue where useful.
 
 ### Added
 
+- Pin failures now name the offending dependency and the exact version
+  `bun.lock` resolves, as a table plus per-entry explanations
+  (`scripts/lib/pinned-deps.ts`, covered by `bun run test:pinned-deps`).
+- `Verify pinned dependencies` CI job now runs on every PR (no path filter) so
+  it can be a required status check that blocks merges on pin drift.
 - E2E share/SEO head-tag assertions for the app not-found page
   (`tests/e2e/app-not-found-share-meta.py`): title/description limits,
   canonical + Open Graph/Twitter parity, `noindex, follow`, true 404 status,

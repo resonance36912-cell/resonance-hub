@@ -44,6 +44,11 @@ jobs:
       #   3. scripts/verify-lockfile-consistency.ts (overrides ↔ lock)
       # On failure it prints the remediation block, so the PR author sees the
       # exact commands to run instead of raw script output.
+      # Unit-tests the audit core itself, so a bug in the checker can't turn
+      # this gate into a silent no-op that passes on drifted pins.
+      - name: Test pin-audit core
+        run: bun test scripts/lib/pinned-deps.test.ts
+
       - name: Verify dependency pins match bun.lock
         run: bun run scripts/verify-deps-pinned.ts
 
