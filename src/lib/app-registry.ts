@@ -137,22 +137,44 @@ export type AppKey = ResonanceAppKey;
 export const BILLABLE_APP_KEYS: AppKey[] = Object.keys(APP_REGISTRY) as AppKey[];
 
 /**
- * Resolve a URL slug to a canonical registry key.
- * Accepts hyphenated and mixed-case slugs (e.g. "sync-vision" -> "sync_vision").
+ * Canonical form used for slug matching: lowercase, alphanumeric only.
+ * "Sync-Vision", "sync vision", "syncVision", "SYNC_VISION" all fold to
+ * "syncvision", which is the canonical key "sync_vision" folded the same way.
+ */
+export function normalizeAppSlug(input: string): string {
+  return input
+    .normalize("NFKD")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // split camelCase
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+/** Folded slug -> canonical registry key, built for every registry key. */
+const SLUG_INDEX: Record<string, AppKey> = Object.fromEntries(
+  (Object.keys(APP_REGISTRY) as AppKey[]).map((key) => [normalizeAppSlug(key), key]),
+);
+
+/**
+ * Resolve any URL slug to a canonical registry key.
+ * Accepts hyphenated, spaced, camelCase and mixed-case forms
+ * (e.g. "sync-vision", "Sync Vision", "syncVision" -> "sync_vision").
  */
 export function resolveAppKey(slug: string): AppKey | null {
-  const raw = slug.trim();
-  const candidates = [raw, raw.toLowerCase(), raw.toLowerCase().replace(/-/g, "_")];
-  for (const c of candidates) {
-    if (c in APP_REGISTRY) return c as AppKey;
-  }
-  return null;
+  if (!slug) return null;
+  const folded = normalizeAppSlug(slug);
+  return SLUG_INDEX[folded] ?? null;
+}
+
+/** True when the slug is already the canonical registry key. */
+export function isCanonicalAppSlug(slug: string): boolean {
+  return resolveAppKey(slug) === slug;
 }
 
 export function getAppEntry(key: string): AppRegistryEntry | null {
   const resolved = resolveAppKey(key);
   return resolved ? (APP_REGISTRY as Record<string, AppRegistryEntry>)[resolved] : null;
 }
+
 
 
 /**
