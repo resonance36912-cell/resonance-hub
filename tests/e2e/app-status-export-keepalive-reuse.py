@@ -116,10 +116,11 @@ def peer_conns(pid: int, local_port: int) -> int:
 
 # --- raw keep-alive client -------------------------------------------------
 class KeepAlive:
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, host_header: str | None = None) -> None:
         self.sock = socket.create_connection((host, port), timeout=120)
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.buf = b""
+        self.host_header = host_header or f"{host}:{port}"
         self.local_port = self.sock.getsockname()[1]
         self.requests = 0
 
@@ -153,7 +154,7 @@ class KeepAlive:
             self._read_exact(2)
 
     def request(self, path: str) -> tuple[int, dict, bytes, bool]:
-        self.sock.sendall((f"GET {path} HTTP/1.1\r\nHost: {HOST}:{PORT}\r\n"
+        self.sock.sendall((f"GET {path} HTTP/1.1\r\nHost: {self.host_header}\r\n"
                            "Connection: keep-alive\r\nAccept: */*\r\n\r\n").encode())
         self.requests += 1
         head = self._read_until(b"\r\n\r\n").decode("latin-1")
@@ -372,35 +373,7 @@ def live_check(results: list) -> None:
         return
     sock.close()
 
-    class LiveConn(KeepAlive):
-        def __init__(self) -> None:
-            self.sock = socket.create_connection((hostname, port), timeout=60)
-            self.buf = b""
-            self.local_port = self.sock.getsockname()[1]
-            self.requests = 0
-
-        def request(self, path: str):  # type: ignore[override]
-            self.sock.sendall((f"GET {path} HTTP/1.1\r\nHost: {host}\r\n"
-                               "Connection: keep-alive\r\nAccept: */*\r\n\r\n").encode())
-            self.requests += 1
-            return KeepAlive.request.__wrapped__(self, path) if False else self._read_response()
-
-        def _read_response(self):
-            head = self._read_until(b"\r\n\r\n").decode("latin-1")
-            lines = head.split("\r\n")
-            status = int(lines[0].split(" ")[1])
-            headers: dict = {}
-            for line in lines[1:]:
-                if ":" in line:
-                    k, v = line.split(":", 1)
-                    headers[k.strip().lower()] = v.strip()
-            if headers.get("transfer-encoding", "").lower() == "chunked":
-                body = self._read_chunked()
-            else:
-                body = self._read_exact(int(headers.get("content-length", "0")))
-            return status, headers, body, headers.get("connection", "").lower() != "close"
-
-    conn = LiveConn()
+    conn = KeepAlive(hostname, port, host_header=host)
     try:
         base = "/api/public/app-status/health?format=csv"
         s, h, b, _ = conn.request(base)
