@@ -16,6 +16,15 @@ to the PR or issue where useful.
 
 ### Added
 
+- Weekly outdated-pin audit (`bun run deps:outdated`, workflow
+  `outdated-pins.yml`): compares every exact pin against the npm `latest`
+  dist-tag and files/updates a single issue with a ready-to-apply update plan
+  grouped by risk. Report-only — pins, `bun.lock`, and overrides are never
+  touched, and the workflow fails if they are.
+- `prebuild` now runs `bun install --frozen-lockfile` first and stops with a
+  dedicated "LOCKFILE DRIFT" remediation block before typecheck or any verifier.
+
+
 - Pin failures now name the offending dependency and the exact version
   `bun.lock` resolves, as a table plus per-entry explanations
   (`scripts/lib/pinned-deps.ts`, covered by `bun run test:pinned-deps`).
