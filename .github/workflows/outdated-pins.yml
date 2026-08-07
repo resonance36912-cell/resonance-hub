@@ -177,3 +177,99 @@ jobs:
           curl -sS -f -X POST -H 'Content-Type: application/json' \
             --data @reports/outdated-pins.slack.json "$SLACK_WEBHOOK_URL"
 
+
+  # ------------------------------------------------------------------ #
+  # Ready-to-merge update PR.                                          #
+  #                                                                    #
+  # Applies ONLY the selected group's pins (default: patch + minor) by  #
+  # exact-match rewrite, re-resolves bun.lock, and runs the full        #
+  # prebuild gate before pushing — so the PR arrives already verified.  #
+  # Majors are excluded on purpose: they get hand-reviewed PRs.         #
+  #                                                                    #
+  # The branch name is derived from the plan, so a rerun with the same  #
+  # findings force-updates one PR instead of opening a new one.         #
+  # ------------------------------------------------------------------ #
+  update-pr:
+    name: Open or update the pinned-dependency PR
+    needs: audit
+    if: >-
+      github.event_name != 'pull_request'
+      && needs.audit.outputs.outdated_count != '0'
+      && (github.event_name == 'schedule' || inputs.open_pr != false)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Reuse the audit's findings verbatim so the PR can never claim a version
+      # the report never saw.
+      - name: Download the audit report
+        uses: actions/download-artifact@v4
+        with:
+          name: outdated-pins-report
+          path: reports
+
+      - name: Apply the planned pins and verify
+        id: apply
+        env:
+          GROUP: ${{ inputs.group || 'low-risk' }}
+          ISSUE_URL: ${{ needs.audit.outputs.issue_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: bun run deps:apply
+
+      - name: Push the branch and open or update the PR
+        if: steps.apply.outputs.applied != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.apply.outputs.branch }}
+          TITLE: ${{ steps.apply.outputs.title }}
+          BODY_FILE: ${{ steps.apply.outputs.body_path }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # package.json and bun.lock in ONE commit — prebuild's frozen install
+          # fails the moment they disagree.
+          git checkout -B "$BRANCH"
+          git add package.json bun.lock
+          if git diff --cached --quiet; then
+            echo "No pin changes staged after verification; nothing to push."
+            exit 0
+          fi
+          git commit -m "$TITLE" -m "Applied from the scheduled outdated-pin audit. Verified with bun run prebuild."
+          git push --force-with-lease origin "$BRANCH"
+
+          if EXISTING=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty') \
+             && [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --title "$TITLE" --body-file "$BODY_FILE"
+            echo "Updated PR #$EXISTING"
+          else
+            gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BRANCH" \
+              --title "$TITLE" --body-file "$BODY_FILE" --label dependencies \
+              || gh pr create --base "${{ github.event.repository.default_branch }}" --head "$BRANCH" \
+                --title "$TITLE" --body-file "$BODY_FILE"
+          fi
+
+      - name: Upload the PR plan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-pins-pr
+          path: reports/outdated-pins-pr.*
+          if-no-files-found: ignore
+          retention-days: 30
