@@ -162,7 +162,7 @@ export function notFoundHead(slug: string): NotFoundHead {
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: NOT_FOUND_OG_IMAGE },
     { name: "twitter:image:alt", content: NOT_FOUND_OG_IMAGE_ALT },
-    { name: "resonance:not-found-slug", content: slug },
+    { name: "resonance:not-found-slug", content: sanitizeSlugForMeta(slug, 80) },
     {
       name: "resonance:suggestion-count",
       content: String(suggestions.length),
