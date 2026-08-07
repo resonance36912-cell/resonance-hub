@@ -284,8 +284,16 @@ async def main() -> int:
         console_problems: list[str] = []
 
         def on_console(m) -> None:
-            if m.type in ("error", "warning"):
-                console_problems.append(f"{m.type}: {m.text}")
+            if m.type not in ("error", "warning"):
+                return
+            # The not-found document is *served* with HTTP 404 by design, which
+            # Chromium logs as a failed resource load. That is expected here.
+            loc = (m.location or {}).get("url", "") if hasattr(m, "location") else ""
+            if "404" in m.text and MISSPELLED in (loc + " " + m.text):
+                return
+            if "404" in m.text and "Failed to load resource" in m.text:
+                return
+            console_problems.append(f"{m.type}: {m.text} @ {loc}")
 
         page.on("console", on_console)
         page.on("pageerror", lambda e: console_problems.append(f"pageerror: {e}"))
