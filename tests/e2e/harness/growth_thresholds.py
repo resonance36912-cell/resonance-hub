@@ -107,7 +107,7 @@ def evaluate(slopes: dict, limits: dict, unit: str, window: dict | None = None) 
 
 def format_report(report: dict, title: str = "growth-slope thresholds") -> str:
     """Human-readable diff table; violations are marked and listed first."""
-    label = "/" + report.get("unit", "minute")
+    label = "/" + report.get("unit", "min")
     width = max([len(r["metric"]) for r in report["rows"]] + [6])
     lines = [f"--- {title} ({'FAIL' if not report['ok'] else 'ok'}) ---",
              f"{'metric'.ljust(width)}  {'measured':>10}  {'limit':>10}  "
@@ -123,8 +123,8 @@ def format_report(report: dict, title: str = "growth-slope thresholds") -> str:
         lines.append("window: " + ", ".join(f"{k}={v}" for k, v in window.items()))
     if report["violations"]:
         lines.append("violations: " + ", ".join(report["violations"]))
-        lines.append("override with GROWTH_<FD|SOCKET|THREAD>_SLOPE_"
-                     f"{'PER_MIN' if report.get('unit') == 'minute' else 'PER_HOUR'}"
+        suffix = "PER_MIN" if report.get("unit") == "min" else "PER_HOUR"
+        lines.append(f"override with GROWTH_<FD|SOCKET|THREAD>_SLOPE_{suffix}"
                      " or GROWTH_SLOPE_TOLERANCE")
     return "\n".join(lines)
 
