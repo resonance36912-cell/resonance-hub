@@ -53,10 +53,12 @@ describe("not-found head — core SEO tags", () => {
     }
   });
 
-  it("emits self-referencing og:url and no canonical for a dead URL", () => {
+  it("emits a self-referencing og:url and canonical for a dead URL", () => {
     const m = metaMap(MATCHED);
     expect(m.get("og:url")).toBe(`${SITE_ORIGIN}/apps/${MATCHED}`);
-    expect(notFoundHead(MATCHED)).not.toHaveProperty("links");
+    expect(notFoundHead(MATCHED).links).toEqual([
+      { rel: "canonical", href: `${SITE_ORIGIN}/apps/${MATCHED}` },
+    ]);
   });
 
   it("keeps OpenGraph and Twitter tags in lockstep", () => {
@@ -69,11 +71,12 @@ describe("not-found head — core SEO tags", () => {
     expect(m.get("twitter:card")).toBe("summary");
   });
 
-  it("never emits og:image or twitter:image (no meaningful cover)", () => {
-    for (const slug of [MATCHED, NO_MATCH]) {
+  it("emits the shared absolute OG image on every not-found variant", () => {
+    for (const slug of [MATCHED, MANY, NO_MATCH]) {
       const m = metaMap(slug);
-      expect(m.has("og:image")).toBe(false);
-      expect(m.has("twitter:image")).toBe(false);
+      expect(m.get("og:image")).toBe(NOT_FOUND_OG_IMAGE);
+      expect(m.get("twitter:image")).toBe(NOT_FOUND_OG_IMAGE);
+      expect(m.get("og:image:alt")).toBe(NOT_FOUND_OG_IMAGE_ALT);
     }
   });
 
