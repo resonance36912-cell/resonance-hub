@@ -14,5 +14,5 @@
     }
   },
   "updatedAt": "2026-08-07T12:34:12.598Z",
-  "note": "promoted via verify-lighthouse-not-found --update"
+  "note": "Committed Lighthouse floors/baseline for the /apps/<unknown-slug> not-found page. Gated by scripts/verify-lighthouse-not-found.ts (CI: median of 3 runs, tolerance 0.05). Re-baseline only for intentional, justified changes: bun run baseline:lighthouse-not-found"
 }
