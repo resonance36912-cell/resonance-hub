@@ -130,7 +130,10 @@ function AppStatusHealthPage() {
         </dl>
       </section>
 
-      <p className="mt-8 text-sm">
+      <p className="mt-8 flex flex-wrap gap-4 text-sm">
+        <AppLink to="/status/meta-diff" className="text-primary underline underline-offset-2">
+          Registry vs rendered meta diff →
+        </AppLink>
         <AppLink to={ROUTES.apps} className="text-primary underline underline-offset-2">
           Back to the app catalog →
         </AppLink>

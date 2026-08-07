@@ -27,6 +27,7 @@ import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-op
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as ToolsCodexRouteImport } from './routes/tools.codex'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
+import { Route as StatusMetaDiffRouteImport } from './routes/status.meta-diff'
 import { Route as StatusAppsRouteImport } from './routes/status.apps'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
@@ -188,6 +189,11 @@ const ToolsCodexRoute = ToolsCodexRouteImport.update({
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   id: '/sync-vision/pricing',
   path: '/sync-vision/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusMetaDiffRoute = StatusMetaDiffRouteImport.update({
+  id: '/status/meta-diff',
+  path: '/status/meta-diff',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatusAppsRoute = StatusAppsRouteImport.update({
@@ -623,6 +629,7 @@ export interface FileRoutesByFullPath {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/status/apps': typeof StatusAppsRoute
+  '/status/meta-diff': typeof StatusMetaDiffRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -715,6 +722,7 @@ export interface FileRoutesByTo {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/status/apps': typeof StatusAppsRoute
+  '/status/meta-diff': typeof StatusMetaDiffRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -808,6 +816,7 @@ export interface FileRoutesById {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/status/apps': typeof StatusAppsRoute
+  '/status/meta-diff': typeof StatusMetaDiffRoute
   '/sync-vision/pricing': typeof SyncVisionPricingRoute
   '/tools/codex': typeof ToolsCodexRouteWithChildren
   '/updates/preview': typeof UpdatesPreviewRoute
@@ -902,6 +911,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/status/apps'
+    | '/status/meta-diff'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -994,6 +1004,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/status/apps'
+    | '/status/meta-diff'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -1086,6 +1097,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/status/apps'
+    | '/status/meta-diff'
     | '/sync-vision/pricing'
     | '/tools/codex'
     | '/updates/preview'
@@ -1178,6 +1190,7 @@ export interface RootRouteChildren {
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
   StatusAppsRoute: typeof StatusAppsRoute
+  StatusMetaDiffRoute: typeof StatusMetaDiffRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
   ToolsCodexRoute: typeof ToolsCodexRouteWithChildren
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
@@ -1343,6 +1356,13 @@ declare module '@tanstack/react-router' {
       path: '/sync-vision/pricing'
       fullPath: '/sync-vision/pricing'
       preLoaderRoute: typeof SyncVisionPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status/meta-diff': {
+      id: '/status/meta-diff'
+      path: '/status/meta-diff'
+      fullPath: '/status/meta-diff'
+      preLoaderRoute: typeof StatusMetaDiffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/status/apps': {
@@ -1951,6 +1971,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
   StatusAppsRoute: StatusAppsRoute,
+  StatusMetaDiffRoute: StatusMetaDiffRoute,
   SyncVisionPricingRoute: SyncVisionPricingRoute,
   ToolsCodexRoute: ToolsCodexRouteWithChildren,
   UpdatesPreviewRoute: UpdatesPreviewRoute,
