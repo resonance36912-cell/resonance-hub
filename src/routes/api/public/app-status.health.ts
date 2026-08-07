@@ -23,7 +23,7 @@ import {
   appStatusXlsxFilename,
   APP_STATUS_XLSX_CONTENT_TYPE,
 } from "@/lib/app-status-xlsx";
-import { injectExportFault, parseFaultAt } from "@/lib/app-status-export-fault";
+import { injectExportFault, parseFaultAts } from "@/lib/app-status-export-fault";
 import {
   parseAppStatusFilters,
   filterAppStatusRows,
@@ -162,8 +162,10 @@ export const Route = createFileRoute("/api/public/app-status/health")({
             // Dev-only: `faultAt=<byte offset>` fails the encoder once it has
             // already produced that many bytes, proving that a mid-export death
             // still yields a JSON envelope and never partial attachment data.
+            // Repeatable and comma-separated (`faultAt=1,2048&faultAt=4096`);
+            // the earliest reachable offset wins so the encoder dies only once.
             const faultAt = import.meta.env.DEV
-              ? parseFaultAt(searchParams.get("faultAt"))
+              ? parseFaultAts(searchParams.getAll("faultAt"))
               : null;
 
             if (format === "xlsx") {
