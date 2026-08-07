@@ -64,7 +64,14 @@ def expected_suggestions(slug: str) -> list[str]:
 
 async def audit_page(page, slug: str, label: str) -> dict:
     errors: list[str] = []
-    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+
+    def on_console(m) -> None:
+        # The not-found document itself is served with HTTP 404, which the
+        # browser always logs as a resource error — not an app fault.
+        if m.type == "error" and "status of 404" not in m.text:
+            errors.append(m.text)
+
+    page.on("console", on_console)
     await page.goto(f"{BASE}/apps/{slug}", wait_until="domcontentloaded")
     await page.wait_for_timeout(400)
 
