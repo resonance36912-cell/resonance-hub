@@ -92,8 +92,8 @@ def build_fixtures(rows: list[dict]) -> tuple[Path, Path, list[str]]:
     import { writeFileSync } from "node:fs";
     import { appStatusCsv, APP_STATUS_CSV_HEADERS } from "./src/lib/app-status-csv";
     import { appStatusWorkbook } from "./src/lib/app-status-xlsx";
-    const rows = JSON.parse(process.argv[2]);
-    const dir = process.argv[3];
+    const rows = JSON.parse(process.argv[1]);
+    const dir = process.argv[2];
     writeFileSync(`${dir}/unicode.csv`, appStatusCsv(rows), "utf8");
     const xlsx = appStatusWorkbook({
       rows,
