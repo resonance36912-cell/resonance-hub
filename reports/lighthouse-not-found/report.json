@@ -1,9 +1,9 @@
 {
   "baseUrl": "http://127.0.0.1:8080",
-  "tolerance": 0.03,
+  "tolerance": 0.05,
   "measured": {
     "/apps/definitely-not-an-app-xyz": {
-      "performance": 0.96,
+      "performance": 0.94,
       "accessibility": 1,
       "best-practices": 0.96,
       "seo": 1
@@ -19,10 +19,10 @@
     {
       "url": "/apps/definitely-not-an-app-xyz",
       "category": "performance",
-      "measured": 0.96,
+      "measured": 0.94,
       "floor": 0.85,
-      "baseline": null,
-      "limit": 0.85,
+      "baseline": 0.96,
+      "limit": 0.91,
       "ok": true,
       "reason": "ok"
     },
@@ -31,7 +31,7 @@
       "category": "accessibility",
       "measured": 1,
       "floor": 0.95,
-      "baseline": null,
+      "baseline": 1,
       "limit": 0.95,
       "ok": true,
       "reason": "ok"
@@ -41,8 +41,8 @@
       "category": "best-practices",
       "measured": 0.96,
       "floor": 0.9,
-      "baseline": null,
-      "limit": 0.9,
+      "baseline": 0.96,
+      "limit": 0.91,
       "ok": true,
       "reason": "ok"
     },
@@ -51,8 +51,8 @@
       "category": "seo",
       "measured": 1,
       "floor": 0.9,
-      "baseline": null,
-      "limit": 0.9,
+      "baseline": 1,
+      "limit": 0.95,
       "ok": true,
       "reason": "ok"
     },
@@ -61,8 +61,8 @@
       "category": "performance",
       "measured": 0.95,
       "floor": 0.85,
-      "baseline": null,
-      "limit": 0.85,
+      "baseline": 0.95,
+      "limit": 0.9,
       "ok": true,
       "reason": "ok"
     },
@@ -71,7 +71,7 @@
       "category": "accessibility",
       "measured": 1,
       "floor": 0.95,
-      "baseline": null,
+      "baseline": 1,
       "limit": 0.95,
       "ok": true,
       "reason": "ok"
@@ -81,8 +81,8 @@
       "category": "best-practices",
       "measured": 0.96,
       "floor": 0.9,
-      "baseline": null,
-      "limit": 0.9,
+      "baseline": 0.96,
+      "limit": 0.91,
       "ok": true,
       "reason": "ok"
     },
@@ -91,8 +91,8 @@
       "category": "seo",
       "measured": 1,
       "floor": 0.9,
-      "baseline": null,
-      "limit": 0.9,
+      "baseline": 1,
+      "limit": 0.95,
       "ok": true,
       "reason": "ok"
     }
