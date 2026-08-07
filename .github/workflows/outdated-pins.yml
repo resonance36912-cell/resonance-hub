@@ -14,6 +14,11 @@ name: Outdated pinned dependencies
 #
 # The issue is reused: one open issue is updated in place per run, so scheduled
 # runs never pile up duplicates.
+#
+# Slack: set the repo secret SLACK_WEBHOOK_URL (Slack Incoming Webhook) to get a
+# message with the top outdated packages plus links to the plan issue and the
+# run's report artifact. Without the secret the notify step is skipped.
+
 
 on:
   schedule:
@@ -92,6 +97,7 @@ jobs:
           retention-days: 30
 
       - name: File or update the update-plan issue
+        id: issue
         if: github.event_name != 'pull_request' && inputs.skip_issue != true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -112,8 +118,11 @@ jobs:
               gh issue comment "$EXISTING" --body "All pins are back at their latest published versions — closing this plan."
               gh issue close "$EXISTING"
               echo "Closed #$EXISTING: everything is up to date."
+              echo "action=closed" >> "$GITHUB_OUTPUT"
+              echo "url=$(gh issue view "$EXISTING" --json url --jq .url)" >> "$GITHUB_OUTPUT"
             else
               echo "Nothing outdated and no open plan issue. Done."
+              echo "action=none" >> "$GITHUB_OUTPUT"
             fi
             exit 0
           fi
@@ -121,9 +130,33 @@ jobs:
           if [ -n "$EXISTING" ]; then
             gh issue edit "$EXISTING" --title "$TITLE" --body-file "$BODY_FILE"
             echo "Updated #$EXISTING — ${SUMMARY}"
+            echo "action=updated" >> "$GITHUB_OUTPUT"
+            echo "url=$(gh issue view "$EXISTING" --json url --jq .url)" >> "$GITHUB_OUTPUT"
           else
             # --label is best-effort: a repo without the label should still get the issue.
             URL=$(gh issue create --title "$TITLE" --body-file "$BODY_FILE" --label dependencies \
               || gh issue create --title "$TITLE" --body-file "$BODY_FILE")
             echo "Opened $URL — ${SUMMARY}"
+            echo "action=created" >> "$GITHUB_OUTPUT"
+            echo "url=$URL" >> "$GITHUB_OUTPUT"
           fi
+
+      # Slack alert. Raw Incoming Webhook (same shape as app-status-drift.yml),
+      # skipped when SLACK_WEBHOOK_URL is not configured or no issue changed.
+      - name: Notify Slack about the update plan
+        if: >-
+          always() && env.SLACK_WEBHOOK_URL != ''
+          && (steps.issue.outputs.action == 'created'
+              || steps.issue.outputs.action == 'updated'
+              || steps.issue.outputs.action == 'closed')
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          ISSUE_URL: ${{ steps.issue.outputs.url }}
+          ISSUE_ACTION: ${{ steps.issue.outputs.action }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          bun run scripts/slack-outdated-pins.ts
+          curl -sS -f -X POST -H 'Content-Type: application/json' \
+            --data @reports/outdated-pins.slack.json "$SLACK_WEBHOOK_URL"
+
