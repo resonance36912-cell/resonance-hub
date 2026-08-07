@@ -77,18 +77,8 @@ export const Route = createFileRoute("/apps/$appKey")({
     };
 
   },
-  notFoundComponent: () => (
-    <main className="mx-auto max-w-3xl p-6">
-      <BackToHubHeader />
-      <h1 className="mt-4 text-2xl font-semibold">App not found</h1>
-      <p className="mt-2 text-muted-foreground">
-        That app isn't in the Resonance registry.{" "}
-        <AppLink to={ROUTES.apps} className="text-primary underline">
-          Browse the catalog →
-        </AppLink>
-      </p>
-    </main>
-  ),
+  notFoundComponent: () => <AppNotFound />,
+
   errorComponent: ({ error, reset }) => (
     <main className="mx-auto max-w-3xl p-6">
       <BackToHubHeader />
