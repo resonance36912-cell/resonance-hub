@@ -16,6 +16,10 @@ to the PR or issue where useful.
 
 ### Added
 
+- E2E share/SEO head-tag assertions for the app not-found page
+  (`tests/e2e/app-not-found-share-meta.py`): title/description limits,
+  canonical + Open Graph/Twitter parity, `noindex, follow`, true 404 status,
+  and escaping of hostile slugs, on both SSR HTML and the hydrated DOM.
 - Lighthouse score gate for the app not-found page: `bun run verify:lighthouse-not-found`
   fails CI when performance, accessibility, best-practices, or SEO drops below its
   floor or regresses past tolerance vs `baselines/lighthouse-not-found.json`.
