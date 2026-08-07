@@ -319,9 +319,10 @@ def check_escaping(text: str, data: dict, results: list) -> None:
                      f'{row["key"]}.{h}: comma value is quoted ({cell})')
                 )
                 results.append(
-                    (value.count(",") == row[h].count(","),
-                     f"{row['key']}.{h}: commas survive parsing, field is not split")
+                    (raw.count(",") > len(header) - 1,
+                     f"{row['key']}.{h}: quoted comma does not add a column")
                 )
+
             if '"' in value:
                 special_seen["quote"] += 1
                 results.append(
@@ -388,7 +389,10 @@ async def main() -> int:
         text = await download_via_ui(page, results)
         if text:
             check_rows(text, data, results)
+            check_escaping(text, data, results)
+            check_escape_rule(results)
             await check_rendered_page_agrees(page, text, data, results)
+
         await check_filtered_download(page, data, results)
 
         await browser.close()
