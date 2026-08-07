@@ -536,7 +536,8 @@ def main() -> int:
                   "throughput": throughput, "latency_ms": latency_report,
                   "baseline": baseline, "peaks": peaks, "settled": settled,
                   "slopes_per_minute": {k: round(v, 3) for k, v in slopes.items()},
-                  "samples": len(samples)}
+                  "growth_thresholds": growth_report,
+                  "bands": BANDS, "samples": len(samples)}
     finally:
         proc.terminate()
         try:
