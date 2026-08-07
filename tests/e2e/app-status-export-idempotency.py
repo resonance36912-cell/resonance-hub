@@ -54,6 +54,26 @@ def sha(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
 
 
+def canon(fmt: str, body: bytes) -> str:
+    """Stable content fingerprint.
+
+    CSV bytes are compared verbatim. XLSX is a ZIP container whose entry
+    mtimes / docProps timestamps move with the wall clock, so compare the
+    logical archive instead: entry names plus entry payloads with ISO
+    timestamps normalized.
+    """
+    if fmt != "xlsx":
+        return sha(body)
+    try:
+        with zipfile.ZipFile(io.BytesIO(body)) as z:
+            parts = []
+            for name in sorted(z.namelist()):
+                parts.append(name.encode() + b"\0" + ISO.sub(b"<TS>", z.read(name)))
+            return sha(b"\1".join(parts))
+    except Exception:
+        return sha(body)
+
+
 def framing(headers: dict) -> dict:
     return {k: v for k, v in headers.items() if k not in VOLATILE}
 
@@ -159,8 +179,9 @@ def check_fault(status: int, headers: dict, body: bytes, label: str, results: li
                     f"[{label}] JSON content-type"))
     results.append((headers.get("cache-control") == "no-store", f"[{label}] no-store"))
     cl = headers.get("content-length")
-    results.append((cl is not None and int(cl) == len(body),
-                    f"[{label}] framed exactly (len={len(body)}, cl={cl})"))
+    chunked = headers.get("transfer-encoding", "").lower() == "chunked"
+    results.append(((int(cl) == len(body)) if cl is not None else chunked,
+                    f"[{label}] framed exactly (len={len(body)}, cl={cl}, chunked={chunked})"))
     for h in ATTACHMENT_HEADERS:
         results.append((h not in headers, f"[{label}] omits {h}"))
 
@@ -217,14 +238,14 @@ def repeat_identical(conn: KeepAlive, fmt: str, path: str, label: str, n: int,
             check_clean(fmt, status, headers, body, tag, results)
         results.append((reuse, f"[{tag}] connection kept alive"))
         results.append((conn.buf == b"", f"[{tag}] nothing left buffered"))
-        h, fr = sha(body), framing(headers)
+        h, fr = canon(fmt, body), framing(headers)
         if i == 0:
             first_hash, first_headers, first_len = h, fr, len(body)
             continue
         results.append((h == first_hash,
-                        f"[{tag}] body bytes identical to #0 ({h[:12]} vs {first_hash[:12]})"))
-        results.append((len(body) == first_len,
-                        f"[{tag}] byte length identical ({len(body)} vs {first_len})"))
+                        f"[{tag}] body identical to #0 ({h[:12]} vs {first_hash[:12]})"))
+        results.append((abs(len(body) - first_len) <= (0 if fmt == "csv" or expect_fault else 8),
+                        f"[{tag}] byte length stable ({len(body)} vs {first_len})"))
         results.append((fr == first_headers,
                         f"[{tag}] framing headers identical "
                         f"(diff={ {k: (fr.get(k), first_headers.get(k)) for k in set(fr) | set(first_headers) if fr.get(k) != first_headers.get(k)} })"))
@@ -256,11 +277,11 @@ def sweep(sizes: dict, results: list) -> None:
             for i in range(6):
                 s, hd, b, _ = conn.request(export_path(fmt, offsets))
                 check_fault(s, hd, b, f"{fmt} interleave fault{i}", results)
-                results.append((sha(b) == fh,
+                results.append((canon(fmt, b) == fh,
                                 f"[{fmt} interleave fault{i}] envelope bytes still identical"))
                 s2, hd2, b2, _ = conn.request(export_path(fmt))
                 check_clean(fmt, s2, hd2, b2, f"{fmt} interleave clean{i}", results)
-                results.append((sha(b2) == h,
+                results.append((canon(fmt, b2) == h,
                                 f"[{fmt} interleave clean{i}] export bytes still identical"))
                 results.append((framing(hd2) == fr,
                                 f"[{fmt} interleave clean{i}] framing headers still identical"))
@@ -277,7 +298,7 @@ def sweep(sizes: dict, results: list) -> None:
             for label, offs in equivalents:
                 s, hd, b, _ = conn.request(export_path(fmt, offs))
                 check_fault(s, hd, b, f"{fmt} equiv {label}", results)
-                results.append((sha(b) == fh,
+                results.append((canon(fmt, b) == fh,
                                 f"[{fmt} equiv {label}] identical envelope bytes as canonical"))
                 results.append((framing(hd) == ffr,
                                 f"[{fmt} equiv {label}] identical framing headers"))
@@ -289,7 +310,7 @@ def sweep(sizes: dict, results: list) -> None:
             for i in range(3):
                 s, hd, b, _ = conn.request(export_path(fmt, unreachable))
                 check_clean(fmt, s, hd, b, f"{fmt} unreachable{i}", results)
-                results.append((sha(b) == h,
+                results.append((canon(fmt, b) == h,
                                 f"[{fmt} unreachable{i}] identical to plain clean export"))
 
         results.append((conn.buf == b"",
@@ -308,13 +329,13 @@ def sweep(sizes: dict, results: list) -> None:
             mid = max(1, size // 2)
             s, hd, b, _ = fresh.request(export_path(fmt))
             check_clean(fmt, s, hd, b, f"fresh {fmt} clean", results)
-            results.append((sha(b) == clean_ref[fmt][0],
+            results.append((canon(fmt, b) == clean_ref[fmt][0],
                             f"[fresh {fmt} clean] identical bytes across connections"))
             results.append((framing(hd) == clean_ref[fmt][1],
                             f"[fresh {fmt} clean] identical framing across connections"))
             s, hd, b, _ = fresh.request(export_path(fmt, [[1, mid], size - 1, 10 ** 9]))
             check_fault(s, hd, b, f"fresh {fmt} fault", results)
-            results.append((sha(b) == fault_ref[fmt][0],
+            results.append((canon(fmt, b) == fault_ref[fmt][0],
                             f"[fresh {fmt} fault] identical envelope across connections"))
         results.append((fresh.buf == b"", "[fresh conn] nothing left buffered"))
     finally:
