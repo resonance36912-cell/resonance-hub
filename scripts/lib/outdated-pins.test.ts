@@ -10,6 +10,7 @@ import {
   parseSemver,
   renderIssueBody,
   renderSummaryLine,
+  renderSlackText,
   reportFingerprint,
   sortOutdated,
   type OutdatedDep,
@@ -251,5 +252,31 @@ describe("renderSummaryLine", () => {
 
   it("summarises a clean report", () => {
     expect(renderSummaryLine(report({ total: 5 }))).toBe("all 5 pins up to date");
+  });
+});
+
+describe("renderSlackText", () => {
+  it("lists the top offenders, counts, and links", () => {
+    const text = renderSlackText(
+      report({
+        total: 10,
+        outdated: [
+          dep({ name: "react", current: "19.0.0", latest: "19.2.0", bump: "major" }),
+          dep({ name: "zod", current: "4.0.0", latest: "4.1.0", bump: "minor" }),
+        ],
+      }),
+      { action: "created", issueUrl: "https://gh.test/issues/7", runUrl: "https://gh.test/run/1", top: 1 },
+    );
+    expect(text).toContain("plan issue opened");
+    expect(text).toContain("2 of 10 pins behind (1 major, 1 minor, 0 patch)");
+    expect(text).toContain("`react` 19.0.0 → 19.2.0");
+    expect(text).not.toContain("`zod`");
+    expect(text).toContain("…and 1 more.");
+    expect(text).toContain("<https://gh.test/issues/7|Update plan>");
+    expect(text).toContain("<https://gh.test/run/1|CI run + report artifact>");
+  });
+
+  it("reports a clean audit", () => {
+    expect(renderSlackText(report({ total: 4 }))).toContain("all 4 pins are current");
   });
 });
