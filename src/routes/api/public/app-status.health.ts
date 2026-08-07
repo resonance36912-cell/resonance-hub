@@ -125,7 +125,7 @@ export const Route = createFileRoute("/api/public/app-status/health")({
               ok: true,
               service: "reson8-app-status",
               schemaVersion: APP_STATUS_SCHEMA_VERSION,
-              checkedAt: new Date().toISOString(),
+              checkedAt,
               counts: {
                 apps: apps.length,
                 ecosystem: ecosystem.length,
