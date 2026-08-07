@@ -121,7 +121,7 @@ describe("not-found JSON-LD — validator catches broken payloads", () => {
     { label: "wrong root @type", path: "@type", value: "BreadcrumbList", expect: /@type/ },
     { label: "missing root @type", path: "@type", value: undefined, expect: /@type/ },
     { label: "missing name", path: "name", value: undefined, expect: /name/ },
-    { label: "empty name", path: "name", value: "   ", value2: undefined, expect: /name/ } as any,
+    { label: "empty name", path: "name", value: "   ", expect: /name/ },
     { label: "numeric name", path: "name", value: 42, expect: /expected string, got number/ },
     {
       label: "numberOfItems as string",

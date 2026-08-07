@@ -54,7 +54,7 @@
     "smoke:app-status-meta": "bun run scripts/smoke-app-status-meta.ts",
     "check:app-status-drift": "bun run scripts/check-app-status-drift.ts",
     "baseline:app-status": "bun run scripts/check-app-status-drift.ts --update",
-    "test:app-not-found-meta": "bun test scripts/lib/app-not-found-meta.test.ts",
+    "test:app-not-found-meta": "bun test scripts/lib/app-not-found-meta.test.ts scripts/lib/app-not-found-jsonld-schema.test.ts",
     "test:app-slug-suggest": "bun test scripts/lib/app-slug-suggest.test.ts scripts/lib/app-slug-suggest-stability.test.ts scripts/lib/app-slug-resolve.test.ts",
     "test:app-status-drift": "bun test scripts/lib/app-status-drift.test.ts",
     "test:app-status-meta": "bunx vitest run scripts/lib/app-status-meta.test.ts",
