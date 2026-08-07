@@ -18,6 +18,12 @@ import {
   appStatusCsvFilename,
   type AppStatusCsvRow,
 } from "@/lib/app-status-csv";
+import {
+  appStatusWorkbook,
+  appStatusXlsxFilename,
+  APP_STATUS_XLSX_CONTENT_TYPE,
+} from "@/lib/app-status-xlsx";
+
 
 
 /**
