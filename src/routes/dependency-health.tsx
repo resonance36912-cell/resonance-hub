@@ -216,7 +216,7 @@ function DependencyHealthPage() {
           )}
         </section>
 
-        {!report.allCurrent && (
+        {hasReport && !report.allCurrent && (
           <section aria-labelledby="plan">
             <h2
               id="plan"
