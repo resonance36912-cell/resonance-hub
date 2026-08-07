@@ -172,12 +172,25 @@ function DependencyHealthPage() {
           >
             How far behind
           </h2>
-          {report.allCurrent ? (
+          {!hasReport ? (
+            <p className="mt-4 text-white/70">
+              No numbers to show — this build has no{" "}
+              <code className="rounded bg-white/10 px-1 font-mono">
+                {REPORT_PATH}
+              </code>{" "}
+              artifact. Run{" "}
+              <code className="rounded bg-white/10 px-1 font-mono">
+                bun run deps:outdated
+              </code>{" "}
+              or wait for the weekly audit to publish one.
+            </p>
+          ) : report.allCurrent ? (
             <p className="mt-4 text-white/70">
               Nothing is behind — all {report.totalPins} pins match the latest
               published release.
             </p>
           ) : (
+
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
               {groups.map((g) => (
                 <li
