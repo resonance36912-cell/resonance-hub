@@ -72,7 +72,11 @@ MIME = {"csv": "text/csv",
 # configurable via GROWTH_* env vars (tests/e2e/harness/growth_thresholds.py).
 BANDS = growth.band_limits({"fds": 12, "sockets": 6, "threads": 2})
 FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
-SLOPE_LIMITS = growth.slope_limits("hour", {"fds": 4.0, "sockets": 2.0, "threads": 1.0})
+# Calibrated limits in baselines/growth-thresholds.json win over these defaults
+# unless an explicit GROWTH_*_SLOPE_PER_HOUR env var is set (growth_calibrate.py).
+SLOPE_DEFAULTS = {"fds": 4.0, "sockets": 2.0, "threads": 1.0}
+CALIBRATION_PROFILE = os.environ.get("GROWTH_PROFILE", "export-keepalive-soak")
+SLOPE_LIMITS = growth.slope_limits("hour", SLOPE_DEFAULTS, profile=CALIBRATION_PROFILE)
 
 
 # --- harness ---------------------------------------------------------------
@@ -443,7 +447,8 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     progress.close()
     samples_csv.close()
     return {"baseline": baseline, "settled": settled, "peaks": peaks, "slopes_per_hour": slopes,
-            "growth_thresholds": growth_report, "bands": BANDS,
+            "growth_thresholds": growth_report, "growth_defaults": SLOPE_DEFAULTS,
+            "growth_profile": CALIBRATION_PROFILE, "bands": BANDS,
             "counters": counters, "samples": len(samples),
             "duration_seconds": round(time.monotonic() - started, 1)}
 
