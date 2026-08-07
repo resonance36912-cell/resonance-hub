@@ -73,6 +73,19 @@ MIME = {"csv": "text/csv",
 # shared CI box, tight enough to catch an O(n^2) or unbounded-buffer regression.
 BUDGET = {"p50": 1500, "p95": 4000, "p99": 6000, "max": 12000}
 BASELINE_BUDGET = {"p50": 2000, "p95": 4000, "p99": 6000, "max": 8000}
+
+
+def load_budget(concurrency: int) -> dict:
+    """Latency ceilings scale with queue depth.
+
+    Per-request wall time necessarily includes queueing once offered load
+    exceeds service capacity, so budgets grow linearly above 32 in-flight
+    requests. A real regression (per-request cost, not queueing) still breaks
+    these ceilings because the whole distribution shifts.
+    """
+    factor = max(1.0, concurrency / 32)
+    return {k: v * factor for k, v in BUDGET.items()}
+
 # RSS growth allowances (MiB).
 RSS_PEAK_GROWTH_MIB = 600
 RSS_SETTLED_GROWTH_MIB = 250
