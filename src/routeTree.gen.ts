@@ -96,6 +96,7 @@ import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/pub
 import { Route as ApiPublicAppStatusHealthRouteImport } from './routes/api/public/app-status.health'
 import { Route as ApiPublicAnalyticsCheckoutSuccessRouteImport } from './routes/api/public/analytics/checkout-success'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
+import { Route as ApiPublicAnalyticsAppSuggestionRouteImport } from './routes/api/public/analytics/app-suggestion'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
 import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
@@ -554,6 +555,12 @@ const ApiPublicAnalyticsAuthGateRoute =
     path: '/api/public/analytics/auth-gate',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAnalyticsAppSuggestionRoute =
+  ApiPublicAnalyticsAppSuggestionRouteImport.update({
+    id: '/api/public/analytics/app-suggestion',
+    path: '/api/public/analytics/app-suggestion',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AccountInvoicesByPaymentPfRoute =
   AccountInvoicesByPaymentPfRouteImport.update({
     id: '/by-payment/$pf',
@@ -648,6 +655,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
+  '/api/public/analytics/app-suggestion': typeof ApiPublicAnalyticsAppSuggestionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
@@ -741,6 +749,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
+  '/api/public/analytics/app-suggestion': typeof ApiPublicAnalyticsAppSuggestionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
@@ -835,6 +844,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
+  '/api/public/analytics/app-suggestion': typeof ApiPublicAnalyticsAppSuggestionRoute
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
@@ -930,6 +940,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
+    | '/api/public/analytics/app-suggestion'
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
@@ -1023,6 +1034,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
+    | '/api/public/analytics/app-suggestion'
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
@@ -1116,6 +1128,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/tools/codex/$threadId'
     | '/account/invoices/by-payment/$pf'
+    | '/api/public/analytics/app-suggestion'
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
@@ -1206,6 +1219,7 @@ export interface RootRouteChildren {
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
   AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicAnalyticsAppSuggestionRoute: typeof ApiPublicAnalyticsAppSuggestionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
   ApiPublicAppStatusHealthRoute: typeof ApiPublicAppStatusHealthRoute
@@ -1841,6 +1855,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAnalyticsAuthGateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/analytics/app-suggestion': {
+      id: '/api/public/analytics/app-suggestion'
+      path: '/api/public/analytics/app-suggestion'
+      fullPath: '/api/public/analytics/app-suggestion'
+      preLoaderRoute: typeof ApiPublicAnalyticsAppSuggestionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/invoices/by-payment/$pf': {
       id: '/account/invoices/by-payment/$pf'
       path: '/by-payment/$pf'
@@ -1987,6 +2008,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
   AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicAnalyticsAppSuggestionRoute: ApiPublicAnalyticsAppSuggestionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
   ApiPublicAnalyticsCheckoutSuccessRoute:
     ApiPublicAnalyticsCheckoutSuccessRoute,
