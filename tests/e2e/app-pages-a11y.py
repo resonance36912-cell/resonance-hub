@@ -360,22 +360,42 @@ async def main():
             audit_structure(scope, await page.evaluate(AUDIT_JS))
             await run_axe(page, scope)
 
-            focus_report = await page.evaluate(
-                """() => {
-                     const links = Array.from(document.querySelectorAll('main a[href]'))
-                       .filter((a) => a.getBoundingClientRect().height > 0);
-                     const out = [];
-                     for (const a of links) {
-                       a.focus();
-                       out.push({ href: a.getAttribute('href'), focused: document.activeElement === a });
-                     }
-                     return out;
-                   }"""
-            )
-            check(f"{scope} main has focusable links", len(focus_report) > 0,
-                  f"count={len(focus_report)}")
-            for item in focus_report:
-                check(f"{scope} link takes focus [{item['href']}]", item["focused"])
+            # Keyboard walk: Tab through the page and require each stop to be a
+            # real interactive element that paints a visible focus indicator.
+            await page.evaluate("() => document.body.focus()")
+            seen = 0
+            for _ in range(60):
+                await page.keyboard.press("Tab")
+                stop = await page.evaluate(
+                    """() => {
+                         const el = document.activeElement;
+                         if (!el || el === document.body) return null;
+                         const s = getComputedStyle(el);
+                         return {
+                           tag: el.tagName.toLowerCase(),
+                           href: el.getAttribute('href'),
+                           label: (el.getAttribute('aria-label') || el.textContent || '')
+                             .replace(/\\s+/g, ' ').trim().slice(0, 40),
+                           focusVisible: el.matches(':focus-visible'),
+                           outlineStyle: s.outlineStyle,
+                           outlineWidth: parseFloat(s.outlineWidth) || 0,
+                           boxShadow: s.boxShadow,
+                         };
+                       }"""
+                )
+                if not stop:
+                    break
+                seen += 1
+                ident = stop["href"] or stop["label"] or stop["tag"]
+                indicator = (
+                    stop["outlineStyle"] != "none" and stop["outlineWidth"] > 0
+                ) or (stop["boxShadow"] and stop["boxShadow"] != "none")
+                check(f"{scope} focus stop matches :focus-visible [{ident}]",
+                      stop["focusVisible"], f"tag={stop['tag']}")
+                check(f"{scope} focus stop paints an indicator [{ident}]", bool(indicator),
+                      f"outline={stop['outlineStyle']} {stop['outlineWidth']} shadow={str(stop['boxShadow'])[:40]}")
+            check(f"{scope} page has keyboard focus stops", seen > 0, f"count={seen}")
+
 
         # Client-side navigation between real pages must not degrade a11y.
         await page.goto(f"{BASE}/status/apps", wait_until="domcontentloaded")
