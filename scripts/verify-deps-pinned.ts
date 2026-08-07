@@ -58,6 +58,7 @@ function safeAudit(): PinIssue[] {
 function fail(step: Step): never {
   const bar = "─".repeat(72);
   const issues = safeAudit();
+  const isInstallStep = step === STEPS[0];
 
   let detail = "";
   if (issues.length) {
@@ -67,12 +68,20 @@ function fail(step: Step): never {
       `${formatIssueTable(issues)}\n\n` +
       issues.map((i) => `  - ${describeIssue(i)}\n`).join("") +
       `\n`;
+  } else if (isInstallStep) {
+    detail =
+      `LOCKFILE DRIFT: bun refused to install with --frozen-lockfile, which\n` +
+      `means bun.lock does not match package.json. No individual pin mismatch\n` +
+      `was detectable from the files on disk, so the drift is structural — a\n` +
+      `dependency was added, removed, or renamed without regenerating the lock.\n\n` +
+      `The build stopped here on purpose: everything after this point (typecheck,\n` +
+      `verifiers, tests) would run against dependencies that do not match the\n` +
+      `committed lockfile, so its results would be meaningless.\n\n`;
   } else {
     detail =
       `No package.json ↔ bun.lock mismatch was detectable from the files on\n` +
       `disk, so the failure is in the install/consistency step itself — read the\n` +
-      `step output above (e.g. a lockfile bun refused to install with\n` +
-      `--frozen-lockfile, or overrides that shift on re-resolution).\n\n`;
+      `step output above (e.g. overrides that shift on re-resolution).\n\n`;
   }
 
   process.stderr.write(
@@ -83,7 +92,9 @@ function fail(step: Step): never {
       `Every dependency in package.json must be pinned to an EXACT version\n` +
       `(no ^, ~, >=, ranges, *, or "latest"), and bun.lock must resolve to\n` +
       `that same version. Fix locally with:\n\n` +
-      `  1. Apply the exact versions listed above to package.json.\n` +
+      (issues.length
+        ? `  1. Apply the exact versions listed above to package.json.\n`
+        : `  1. Make sure every package.json dependency is an exact version.\n`) +
       `  2. Re-sync overrides + lockfile:\n\n` +
       `       bun run scripts/sync-overrides-from-lock.ts\n` +
       `       bun install\n\n` +
@@ -94,6 +105,7 @@ function fail(step: Step): never {
   );
   process.exit(1);
 }
+
 
 for (const step of STEPS) {
   if (!run(step)) fail(step);
