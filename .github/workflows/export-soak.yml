@@ -129,8 +129,41 @@ jobs:
         with:
           name: export-lb-proxy
           path: |
-            /tmp/browser/app-status-lb-proxy/report.json
-            /tmp/browser/app-status-lb-proxy/nginx/logs/error.log
           if-no-files-found: warn
           retention-days: 30
+
+  load-idempotency:
+    name: Large-export load, fault idempotency & keep-alive reuse
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run the load / idempotency suite
+        env:
+          ROWS: "6000"
+          CONCURRENCY: "12"
+          ROUNDS: "8"
+        run: python3 tests/e2e/app-status-export-load-idempotency.py
+
+      - name: Upload load report and samples
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-load-idempotency
+          path: |
+            /tmp/browser/app-status-export-load-idem/report.json
+            /tmp/browser/app-status-export-load-idem/samples.csv
+          if-no-files-found: warn
+          retention-days: 30
+
 
