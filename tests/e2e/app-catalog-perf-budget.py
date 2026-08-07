@@ -207,7 +207,7 @@ async def nav_run(browser, problems, bad_status) -> dict:
     context, page = await new_page(browser, problems, bad_status)
     await page.goto(f"{BASE}/apps/{APP_KEY}", wait_until="load")
     await page.wait_for_selector("[data-app-detail]", state="visible", timeout=15000)
-    await asyncio.sleep(0.5)
+    await wait_for_hydration(page)
 
     # A full document load would reset these; we assert they survive below.
     await page.evaluate("() => { window.__navMark = performance.now(); }")
