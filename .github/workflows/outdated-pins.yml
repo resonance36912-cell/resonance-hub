@@ -14,6 +14,11 @@ name: Outdated pinned dependencies
 #
 # The issue is reused: one open issue is updated in place per run, so scheduled
 # runs never pile up duplicates.
+#
+# Slack: set the repo secret SLACK_WEBHOOK_URL (Slack Incoming Webhook) to get a
+# message with the top outdated packages plus links to the plan issue and the
+# run's report artifact. Without the secret the notify step is skipped.
+
 
 on:
   schedule:
