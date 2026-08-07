@@ -4,6 +4,8 @@ import {
   createLovableAiGatewayProvider,
   getLovableAiGatewayRunId,
 } from "@/lib/ai-gateway.server";
+import { authenticateBearer } from "@/lib/bearer-auth.server";
+
 
 const CODEX_SYSTEM_PROMPT = `You are the Resonance Codex Assistant, an in-hub AI helper embedded at /tools/codex on reson8.life (the Resonance Hub — the authority for identity, entitlements, credits, and the app registry powering Creative Studio, ePublisher, SyncVision, and YouTube Optimizer).
 
