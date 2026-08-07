@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 
 from playwright.async_api import async_playwright
