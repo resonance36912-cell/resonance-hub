@@ -48,7 +48,8 @@ export const Route = createFileRoute("/api/public/app-status/health")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
-      GET: async () => {
+      GET: async ({ request }) => {
+
         const apps = (Object.values(APP_REGISTRY) as AppRegistryEntry[]).map((entry) => ({
           ...badge(entry),
           includedInSuite: entry.includedInSuite,
