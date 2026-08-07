@@ -212,8 +212,9 @@ def check_csv_roundtrip(results: list, path: Path, headers: list[str],
                             f"{ctx}CSV {src['key']}: no lone surrogates"))
         # Non-ASCII must never force quoting on its own.
         if not re.search(r'[",\r\n]', src["label"]) and any(ord(c) > 127 for c in src["label"]):
-            results.append((f",{src['label']}," in f",{','.join([])}," or True,
-                            f"{ctx}CSV {src['key']}: non-ASCII label needs no quoting"))
+            results.append((f",{src['label']}," in text,
+                            f"{ctx}CSV {src['key']}: non-ASCII label emitted unquoted"))
+
 
 
 def check_xlsx_roundtrip(results: list, path: Path, headers: list[str],
