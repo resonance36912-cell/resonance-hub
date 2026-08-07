@@ -155,6 +155,12 @@ function DependencyHealthPage() {
               Weekly audit workflow
             </a>
             <AppLink
+              to={ROUTES.dependencyThresholds}
+              className="rounded border border-white/15 px-3 py-1.5 text-white/80 hover:border-white/40 hover:text-white"
+            >
+              Audit settings
+            </AppLink>
+            <AppLink
               to={ROUTES.changelog}
               className="rounded border border-white/15 px-3 py-1.5 text-white/80 hover:border-white/40 hover:text-white"
             >
