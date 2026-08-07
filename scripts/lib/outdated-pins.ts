@@ -239,3 +239,48 @@ export function renderSummaryLine(report: OutdatedReport): string {
     ? `${report.outdated.length}/${report.total} pins outdated (${c.major} major, ${c.minor} minor, ${c.patch} patch)`
     : `all ${report.total} pins up to date`;
 }
+
+/**
+ * Slack Incoming Webhook message body (mrkdwn `text`, not Block Kit — the repo's
+ * other alerts use the raw webhook, so keep one shape).
+ *
+ * Deliberately short: the top few offenders plus links. The full plan lives in
+ * the issue, so duplicating 70 rows into a channel would just get muted.
+ */
+export function renderSlackText(
+  report: OutdatedReport,
+  opts: {
+    /** "created" | "updated" | "closed" — what happened to the plan issue. */
+    action?: string;
+    issueUrl?: string;
+    runUrl?: string;
+    /** How many offenders to list inline (default 5). */
+    top?: number;
+  } = {},
+): string {
+  const rows = sortOutdated(report.outdated);
+  const top = Math.max(1, opts.top ?? 5);
+  const lines: string[] = [];
+
+  if (!rows.length) {
+    lines.push(`:white_check_mark: *Outdated pins:* all ${report.total} pins are current.`);
+  } else {
+    const c = countByBump(rows);
+    const verb = opts.action === "created" ? "opened" : opts.action === "closed" ? "closed" : "updated";
+    lines.push(
+      `:package: *Outdated pinned dependencies* — plan issue ${verb}.`,
+      `${rows.length} of ${report.total} pins behind (${c.major} major, ${c.minor} minor, ${c.patch} patch).`,
+      "",
+      ...rows.slice(0, top).map((d) => `• \`${d.name}\` ${d.current} → ${d.latest} _(${d.bump})_`),
+    );
+    if (rows.length > top) lines.push(`• …and ${rows.length - top} more.`);
+  }
+
+  const links: string[] = [];
+  if (opts.issueUrl) links.push(`<${opts.issueUrl}|Update plan>`);
+  if (opts.runUrl) links.push(`<${opts.runUrl}|CI run + report artifact>`);
+  if (links.length) lines.push("", links.join(" · "));
+
+  return lines.join("\n");
+}
+
