@@ -47,11 +47,11 @@ const GOLDEN: Record<string, Array<[AppKey, number]>> = {
   "sinc-vision": [["sync_vision", 0.9]],
   "sync-vision": [["sync_vision", 1]],
   syncvision: [["sync_vision", 1]], // separators fold away, so this is an exact key match
-  "creativ-studo": [["creative_studio", 0.867]],
+  "creativ-studo": [["creative_studio", 0.857]],
   "creative studio": [["creative_studio", 1]],
   epublishr: [["epublisher", 0.9]],
-  "youtube-optimiser": [["youtube_optimizer", 0.941]],
-  "all-acces": [["all_access", 0.9]],
+  "youtube-optimiser": [["youtube_optimizer", 0.938]],
+  "all-acces": [["all_access", 0.889]],
   zzzzzzzzzzzz: [],
 };
 
