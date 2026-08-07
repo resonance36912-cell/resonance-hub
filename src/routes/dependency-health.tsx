@@ -97,26 +97,45 @@ function DependencyHealthPage() {
             nothing here changes a pin.
           </p>
 
-          <div
-            className={`mt-8 rounded-lg border px-4 py-3 ${POSTURE_TONE[posture.tone]}`}
-            role="status"
-          >
-            <div className="text-[10px] font-mono uppercase tracking-widest">
-              {posture.label}
+          {fallback ? (
+            <div
+              className="mt-8 rounded-lg border border-white/15 bg-white/[0.04] px-4 py-3"
+              role="status"
+              data-testid="dependency-health-fallback"
+            >
+              <div className="text-[10px] font-mono uppercase tracking-widest text-white/60">
+                {fallback.label}
+              </div>
+              <p className="mt-1 text-sm text-white/70">{fallback.detail}</p>
             </div>
-            <p className="mt-1 text-sm text-white/80">{posture.detail}</p>
-          </div>
+          ) : (
+            <>
+              <div
+                className={`mt-8 rounded-lg border px-4 py-3 ${POSTURE_TONE[posture.tone]}`}
+                role="status"
+              >
+                <div className="text-[10px] font-mono uppercase tracking-widest">
+                  {posture.label}
+                </div>
+                <p className="mt-1 text-sm text-white/80">{posture.detail}</p>
+              </div>
 
-          <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="Pins audited" value={report.totalPins} />
-            <Stat label="Up to date" value={`${report.currentCount} (${percent}%)`} />
-            <Stat label="Behind" value={report.outdatedCount} />
-            <Stat
-              label="Report age"
-              value={age ? age.label : "unknown"}
-              muted
-            />
-          </dl>
+              <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <Stat label="Pins audited" value={report.totalPins} />
+                <Stat
+                  label="Up to date"
+                  value={`${report.currentCount} (${percent}%)`}
+                />
+                <Stat label="Behind" value={report.outdatedCount} />
+                <Stat
+                  label="Report age"
+                  value={age ? age.label : "unknown"}
+                  muted
+                />
+              </dl>
+            </>
+          )}
+
 
           <div className="mt-6 flex flex-wrap gap-3 text-[10px] font-mono uppercase tracking-widest">
             <a
