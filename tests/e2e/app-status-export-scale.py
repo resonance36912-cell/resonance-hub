@@ -150,11 +150,14 @@ def sheet_grid(raw: bytes, sheet: str) -> list[list[str]]:
     return grid
 
 
-def expected_cells(row: dict) -> list[str]:
+def expected_cells(row: dict, fmt: str) -> list[str]:
+    """CSV serialises booleans as true/false; the workbook uses yes/no."""
+    flag = ("true" if row["accessible"] else "false") if fmt == "csv" else (
+        "yes" if row["accessible"] else "no"
+    )
     return [
         row["scope"], row["key"], row["label"], row["status"], row["badgeLabel"],
-        row["access"], "yes" if row["accessible"] else "no", row["explanation"],
-        row["url"], row["detailPath"],
+        row["access"], flag, row["explanation"], row["url"], row["detailPath"],
     ]
 
 
@@ -196,7 +199,7 @@ async def check_size(page, n: int, timings: dict, results: list) -> None:
     results.append((len(data) == n, f"[{n}] csv preserves all {n} rows (got {len(data)})"))
     keys = [r[1] for r in data]
     results.append((keys == [r["key"] for r in rows], f"[{n}] csv row order preserved"))
-    ok_cells = all(data[i] == expected_cells(rows[i]) for i in sample_indexes(n) if i < len(data))
+    ok_cells = all(data[i] == expected_cells(rows[i], "csv") for i in sample_indexes(n) if i < len(data))
     results.append((ok_cells, f"[{n}] sampled csv rows match source cells exactly"))
 
     # --- XLSX parity
@@ -206,7 +209,7 @@ async def check_size(page, n: int, timings: dict, results: list) -> None:
     results.append((len(grid) == n + 1, f"[{n}] xlsx sheet has {n} data rows + header (got {len(grid)})"))
     xkeys = [r[1] for r in grid[1:] if len(r) > 1]
     results.append((xkeys == keys, f"[{n}] xlsx row order matches csv"))
-    ok_x = all(grid[i + 1] == expected_cells(rows[i]) for i in sample_indexes(n) if i + 1 < len(grid))
+    ok_x = all(grid[i + 1] == expected_cells(rows[i], "xlsx") for i in sample_indexes(n) if i + 1 < len(grid))
     results.append((ok_x, f"[{n}] sampled xlsx rows match source cells exactly"))
 
     with zipfile.ZipFile(io.BytesIO(raw)) as z:
