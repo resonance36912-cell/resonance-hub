@@ -302,16 +302,30 @@ async def concurrent_sweep(req, sizes: dict, pid: int, results: list, batches: i
         check_clean_response("csv", status, headers, body, f"burst {b} retry", results)
         results.append((elapsed < 15, f"[burst {b}] retry latency healthy ({elapsed:.2f}s)"))
 
+        await asyncio.sleep(1)
+        settled.append(fd_stats(pid))
+
     await asyncio.sleep(3)
     after = fd_stats(pid)
     results.append((total_faults == batches * per_batch,
                     f"[burst] issued {total_faults} concurrent faults"))
-    results.append((after["fds"] <= baseline["fds"] + 8,
-                    f"[burst] fds return to baseline ({baseline['fds']} -> peak {peak} -> {after['fds']})"))
-    results.append((after["sockets"] <= baseline["sockets"] + 6,
-                    f"[burst] sockets return to baseline ({baseline['sockets']} -> {after['sockets']})"))
+    # The client keeps a pooled set of keep-alive sockets, so the first burst
+    # legitimately raises the fd count once. What must NOT happen is growth that
+    # scales with the number of faults: compare later bursts to the first.
+    first, last = settled[0], settled[-1]
+    results.append((last["fds"] <= first["fds"] + 4,
+                    f"[burst] fds do not grow with fault count "
+                    f"({first['fds']} after burst 0 -> {last['fds']} after burst {batches - 1})"))
+    results.append((last["sockets"] <= first["sockets"] + 4,
+                    f"[burst] socket fds do not accumulate per fault "
+                    f"({first['sockets']} -> {last['sockets']})"))
+    results.append((after["threads"] <= baseline["threads"] + 2,
+                    f"[burst] thread count stable ({baseline['threads']} -> {after['threads']})"))
     results.append((peak < baseline["fds"] + 400,
-                    f"[burst] no fd exhaustion at peak (peak {peak})"))
+                    f"[burst] no fd exhaustion at peak (peak {peak}, baseline {baseline['fds']})"))
+    results.append((after["fds"] <= peak,
+                    f"[burst] fds settle at or below peak (peak {peak} -> {after['fds']})"))
+
 
     # Final health check for both formats after all the abuse.
     for fmt in ("csv", "xlsx"):
