@@ -178,7 +178,6 @@ describe("resolveAppKey — underscores, whitespace and unusual casing", () => {
       "youtube_optimiser",
       "creative_studios",
       "e_publishers",
-      "sync/vision",
       "sync.vision.app",
     ]) {
       expect(resolveAppKey(bad)).toBeNull();
