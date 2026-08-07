@@ -202,12 +202,49 @@ export const ITEM_LIST_SPEC: ObjectSpec = {
   },
 };
 
+export type ValidateItemListOptions = {
+  /**
+   * Report properties outside the documented spec on the ItemList root and on
+   * each ListItem too (nested SoftwareApplication nodes are always strict).
+   * Use this when validating what the app actually emits: any stray key means
+   * the payload drifted from the shape we promise crawlers.
+   */
+  strict?: boolean;
+};
+
+/** Property names the documented spec allows on each node. */
+const ROOT_KNOWN_KEYS = new Set([
+  "@context",
+  "@type",
+  ...Object.keys(ITEM_LIST_SPEC.fields),
+]);
+const LIST_ITEM_KNOWN_KEYS = new Set([
+  "@type",
+  ...Object.keys(LIST_ITEM_SPEC.fields),
+]);
+
+function unknownKeyIssues(
+  node: Record<string, unknown>,
+  known: Set<string>,
+  path: string,
+): SchemaIssue[] {
+  return Object.keys(node)
+    .filter((key) => !known.has(key))
+    .map((key) => ({
+      path: path ? `${path}.${key}` : key,
+      message: `unexpected property "${key}"`,
+    }));
+}
+
 /**
  * Full validation of an ItemList-of-SoftwareApplication payload:
  * root shape, element array, each ListItem, each nested item, and
  * numberOfItems/position consistency.
  */
-export function validateItemList(payload: unknown): SchemaIssue[] {
+export function validateItemList(
+  payload: unknown,
+  options: ValidateItemListOptions = {},
+): SchemaIssue[] {
   const issues: SchemaIssue[] = [];
 
   if (!isPlainObject(payload)) {
@@ -220,6 +257,9 @@ export function validateItemList(payload: unknown): SchemaIssue[] {
   issues.push(
     ...validateNode(payload, { ...ITEM_LIST_SPEC, fields: rootFields, allowUnknown: true }),
   );
+  if (options.strict) {
+    issues.push(...unknownKeyIssues(payload, ROOT_KNOWN_KEYS, ""));
+  }
 
   const elements = payload["itemListElement"];
   if (!Array.isArray(elements)) {
@@ -251,6 +291,10 @@ export function validateItemList(payload: unknown): SchemaIssue[] {
     issues.push(
       ...validateNode(element, { ...LIST_ITEM_SPEC, fields: listItemFields, allowUnknown: true }),
     );
+    if (options.strict && isPlainObject(element)) {
+      issues.push(...unknownKeyIssues(element, LIST_ITEM_KNOWN_KEYS, path));
+    }
+
 
     if (!isPlainObject(element)) return;
 
