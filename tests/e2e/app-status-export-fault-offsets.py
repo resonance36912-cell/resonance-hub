@@ -56,6 +56,18 @@ ATTACHMENT_HEADERS = (
 )
 
 
+async def get_with_retry(req, target: str, attempts: int = 4):
+    """The dev server occasionally resets a socket under rapid-fire requests."""
+    last = None
+    for i in range(attempts):
+        try:
+            return await get_with_retry(req, target)
+        except Exception as exc:  # ECONNRESET / socket hang up
+            last = exc
+            await asyncio.sleep(0.4 * (i + 1))
+    raise last
+
+
 def url(fmt: str, extra: str = "") -> str:
     return f"{BASE}{HEALTH}?format={fmt}" + (f"&{extra}" if extra else "")
 
@@ -193,14 +205,14 @@ async def main() -> int:
         req = context.request
         await page.goto(BASE, wait_until="domcontentloaded")
 
-        probe = await req.get(url("csv", "faultAt=1"))
+        probe = await get_with_retry(req, url("csv", "faultAt=1"))
         if probe.status != 500:
             print(f"faultAt injection unavailable (status {probe.status}); dev build required")
             await browser.close()
             return 1
 
         for fmt in ("csv", "xlsx"):
-            baseline = await req.get(url(fmt))
+            baseline = await get_with_retry(req, url(fmt))
             body = await baseline.body()
             size = len(body)
             results.append((baseline.status == 200 and size > 0, f"[{fmt}] baseline export is {size} bytes"))
@@ -209,7 +221,7 @@ async def main() -> int:
             offsets = [o for o in offsets if 0 <= o < size]
             for off in offsets:
                 label = f"{fmt} fault@{off}"
-                res = await req.get(url(fmt, f"faultAt={off}"))
+                res = await get_with_retry(req, url(fmt, f"faultAt={off}"))
                 headers = {k.lower(): v for k, v in res.headers.items()}
                 err = await res.body()
                 results.append((res.status == 500, f"[{label}] status 500 (got {res.status})"))
@@ -223,7 +235,7 @@ async def main() -> int:
             # Control: offsets at/after the end mean the encoder finished first.
             for off, why in ((size, "at body end"), (size + 4096, "past body end")):
                 label = f"{fmt} faultAt={off} ({why})"
-                res = await req.get(url(fmt, f"faultAt={off}"))
+                res = await get_with_retry(req, url(fmt, f"faultAt={off}"))
                 headers = {k.lower(): v for k, v in res.headers.items()}
                 results.append((res.status == 200, f"[{label}] does not fault (got {res.status})"))
                 results.append((
