@@ -310,6 +310,8 @@ export const ISSUE_TITLE = "Outdated pinned dependencies — update plan";
 export const ISSUE_LABEL = "dependencies";
 /** Marker so the workflow can find and update its own issue instead of piling up new ones. */
 export const ISSUE_MARKER = "<!-- reson8:outdated-pins -->";
+/** Marker so the apply workflow can find and update its own PR. */
+export const PR_MARKER = "<!-- reson8:outdated-pins-pr -->";
 
 /**
  * The ready-to-apply update plan. Deliberately advisory: it prints the exact
