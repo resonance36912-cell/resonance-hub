@@ -24,6 +24,10 @@
  *   REGISTRY        registry base URL (default: https://registry.npmjs.org)
  *   CONCURRENCY     parallel registry requests (default: 8)
  *   FAIL_ON_MAJOR   "1" to exit 1 when a major bump exists (off by default)
+ *
+ * Thresholds — what counts as "outdated" — are configurable via repository
+ * variables (PINS_MIN_BUMP, PINS_IGNORE_BUMPS, PINS_IGNORE, PINS_ONLY,
+ * PINS_MIN_OUTDATED, PINS_FAIL_ON_MAJOR). See scripts/lib/outdated-pins-config.ts.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -39,6 +43,12 @@ import {
   type PinnedDep,
   type SkippedDep,
 } from "./lib/outdated-pins";
+import {
+  configureReport,
+  describeConfig,
+  meetsReportingFloor,
+  parseAuditConfig,
+} from "./lib/outdated-pins-config";
 
 const OUT_DIR = process.env["OUT_DIR"] ?? "reports";
 const REGISTRY = (process.env["REGISTRY"] ?? "https://registry.npmjs.org").replace(/\/+$/, "");
@@ -92,6 +102,17 @@ function write(path: string, content: string) {
 }
 
 async function main() {
+  // Parsed first: a typo'd repo variable should fail before we hammer the
+  // registry, and the run log must state which thresholds produced the report.
+  let config;
+  try {
+    config = parseAuditConfig();
+  } catch (err) {
+    process.stderr.write(`\u274c invalid audit threshold configuration: ${(err as Error).message}\n`);
+    process.exit(1);
+  }
+  process.stdout.write(`Thresholds — ${describeConfig(config)}\n`);
+
   let pkg: Record<string, unknown>;
   try {
     pkg = JSON.parse(readFileSync("package.json", "utf8")) as Record<string, unknown>;
@@ -127,12 +148,19 @@ async function main() {
     process.exit(1);
   }
 
-  const report: OutdatedReport = {
+  const rawReport: OutdatedReport = {
     generatedAt: new Date().toISOString(),
     total: pins.length,
     outdated: sortOutdated(outdated),
     skipped,
   };
+  // Thresholds are applied after evaluation so muted findings stay visible in
+  // `skipped` (with the reason) instead of vanishing from the report.
+  const report = configureReport(rawReport, config);
+  const mutedCount = rawReport.outdated.length - report.outdated.length;
+  if (mutedCount > 0) {
+    process.stdout.write(`  ${mutedCount} finding(s) muted by the configured thresholds\n`);
+  }
 
   const runUrl =
     process.env["GITHUB_SERVER_URL"] && process.env["GITHUB_REPOSITORY"] && process.env["GITHUB_RUN_ID"]
@@ -148,13 +176,16 @@ async function main() {
   for (const d of report.outdated) {
     process.stdout.write(`  ${d.bump.padEnd(10)} ${d.name}  ${d.current} → ${d.latest}\n`);
   }
-  for (const s of skipped) process.stdout.write(`  skipped    ${s.name}: ${s.reason}\n`);
+  for (const s of report.skipped) process.stdout.write(`  skipped    ${s.name}: ${s.reason}\n`);
 
   if (process.env["GITHUB_OUTPUT"]) {
     writeFileSync(
       process.env["GITHUB_OUTPUT"]!,
       [
         `outdated_count=${report.outdated.length}`,
+        `reportable=${meetsReportingFloor(report.outdated.length, config) ? "true" : "false"}`,
+        `muted_count=${mutedCount}`,
+        `thresholds=${describeConfig(config)}`,
         `summary=${summary}`,
         `fingerprint=${reportFingerprint(report)}`,
         `body_path=${join(OUT_DIR, "outdated-pins.md")}`,
