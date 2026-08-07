@@ -16,7 +16,7 @@
 import { appStatusCsv, appStatusCsvFilename, type AppStatusCsvRow } from "../../../src/lib/app-status-csv";
 import { appStatusWorkbook, appStatusXlsxFilename, APP_STATUS_XLSX_CONTENT_TYPE } from "../../../src/lib/app-status-xlsx";
 import { APP_STATUS_LEGEND, APP_STATUS_MEANING } from "../../../src/lib/app-status-meaning";
-import { injectExportFault, parseFaultAt } from "../../../src/lib/app-status-export-fault";
+import { injectExportFault, parseFaultAts } from "../../../src/lib/app-status-export-fault";
 
 const port = Number(process.argv[2] ?? 8393);
 const CHECKED_AT = "2026-08-07T00-00-00-000Z";
@@ -59,7 +59,7 @@ function encode(format: "csv" | "xlsx", rows: AppStatusCsvRow[]): Uint8Array | s
     : appStatusCsv(rows);
 }
 
-function exportResponse(format: "csv" | "xlsx", rows: AppStatusCsvRow[], faultAt: number | null): Response {
+function exportResponse(format: "csv" | "xlsx", rows: AppStatusCsvRow[], faultAt: readonly number[]): Response {
   try {
     const body = encode(format, rows);
     injectExportFault(body, faultAt, format);
@@ -111,7 +111,7 @@ Bun.serve({
       if (!Number.isInteger(count) || count < 0 || count > 100_000) {
         return errorEnvelope(format, 400, "rows out of range");
       }
-      return exportResponse(format, syntheticRows(count), parseFaultAt(url.searchParams.get("faultAt")));
+      return exportResponse(format, syntheticRows(count), parseFaultAts(url.searchParams.getAll("faultAt")));
     }
 
     return new Response(

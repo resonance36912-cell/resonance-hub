@@ -26,7 +26,7 @@ export class ExportEncoderFault extends Error {
 }
 
 /**
- * Parses the dev-only `faultAt` query parameter.
+ * Parses a single dev-only `faultAt` value.
  * Returns null when absent, empty, negative, or not a finite integer.
  */
 export function parseFaultAt(raw: string | null): number | null {
@@ -37,28 +37,61 @@ export function parseFaultAt(raw: string | null): number | null {
 }
 
 /**
+ * Parses one or more dev-only `faultAt` values.
+ *
+ * Accepts repeated query params (`?faultAt=1&faultAt=2048`) and/or
+ * comma/space-separated lists (`?faultAt=1,2048`). Invalid entries are dropped.
+ * The result is de-duplicated and sorted ascending, so the *earliest* offset
+ * wins and the encoder can only ever fail once.
+ */
+export function parseFaultAts(raw: readonly (string | null)[] | string | null): number[] {
+  const list = raw === null ? [] : typeof raw === "string" ? [raw] : [...raw];
+  const offsets = new Set<number>();
+  for (const entry of list) {
+    if (entry === null) continue;
+    for (const part of entry.split(/[,\s]+/)) {
+      const value = parseFaultAt(part);
+      if (value !== null) offsets.add(value);
+    }
+  }
+  return [...offsets].sort((a, b) => a - b);
+}
+
+/**
  * Walks `body` in chunks as an incremental encoder would and throws once at
- * least `faultAt` bytes have been "emitted".
+ * least the earliest applicable offset has been "emitted".
+ *
+ * Accepts a single offset or a list of offsets; with several offsets the encoder
+ * still dies exactly once (at the first one it reaches), so the client always
+ * sees a single clean JSON error rather than partial attachment bytes.
  *
  * Offsets at or beyond the body length never fault: the encoder finished before
  * reaching them, so the export must succeed normally.
  */
 export function injectExportFault(
   body: Uint8Array | string,
-  faultAt: number | null,
+  faultAt: number | readonly number[] | null,
   format: string,
 ): void {
   if (faultAt === null) return;
+  const offsets = (typeof faultAt === "number" ? [faultAt] : [...faultAt]).sort(
+    (a, b) => a - b,
+  );
+  if (offsets.length === 0) return;
+
   const bytes =
     typeof body === "string" ? new TextEncoder().encode(body) : body;
   const total = bytes.byteLength;
-  if (faultAt >= total) return;
+  const reachable = offsets.filter((o) => o < total);
+  if (reachable.length === 0) return;
+  const target = reachable[0]!;
 
   let emitted = 0;
   while (emitted < total) {
     emitted = Math.min(emitted + CHUNK, total);
-    if (emitted >= faultAt) {
+    if (emitted >= target) {
       throw new ExportEncoderFault(format, emitted, total);
     }
   }
 }
+
