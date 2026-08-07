@@ -23,6 +23,11 @@ import {
   appStatusXlsxFilename,
   APP_STATUS_XLSX_CONTENT_TYPE,
 } from "@/lib/app-status-xlsx";
+import {
+  parseAppStatusFilters,
+  filterAppStatusRows,
+  filterSlug,
+} from "@/lib/app-status-filter";
 
 
 
@@ -84,10 +89,11 @@ export const Route = createFileRoute("/api/public/app-status/health")({
 
         const checkedAt = new Date().toISOString();
 
-        const format = new URL(request.url).searchParams.get("format")?.toLowerCase();
+        const searchParams = new URL(request.url).searchParams;
+        const format = searchParams.get("format")?.toLowerCase();
 
         if (format === "csv" || format === "xlsx") {
-          const rows: AppStatusCsvRow[] = [
+          const allRows: AppStatusCsvRow[] = [
             ...apps.map((a) => ({
               scope: "app" as const,
               key: a.key,
@@ -114,6 +120,25 @@ export const Route = createFileRoute("/api/public/app-status/health")({
             })),
           ];
 
+          const filters = parseAppStatusFilters({
+            appKey: searchParams.getAll("appKey"),
+            tag: searchParams.getAll("tag"),
+          });
+          const filtered = filterAppStatusRows(allRows, filters);
+
+          if (!filtered.ok) {
+            return new Response(
+              JSON.stringify({ ok: false, error: filtered.error }, null, 2),
+              {
+                status: 400,
+                headers: { ...CORS, "Content-Type": "application/json; charset=utf-8" },
+              },
+            );
+          }
+
+          const rows = filtered.rows;
+          const slug = filterSlug(filters);
+
           if (format === "xlsx") {
             const workbook = appStatusWorkbook({
               rows,
@@ -126,7 +151,7 @@ export const Route = createFileRoute("/api/public/app-status/health")({
               headers: {
                 ...CORS,
                 "Content-Type": APP_STATUS_XLSX_CONTENT_TYPE,
-                "Content-Disposition": `attachment; filename="${appStatusXlsxFilename(checkedAt)}"`,
+                "Content-Disposition": `attachment; filename="${appStatusXlsxFilename(checkedAt).replace(/\.xlsx$/, `${slug}.xlsx`)}"`,
                 "Cache-Control": "public, max-age=60",
               },
             });
@@ -137,11 +162,12 @@ export const Route = createFileRoute("/api/public/app-status/health")({
             headers: {
               ...CORS,
               "Content-Type": "text/csv; charset=utf-8",
-              "Content-Disposition": `attachment; filename="${appStatusCsvFilename(checkedAt)}"`,
+              "Content-Disposition": `attachment; filename="${appStatusCsvFilename(checkedAt).replace(/\.csv$/, `${slug}.csv`)}"`,
               "Cache-Control": "public, max-age=60",
             },
           });
         }
+
 
 
 
