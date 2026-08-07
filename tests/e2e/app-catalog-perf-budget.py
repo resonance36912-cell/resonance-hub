@@ -166,7 +166,25 @@ LCP_INIT = (
 )
 
 
+async def wait_for_hydration(page, timeout: int = 20_000) -> None:
+    """Block until React has hydrated the document.
+
+    Before hydration the SSR markup still has plain anchors, so a click would
+    trigger a full document load and mis-price the route transition.
+    """
+    await page.wait_for_function(
+        """() => {
+          const el = document.querySelector('main') || document.body;
+          return Object.keys(el).some((k) => k.startsWith('__reactFiber$'));
+        }""",
+        timeout=timeout,
+    )
+    # One frame of settle so router link handlers are attached.
+    await page.evaluate("() => new Promise((r) => requestAnimationFrame(() => r(null)))")
+
+
 async def new_page(browser, problems: list[str], bad_status: list[str]):
+
     context = await browser.new_context(viewport={"width": 1280, "height": 1800})
     page = await context.new_page()
     page.on(
