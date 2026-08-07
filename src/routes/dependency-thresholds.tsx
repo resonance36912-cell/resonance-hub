@@ -21,6 +21,7 @@ import {
   thresholdSource,
 } from "@/lib/pin-thresholds-source";
 import { AppLink } from "@/components/AppLink";
+import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { ROUTES } from "@/lib/routes";
 
 const REPO = "https://github.com/resonance36912-cell/resonance-hub";
@@ -67,11 +68,15 @@ function DependencyThresholdsPage() {
     <div className="min-h-screen bg-[#0a0a0f] text-white">
       <header className="border-b border-white/5">
         <div className="mx-auto max-w-4xl px-6 py-16">
-          <div className="mb-6 text-[10px] font-mono uppercase tracking-widest text-white/50">
-            <AppLink to={ROUTES.dependencyHealth} className="hover:text-white">
-              ← Dependency Health
-            </AppLink>
-          </div>
+          <BackToHubHeader
+            className="mb-6 flex gap-4 text-[10px] font-mono uppercase tracking-widest text-white/50"
+            linkClassName="rounded hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            extra={
+              <AppLink to={ROUTES.dependencyHealth} className="hover:text-white">
+                ← Dependency Health
+              </AppLink>
+            }
+          />
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">
             Dependency Audit Settings
           </h1>
