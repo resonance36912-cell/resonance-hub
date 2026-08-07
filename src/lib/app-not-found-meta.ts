@@ -36,25 +36,74 @@ export function notFoundPageUrl(slug: string): string {
   return `${SITE_ORIGIN}/apps/${encodeURIComponent(slug)}`;
 }
 
+/** Recommended SEO limits — Google truncates roughly here. */
+export const NOT_FOUND_TITLE_MAX = 60;
+export const NOT_FOUND_DESCRIPTION_MAX = 160;
+
+/** How much of a hostile/overlong slug we're willing to echo back. */
+const TITLE_PREFIX = "App not found: /apps/";
+const TITLE_SUFFIX = " — Resonance Apps";
+const TITLE_SLUG_MAX = NOT_FOUND_TITLE_MAX - TITLE_PREFIX.length - TITLE_SUFFIX.length;
+const DESCRIPTION_SLUG_MAX = 40;
+
+/**
+ * Make a user-supplied slug safe to place in a title/description.
+ * Strips control characters and markup/quote characters so the value can
+ * never break out of an HTML attribute or a JSON-LD string, then collapses
+ * whitespace and truncates.
+ */
+export function sanitizeSlugForMeta(raw: string, max: number): string {
+  const cleaned = (raw ?? "")
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, "")
+    .replace(/[<>&"'`\\]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return clampText(cleaned, max);
+}
+
+/** Truncate to `max` characters, using a single ellipsis as the last char. */
+export function clampText(text: string, max: number): string {
+  const chars = Array.from(text);
+  if (chars.length <= max) return text;
+  if (max <= 1) return chars.slice(0, Math.max(0, max)).join("");
+  return `${chars.slice(0, max - 1).join("").trimEnd()}…`;
+}
 
 /** Page title — names the bad slug so tab history stays readable. */
 export function notFoundTitle(slug: string): string {
-  return `App not found: /apps/${slug} — Resonance Apps`;
+  const safe = sanitizeSlugForMeta(slug, TITLE_SLUG_MAX);
+  return clampText(`${TITLE_PREFIX}${safe}${TITLE_SUFFIX}`, NOT_FOUND_TITLE_MAX);
 }
 
 /** Description: says what happened and names the closest matches, if any. */
 export function notFoundDescription(slug: string): string {
+  const safe = sanitizeSlugForMeta(slug, DESCRIPTION_SLUG_MAX);
   const suggestions = suggestApps(slug);
   if (suggestions.length === 0) {
-    return `/apps/${slug} isn't in the Resonance app registry. Browse the full catalog of Resonance apps.`;
+    return clampText(
+      `/apps/${safe} isn't in the Resonance app registry. Browse the full catalog of Resonance apps.`,
+      NOT_FOUND_DESCRIPTION_MAX,
+    );
   }
   const labels = suggestions.map((s) => s.entry.label);
-  const list =
-    labels.length === 1
-      ? labels[0]
-      : `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
-  return `/apps/${slug} isn't in the Resonance app registry. Closest matches: ${list}.`;
+  const build = (shown: string[], hidden: number) => {
+    const list =
+      shown.length === 1
+        ? shown[0]
+        : `${shown.slice(0, -1).join(", ")} and ${shown[shown.length - 1]}`;
+    const more = hidden > 0 ? ` and ${hidden} more` : "";
+    return `/apps/${safe} isn't in the Resonance app registry. Closest matches: ${list}${more}.`;
+  };
+
+  // Drop trailing labels rather than mid-word truncating the sentence.
+  for (let shown = labels.length; shown >= 1; shown--) {
+    const text = build(labels.slice(0, shown), labels.length - shown);
+    if (text.length <= NOT_FOUND_DESCRIPTION_MAX) return text;
+  }
+  return clampText(build(labels.slice(0, 1), labels.length - 1), NOT_FOUND_DESCRIPTION_MAX);
 }
+
 
 /**
  * ItemList structured data for the suggested apps.
