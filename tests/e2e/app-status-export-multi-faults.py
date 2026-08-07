@@ -252,7 +252,7 @@ async def main() -> int:
             name = download.suggested_filename
             check(
                 f"{fmt} / clean download filename",
-                bool(re.match(rf"^reson8-app-status-[\d-]+\.{fmt}$", name)),
+                bool(re.match(rf"^reson8-app-status-[0-9T:.Z-]+\\.{fmt}$", name)),
                 name,
             )
             path = await asyncio.wait_for(download.path(), timeout=15)
