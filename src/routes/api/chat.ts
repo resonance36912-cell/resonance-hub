@@ -30,9 +30,15 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Paid AI gateway: verify the Supabase session server-side before
+        // proxying. Client-side page gating is not an access control.
+        const auth = await authenticateBearer(request);
+        if (auth instanceof Response) return auth;
+
         const body = (await request.json()) as ChatRequestBody;
         const { messages } = body;
         if (!Array.isArray(messages)) {
+
           return new Response("Messages are required", { status: 400 });
         }
 
