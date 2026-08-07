@@ -31,9 +31,14 @@ on:
         description: "Soak duration in seconds"
         required: false
         default: "1800"
+      calibrate:
+        description: "Auto-calibrate growth slope limits from this run (updates baselines/growth-thresholds.json)"
+        type: boolean
+        required: false
+        default: false
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   checks: write
 
@@ -107,6 +112,27 @@ jobs:
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
             }
+
+      - name: Auto-calibrate growth slope limits from recent successful runs
+        if: always() && (github.event_name == 'schedule' || inputs.calibrate)
+        run: |
+          python3 tests/e2e/harness/growth_calibrate.py \
+            --report /tmp/browser/app-status-keepalive-soak/report.json \
+            --profile export-keepalive-soak --unit hour \
+            --run "$GITHUB_RUN_ID" --update | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit calibrated thresholds
+        if: always() && github.event_name == 'schedule'
+        run: |
+          if git diff --quiet -- baselines/growth-thresholds.json; then
+            echo "No threshold changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add baselines/growth-thresholds.json
+          git commit -m "chore(ci): calibrate export-keepalive-soak growth slope limits [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
 
       - name: Fail when growth thresholds were exceeded
         if: always() && steps.growth.outputs.ok == 'false'
@@ -264,6 +290,27 @@ jobs:
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
             }
+
+      - name: Auto-calibrate growth slope limits from recent successful runs
+        if: always() && (github.event_name == 'schedule' || inputs.calibrate)
+        run: |
+          python3 tests/e2e/harness/growth_calibrate.py \
+            --report /tmp/browser/app-status-export-load-idem/report.json \
+            --profile export-load-idempotency --unit minute \
+            --run "$GITHUB_RUN_ID" --update | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit calibrated thresholds
+        if: always() && github.event_name == 'schedule'
+        run: |
+          if git diff --quiet -- baselines/growth-thresholds.json; then
+            echo "No threshold changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add baselines/growth-thresholds.json
+          git commit -m "chore(ci): calibrate export-load-idempotency growth slope limits [skip ci]"
+          git push origin "HEAD:$GITHUB_REF_NAME"
 
       - name: Fail when growth thresholds were exceeded
         if: always() && steps.growth.outputs.ok == 'false'
