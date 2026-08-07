@@ -4,6 +4,7 @@ import { AppLink } from "@/components/AppLink";
 import { getAppEntry, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
 
 import { statusMeaning } from "@/lib/app-status-meaning";
+import { suggestApps } from "@/lib/app-slug-suggest";
 import { appDetailMeta, appDetailUrl } from "@/lib/app-status-meta";
 
 import { ROUTES } from "@/lib/routes";
@@ -246,6 +247,53 @@ function AppDetailPage() {
           </AppLink>
         </div>
       </section>
+    </main>
+  );
+}
+
+function AppNotFound() {
+  const { appKey } = Route.useParams();
+  const suggestions = suggestApps(appKey);
+
+  return (
+    <main className="mx-auto max-w-3xl p-6">
+      <BackToHubHeader />
+      <h1 className="mt-4 text-2xl font-semibold">We couldn't find that app</h1>
+      <p className="mt-2 text-muted-foreground">
+        <span className="font-mono text-foreground">/apps/{appKey}</span> isn't in the
+        Resonance registry. It may have been renamed, or the link may have a typo.
+      </p>
+
+      {suggestions.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-sm font-medium text-muted-foreground">
+            Did you mean{suggestions.length > 1 ? " one of these" : ""}?
+          </h2>
+          <ul className="mt-3 space-y-2">
+            {suggestions.map(({ entry }) => (
+              <li key={entry.key}>
+                <AppLink
+                  to="/apps/$appKey"
+                  params={{ appKey: entry.key }}
+                  className="block rounded-lg border border-border p-4 transition-colors hover:bg-muted"
+                >
+                  <span className="font-medium">{entry.label}</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">{entry.tagline}</span>
+                  <span className="mt-2 block font-mono text-xs text-muted-foreground">
+                    /apps/{entry.key}
+                  </span>
+                </AppLink>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <p className="mt-6 text-sm">
+        <AppLink to={ROUTES.apps} className="text-primary underline">
+          Browse the full app catalog →
+        </AppLink>
+      </p>
     </main>
   );
 }
