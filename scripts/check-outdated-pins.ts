@@ -199,8 +199,10 @@ async function main() {
   }
 
   const majors = report.outdated.filter((d) => d.bump === "major").length;
-  if (process.env["FAIL_ON_MAJOR"] === "1" && majors > 0) {
-    process.stderr.write(`\n❌ FAIL_ON_MAJOR=1 and ${majors} major update(s) are available.\n`);
+  if ((config.failOnMajor || process.env["FAIL_ON_MAJOR"] === "1") && majors > 0) {
+    process.stderr.write(
+      `\n❌ fail-on-major is enabled (PINS_FAIL_ON_MAJOR) and ${majors} major update(s) are available.\n`,
+    );
     process.exit(1);
   }
   process.stdout.write("\n✅ Report written. No files in the repo were modified.\n");
