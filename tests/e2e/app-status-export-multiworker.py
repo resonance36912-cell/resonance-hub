@@ -538,7 +538,11 @@ async def main() -> int:
     print(f"\n{len(results) - len(failures)}/{len(results)} assertions passed")
     (OUT / "summary.txt").write_text(
         "\n".join(f"{'ok ' if ok else 'FAIL'} {msg}" for ok, msg in results))
+    (OUT / "report.json").write_text(json.dumps(
+        {"ok": not failures, "assertions": len(results), "failures": failures,
+         "workers": WORKERS, "rows": ROWS, "port": PORT}, indent=2))
     return 1 if failures else 0
+
 
 
 if __name__ == "__main__":
