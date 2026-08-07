@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   currentPercent,
@@ -89,8 +90,8 @@ describe("parseDependencyHealth", () => {
     expect(r.counts).toEqual({ major: 2, minor: 1, patch: 1, prerelease: 0 });
   });
 
-  it("parses the real committed report", async () => {
-    const md = await Bun.file("reports/outdated-pins.md").text();
+  it("parses the real committed report", () => {
+    const md = readFileSync("reports/outdated-pins.md", "utf8");
     const r = parseDependencyHealth(md);
     expect(r.totalPins).toBeGreaterThan(0);
     expect(r.rows.length).toBe(r.outdatedCount);
