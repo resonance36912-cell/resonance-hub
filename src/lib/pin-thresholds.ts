@@ -135,8 +135,10 @@ export function parseThresholdSnapshot(source: string): ThresholdSnapshot | null
     ignore: asStringArray(raw["ignore"]) ?? DEFAULT_THRESHOLDS.ignore,
     only: asStringArray(raw["only"]) ?? DEFAULT_THRESHOLDS.only,
     minOutdated:
-      typeof raw["minOutdated"] === "number" && Number.isFinite(raw["minOutdated"])
-        ? Math.max(0, Math.trunc(raw["minOutdated"] as number))
+      typeof raw["minOutdated"] === "number" &&
+      Number.isFinite(raw["minOutdated"]) &&
+      (raw["minOutdated"] as number) >= 0
+        ? Math.trunc(raw["minOutdated"] as number)
         : DEFAULT_THRESHOLDS.minOutdated,
     failOnMajor:
       typeof raw["failOnMajor"] === "boolean"
