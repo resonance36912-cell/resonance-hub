@@ -31,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 .lighthouseci/
+
+# Generated audit reports (scripts/check-outdated-pins.ts and friends)
+reports/
