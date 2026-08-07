@@ -30,6 +30,8 @@ Artifacts: /tmp/browser/app-status-keepalive-soak/{report.json,samples.csv,progr
 Usage:
   python3 tests/e2e/app-status-export-keepalive-soak.py            # 2 hours
   SOAK_SECONDS=180 python3 tests/e2e/app-status-export-keepalive-soak.py
+  GROWTH_FD_SLOPE_PER_HOUR=2 GROWTH_SLOPE_TOLERANCE=1.5 python3 tests/e2e/app-status-export-keepalive-soak.py
+  (growth-slope limits: see tests/e2e/harness/growth_thresholds.py)
 """
 import io
 import json
@@ -44,6 +46,9 @@ from pathlib import Path
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tests/e2e/harness"))
+import growth_thresholds as growth  # noqa: E402
+
 OUT = Path("/tmp/browser/app-status-keepalive-soak")
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -63,9 +68,11 @@ ATTACHMENT_HEADERS = ("content-disposition", "content-transfer-encoding", "conte
 MIME = {"csv": "text/csv",
         "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
 
-# Growth tolerances: absolute band vs baseline + trend per hour.
-FD_BAND, SOCK_BAND, THREAD_BAND = 12, 6, 2
-FD_SLOPE_PER_HOUR, SOCK_SLOPE_PER_HOUR, THREAD_SLOPE_PER_HOUR = 4.0, 2.0, 1.0
+# Growth tolerances: absolute band vs baseline + trend per hour. Both are
+# configurable via GROWTH_* env vars (tests/e2e/harness/growth_thresholds.py).
+BANDS = growth.band_limits({"fds": 12, "sockets": 6, "threads": 2})
+FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
+SLOPE_LIMITS = growth.slope_limits("hour", {"fds": 4.0, "sockets": 2.0, "threads": 1.0})
 
 
 # --- harness ---------------------------------------------------------------
@@ -416,12 +423,10 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     settled = fd_stats(pid)
 
     slopes = {k: slope_per_hour(samples, k) for k in ("fds", "sockets", "threads", "rss_kb")}
-    t.check(slopes["fds"] <= FD_SLOPE_PER_HOUR,
-            f"[trend] fd growth flat ({slopes['fds']:.2f}/hour)")
-    t.check(slopes["sockets"] <= SOCK_SLOPE_PER_HOUR,
-            f"[trend] socket-fd growth flat ({slopes['sockets']:.2f}/hour)")
-    t.check(slopes["threads"] <= THREAD_SLOPE_PER_HOUR,
-            f"[trend] thread growth flat ({slopes['threads']:.2f}/hour)")
+    slopes["rss_mb"] = slopes["rss_kb"] / 1024.0
+    growth_report = growth.assert_slopes(
+        t, slopes, SLOPE_LIMITS, "hour",
+        window={"samples": len(samples), "duration_seconds": round(time.monotonic() - started, 1)})
     t.check(settled["fds"] <= baseline["fds"] + FD_BAND,
             f"[final] fds settled ({baseline['fds']} -> {settled['fds']}, peak {peaks['fds']})")
     t.check(settled["sockets"] <= baseline["sockets"] + SOCK_BAND,
@@ -438,6 +443,7 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     progress.close()
     samples_csv.close()
     return {"baseline": baseline, "settled": settled, "peaks": peaks, "slopes_per_hour": slopes,
+            "growth_thresholds": growth_report, "bands": BANDS,
             "counters": counters, "samples": len(samples),
             "duration_seconds": round(time.monotonic() - started, 1)}
 

@@ -31,6 +31,8 @@ Artifacts: /tmp/browser/app-status-export-load-idem/{report.json,samples.csv}
 Usage:
   python3 tests/e2e/app-status-export-load-idempotency.py
   CONCURRENCY=16 ROUNDS=12 ROWS=9000 python3 tests/e2e/app-status-export-load-idempotency.py
+  GROWTH_FD_SLOPE_PER_MIN=2 GROWTH_SLOPE_TOLERANCE=1.5 python3 tests/e2e/app-status-export-load-idempotency.py
+  (growth-slope limits: see tests/e2e/harness/growth_thresholds.py)
 """
 import hashlib
 import io
@@ -49,6 +51,9 @@ from pathlib import Path
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tests/e2e/harness"))
+import growth_thresholds as growth  # noqa: E402
+
 OUT = Path("/tmp/browser/app-status-export-load-idem")
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -80,9 +85,12 @@ BUDGETS = {
 }
 PER_WORKER_MS = 260  # added to every budget for each concurrent worker
 
-FD_BAND, SOCK_BAND, THREAD_BAND = 10, CONCURRENCY + 4, 4
-FD_SLOPE, SOCK_SLOPE, THREAD_SLOPE = 6.0, 4.0, 2.0  # per minute
-RSS_HEADROOM_MB = 1200
+BANDS = growth.band_limits({"fds": 10, "sockets": CONCURRENCY + 4, "threads": 4})
+FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
+# Per-minute growth-slope limits; override via GROWTH_*_SLOPE_PER_MIN /
+# GROWTH_SLOPE_TOLERANCE (see tests/e2e/harness/growth_thresholds.py).
+SLOPE_LIMITS = growth.slope_limits("minute", {"fds": 6.0, "sockets": 4.0, "threads": 2.0})
+RSS_HEADROOM_MB = int(float(os.environ.get("RSS_HEADROOM_MB", "1200")))
 
 
 def sha(b: bytes) -> str:
@@ -487,6 +495,7 @@ def main() -> int:
         # capture connection ramp-up, which is a step, not growth.
         steady = [s for s in samples if s["t"] >= 0.3 * duration]
         slopes = {k: slope_per_minute(steady, k) for k in ("fds", "sockets", "threads")}
+        slopes["rss_mb"] = slope_per_minute(steady, "rss_kb") / 1024.0
 
         t.check(peaks["fds"] <= baseline["fds"] + FD_BAND + CONCURRENCY,
                 f"[resources] fds bounded under load ({baseline['fds']} -> peak {peaks['fds']})")
@@ -498,11 +507,10 @@ def main() -> int:
         t.check(peaks["rss_kb"] <= baseline["rss_kb"] + RSS_HEADROOM_MB * 1024,
                 f"[resources] RSS bounded ({baseline['rss_kb'] // 1024} -> "
                 f"{peaks['rss_kb'] // 1024} MiB peak)")
-        t.check(slopes["fds"] <= FD_SLOPE, f"[trend] fd growth flat ({slopes['fds']:.2f}/min)")
-        t.check(slopes["sockets"] <= SOCK_SLOPE,
-                f"[trend] socket-fd growth flat ({slopes['sockets']:.2f}/min)")
-        t.check(slopes["threads"] <= THREAD_SLOPE,
-                f"[trend] thread growth flat ({slopes['threads']:.2f}/min)")
+        growth_report = growth.assert_slopes(
+            t, slopes, SLOPE_LIMITS, "minute",
+            window={"samples": len(steady), "from_seconds": round(0.3 * duration, 1),
+                    "to_seconds": round(duration, 1), "concurrency": CONCURRENCY})
 
         time.sleep(2.5)
         settled = fd_stats(proc.pid)
@@ -530,7 +538,8 @@ def main() -> int:
                   "throughput": throughput, "latency_ms": latency_report,
                   "baseline": baseline, "peaks": peaks, "settled": settled,
                   "slopes_per_minute": {k: round(v, 3) for k, v in slopes.items()},
-                  "samples": len(samples)}
+                  "growth_thresholds": growth_report,
+                  "bands": BANDS, "samples": len(samples)}
     finally:
         proc.terminate()
         try:
