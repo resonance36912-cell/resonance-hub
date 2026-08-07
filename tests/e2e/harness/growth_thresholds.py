@@ -118,7 +118,8 @@ def band_limits(defaults: dict, suite: str | None = None) -> dict:
 
 
 
-def evaluate(slopes: dict, limits: dict, unit: str, window: dict | None = None) -> dict:
+def evaluate(slopes: dict, limits: dict, unit: str, window: dict | None = None,
+             suite: str | None = None) -> dict:
     """Compare measured slopes against limits. Returns a serialisable report."""
     label = UNIT_LABEL[unit]
     rows = []
@@ -136,7 +137,8 @@ def evaluate(slopes: dict, limits: dict, unit: str, window: dict | None = None) 
             "unit": label.lstrip("/"),
             "ok": measured <= limit,
         })
-    return {"unit": label.lstrip("/"), "window": window or {}, "rows": rows,
+    return {"unit": label.lstrip("/"), "suite": suite_key(suite) or None,
+            "window": window or {}, "rows": rows,
             "violations": [r["metric"] for r in rows if not r["ok"]],
             "ok": all(r["ok"] for r in rows)}
 
@@ -144,8 +146,10 @@ def evaluate(slopes: dict, limits: dict, unit: str, window: dict | None = None) 
 def format_report(report: dict, title: str = "growth-slope thresholds") -> str:
     """Human-readable diff table; violations are marked and listed first."""
     label = "/" + report.get("unit", "min")
+    suite = report.get("suite")
     width = max([len(r["metric"]) for r in report["rows"]] + [6])
-    lines = [f"--- {title} ({'FAIL' if not report['ok'] else 'ok'}) ---",
+    heading = f"{title}{f' [{suite}]' if suite else ''}"
+    lines = [f"--- {heading} ({'FAIL' if not report['ok'] else 'ok'}) ---",
              f"{'metric'.ljust(width)}  {'measured':>10}  {'limit':>10}  "
              f"{'overshoot':>10}  {'% of limit':>10}  status"]
     for row in sorted(report["rows"], key=lambda r: (r["ok"], r["metric"])):
@@ -160,18 +164,21 @@ def format_report(report: dict, title: str = "growth-slope thresholds") -> str:
     if report["violations"]:
         lines.append("violations: " + ", ".join(report["violations"]))
         suffix = "PER_MIN" if report.get("unit") == "min" else "PER_HOUR"
-        lines.append(f"override with GROWTH_<FD|SOCKET|THREAD>_SLOPE_{suffix}"
-                     " or GROWTH_SLOPE_TOLERANCE")
+        scope = f"{suite}_" if suite else ""
+        lines.append(f"tune this suite with GROWTH_{scope}<FD|SOCKET|THREAD>_SLOPE_{suffix}"
+                     f" or GROWTH_{scope}SLOPE_TOLERANCE"
+                     + (f" (drop the {suite}_ scope to change both suites)" if suite else ""))
     return "\n".join(lines)
 
 
 def assert_slopes(tally, slopes: dict, limits: dict, unit: str,
-                  window: dict | None = None, prefix: str = "trend") -> dict:
+                  window: dict | None = None, prefix: str = "trend",
+                  suite: str | None = None) -> dict:
     """Run one assertion per metric on `tally` and print a diff report on failure.
 
     `tally` is any object with `.check(ok: bool, msg: str)`.
     """
-    report = evaluate(slopes, limits, unit, window)
+    report = evaluate(slopes, limits, unit, window, suite)
     label = UNIT_LABEL[unit]
     for row in report["rows"]:
         tally.check(row["ok"],
@@ -181,3 +188,4 @@ def assert_slopes(tally, slopes: dict, limits: dict, unit: str,
     if not report["ok"]:
         print(format_report(report), flush=True)
     return report
+
