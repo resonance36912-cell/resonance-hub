@@ -54,6 +54,7 @@ export const ROUTES = {
   apps: routePath("/apps"),
   appsSubmit: routePath("/apps/submit"),
   changelog: routePath("/changelog"),
+  dependencyHealth: routePath("/dependency-health"),
   docs: routePath("/docs"),
   docsSpokeHubControlContract: routePath("/docs/spoke-hub-control-contract"),
   docsEntitlementApi: routePath("/docs/entitlement-api"),

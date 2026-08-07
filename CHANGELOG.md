@@ -25,6 +25,11 @@ to the PR or issue where useful.
   top outdated packages, bump counts, and links to the plan issue and report
   artifact whenever the issue is opened, updated, or closed. Needs the
   `SLACK_WEBHOOK_URL` repo secret; skipped without it.
+- Public **Dependency Health** page (`/dependency-health`): renders
+  `reports/outdated-pins.md` and summarizes how many exact pins are major,
+  minor, patch, or prerelease behind, with per-bump tables and report age
+  (`src/lib/dependency-health.ts`, `bun run test:dependency-health`). Listed in
+  the sitemap; read-only, no pin is changed by viewing it.
 - Ready-to-merge update PR (`bun run deps:apply`, `update-pr` job): rewrites only
   the planned pins in place by exact `"name": "version"` match, re-resolves
   `bun.lock`, re-syncs overrides, and runs the full `prebuild` gate before

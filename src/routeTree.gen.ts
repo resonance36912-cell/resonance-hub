@@ -15,6 +15,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
+import { Route as DependencyHealthRouteImport } from './routes/dependency-health'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LegalIndexRouteImport } from './routes/legal.index'
@@ -130,6 +131,11 @@ const LoginRoute = LoginRouteImport.update({
 const GovernanceRoute = GovernanceRouteImport.update({
   id: '/governance',
   path: '/governance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DependencyHealthRoute = DependencyHealthRouteImport.update({
+  id: '/dependency-health',
+  path: '/dependency-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChangelogRoute = ChangelogRouteImport.update({
@@ -589,6 +595,7 @@ const ApiPublicGenerateCreativeStudioPosterRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/dependency-health': typeof DependencyHealthRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -683,6 +690,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/dependency-health': typeof DependencyHealthRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -778,6 +786,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/changelog': typeof ChangelogRoute
+  '/dependency-health': typeof DependencyHealthRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -874,6 +883,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/changelog'
+    | '/dependency-health'
     | '/governance'
     | '/login'
     | '/mcp'
@@ -968,6 +978,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/changelog'
+    | '/dependency-health'
     | '/governance'
     | '/login'
     | '/mcp'
@@ -1062,6 +1073,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/changelog'
+    | '/dependency-health'
     | '/governance'
     | '/login'
     | '/mcp'
@@ -1157,6 +1169,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
+  DependencyHealthRoute: typeof DependencyHealthRoute
   GovernanceRoute: typeof GovernanceRouteWithChildren
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -1286,6 +1299,13 @@ declare module '@tanstack/react-router' {
       path: '/governance'
       fullPath: '/governance'
       preLoaderRoute: typeof GovernanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dependency-health': {
+      id: '/dependency-health'
+      path: '/dependency-health'
+      fullPath: '/dependency-health'
+      preLoaderRoute: typeof DependencyHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/changelog': {
@@ -1945,6 +1965,7 @@ const ApiPublicEntitlementRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChangelogRoute: ChangelogRoute,
+  DependencyHealthRoute: DependencyHealthRoute,
   GovernanceRoute: GovernanceRouteWithChildren,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
