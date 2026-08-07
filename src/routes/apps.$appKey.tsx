@@ -1,7 +1,8 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { AppLink } from "@/components/AppLink";
-import { APP_REGISTRY, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
+import { getAppEntry, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
+
 import { statusMeaning } from "@/lib/app-status-meaning";
 import { appDetailMeta, appDetailUrl } from "@/lib/app-status-meta";
 
@@ -42,10 +43,15 @@ const CAPABILITIES: Record<ResonanceAppKey, Capability[]> = {
 
 export const Route = createFileRoute("/apps/$appKey")({
   loader: ({ params }): { entry: AppRegistryEntry } => {
-    const entry = (APP_REGISTRY as Record<string, AppRegistryEntry>)[params.appKey];
+    const entry = getAppEntry(params.appKey);
     if (!entry) throw notFound();
+    // Canonicalise hyphenated / mixed-case slugs (e.g. /apps/sync-vision).
+    if (entry.key !== params.appKey) {
+      throw redirect({ to: "/apps/$appKey", params: { appKey: entry.key }, replace: true });
+    }
     return { entry };
   },
+
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
