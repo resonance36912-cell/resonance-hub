@@ -103,6 +103,34 @@ async def download_via_ui(page, results: list) -> str | None:
     return text
 
 
+def all_entries(data: dict) -> list[tuple[str, dict]]:
+    return [("app", e) for e in data["apps"]] + [("ecosystem", e) for e in data["ecosystem"]]
+
+
+def entry_tags(data: dict, entry: dict) -> list[str]:
+    m = data["meaning"][entry["status"]]
+    return [entry["status"].lower(), "accessible" if m["accessible"] else "gated"]
+
+
+def assert_row(row: dict, scope: str, entry: dict, data: dict, results: list, ctx: str = "") -> None:
+    """Every column of a downloaded row must match the registry + badge meaning."""
+    key = entry["key"]
+    p = f"{ctx}{key}"
+    m = data["meaning"][entry["status"]]
+    results.append((row["scope"] == scope, f"{p}: scope is {scope}"))
+    results.append((row["label"] == entry["label"], f"{p}: label matches registry"))
+    results.append((row["status"] == entry["status"], f"{p}: status is {entry['status']}"))
+    results.append((row["badge_label"] == m["label"], f'{p}: badge_label is "{m["label"]}"'))
+    results.append((row["access"] == m["access"], f'{p}: access is "{m["access"]}"'))
+    results.append(
+        (row["accessible"] == str(m["accessible"]).lower(), f"{p}: accessible flag matches")
+    )
+    results.append((row["explanation"] == m["explanation"], f"{p}: explanation matches meaning"))
+    results.append((row["url"] == entry["url"], f"{p}: url matches registry"))
+    expected_path = f"/apps/{key}" if scope == "app" else ""
+    results.append((row["detail_path"] == expected_path, f"{p}: detail_path is correct"))
+
+
 def check_rows(text: str, data: dict, results: list) -> None:
     header, rows = parse_csv(text)
     results.append((header == list(data["headers"]), "header row matches APP_STATUS_CSV_HEADERS"))
@@ -113,8 +141,7 @@ def check_rows(text: str, data: dict, results: list) -> None:
     )
 
     by_key = {r["key"]: r for r in rows}
-    entries = {e["key"]: ("app", e) for e in data["apps"]}
-    entries.update({e["key"]: ("ecosystem", e) for e in data["ecosystem"]})
+    entries = {e["key"]: (scope, e) for scope, e in all_entries(data)}
 
     for key in representative_keys(data):
         scope, entry = entries[key]
@@ -122,23 +149,7 @@ def check_rows(text: str, data: dict, results: list) -> None:
         results.append((row is not None, f"CSV contains a row for {key}"))
         if row is None:
             continue
-        m = data["meaning"][entry["status"]]
-        results.append((row["scope"] == scope, f"{key}: scope is {scope}"))
-        results.append((row["label"] == entry["label"], f"{key}: label matches registry"))
-        results.append((row["status"] == entry["status"], f"{key}: status is {entry['status']}"))
-        results.append(
-            (row["badge_label"] == m["label"], f'{key}: badge_label is "{m["label"]}"')
-        )
-        results.append((row["access"] == m["access"], f'{key}: access is "{m["access"]}"'))
-        results.append(
-            (row["accessible"] == str(m["accessible"]).lower(), f"{key}: accessible flag matches")
-        )
-        results.append(
-            (row["explanation"] == m["explanation"], f"{key}: explanation matches meaning")
-        )
-        results.append((row["url"] == entry["url"], f"{key}: url matches registry"))
-        expected_path = f"/apps/{key}" if scope == "app" else ""
-        results.append((row["detail_path"] == expected_path, f"{key}: detail_path is correct"))
+        assert_row(row, scope, entry, data, results)
 
 
 async def check_rendered_page_agrees(page, text: str, data: dict, results: list) -> None:
@@ -157,25 +168,92 @@ async def check_rendered_page_agrees(page, text: str, data: dict, results: list)
         )
 
 
-async def check_filtered_download(page, data: dict, results: list) -> None:
-    app = data["apps"][0]
-    resp = await page.request.get(
-        f"{BASE}/api/public/app-status/health?format=csv&appKey={app['key']}&tag=app"
-    )
-    results.append((resp.status == 200, "filtered CSV responds 200"))
+def expected_slice(data: dict, app_keys: list[str], tags: list[str]) -> list[tuple[str, dict]]:
+    """Mirror of filterAppStatusRows: OR across appKeys, AND across tags."""
+    out = []
+    for scope, entry in all_entries(data):
+        if app_keys and entry["key"].lower() not in app_keys:
+            continue
+        row_tags = [scope, *entry_tags(data, entry)]
+        if tags and not all(t in row_tags for t in tags):
+            continue
+        out.append((scope, entry))
+    return out
+
+
+async def check_filter_case(
+    page, data: dict, results: list, app_keys: list[str], tags: list[str]
+) -> None:
+    """Download a filtered slice and verify count + every row against the registry."""
+    query = "".join([f"&appKey={k}" for k in app_keys] + [f"&tag={t}" for t in tags])
+    label = f"filter[{','.join(app_keys) or '-'}|{','.join(tags) or '-'}]"
+    expected = expected_slice(data, app_keys, tags)
+
+    resp = await page.request.get(f"{BASE}/api/public/app-status/health?format=csv{query}")
+    results.append((resp.status == 200, f"{label}: responds 200"))
+    if resp.status != 200:
+        return
+
     disposition = resp.headers.get("content-disposition", "")
+    slug = "".join(re.sub(r"[^a-z0-9-]", "", p) for p in ["-" + "-".join(app_keys + tags)])
     results.append(
-        (".csv" in disposition and app["key"].replace("_", "") in disposition,
-         f"filtered filename carries the filter suffix (got {disposition})")
+        (".csv" in disposition and slug in disposition,
+         f"{label}: filename carries the filter slug {slug} (got {disposition})")
     )
-    _, rows = parse_csv(await resp.text())
-    results.append((len(rows) == 1, f"filtered CSV has 1 row (got {len(rows)})"))
+
+    header, rows = parse_csv(await resp.text())
+    results.append((header == list(data["headers"]), f"{label}: header row unchanged by filtering"))
     results.append(
-        (bool(rows) and rows[0]["key"] == app["key"], f"filtered CSV row is {app['key']}")
+        (len(rows) == len(expected), f"{label}: exported {len(expected)} rows (got {len(rows)})")
     )
+
+    got_keys = [r["key"] for r in rows]
+    exp_keys = [e["key"] for _, e in expected]
+    results.append((got_keys == exp_keys, f"{label}: row keys and order match {exp_keys}"))
+
+    by_key = {r["key"]: r for r in rows}
+    for scope, entry in expected:
+        row = by_key.get(entry["key"])
+        results.append((row is not None, f"{label}: contains {entry['key']}"))
+        if row is not None:
+            assert_row(row, scope, entry, data, results, ctx=f"{label} ")
+
+    # Every requested tag must actually hold for each exported row.
+    for row in rows:
+        row_tags = [row["scope"], row["status"].lower(),
+                    "accessible" if row["accessible"] == "true" else "gated"]
+        results.append(
+            (all(t in row_tags for t in tags), f"{label}: {row['key']} satisfies all tags")
+        )
+        if app_keys:
+            results.append(
+                (row["key"].lower() in app_keys, f"{label}: {row['key']} is a requested appKey")
+            )
+
+
+async def check_filtered_download(page, data: dict, results: list) -> None:
+    first = data["apps"][0]
+    second = data["apps"][1] if len(data["apps"]) > 1 else first
+    statuses = {e["status"] for e in data["apps"]}
+    cases: list[tuple[list[str], list[str]]] = [
+        ([first["key"]], []),
+        ([first["key"]], ["app"]),
+        ([first["key"], second["key"]], []),
+        ([], ["app"]),
+        ([], ["ecosystem"]),
+        ([], ["accessible"]),
+        ([], ["gated"]),
+    ]
+    for status in sorted(statuses):
+        cases.append(([], ["app", status]))
+    for app_keys, tags in cases:
+        await check_filter_case(page, data, results, app_keys, tags)
 
     bad = await page.request.get(f"{BASE}/api/public/app-status/health?format=csv&appKey=nope")
     results.append((bad.status == 400, "unknown appKey returns 400"))
+    bad_tag = await page.request.get(f"{BASE}/api/public/app-status/health?format=csv&tag=nope")
+    results.append((bad_tag.status == 400, "unknown tag returns 400"))
+
 
 
 async def main() -> int:
