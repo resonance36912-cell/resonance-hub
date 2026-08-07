@@ -241,9 +241,12 @@ async def check_filtered_download(page, data: dict, results: list) -> None:
         ([first["key"], second["key"]], []),
         ([], ["app"]),
         ([], ["ecosystem"]),
-        ([], ["accessible"]),
-        ([], ["gated"]),
     ]
+    # Only tags that exist in the current registry are valid; the rest 400.
+    available = {t for scope, e in all_entries(data) for t in [scope, *entry_tags(data, e)]}
+    for tag in ["accessible", "gated"]:
+        if tag in available:
+            cases.append(([], [tag]))
     for status in sorted(statuses):
         cases.append(([], ["app", status]))
     for app_keys, tags in cases:
@@ -253,6 +256,15 @@ async def check_filtered_download(page, data: dict, results: list) -> None:
     results.append((bad.status == 400, "unknown appKey returns 400"))
     bad_tag = await page.request.get(f"{BASE}/api/public/app-status/health?format=csv&tag=nope")
     results.append((bad_tag.status == 400, "unknown tag returns 400"))
+    for tag in ["accessible", "gated"]:
+        if tag not in available:
+            resp = await page.request.get(
+                f"{BASE}/api/public/app-status/health?format=csv&tag={tag}"
+            )
+            results.append(
+                (resp.status == 400, f'tag "{tag}" matches no rows today, so it returns 400')
+            )
+
 
 
 
