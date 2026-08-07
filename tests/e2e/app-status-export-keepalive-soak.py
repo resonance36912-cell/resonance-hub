@@ -441,6 +441,7 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     progress.close()
     samples_csv.close()
     return {"baseline": baseline, "settled": settled, "peaks": peaks, "slopes_per_hour": slopes,
+            "growth_thresholds": growth_report, "bands": BANDS,
             "counters": counters, "samples": len(samples),
             "duration_seconds": round(time.monotonic() - started, 1)}
 
