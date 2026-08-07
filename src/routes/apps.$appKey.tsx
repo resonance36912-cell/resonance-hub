@@ -258,17 +258,25 @@ function AppNotFound() {
     <main className="mx-auto max-w-3xl p-6">
       <BackToHubHeader />
       <h1 className="mt-4 text-2xl font-semibold">We couldn't find that app</h1>
-      <p className="mt-2 text-muted-foreground">
+      {/* Announced on client-side navigation, where no page load tells a
+          screen reader that the requested app does not exist. */}
+      <p className="mt-2 text-muted-foreground" role="status" aria-live="polite">
         <span className="font-mono text-foreground">/apps/{appKey}</span> isn't in the
         Resonance registry. It may have been renamed, or the link may have a typo.
       </p>
 
       {suggestions.length > 0 && (
-        <section className="mt-6">
-          <h2 className="text-sm font-medium text-muted-foreground">
+        <section className="mt-6" aria-labelledby="app-suggestions-heading">
+          <h2
+            id="app-suggestions-heading"
+            className="text-sm font-medium text-muted-foreground"
+          >
             Did you mean{suggestions.length > 1 ? " one of these" : ""}?
           </h2>
-          <ul className="mt-3 space-y-2">
+          {/* role="list" keeps list semantics in Safari/VoiceOver, which drops
+              them when list-style is removed by utility classes. */}
+          <ul role="list" className="mt-3 space-y-2">
+
             {suggestions.map(({ entry, score }, index) => (
               <li key={entry.key}>
                 <AppLink
