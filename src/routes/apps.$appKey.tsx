@@ -1,7 +1,8 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { AppLink } from "@/components/AppLink";
-import { APP_REGISTRY, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
+import { APP_REGISTRY, getAppEntry, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/app-registry";
+
 import { statusMeaning } from "@/lib/app-status-meaning";
 import { appDetailMeta, appDetailUrl } from "@/lib/app-status-meta";
 
