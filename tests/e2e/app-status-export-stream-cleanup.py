@@ -132,8 +132,14 @@ def check_fault_response(fmt: str, status: int, headers: dict, body: bytes,
                     f"[{label}] Content-Type is JSON"))
     results.append((headers.get("cache-control") == "no-store", f"[{label}] no-store"))
     cl = headers.get("content-length")
-    results.append((cl is not None and int(cl) == len(body),
-                    f"[{label}] Content-Length frames the error body exactly"))
+    chunked = headers.get("transfer-encoding", "").lower() == "chunked"
+    # Either an exact Content-Length or a properly terminated chunked stream —
+    # never a length borrowed from the aborted export body.
+    framed = (int(cl) == len(body)) if cl is not None else chunked
+    results.append((framed,
+                    f"[{label}] error body framed exactly (len={len(body)}, "
+                    f"content-length={cl}, chunked={chunked})"))
+
     for h in ATTACHMENT_HEADERS:
         results.append((h not in headers, f"[{label}] omits {h}"))
 
