@@ -160,4 +160,20 @@
       radial-gradient(ellipse 60% 40% at 10% 90%, hsl(325 90% 65% / 0.10), transparent);
     background-attachment: fixed;
   }
+  /* WCAG 2.4.7: guarantee a visible keyboard focus indicator on every
+     interactive element, even where a component omits focus-visible classes. */
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--color-ring, hsl(290 90% 65%)) !important;
+    outline-offset: 2px;
+
+    border-radius: inherit;
+  }
 }
+

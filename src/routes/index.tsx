@@ -556,7 +556,7 @@ function Index() {
 
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
+      <nav aria-label="Primary" className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
         <div className="flex justify-between items-center gap-3">
           <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
             <img
