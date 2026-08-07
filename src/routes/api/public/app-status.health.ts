@@ -93,6 +93,7 @@ export const Route = createFileRoute("/api/public/app-status/health")({
         const format = searchParams.get("format")?.toLowerCase();
 
         if (format === "csv" || format === "xlsx") {
+          try {
           const allRows: AppStatusCsvRow[] = [
             ...apps.map((a) => ({
               scope: "app" as const,
