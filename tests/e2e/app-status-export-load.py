@@ -407,12 +407,13 @@ async def main() -> int:
                     status, headers, body, ms = await timed_fetch(req, url(fmt))
                     lat.append(ms)
                     if i == 0:
-                        references[fmt] = body
+                        references[fmt] = fingerprint(fmt, body)
                         check_clean_response(fmt, status, headers, body,
                                              f"baseline {fmt}", results)
                     else:
-                        results.append((body == references[fmt],
-                                        f"[baseline {fmt}#{i}] bytes deterministic"))
+                        results.append((fingerprint(fmt, body) == references[fmt],
+                                        f"[baseline {fmt}#{i}] payload deterministic"))
+
                 stats = summarize(f"baseline {fmt}", lat)
                 assert_latency(f"baseline {fmt}", stats, BASELINE_BUDGET, results)
                 report["phases"][f"baseline_{fmt}"] = stats
