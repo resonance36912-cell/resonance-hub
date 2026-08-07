@@ -22,7 +22,9 @@ import { AppLink } from "@/components/AppLink";
 import { DocsLink } from "@/components/DocsLink";
 
 const searchSchema = z.object({
-  q: fallback(z.string(), "").default(""),
+  // Optional (no .default) so bare /apps renders directly instead of
+  // 307-redirecting to /apps?q= — a redirecting canonical URL hurts crawling.
+  q: fallback(z.string().optional(), undefined).optional(),
 });
 
 type Tile = {
@@ -130,7 +132,8 @@ function filterTiles(tiles: Tile[], q: string): Tile[] {
 }
 
 function AppsCatalogPage() {
-  const { q } = Route.useSearch();
+  const { q: rawQ } = Route.useSearch();
+  const q = rawQ ?? "";
   const navigate = Route.useNavigate();
   const listPublishedFn = useServerFn(listPublishedSubmissions);
 
