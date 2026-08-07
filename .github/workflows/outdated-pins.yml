@@ -31,13 +31,26 @@ on:
         type: boolean
         required: false
         default: false
+      open_pr:
+        description: "Also open/update the ready-to-merge update PR"
+        type: boolean
+        required: false
+        default: true
+      group:
+        description: "Which pins to apply in the PR"
+        type: choice
+        required: false
+        default: low-risk
+        options: [low-risk, patch, minor]
   # Keep the checker itself honest when its own code changes.
   pull_request:
     paths:
       - "scripts/check-outdated-pins.ts"
+      - "scripts/apply-outdated-pins.ts"
       - "scripts/lib/outdated-pins.ts"
       - "scripts/lib/outdated-pins.test.ts"
       - ".github/workflows/outdated-pins.yml"
+
 
 permissions:
   contents: read
