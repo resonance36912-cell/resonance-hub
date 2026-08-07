@@ -439,7 +439,7 @@ function SubmitAppPage() {
           <button
             type="submit"
             disabled={mut.isPending || !!fileError || !!localUrlError || !!localSlugError || !!availError || checking}
-            className="rounded-md bg-primary px-4 py-2 text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-60"
+            className="rounded-md bg-primary-surface px-4 py-2 text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-60"
           >
             {mut.isPending ? "Submitting…" : "Submit for review"}
           </button>

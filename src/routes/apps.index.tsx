@@ -185,7 +185,7 @@ function AppsCatalogPage() {
         </div>
         <AppLink
           to={ROUTES.appsSubmit}
-          className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
+          className="shrink-0 rounded-md bg-primary-surface px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
         >
           Submit an app →
         </AppLink>

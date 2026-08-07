@@ -199,7 +199,7 @@ function AdminReturnToAllowlist() {
           type="button"
           disabled={!draft?.ok || add.isPending}
           onClick={() => add.mutate()}
-          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          className="mt-4 rounded-md bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
           {add.isPending ? "Saving…" : "Add origin"}
         </button>

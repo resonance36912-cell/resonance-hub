@@ -24,6 +24,8 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-surface: var(--primary-surface);
+  --color-primary-surface-hover: var(--primary-surface-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-magenta: var(--magenta);
   --color-violet: var(--violet);
@@ -43,7 +45,16 @@
   --muted: hsl(265 10% 65%);
   --muted-foreground: hsl(265 10% 65%);
   --border: hsl(265 15% 16%);
+  /*
+   * --primary stays bright: as *text/icon* colour on the near-black background
+   * it needs to be light (hsl 290 90% 65% = 6.1:1 on --background).
+   * --primary-surface is the darkened *fill* used behind white text on solid
+   * buttons/badges: white on hsl(290 90% 42%) = 5.75:1 (the old 65% fill was
+   * ~2.9:1 and failed WCAG AA).
+   */
   --primary: hsl(290 90% 65%);
+  --primary-surface: hsl(290 90% 42%);
+  --primary-surface-hover: hsl(290 90% 36%);
   --primary-foreground: hsl(0 0% 100%);
 
   /* Brand spectrum — violet → magenta → pink (podcast palette) */

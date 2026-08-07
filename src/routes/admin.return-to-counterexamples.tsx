@@ -263,7 +263,7 @@ function FilterButton({
       aria-pressed={active}
       className={`rounded-md border px-3 py-1.5 text-xs ${
         active
-          ? "border-primary bg-primary text-primary-foreground"
+          ? "border-primary bg-primary-surface text-primary-foreground"
           : "border-border text-muted-foreground"
       }`}
     >

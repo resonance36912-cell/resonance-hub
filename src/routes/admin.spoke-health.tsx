@@ -130,7 +130,7 @@ function SpokeHealth() {
             {probeAllMut.isPending ? "Probing…" : "Probe all"}
           </button>
           <button
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary/90"
+            className="rounded-md bg-primary-surface px-3 py-1.5 text-sm text-primary-foreground hover:bg-primary-surface-hover"
             onClick={() => pushAllMut.mutate()}
             disabled={pushAllMut.isPending}
           >
@@ -179,7 +179,7 @@ function SpokeHealth() {
           <input required value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="slug (e.g. sync_vision)" className="rounded border bg-background px-3 py-2 text-sm" />
           <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="display name" className="rounded border bg-background px-3 py-2 text-sm" />
           <input value={originUrl} onChange={(e) => setOriginUrl(e.target.value)} placeholder="origin url (optional)" className="rounded border bg-background px-3 py-2 text-sm" />
-          <button disabled={registerMut.isPending} className="rounded bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
+          <button disabled={registerMut.isPending} className="rounded bg-primary-surface px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
             {registerMut.isPending ? "Minting…" : "Register & mint key"}
           </button>
         </form>

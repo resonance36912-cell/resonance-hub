@@ -691,7 +691,7 @@ function SubscriptionsPage() {
                 <p className="text-muted-foreground">No subscriptions yet.</p>
                 <AppLink
                   to={ROUTES.pricing}
-                  className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
+                  className="mt-4 inline-block rounded-lg bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
                 >
                   View pricing
                 </AppLink>

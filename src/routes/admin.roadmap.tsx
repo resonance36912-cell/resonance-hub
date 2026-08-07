@@ -209,7 +209,7 @@ function AdminRoadmap() {
           <div className="flex gap-2">
             <button
               type="submit"
-              className="rounded bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="rounded bg-primary-surface px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
               disabled={upsert.isPending}
             >
               {upsert.isPending ? "Saving…" : editingId ? "Update" : "Create"}
