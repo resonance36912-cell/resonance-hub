@@ -161,11 +161,21 @@ async def open_harness(page, proxy_port: int) -> None:
     )
 
 
+async def with_timeout(coro, fallback=None, seconds: float = 8.0):
+    """Downloads that die mid-flight can leave these getters pending forever."""
+    try:
+        return await asyncio.wait_for(coro, timeout=seconds)
+    except (asyncio.TimeoutError, Exception):
+        return fallback
+
+
 async def try_save(download, target: Path) -> str:
     """save_as either succeeds (returns 'saved') or raises (returns the error)."""
     try:
-        await download.save_as(str(target))
+        await asyncio.wait_for(download.save_as(str(target)), timeout=8)
         return "saved"
+    except asyncio.TimeoutError:
+        return "error:Timeout"
     except Exception as exc:  # noqa: BLE001 - Playwright raises a generic Error
         return f"error:{type(exc).__name__}"
 
@@ -188,7 +198,7 @@ async def case_offline_abort(context, page, fmt: str, results: list) -> None:
     if download is None:
         results.append((True, f"[{label}] offline click never produced a download"))
     else:
-        failure = await download.failure()
+        failure = await with_timeout(download.failure(), "timeout")
         target = DL / (download.suggested_filename or f"offline.{fmt}")
         outcome = await try_save(download, target)
         results.append((failure is not None, f"[{label}] download reports a failure (got {failure!r})"))
@@ -211,8 +221,8 @@ async def case_truncated_stream(page, fmt: str, expected_len: int, results: list
     if download is None:
         results.append((True, f"[{label}] truncated transfer never became a download"))
     else:
-        failure = await download.failure()
-        path = await download.path()
+        failure = await with_timeout(download.failure(), "timeout")
+        path = await with_timeout(download.path(), None)
         target = DL / (download.suggested_filename or f"partial.{fmt}")
         outcome = await try_save(download, target)
         results.append((failure is not None, f"[{label}] download reports a failure (got {failure!r})"))
