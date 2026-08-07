@@ -116,7 +116,10 @@ async def test_matched(page, slug: str) -> None:
         (meta.get("robots") or "").replace(" ", "") == "noindex,follow",
         f"[{slug}] robots is noindex, follow (got {meta.get('robots')!r})",
     )
-    check(head["canonical"] is None, f"[{slug}] no canonical on a dead URL ({head['canonical']})")
+    check(
+        head["canonical"] == f"https://reson8.life/apps/{slug}",
+        f"[{slug}] canonical self-references the dead URL ({head['canonical']})",
+    )
     check(
         (meta.get("og:url") or "").endswith(f"/apps/{slug}"),
         f"[{slug}] og:url self-references the requested path ({meta.get('og:url')})",
@@ -126,7 +129,10 @@ async def test_matched(page, slug: str) -> None:
     check(meta.get("og:description") == desc, f"[{slug}] og:description matches description")
     check(meta.get("twitter:description") == desc, f"[{slug}] twitter:description matches")
     check(meta.get("og:type") == "website", f"[{slug}] og:type is website")
-    check("og:image" not in meta, f"[{slug}] no placeholder og:image")
+    check(
+        meta.get("og:image") == "https://reson8.life/og-logo.png",
+        f"[{slug}] og:image is the absolute shared image ({meta.get('og:image')})",
+    )
 
     suggestions = head["suggestions"]
     check(len(suggestions) > 0, f"[{slug}] suggestions rendered ({len(suggestions)})")
