@@ -421,12 +421,10 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     settled = fd_stats(pid)
 
     slopes = {k: slope_per_hour(samples, k) for k in ("fds", "sockets", "threads", "rss_kb")}
-    t.check(slopes["fds"] <= FD_SLOPE_PER_HOUR,
-            f"[trend] fd growth flat ({slopes['fds']:.2f}/hour)")
-    t.check(slopes["sockets"] <= SOCK_SLOPE_PER_HOUR,
-            f"[trend] socket-fd growth flat ({slopes['sockets']:.2f}/hour)")
-    t.check(slopes["threads"] <= THREAD_SLOPE_PER_HOUR,
-            f"[trend] thread growth flat ({slopes['threads']:.2f}/hour)")
+    slopes["rss_mb"] = slopes["rss_kb"] / 1024.0
+    growth_report = growth.assert_slopes(
+        t, slopes, SLOPE_LIMITS, "hour",
+        window={"samples": len(samples), "duration_seconds": round(time.monotonic() - started, 1)})
     t.check(settled["fds"] <= baseline["fds"] + FD_BAND,
             f"[final] fds settled ({baseline['fds']} -> {settled['fds']}, peak {peaks['fds']})")
     t.check(settled["sockets"] <= baseline["sockets"] + SOCK_BAND,
