@@ -54,6 +54,14 @@ jobs:
           ROTATE_SECONDS: "300"
         run: python3 tests/e2e/app-status-export-keepalive-soak.py
 
+      - name: Build growth report
+        if: always()
+        run: |
+          python3 tests/e2e/harness/growth_report.py \
+            /tmp/browser/app-status-keepalive-soak \
+            --title "Keep-alive soak growth (run ${{ github.run_number }})"
+          cat /tmp/browser/app-status-keepalive-soak/growth-report.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload soak report and samples
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,8 +71,11 @@ jobs:
             /tmp/browser/app-status-keepalive-soak/report.json
             /tmp/browser/app-status-keepalive-soak/samples.csv
             /tmp/browser/app-status-keepalive-soak/progress.log
+            /tmp/browser/app-status-keepalive-soak/growth-report.html
+            /tmp/browser/app-status-keepalive-soak/growth-report.md
           if-no-files-found: warn
           retention-days: 30
+
 
   multiworker:
     name: Multi-worker keep-alive reuse & fault retries
@@ -158,6 +169,14 @@ jobs:
           ROUNDS: "8"
         run: python3 tests/e2e/app-status-export-load-idempotency.py
 
+      - name: Build growth report
+        if: always()
+        run: |
+          python3 tests/e2e/harness/growth_report.py \
+            /tmp/browser/app-status-export-load-idem \
+            --title "Load / idempotency growth (run ${{ github.run_number }})"
+          cat /tmp/browser/app-status-export-load-idem/growth-report.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload load report and samples
         if: always()
         uses: actions/upload-artifact@v4
@@ -166,7 +185,10 @@ jobs:
           path: |
             /tmp/browser/app-status-export-load-idem/report.json
             /tmp/browser/app-status-export-load-idem/samples.csv
+            /tmp/browser/app-status-export-load-idem/growth-report.html
+            /tmp/browser/app-status-export-load-idem/growth-report.md
           if-no-files-found: warn
           retention-days: 30
+
 
 
