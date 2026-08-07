@@ -97,3 +97,40 @@ jobs:
             /tmp/browser/app-status-multiworker/summary.txt
           if-no-files-found: warn
           retention-days: 30
+
+  lb-proxy:
+    name: Fault retries behind a reverse proxy / load balancer
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install nginx (second proxy mode)
+        run: sudo apt-get update && sudo apt-get install -y nginx-light
+
+      - name: Run the proxy / load-balancer suite
+        env:
+          UPSTREAMS: "3"
+          LB_MODES: "bun,nginx"
+        run: python3 tests/e2e/app-status-export-lb-proxy.py
+
+      - name: Upload proxy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: export-lb-proxy
+          path: |
+            /tmp/browser/app-status-lb-proxy/report.json
+            /tmp/browser/app-status-lb-proxy/nginx/logs/error.log
+          if-no-files-found: warn
+          retention-days: 30
+
