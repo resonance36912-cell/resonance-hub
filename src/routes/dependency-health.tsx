@@ -64,11 +64,19 @@ const POSTURE_TONE = {
 } as const;
 
 function DependencyHealthPage() {
-  const report = useMemo(() => parseDependencyHealth(reportSource), []);
+  const hasReport = reportSource.status === "ok";
+  const fallback = hasReport
+    ? null
+    : REPORT_FALLBACK[reportSource.status as "missing" | "unreadable"];
+  const report = useMemo(
+    () => parseDependencyHealth(reportSource.source),
+    [],
+  );
   const groups = useMemo(() => groupByBump(report.rows), [report.rows]);
   const posture = healthPosture(report);
   const percent = currentPercent(report);
   const age = reportAge(report.checkedAt);
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white">
