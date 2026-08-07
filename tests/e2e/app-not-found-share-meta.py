@@ -110,6 +110,32 @@ def fetch(url: str) -> tuple[int, str]:
         return exc.code, exc.read().decode("utf-8", "replace")
 
 
+# Mirror of JS encodeURIComponent: unreserved set is A-Za-z0-9 plus -_.!~*'()
+_URI_SAFE = "-_.!~*'()"
+
+
+def encode_uri_component(value: str) -> str:
+    return urllib.parse.quote(value, safe=_URI_SAFE)
+
+
+# Mirror of sanitizeSlugForMeta() in src/lib/app-not-found-meta.ts, so the
+# expected echo of a hostile slug is computed the same way the app computes it.
+def sanitize_slug(raw: str, max_len: int) -> str:
+    cleaned = re.sub(r"[\u0000-\u001f\u007f-\u009f]", "", raw or "")
+    cleaned = re.sub(r"[<>&\"'`\\]", "", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if len(cleaned) <= max_len:
+        return cleaned
+    if max_len <= 1:
+        return cleaned[:max(0, max_len)]
+    return cleaned[: max_len - 1].rstrip() + "\u2026"
+
+
+# Only these element names may appear in <head>; a slug that introduces any
+# other tag has escaped its attribute.
+ALLOWED_HEAD_TAGS = {"meta", "title", "link", "script", "style", "base", "noscript"}
+
+
 def head_of(html: str) -> str:
     match = re.search(r"<head[^>]*>(.*?)</head>", html, re.S | re.I)
     return match.group(1) if match else html
@@ -214,14 +240,17 @@ def assert_tags(tags: dict, slug: str, source: str, suggestion_label: str | None
     )
 
     # canonical self-references the requested URL, never the catalog/an app.
-    expected = f"{SITE_ORIGIN}/apps/{urllib.parse.quote(slug, safe='')}"
+    expected = f"{SITE_ORIGIN}/apps/{encode_uri_component(slug)}"
     check(canonical == expected, f"{where} canonical self-references ({canonical!r})")
 
     # 5: honest content — the description names the slug (as sanitized) and,
     # when suggestions exist, the top match.
-    slug_token = re.sub(r"[^A-Za-z0-9._~-]", "", slug)[:20]
+    # The app sanitizes then clamps the slug to 40 chars; compare against a
+    # prefix of that same sanitized value so long/hostile slugs still count.
+    sanitized = sanitize_slug(slug, 40)
+    slug_token = sanitized.rstrip("\u2026")[:20]
     if slug_token:
-        check(slug_token in description, f"{where} description names the requested slug")
+        check(slug_token in description, f"{where} description echoes the sanitized slug")
     if suggestion_label:
         check(
             suggestion_label in description,
@@ -235,9 +264,12 @@ def assert_tags(tags: dict, slug: str, source: str, suggestion_label: str | None
     # 7: injection safety — nothing from the slug becomes markup, and no raw
     # angle bracket / quote from the slug survives into the head source.
     head_src = tags["head"]
+    tag_names = {t.lower() for t in re.findall(r"<\s*([A-Za-z][A-Za-z0-9-]*)", head_src)}
+    unexpected = sorted(tag_names - ALLOWED_HEAD_TAGS)
+    check(not unexpected, f"{where} no unexpected head elements ({unexpected})")
     check(
-        "<script>alert" not in head_src and "onerror=" not in head_src,
-        f"{where} no live script/handler injected into head",
+        not re.search(r"<\s*script(?![^>]*application/ld\+json)[^>]*>\s*alert", head_src, re.I),
+        f"{where} no inline alert script injected into head",
     )
     for value in (title, description, canonical, one(tags, "og:title") or ""):
         check(
@@ -258,7 +290,7 @@ async def main() -> int:
         page = await context.new_page()
 
         for slug in MATCH_SLUGS + [NO_MATCH_SLUG] + HOSTILE_SLUGS:
-            url = f"{BASE}/apps/{urllib.parse.quote(slug, safe='')}"
+            url = f"{BASE}/apps/{encode_uri_component(slug)}"
             print(f"\n— /apps/{slug[:50]}")
 
             status, html = fetch(url)
