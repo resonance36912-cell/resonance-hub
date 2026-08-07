@@ -35,11 +35,27 @@ def load_report(target: Path) -> tuple[dict, Path]:
     return json.loads(path.read_text()), path
 
 
+# Metric -> env-var stem, so hints name the real variable (fds -> FD, not FDS).
+METRIC_ENV = {"fds": "FD", "sockets": "SOCKET", "threads": "THREAD", "rss_mb": "RSS_MB"}
+
+
 def rows_of(report: dict) -> tuple[list, str, bool]:
     thresholds = report.get("growth_thresholds") or {}
     rows = [r for r in thresholds.get("rows", []) if isinstance(r, dict)]
     unit = thresholds.get("unit") or ("min" if "slopes_per_min" in report else "hour")
     return rows, unit, bool(thresholds.get("ok", True))
+
+
+def suite_of(report: dict) -> str:
+    """Per-suite env scope for this report ('SOAK', 'LOAD', ...), '' when unscoped."""
+    thresholds = report.get("growth_thresholds") or {}
+    return str(report.get("growth_suite") or thresholds.get("suite") or "").upper()
+
+
+def env_var(metric, unit: str, suite: str = "") -> str:
+    stem = METRIC_ENV.get(str(metric), str(metric).upper())
+    scope = f"{suite}_" if suite else ""
+    return f"GROWTH_{scope}{stem}_SLOPE_PER_{'MIN' if unit == 'min' else 'HOUR'}"
 
 
 def fmt(value, spec: str = "+.3f") -> str:
@@ -61,7 +77,8 @@ def diff_table(rows: list, unit: str) -> list[str]:
     return out
 
 
-def annotations(rows: list, unit: str, label: str, file_hint: str) -> list[str]:
+def annotations(rows: list, unit: str, label: str, file_hint: str,
+                suite: str = "") -> list[str]:
     lines = []
     for r in rows:
         if r.get("ok", True):
@@ -72,21 +89,23 @@ def annotations(rows: list, unit: str, label: str, file_hint: str) -> list[str]:
                f"limit {fmt(r.get('limit'), '.3f')}/{unit} "
                f"(over by {fmt(r.get('overshoot'))}/{unit}"
                + (f", {pct:.1f}% of limit" if pct is not None else "") + "). "
-               f"Raise the limit via GROWTH_{str(metric).upper()}_SLOPE_PER_"
-               f"{unit.upper()} only if the growth is understood.")
+               f"Raise the limit for this suite via {env_var(metric, unit, suite)} "
+               "only if the growth is understood.")
         lines.append(f"::error file={file_hint},title=Growth threshold exceeded"
                      f" ({metric})::{msg}")
     return lines
 
 
 def build_comment(label: str, report: dict, rows: list, unit: str, growth_ok: bool,
-                  artifact: str | None, run_url: str | None, slug: str) -> str:
+                  artifact: str | None, run_url: str | None, slug: str,
+                  suite: str = "") -> str:
     failures = report.get("failures") or []
     body = [f"<!-- {MARKER_PREFIX}:{slug} -->",
             f"### {label} — resource growth {'within limits' if growth_ok else 'EXCEEDED'}",
             "",
             f"{report.get('assertions', 0)} assertions, {len(failures)} failures · "
-            f"{report.get('samples', 0)} samples · trends measured per {unit}",
+            f"{report.get('samples', 0)} samples · trends measured per {unit}"
+            + (f" · threshold profile `{suite}`" if suite else ""),
             ""]
     body += diff_table(rows, unit)
     body.append("")
@@ -102,8 +121,9 @@ def build_comment(label: str, report: dict, rows: list, unit: str, growth_ok: bo
                  "- Compare `baseline` → `peak` → `settled` in `report.json`; a settled value "
                  "back near baseline points at slow release rather than an unbounded leak.",
                  "- If the new trend is expected, adjust the limit explicitly via "
-                 + ", ".join(f"`GROWTH_{str(r.get('metric')).upper()}_SLOPE_PER_{unit.upper()}`"
-                             for r in worst) + " (or `GROWTH_SLOPE_TOLERANCE`).",
+                 + ", ".join(f"`{env_var(r.get('metric'), unit, suite)}`" for r in worst)
+                 + f" (or `GROWTH_{suite + '_' if suite else ''}SLOPE_TOLERANCE`)"
+                 + (f"; these are scoped to the `{suite}` suite only." if suite else "."),
                  ""]
     growth_failures = [f for f in failures if "[trend]" in f]
     if growth_failures:
@@ -132,7 +152,8 @@ def main() -> int:
     rows, unit, growth_ok = rows_of(report)
     slug = args.slug or report_path.parent.name
 
-    for line in annotations(rows, unit, args.label, args.annotate_file):
+    suite = suite_of(report)
+    for line in annotations(rows, unit, args.label, args.annotate_file, suite):
         print(line)
     if growth_ok:
         print(f"::notice title=Growth within limits::{args.label}: all "
