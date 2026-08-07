@@ -12,6 +12,11 @@
  *   GET /export?format=csv|xlsx&rows=N[&faultAt=M]  → export or JSON envelope
  *   GET /size?format=csv|xlsx&rows=N                → { bytes } of a clean body
  *   GET /                                           → download page
+ *
+ * Multi-worker mode: set HARNESS_REUSE_PORT=1 and start several processes on
+ * the same port. The kernel (SO_REUSEPORT) spreads connections across them and
+ * every response carries `X-Worker-Pid`, so tests can attribute a response to a
+ * specific worker instance.
  */
 import { appStatusCsv, appStatusCsvFilename, type AppStatusCsvRow } from "../../../src/lib/app-status-csv";
 import { appStatusWorkbook, appStatusXlsxFilename, APP_STATUS_XLSX_CONTENT_TYPE } from "../../../src/lib/app-status-xlsx";
@@ -88,10 +93,24 @@ function exportResponse(format: "csv" | "xlsx", rows: AppStatusCsvRow[], faultAt
   }
 }
 
+const WORKER_PID = String(process.pid);
+
+function tagWorker(response: Response): Response {
+  response.headers.set("X-Worker-Pid", WORKER_PID);
+  return response;
+}
+
 Bun.serve({
   port,
   idleTimeout: 60,
+  reusePort: process.env["HARNESS_REUSE_PORT"] === "1",
   fetch(request) {
+    return tagWorker(handle(request));
+  },
+});
+
+function handle(request: Request): Response {
+  {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
 
@@ -118,7 +137,7 @@ Bun.serve({
       "<!doctype html><meta charset=utf-8><title>scale faults</title><body><a id=dl download>dl</a></body>",
       { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } },
     );
-  },
-});
+  }
+}
 
-console.log(`scale-fault harness listening on ${port}`);
+console.log(`scale-fault harness listening on ${port} (pid ${WORKER_PID})`);
