@@ -64,7 +64,7 @@ function EmailDomainPage() {
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
+            className="rounded-lg bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
           >
             {isFetching ? "Rechecking…" : "Recheck verification"}
           </button>

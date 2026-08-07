@@ -85,7 +85,7 @@ function AdminAppSubmissions() {
             onClick={() => setFilter(f)}
             className={`rounded-full border px-3 py-1 text-sm capitalize ${
               filter === f
-                ? "border-primary bg-primary text-primary-foreground"
+                ? "border-primary bg-primary-surface text-primary-foreground"
                 : "border-border hover:bg-muted"
             }`}
           >

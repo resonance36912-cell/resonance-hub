@@ -171,7 +171,7 @@ function AppDetailPage() {
             href={entry.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
+            className="rounded-md bg-primary-surface px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90"
           >
             Open {entry.label} →
           </a>

@@ -120,7 +120,7 @@ function AdminInvoicesPage() {
             className="rounded border bg-background px-3 py-2 text-sm sm:col-span-1"
           />
           <div className="flex gap-2">
-            <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">
+            <button type="submit" className="rounded bg-primary-surface px-4 py-2 text-sm text-primary-foreground">
               Apply
             </button>
             <button

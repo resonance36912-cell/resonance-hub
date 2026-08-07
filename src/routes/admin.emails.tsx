@@ -151,7 +151,7 @@ function EmailsAdminPage() {
             <button
               type="submit"
               disabled={testMutation.isPending || !testEmail}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
+              className="rounded-lg bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
             >
               {testMutation.isPending ? "Sending…" : "Send test email"}
             </button>

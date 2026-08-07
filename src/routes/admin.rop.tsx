@@ -147,7 +147,7 @@ function RopAdmin() {
             />
             <button
               disabled={registerMut.isPending}
-              className="rounded bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="rounded bg-primary-surface px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
               {registerMut.isPending ? "Minting…" : "Register & mint key"}
             </button>

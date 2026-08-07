@@ -98,7 +98,7 @@ function AdminCreditsPage() {
           </div>
           <button
             type="submit"
-            className="rounded bg-primary text-primary-foreground px-4 py-2 text-sm font-medium"
+            className="rounded bg-primary-surface text-primary-foreground px-4 py-2 text-sm font-medium"
           >
             Look up
           </button>
@@ -361,7 +361,7 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
         <div className="flex items-end gap-2">
           <button
             type="submit"
-            className="rounded bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
+            className="rounded bg-primary-surface text-primary-foreground px-3 py-2 text-sm font-medium"
           >
             Apply
           </button>
@@ -667,7 +667,7 @@ function AdjustForm({
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="rounded bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-60"
+            className="rounded bg-primary-surface text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-60"
           >
             {mutation.isPending ? "Applying…" : "Apply adjustment"}
           </button>

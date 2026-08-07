@@ -132,7 +132,7 @@ function AdminLoginPage() {
               type="button"
               onClick={() => { setMode("signin"); setError(null); setNotice(null); }}
               className={`flex-1 rounded-full px-4 py-2 transition ${
-                mode === "signin" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                mode === "signin" ? "bg-primary-surface text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Sign in
@@ -141,7 +141,7 @@ function AdminLoginPage() {
               type="button"
               onClick={() => { setMode("signup"); setError(null); setNotice(null); }}
               className={`flex-1 rounded-full px-4 py-2 transition ${
-                mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                mode === "signup" ? "bg-primary-surface text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Create account
@@ -185,7 +185,7 @@ function AdminLoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            className="w-full rounded-lg bg-primary-surface px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
             {busy
               ? (mode === "signin" ? "Signing in…" : "Creating account…")
