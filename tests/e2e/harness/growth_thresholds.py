@@ -36,9 +36,12 @@ from __future__ import annotations
 
 import os
 
+from growth_calibrate import calibrated_limits
+
 UNIT_SUFFIX = {"minute": "PER_MIN", "hour": "PER_HOUR"}
 UNIT_LABEL = {"minute": "/min", "hour": "/hour"}
 METRIC_ENV = {"fds": "FD", "sockets": "SOCKET", "threads": "THREAD", "rss_mb": "RSS_MB"}
+
 
 
 def _env_float(name: str, default: float | None) -> float | None:
@@ -56,8 +59,12 @@ def _env_int(name: str, default: int) -> int:
     return int(value if value is not None else default)
 
 
-def slope_limits(unit: str, defaults: dict) -> dict:
+def slope_limits(unit: str, defaults: dict, profile: str | None = None) -> dict:
     """Resolve slope limits for `unit` ('minute' | 'hour') from env + defaults.
+
+    Precedence per metric: explicit GROWTH_*_SLOPE_* env var > limit
+    auto-calibrated from recent successful runs (see growth_calibrate.py, only
+    when `profile` is given) > caller-supplied code default.
 
     Returns a dict of metric -> limit, dropping metrics with no limit at all.
     """
@@ -67,13 +74,16 @@ def slope_limits(unit: str, defaults: dict) -> dict:
     if tolerance <= 0:
         raise SystemExit("GROWTH_SLOPE_TOLERANCE must be > 0")
     suffix = UNIT_SUFFIX[unit]
+    calibrated = calibrated_limits(profile, unit) if profile else {}
     limits: dict = {}
     for metric, prefix in METRIC_ENV.items():
-        limit = _env_float(f"GROWTH_{prefix}_SLOPE_{suffix}", defaults.get(metric))
+        fallback = calibrated.get(metric, defaults.get(metric))
+        limit = _env_float(f"GROWTH_{prefix}_SLOPE_{suffix}", fallback)
         if limit is None:
             continue
         limits[metric] = round(limit * tolerance, 4)
     return limits
+
 
 
 def band_limits(defaults: dict) -> dict:
