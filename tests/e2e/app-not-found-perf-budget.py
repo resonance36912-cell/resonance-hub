@@ -192,9 +192,6 @@ async def one_run(browser, run_index: int, problems: list[str], bad_status: list
     await asyncio.sleep(1.5)
 
     data = await page.evaluate(
-        f"(ALLOWED_THIRD_PARTY) => ({COLLECT})()".replace("() => {", "() => {", 1),
-        None,
-    ) if False else await page.evaluate(
         "(ALLOWED_THIRD_PARTY) => (" + COLLECT + ")()", ALLOWED_THIRD_PARTY
     )
     data["SUGGESTIONS_MS"] = suggestions_ms
