@@ -105,7 +105,7 @@ async def fetch(req, target: str, attempts: int = 4):
             return res.status, {k.lower(): v for k, v in res.headers.items()}, await res.body()
         except Exception as exc:
             last = exc
-            await asyncio.sleep 
+            await asyncio.sleep(0.4 * (i + 1))
     raise last
 
 
