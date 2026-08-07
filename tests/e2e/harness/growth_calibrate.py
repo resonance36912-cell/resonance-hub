@@ -68,23 +68,38 @@ DEFAULT_STORE = ROOT / "baselines" / "growth-thresholds.json"
 METRICS = ("fds", "sockets", "threads", "rss_mb")
 
 
-def _env_float(name: str, default: float) -> float:
-    raw = os.environ.get(name)
-    if raw is None or raw.strip() == "":
-        return default
-    try:
-        return float(raw)
-    except ValueError as exc:
-        raise SystemExit(f"{name}={raw!r} is not a number") from exc
+def suite_key(suite: str | None) -> str:
+    """Normalise a suite label into an env-var scope (e.g. 'soak' -> 'SOAK')."""
+    if not suite:
+        return ""
+    return "".join(ch if ch.isalnum() else "_" for ch in suite).strip("_").upper()
 
 
-def store_path() -> Path:
-    raw = os.environ.get("GROWTH_CALIBRATION_FILE")
-    return Path(raw) if raw else DEFAULT_STORE
+def _env_float(name: str, default: float, suite: str | None = None) -> float:
+    """Read GROWTH_<SUITE>_<name>, else GROWTH_<name>, else `default`."""
+    key = suite_key(suite)
+    for var in ([f"GROWTH_{key}_{name}"] if key else []) + [f"GROWTH_{name}"]:
+        raw = os.environ.get(var)
+        if raw is None or raw.strip() == "":
+            continue
+        try:
+            return float(raw)
+        except ValueError as exc:
+            raise SystemExit(f"{var}={raw!r} is not a number") from exc
+    return default
 
 
-def load_store(path: Path | None = None) -> dict:
-    path = path or store_path()
+def store_path(suite: str | None = None) -> Path:
+    key = suite_key(suite)
+    for var in ([f"GROWTH_{key}_CALIBRATION_FILE"] if key else []) + ["GROWTH_CALIBRATION_FILE"]:
+        raw = os.environ.get(var)
+        if raw:
+            return Path(raw)
+    return DEFAULT_STORE
+
+
+def load_store(path: Path | None = None, suite: str | None = None) -> dict:
+    path = path or store_path(suite)
     if not path.exists():
         return {"version": 1, "profiles": {}}
     try:
@@ -96,18 +111,23 @@ def load_store(path: Path | None = None) -> dict:
     return data
 
 
-def save_store(store: dict, path: Path | None = None) -> Path:
-    path = path or store_path()
+def save_store(store: dict, path: Path | None = None, suite: str | None = None) -> Path:
+    path = path or store_path(suite)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(store, indent=2, sort_keys=True) + "\n")
     return path
 
 
-def calibrated_limits(profile: str | None, unit: str, path: Path | None = None) -> dict:
-    """Stored limits for `profile`, or {} when absent/disabled/unit mismatch."""
-    if not profile or _env_float("GROWTH_USE_CALIBRATION", 1.0) == 0:
+def calibrated_limits(profile: str | None, unit: str, path: Path | None = None,
+                      suite: str | None = None) -> dict:
+    """Stored limits for `profile`, or {} when absent/disabled/unit mismatch.
+
+    Calibration can be disabled globally (GROWTH_USE_CALIBRATION=0) or for one
+    suite only (e.g. GROWTH_SOAK_USE_CALIBRATION=0).
+    """
+    if not profile or _env_float("USE_CALIBRATION", 1.0, suite) == 0:
         return {}
-    entry = load_store(path).get("profiles", {}).get(profile) or {}
+    entry = load_store(path, suite).get("profiles", {}).get(profile) or {}
     if entry.get("unit") not in (None, unit):
         return {}
     limits = entry.get("limits") or {}
@@ -124,12 +144,17 @@ def _percentile(values: list[float], pct: float) -> float:
 
 
 def derive_limits(history: list[dict], defaults: dict, *, min_runs: int | None = None,
-                  margin: float | None = None) -> tuple[dict, dict]:
-    """Derive limits from successful history. Returns (limits, meta)."""
-    min_runs = int(_env_float("GROWTH_CALIBRATION_RUNS", 3.0)) if min_runs is None else min_runs
-    margin = _env_float("GROWTH_CALIBRATION_MARGIN", 1.5) if margin is None else margin
-    max_factor = _env_float("GROWTH_CALIBRATION_MAX_FACTOR", 2.0)
-    min_factor = _env_float("GROWTH_CALIBRATION_MIN_FACTOR", 0.25)
+                  margin: float | None = None, suite: str | None = None) -> tuple[dict, dict]:
+    """Derive limits from successful history. Returns (limits, meta).
+
+    Every knob honours the suite scope first, e.g. GROWTH_LOAD_CALIBRATION_RUNS
+    then GROWTH_CALIBRATION_RUNS.
+    """
+    min_runs = (int(_env_float("CALIBRATION_RUNS", 3.0, suite))
+                if min_runs is None else min_runs)
+    margin = _env_float("CALIBRATION_MARGIN", 1.5, suite) if margin is None else margin
+    max_factor = _env_float("CALIBRATION_MAX_FACTOR", 2.0, suite)
+    min_factor = _env_float("CALIBRATION_MIN_FACTOR", 0.25, suite)
 
     good = [h for h in history if h.get("ok")]
     if len(good) < min_runs:
@@ -160,13 +185,16 @@ def derive_limits(history: list[dict], defaults: dict, *, min_runs: int | None =
 
 def record_run(profile: str, unit: str, *, slopes: dict, defaults: dict, ok: bool,
                window: dict | None = None, run: str | None = None,
-               update: bool = True, path: Path | None = None) -> dict:
+               update: bool = True, path: Path | None = None,
+               suite: str | None = None) -> dict:
     """Append a run to the store and (optionally) recalibrate the limits."""
-    store = load_store(path)
+    store = load_store(path, suite)
     entry = store["profiles"].setdefault(profile, {"unit": unit, "history": []})
     entry["unit"] = unit
+    if suite_key(suite):
+        entry["suite"] = suite_key(suite)
     entry["defaults"] = {m: v for m, v in defaults.items() if v is not None}
-    keep = int(_env_float("GROWTH_CALIBRATION_KEEP", 10.0))
+    keep = int(_env_float("CALIBRATION_KEEP", 10.0, suite))
     entry["history"].append({
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
         "run": run or os.environ.get("GITHUB_RUN_ID") or "local",
@@ -177,9 +205,10 @@ def record_run(profile: str, unit: str, *, slopes: dict, defaults: dict, ok: boo
     })
     entry["history"] = entry["history"][-max(keep, 1):]
 
-    result = {"profile": profile, "unit": unit, "recorded": True, "updated": False}
+    result = {"profile": profile, "unit": unit, "suite": suite_key(suite) or None,
+              "recorded": True, "updated": False}
     if update:
-        limits, meta = derive_limits(entry["history"], entry["defaults"])
+        limits, meta = derive_limits(entry["history"], entry["defaults"], suite=suite)
         if limits:
             entry["limits"] = limits
             entry["calibrated_at"] = entry["history"][-1]["ts"]
@@ -191,12 +220,13 @@ def record_run(profile: str, unit: str, *, slopes: dict, defaults: dict, ok: boo
         result.update({k: meta[k] for k in ("calibrated", "runs_used") if k in meta})
         if "reason" in meta:
             result["reason"] = meta["reason"]
-    result["store"] = str(save_store(store, path))
+    result["store"] = str(save_store(store, path, suite))
     return result
 
 
 def format_result(result: dict) -> str:
-    lines = [f"--- growth calibration: {result['profile']} ({result['unit']}) ---",
+    scope = f", suite {result['suite']}" if result.get("suite") else ""
+    lines = [f"--- growth calibration: {result['profile']} ({result['unit']}{scope}) ---",
              f"store: {result['store']}"]
     if result.get("updated"):
         lines.append(f"limits from last {result['runs_used']} successful run(s):")
@@ -213,6 +243,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--profile", required=True, help="calibration profile key")
     ap.add_argument("--unit", choices=("minute", "hour"), help="slope unit (default: from report)")
     ap.add_argument("--run", help="run identifier (defaults to $GITHUB_RUN_ID)")
+    ap.add_argument("--suite", help="suite scope for GROWTH_<SUITE>_* env overrides "
+                                    "(default: from report growth_suite)")
     ap.add_argument("--update", action="store_true", help="recalibrate stored limits")
     ap.add_argument("--store", help="override store path")
     args = ap.parse_args(argv)
@@ -237,10 +269,11 @@ def main(argv: list[str] | None = None) -> int:
 
     defaults = report.get("growth_defaults") or {r["metric"]: r["limit"]
                                                 for r in growth.get("rows", [])}
+    suite = args.suite or report.get("growth_suite") or growth.get("suite")
     result = record_run(args.profile, unit, slopes=slopes, defaults=defaults,
                         ok=bool(report.get("ok")), window=growth.get("window"),
                         run=args.run, update=args.update,
-                        path=Path(args.store) if args.store else None)
+                        path=Path(args.store) if args.store else None, suite=suite)
     print(format_result(result))
     return 0
 
