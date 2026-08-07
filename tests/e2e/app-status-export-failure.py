@@ -80,8 +80,10 @@ async def check_error_response(req, label: str, target: str, expected_status: in
 
 
 async def check_no_download(page, target: str, label: str, results: list) -> None:
+    # No `download` attribute: the browser must save a file only when the
+    # server sends Content-Disposition: attachment.
     await page.set_content(
-        f'<!doctype html><meta charset=utf-8><body><a id="dl" href="{target}" download>go</a></body>'
+        f'<!doctype html><meta charset=utf-8><body><a id="dl" href="{target}">go</a></body>'
     )
     downloaded = False
     try:
