@@ -289,7 +289,7 @@ function AppNotFound() {
                       score,
                     })
                   }
-                  className="block rounded-lg border border-border p-4 transition-colors hover:bg-muted"
+                  className="block rounded-lg border border-border p-4 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   <span className="font-medium">{entry.label}</span>
                   <span className="mt-1 block text-sm text-muted-foreground">{entry.tagline}</span>
@@ -305,7 +305,10 @@ function AppNotFound() {
 
 
       <p className="mt-6 text-sm">
-        <AppLink to={ROUTES.apps} className="text-primary underline">
+        <AppLink
+          to={ROUTES.apps}
+          className="rounded text-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
           Browse the full app catalog →
         </AppLink>
       </p>
