@@ -266,6 +266,113 @@ async def check_filtered_download(page, data: dict, results: list) -> None:
             )
 
 
+def split_records(text: str) -> list[str]:
+    """Split a CSV file into raw record strings, ignoring CRLF inside quotes."""
+    body = text[:-2] if text.endswith("\r\n") else text
+    records, cur, in_quotes, i = [], [], False, 0
+    while i < len(body):
+        ch = body[i]
+        if ch == '"':
+            in_quotes = not in_quotes
+            cur.append(ch)
+        elif not in_quotes and body.startswith("\r\n", i):
+            records.append("".join(cur))
+            cur = []
+            i += 2
+            continue
+        else:
+            cur.append(ch)
+        i += 1
+    records.append("".join(cur))
+    return records
+
+
+def csv_cell(value: str) -> str:
+    """Mirror of csvCell() in src/lib/app-status-csv.ts."""
+    return f'"{value.replace(chr(34), chr(34) * 2)}"' if re.search(r'[",\r\n]', value) else value
+
+
+def check_escaping(text: str, data: dict, results: list) -> None:
+    """Fields with commas, quotes or newlines must be RFC 4180 quoted so that a
+    spreadsheet import round-trips the exact registry value."""
+    header, rows = parse_csv(text)
+    records = split_records(text)
+    results.append(
+        (len(records) == len(rows) + 1,
+         f"raw record count matches parsed rows ({len(rows)} + header)")
+    )
+
+    special_seen = {"comma": 0, "quote": 0, "newline": 0}
+    for idx, row in enumerate(rows, start=1):
+        raw = records[idx] if idx < len(records) else ""
+        rebuilt = ",".join(csv_cell(row[h]) for h in header)
+        results.append(
+            (raw == rebuilt, f"{row['key']}: raw record is exactly RFC 4180 encoded")
+        )
+        for h in header:
+            value = row[h]
+            cell = csv_cell(value)
+            if "," in value:
+                special_seen["comma"] += 1
+                results.append(
+                    (cell in raw and cell.startswith('"'),
+                     f'{row["key"]}.{h}: comma value is quoted ({cell})')
+                )
+                results.append(
+                    (value.count(",") == row[h].count(","),
+                     f"{row['key']}.{h}: commas survive parsing, field is not split")
+                )
+            if '"' in value:
+                special_seen["quote"] += 1
+                results.append(
+                    ('""' in cell and cell in raw,
+                     f'{row["key"]}.{h}: embedded quotes are doubled ({cell})')
+                )
+            if "\n" in value or "\r" in value:
+                special_seen["newline"] += 1
+                results.append(
+                    (cell.startswith('"') and cell in raw,
+                     f"{row['key']}.{h}: newline value is quoted and kept in one field")
+                )
+
+    results.append(
+        (special_seen["comma"] > 0,
+         f"registry exercises comma escaping ({special_seen['comma']} field(s))")
+    )
+    # Unquoted cells must contain no delimiter/quote/newline at all.
+    for idx, row in enumerate(rows, start=1):
+        raw = records[idx] if idx < len(records) else ""
+        for cell in raw.split(","):
+            if cell.startswith('"'):
+                continue
+            results.append(
+                ('"' not in cell and "\n" not in cell,
+                 f"{row['key']}: unquoted cell {cell[:24]!r} needs no escaping")
+            )
+
+
+def check_escape_rule(results: list) -> None:
+    """Exercise the shared csvCell() encoder with values the registry does not yet
+    contain (quotes, newlines, mixed) so the escaping contract stays covered."""
+    script = """
+    import { csvCell } from "./src/lib/app-status-csv";
+    const cases = ["plain", "a,b", 'say "hi"', "line1\\nline2", "line1\\r\\nline2",
+                   'mix, "q" \\n end', "", "  spaced  "];
+    console.log(JSON.stringify(cases.map((c) => [c, csvCell(c)])));
+    """
+    out = subprocess.run(
+        ["bun", "-e", script], cwd=ROOT, capture_output=True, text=True, check=True
+    )
+    pairs = json.loads(out.stdout.strip().splitlines()[-1])
+    for raw, encoded in pairs:
+        expected = csv_cell(raw)
+        results.append((encoded == expected, f"csvCell({raw!r}) -> {encoded!r}"))
+        parsed = next(csv.reader(io.StringIO(encoded, newline="")), [""])
+        if "\n" not in raw and "\r" not in raw:
+            results.append(
+                (parsed == [raw], f"csvCell({raw!r}) round-trips through a CSV parser")
+            )
+
 
 
 async def main() -> int:
