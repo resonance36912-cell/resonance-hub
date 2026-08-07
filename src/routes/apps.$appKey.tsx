@@ -7,6 +7,7 @@ import { statusMeaning } from "@/lib/app-status-meaning";
 import { suggestApps } from "@/lib/app-slug-suggest";
 import { emitAppSuggestionClick } from "@/lib/app-suggestion-analytics";
 import { appDetailMeta, appDetailUrl } from "@/lib/app-status-meta";
+import { notFoundHead } from "@/lib/app-not-found-meta";
 
 import { ROUTES } from "@/lib/routes";
 
@@ -63,14 +64,11 @@ export const Route = createFileRoute("/apps/$appKey")({
   },
 
 
-  head: ({ loaderData }) => {
+  head: ({ params, loaderData }) => {
     if (!loaderData) {
-      return {
-        meta: [
-          { title: "App not found — Resonance" },
-          { name: "robots", content: "noindex" },
-        ],
-      };
+      // Unknown slug: honest, noindexed metadata plus ItemList structured
+      // data for whatever the fuzzy matcher suggests.
+      return notFoundHead(params.appKey);
     }
     const { entry } = loaderData;
     return {
