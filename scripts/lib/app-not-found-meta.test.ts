@@ -9,7 +9,10 @@ import { describe, expect, it } from "bun:test";
 import { APP_REGISTRY, type AppKey } from "../../src/lib/app-registry";
 import { suggestApps } from "../../src/lib/app-slug-suggest";
 import {
+  NOT_FOUND_OG_IMAGE,
+  NOT_FOUND_OG_IMAGE_ALT,
   notFoundDescription,
+  notFoundPageUrl,
   notFoundHead,
   notFoundStructuredData,
   notFoundTitle,
@@ -50,10 +53,12 @@ describe("not-found head — core SEO tags", () => {
     }
   });
 
-  it("emits self-referencing og:url and no canonical for a dead URL", () => {
+  it("emits a self-referencing og:url and canonical for a dead URL", () => {
     const m = metaMap(MATCHED);
     expect(m.get("og:url")).toBe(`${SITE_ORIGIN}/apps/${MATCHED}`);
-    expect(notFoundHead(MATCHED)).not.toHaveProperty("links");
+    expect(notFoundHead(MATCHED).links).toEqual([
+      { rel: "canonical", href: `${SITE_ORIGIN}/apps/${MATCHED}` },
+    ]);
   });
 
   it("keeps OpenGraph and Twitter tags in lockstep", () => {
@@ -66,11 +71,12 @@ describe("not-found head — core SEO tags", () => {
     expect(m.get("twitter:card")).toBe("summary");
   });
 
-  it("never emits og:image or twitter:image (no meaningful cover)", () => {
-    for (const slug of [MATCHED, NO_MATCH]) {
+  it("emits the shared absolute OG image on every not-found variant", () => {
+    for (const slug of [MATCHED, MANY, NO_MATCH]) {
       const m = metaMap(slug);
-      expect(m.has("og:image")).toBe(false);
-      expect(m.has("twitter:image")).toBe(false);
+      expect(m.get("og:image")).toBe(NOT_FOUND_OG_IMAGE);
+      expect(m.get("twitter:image")).toBe(NOT_FOUND_OG_IMAGE);
+      expect(m.get("og:image:alt")).toBe(NOT_FOUND_OG_IMAGE_ALT);
     }
   });
 
@@ -172,5 +178,56 @@ describe("not-found head — ItemList structured data", () => {
         expect(parsed.itemListElement.length).toBe(suggestApps(slug).length);
       }
     }
+  });
+});
+
+describe("not-found canonical + OG image", () => {
+  const SLUGS = ["sinc-vision", "creative", "epub", "zzzzzzzzzzzz"];
+
+  for (const slug of SLUGS) {
+    it(`[${slug}] emits exactly one self-referencing canonical`, () => {
+      const { links } = notFoundHead(slug);
+      expect(links).toEqual([
+        { rel: "canonical", href: `https://reson8.life/apps/${slug}` },
+      ]);
+    });
+
+    it(`[${slug}] og:url matches the canonical href`, () => {
+      const head = notFoundHead(slug);
+      const ogUrl = head.meta.find(
+        (m) => (m as { property?: string }).property === "og:url",
+      ) as { content: string } | undefined;
+      expect(ogUrl?.content).toBe(head.links[0]!.href);
+    });
+
+    it(`[${slug}] og:image and twitter:image are the same absolute https URL`, () => {
+      const { meta } = notFoundHead(slug);
+      const get = (key: string) =>
+        (meta.find(
+          (m) =>
+            (m as { property?: string }).property === key ||
+            (m as { name?: string }).name === key,
+        ) as { content: string } | undefined)?.content;
+      expect(get("og:image")).toBe(NOT_FOUND_OG_IMAGE);
+      expect(get("twitter:image")).toBe(NOT_FOUND_OG_IMAGE);
+      expect(NOT_FOUND_OG_IMAGE.startsWith("https://")).toBe(true);
+      expect(get("og:image:alt")).toBe(NOT_FOUND_OG_IMAGE_ALT);
+      expect(get("twitter:image:alt")).toBe(NOT_FOUND_OG_IMAGE_ALT);
+      expect(get("og:image:width")).toBe("1024");
+      expect(get("og:image:height")).toBe("1024");
+    });
+  }
+
+  it("canonical never points at a suggested app or the catalog", () => {
+    const href = notFoundHead("sinc-vision").links[0]!.href;
+    expect(href).toBe("https://reson8.life/apps/sinc-vision");
+    expect(href).not.toContain("sync_vision");
+    expect(href.endsWith("/apps")).toBe(false);
+  });
+
+  it("encodes unsafe slugs in canonical and og:url", () => {
+    const href = notFoundPageUrl("a b/c?d");
+    expect(href).toBe(`https://reson8.life/apps/${encodeURIComponent("a b/c?d")}`);
+    expect(href).not.toContain("?d");
   });
 });
