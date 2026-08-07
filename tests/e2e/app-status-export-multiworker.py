@@ -403,13 +403,18 @@ def churn(pids: set[str], sizes: dict, baselines: dict, results: list) -> None:
             s, h, b, reuse = conn.request(export_path(fmt, offsets))
             pid = h.get("x-worker-pid", "?")
             hits[pid] = hits.get(pid, 0) + 1
-            if s != 500 or not reuse or conn.buf != b"":
-                check_fault(s, h, b f"churn{i}", results) if False else None
-                results.append((s == 500, f"[churn{i} w{pid}] fault status 500 (got {s})"))
-                results.append((reuse, f"[churn{i} w{pid}] kept alive"))
-                results.append((conn.buf == b"", f"[churn{i} w{pid}] nothing left buffered"))
+            # Only record per-iteration assertions on deviation (keeps the
+            # report readable); the aggregate checks below always run.
+            if s != 500:
+                results.append((False, f"[churn{i} w{pid}] fault status 500 (got {s})"))
+            if not reuse:
+                results.append((False, f"[churn{i} w{pid}] connection not kept alive"))
+            if conn.buf != b"":
+                results.append((False, f"[churn{i} w{pid}] bytes left buffered"))
+            if b[:2] == b"PK" or b"scope,key," in b:
+                results.append((False, f"[churn{i} w{pid}] partial attachment bytes in envelope"))
             digest = sha(b)
-            prev = fault_digests.setdefault(f"{fmt}", digest)
+            prev = fault_digests.setdefault(fmt, digest)
             if digest != prev:
                 results.append((False, f"[churn{i} w{pid}] fault envelope differs across workers"))
             s2, h2, b2, _ = conn.request(export_path(fmt))
@@ -422,8 +427,8 @@ def churn(pids: set[str], sizes: dict, baselines: dict, results: list) -> None:
             conn.close()
     results.append((len(hits) >= min(2, len(pids)),
                     f"[churn] spread over {len(hits)} workers {hits}"))
-    results.append((all(v == 1 for v in fault_digests.values()) or True,
-                    "[churn] fault envelopes consistent"))
+    results.append((sum(hits.values()) == CHURN,
+                    f"[churn] all {CHURN} fault+retry cycles completed"))
 
     time.sleep(2.0)
     for pid in pids:
