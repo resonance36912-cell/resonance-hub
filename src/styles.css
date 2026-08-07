@@ -24,6 +24,8 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-surface: var(--primary-surface);
+  --color-primary-surface-hover: var(--primary-surface-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-magenta: var(--magenta);
   --color-violet: var(--violet);
