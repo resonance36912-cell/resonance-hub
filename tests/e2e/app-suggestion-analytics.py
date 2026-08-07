@@ -65,57 +65,64 @@ def ranked(slug: str) -> list[dict]:
     return json.loads(out.stdout.strip().splitlines()[-1])
 
 
+SPY_SCRIPT = """
+// Capture analytics payloads in-page: Playwright cannot read sendBeacon Blob
+// bodies, so wrap the transports and stash the JSON we sent.
+window.__analyticsEvents = [];
+const push = (body) => {
+  try { window.__analyticsEvents.push(JSON.parse(body)); } catch (e) { /* ignore */ }
+};
+const origBeacon = navigator.sendBeacon && navigator.sendBeacon.bind(navigator);
+if (origBeacon) {
+  navigator.sendBeacon = (url, data) => {
+    if (String(url).includes('/analytics/app-suggestion')) {
+      if (data && typeof data.text === 'function') data.text().then(push);
+      else if (typeof data === 'string') push(data);
+    }
+    return origBeacon(url, data);
+  };
+}
+const origFetch = window.fetch;
+window.fetch = (input, init) => {
+  const url = typeof input === 'string' ? input : (input && input.url) || '';
+  if (String(url).includes('/analytics/app-suggestion') && init && typeof init.body === 'string') {
+    push(init.body);
+  }
+  return origFetch(input, init);
+};
+"""
+
+
 class Recorder:
-    """Capture analytics beacons/fetches sent to the ingest endpoint."""
+    """Capture analytics payloads sent to the ingest endpoint."""
 
-    def __init__(self) -> None:
-        self.events: list[dict] = []
-        self._seen: set[int] = set()
+    def __init__(self, page) -> None:
+        self.page = page
         self.statuses: list[int] = []
-
-    def attach(self, page, ctx) -> None:
-        # sendBeacon requests are not always attributed to the page, so listen
-        # on the browser context as well (dedup happens in _on_request).
-        for target in (page, ctx):
-            target.on("request", self._on_request)
-            target.on("response", self._on_response)
-
-    def _on_request(self, req) -> None:
-        if ENDPOINT not in req.url or req.method != "POST":
-            return
-        if id(req) in self._seen:
-            return
-        self._seen.add(id(req))
-        try:
-            # sendBeacon sends a Blob body — post_data can be None, so prefer
-            # the raw buffer.
-            raw = req.post_data_buffer or (req.post_data or "").encode()
-            text = raw.decode("utf-8")
-            if not text:
-                return  # body unavailable on this listener; the other one has it
-            parsed = json.loads(text)
-            if parsed in self.events:
-                return  # same beacon seen on both page and context listeners
-            self.events.append(parsed)
-        except Exception as exc:  # pragma: no cover - diagnostic only
-            self.events.append({"_parse_error": str(exc), "_raw": req.post_data})
+        self.events: list[dict] = []
+        page.on("response", self._on_response)
 
     def _on_response(self, resp) -> None:
         if ENDPOINT in resp.url and resp.request.method == "POST":
             self.statuses.append(resp.status)
 
-    async def wait(self, count: int = 1, timeout_ms: int = 5000) -> bool:
+    async def read(self) -> list[dict]:
+        self.events = await self.page.evaluate("window.__analyticsEvents || []")
+        return self.events
+
+    async def wait(self, count: int = 1, timeout_ms: int = 6000) -> bool:
         waited = 0
-        while len(self.events) < count and waited < timeout_ms:
+        while waited < timeout_ms:
+            if len(await self.read()) >= count:
+                return True
             await asyncio.sleep(0.1)
             waited += 100
-        return len(self.events) >= count
+        return False
 
 
 async def click_suggestion(ctx, slug: str, index: int) -> tuple[Recorder, str, dict]:
     page = await ctx.new_page()
-    rec = Recorder()
-    rec.attach(page, ctx)
+    rec = Recorder(page)
     await page.goto(f"{BASE}/apps/{slug}", wait_until="domcontentloaded")
     await page.wait_for_timeout(1500)
 
@@ -127,7 +134,7 @@ async def click_suggestion(ctx, slug: str, index: int) -> tuple[Recorder, str, d
 
     check(count > index, f"[{slug}] suggestion #{index + 1} is rendered")
     check(
-        not rec.events,
+        not await rec.read(),
         f"[{slug}] no analytics event fired from merely viewing the page",
     )
 
@@ -145,6 +152,7 @@ async def main() -> int:
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         ctx = await browser.new_context(viewport={"width": 1280, "height": 1800})
+        await ctx.add_init_script(SPY_SCRIPT)
 
         # ---- 1..3: top suggestion for a misspelled Sync Vision slug ----
         truth = ranked(MISSPELLED)
