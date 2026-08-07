@@ -17,7 +17,11 @@ import type { ReactNode } from "react";
  */
 export function BackToHubHeader({
   className = "flex gap-3 text-sm",
-  linkClassName = "text-primary underline",
+  // Keep a visible keyboard focus ring in the default styling: this link is the
+  // first focusable element on most pages, so a missing indicator strands
+  // keyboard users (WCAG 2.4.7). Callers overriding linkClassName should keep
+  // the focus-visible utilities.
+  linkClassName = "rounded text-primary underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   extra,
 }: {
   className?: string;
