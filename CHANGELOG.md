@@ -21,6 +21,16 @@ to the PR or issue where useful.
   dist-tag and files/updates a single issue with a ready-to-apply update plan
   grouped by risk. Report-only — pins, `bun.lock`, and overrides are never
   touched, and the workflow fails if they are.
+- Slack notification for the audit (`scripts/slack-outdated-pins.ts`): posts the
+  top outdated packages, bump counts, and links to the plan issue and report
+  artifact whenever the issue is opened, updated, or closed. Needs the
+  `SLACK_WEBHOOK_URL` repo secret; skipped without it.
+- Ready-to-merge update PR (`bun run deps:apply`, `update-pr` job): rewrites only
+  the planned pins in place by exact `"name": "version"` match, re-resolves
+  `bun.lock`, re-syncs overrides, and runs the full `prebuild` gate before
+  pushing. Defaults to the low-risk group (patch + minor) — majors stay
+  hand-reviewed. Stale plan entries are skipped, never clobbered, and the
+  plan-derived branch name means reruns update one PR.
 - `prebuild` now runs `bun install --frozen-lockfile` first and stops with a
   dedicated "LOCKFILE DRIFT" remediation block before typecheck or any verifier.
 
