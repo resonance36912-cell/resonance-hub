@@ -4,6 +4,8 @@ import {
   createLovableAiGatewayProvider,
   getLovableAiGatewayRunId,
 } from "@/lib/ai-gateway.server";
+import { authenticateBearer } from "@/lib/bearer-auth.server";
+
 
 const CODEX_SYSTEM_PROMPT = `You are the Resonance Codex Assistant, an in-hub AI helper embedded at /tools/codex on reson8.life (the Resonance Hub — the authority for identity, entitlements, credits, and the app registry powering Creative Studio, ePublisher, SyncVision, and YouTube Optimizer).
 
@@ -28,9 +30,15 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        // Paid AI gateway: verify the Supabase session server-side before
+        // proxying. Client-side page gating is not an access control.
+        const auth = await authenticateBearer(request);
+        if (auth instanceof Response) return auth;
+
         const body = (await request.json()) as ChatRequestBody;
         const { messages } = body;
         if (!Array.isArray(messages)) {
+
           return new Response("Messages are required", { status: 400 });
         }
 
