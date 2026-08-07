@@ -44,6 +44,9 @@ from pathlib import Path
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tests/e2e/harness"))
+import growth_thresholds as growth  # noqa: E402
+
 OUT = Path("/tmp/browser/app-status-keepalive-soak")
 OUT.mkdir(parents=True, exist_ok=True)
 
