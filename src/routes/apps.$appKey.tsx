@@ -42,10 +42,15 @@ const CAPABILITIES: Record<ResonanceAppKey, Capability[]> = {
 
 export const Route = createFileRoute("/apps/$appKey")({
   loader: ({ params }): { entry: AppRegistryEntry } => {
-    const entry = (APP_REGISTRY as Record<string, AppRegistryEntry>)[params.appKey];
+    const entry = getAppEntry(params.appKey);
     if (!entry) throw notFound();
+    // Canonicalise hyphenated / mixed-case slugs (e.g. /apps/sync-vision).
+    if (entry.key !== params.appKey) {
+      throw redirect({ to: "/apps/$appKey", params: { appKey: entry.key }, replace: true });
+    }
     return { entry };
   },
+
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
