@@ -160,6 +160,26 @@ def check_fault_response(status, headers, body, label, results) -> None:
         results.append((h not in headers, f"[{label}] omits {h}"))
 
 
+def fingerprint(fmt: str, body: bytes) -> bytes:
+    """Comparable payload identity.
+
+    CSV is byte-deterministic. XLSX is a ZIP whose entry timestamps (and
+    docProps metadata) move with wall-clock time, so compare the entry names
+    plus their decompressed contents instead of the raw container bytes.
+    """
+    if fmt == "csv":
+        return body
+    if not zipfile.is_zipfile(io.BytesIO(body)):
+        return b"<not-a-zip>"
+    with zipfile.ZipFile(io.BytesIO(body)) as z:
+        parts = []
+        for name in sorted(z.namelist()):
+            if name.startswith("docProps/"):
+                continue
+            parts.append(name.encode("utf-8") + b"\x00" + z.read(name))
+        return b"\x01".join(parts)
+
+
 def check_clean_response(fmt, status, headers, body, label, results,
                          reference: bytes | None = None) -> None:
     results.append((status == 200, f"[{label}] clean request returns 200 (got {status})"))
@@ -181,9 +201,10 @@ def check_clean_response(fmt, status, headers, body, label, results,
             with zipfile.ZipFile(io.BytesIO(body)) as z:
                 results.append((z.testzip() is None, f"[{label}] ZIP entries pass CRC"))
     if reference is not None:
-        results.append((body == reference,
-                        f"[{label}] bytes identical to serial baseline "
-                        f"({len(body)} vs {len(reference)})"))
+        results.append((fingerprint(fmt, body) == reference,
+                        f"[{label}] payload identical to serial baseline "
+                        f"({len(body)} bytes vs reference)"))
+
 
 
 def pct(values: list[float], p: float) -> float:
