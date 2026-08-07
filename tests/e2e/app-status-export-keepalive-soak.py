@@ -70,13 +70,19 @@ MIME = {"csv": "text/csv",
 
 # Growth tolerances: absolute band vs baseline + trend per hour. Both are
 # configurable via GROWTH_* env vars (tests/e2e/harness/growth_thresholds.py).
-BANDS = growth.band_limits({"fds": 12, "sockets": 6, "threads": 2})
+# Per-suite threshold profile: every GROWTH_* var below can be scoped to this
+# suite alone with the GROWTH_SOAK_ prefix (e.g. GROWTH_SOAK_FD_SLOPE_PER_HOUR,
+# GROWTH_SOAK_SLOPE_TOLERANCE, GROWTH_SOAK_FD_BAND), leaving the
+# load/idempotency suite on its own limits.
+SUITE = os.environ.get("GROWTH_SUITE", "SOAK")
+BANDS = growth.band_limits({"fds": 12, "sockets": 6, "threads": 2}, suite=SUITE)
 FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
 # Calibrated limits in baselines/growth-thresholds.json win over these defaults
 # unless an explicit GROWTH_*_SLOPE_PER_HOUR env var is set (growth_calibrate.py).
 SLOPE_DEFAULTS = {"fds": 4.0, "sockets": 2.0, "threads": 1.0}
 CALIBRATION_PROFILE = os.environ.get("GROWTH_PROFILE", "export-keepalive-soak")
-SLOPE_LIMITS = growth.slope_limits("hour", SLOPE_DEFAULTS, profile=CALIBRATION_PROFILE)
+SLOPE_LIMITS = growth.slope_limits("hour", SLOPE_DEFAULTS, profile=CALIBRATION_PROFILE,
+                                   suite=SUITE)
 
 
 # --- harness ---------------------------------------------------------------
@@ -430,7 +436,8 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     slopes["rss_mb"] = slopes["rss_kb"] / 1024.0
     growth_report = growth.assert_slopes(
         t, slopes, SLOPE_LIMITS, "hour",
-        window={"samples": len(samples), "duration_seconds": round(time.monotonic() - started, 1)})
+        window={"samples": len(samples), "duration_seconds": round(time.monotonic() - started, 1)},
+        suite=SUITE)
     t.check(settled["fds"] <= baseline["fds"] + FD_BAND,
             f"[final] fds settled ({baseline['fds']} -> {settled['fds']}, peak {peaks['fds']})")
     t.check(settled["sockets"] <= baseline["sockets"] + SOCK_BAND,
@@ -448,7 +455,7 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
     samples_csv.close()
     return {"baseline": baseline, "settled": settled, "peaks": peaks, "slopes_per_hour": slopes,
             "growth_thresholds": growth_report, "growth_defaults": SLOPE_DEFAULTS,
-            "growth_profile": CALIBRATION_PROFILE, "bands": BANDS,
+            "growth_profile": CALIBRATION_PROFILE, "growth_suite": SUITE, "bands": BANDS,
             "counters": counters, "samples": len(samples),
             "duration_seconds": round(time.monotonic() - started, 1)}
 

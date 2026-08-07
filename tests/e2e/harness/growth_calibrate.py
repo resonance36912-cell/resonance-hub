@@ -45,7 +45,8 @@ Writing (CI step, after a run):
 `--update` recalibrates only from `ok: true` history entries; failing runs are
 still recorded (for context) but never widen the limits.
 
-Env knobs:
+Env knobs (each also has a suite-scoped form GROWTH_<SUITE>_<NAME>, e.g.
+GROWTH_SOAK_CALIBRATION_MARGIN, which wins over the unscoped variable):
   GROWTH_CALIBRATION_FILE       store path (default baselines/growth-thresholds.json)
   GROWTH_USE_CALIBRATION        0 to ignore stored limits (default 1)
   GROWTH_CALIBRATION_KEEP       history entries retained per profile (default 10)

@@ -118,7 +118,7 @@ jobs:
         run: |
           python3 tests/e2e/harness/growth_calibrate.py \
             --report /tmp/browser/app-status-keepalive-soak/report.json \
-            --profile export-keepalive-soak --unit hour \
+            --profile export-keepalive-soak --unit hour --suite SOAK \
             --run "$GITHUB_RUN_ID" --update | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Commit calibrated thresholds
@@ -296,7 +296,7 @@ jobs:
         run: |
           python3 tests/e2e/harness/growth_calibrate.py \
             --report /tmp/browser/app-status-export-load-idem/report.json \
-            --profile export-load-idempotency --unit minute \
+            --profile export-load-idempotency --unit minute --suite LOAD \
             --run "$GITHUB_RUN_ID" --update | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Commit calibrated thresholds

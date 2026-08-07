@@ -85,7 +85,12 @@ BUDGETS = {
 }
 PER_WORKER_MS = 260  # added to every budget for each concurrent worker
 
-BANDS = growth.band_limits({"fds": 10, "sockets": CONCURRENCY + 4, "threads": 4})
+# Per-suite threshold profile: scope any GROWTH_* var below to this suite alone
+# with the GROWTH_LOAD_ prefix (e.g. GROWTH_LOAD_FD_SLOPE_PER_MIN,
+# GROWTH_LOAD_SLOPE_TOLERANCE, GROWTH_LOAD_SOCKET_BAND) so tuning here does not
+# move the keep-alive soak limits.
+SUITE = os.environ.get("GROWTH_SUITE", "LOAD")
+BANDS = growth.band_limits({"fds": 10, "sockets": CONCURRENCY + 4, "threads": 4}, suite=SUITE)
 FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
 # Per-minute growth-slope limits; override via GROWTH_*_SLOPE_PER_MIN /
 # GROWTH_SLOPE_TOLERANCE (see tests/e2e/harness/growth_thresholds.py). When
@@ -93,7 +98,8 @@ FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads
 # they take precedence over the defaults below (see growth_calibrate.py).
 SLOPE_DEFAULTS = {"fds": 6.0, "sockets": 4.0, "threads": 2.0}
 CALIBRATION_PROFILE = os.environ.get("GROWTH_PROFILE", "export-load-idempotency")
-SLOPE_LIMITS = growth.slope_limits("minute", SLOPE_DEFAULTS, profile=CALIBRATION_PROFILE)
+SLOPE_LIMITS = growth.slope_limits("minute", SLOPE_DEFAULTS, profile=CALIBRATION_PROFILE,
+                                   suite=SUITE)
 
 RSS_HEADROOM_MB = int(float(os.environ.get("RSS_HEADROOM_MB", "1200")))
 
@@ -515,7 +521,8 @@ def main() -> int:
         growth_report = growth.assert_slopes(
             t, slopes, SLOPE_LIMITS, "minute",
             window={"samples": len(steady), "from_seconds": round(0.3 * duration, 1),
-                    "to_seconds": round(duration, 1), "concurrency": CONCURRENCY})
+                    "to_seconds": round(duration, 1), "concurrency": CONCURRENCY},
+            suite=SUITE)
 
         time.sleep(2.5)
         settled = fd_stats(proc.pid)
@@ -546,6 +553,7 @@ def main() -> int:
                   "growth_thresholds": growth_report,
                   "growth_defaults": SLOPE_DEFAULTS,
                   "growth_profile": CALIBRATION_PROFILE,
+                  "growth_suite": SUITE,
                   "bands": BANDS, "samples": len(samples)}
     finally:
         proc.terminate()
