@@ -131,6 +131,12 @@ function AppStatusHealthPage() {
       </section>
 
       <p className="mt-8 flex flex-wrap gap-4 text-sm">
+        <a
+          href="/api/public/app-status/health?format=csv"
+          className="text-primary underline underline-offset-2"
+        >
+          Download CSV (badge meanings &amp; access lines) →
+        </a>
         <AppLink to="/status/meta-diff" className="text-primary underline underline-offset-2">
           Registry vs rendered meta diff →
         </AppLink>
@@ -138,6 +144,7 @@ function AppStatusHealthPage() {
           Back to the app catalog →
         </AppLink>
       </p>
+
     </main>
   );
 }

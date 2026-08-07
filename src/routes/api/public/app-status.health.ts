@@ -13,6 +13,12 @@ import {
   appDetailDescription,
   appDetailSocialDescription,
 } from "@/lib/app-status-meta";
+import {
+  appStatusCsv,
+  appStatusCsvFilename,
+  type AppStatusCsvRow,
+} from "@/lib/app-status-csv";
+
 
 /**
  * Unauthenticated status probe: every app's registry status, the badge
@@ -48,7 +54,8 @@ export const Route = createFileRoute("/api/public/app-status/health")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
-      GET: async () => {
+      GET: async ({ request }) => {
+
         const apps = (Object.values(APP_REGISTRY) as AppRegistryEntry[]).map((entry) => ({
           ...badge(entry),
           includedInSuite: entry.includedInSuite,
@@ -69,13 +76,56 @@ export const Route = createFileRoute("/api/public/app-status/health")({
           ...APP_STATUS_MEANING[status],
         }));
 
+        const checkedAt = new Date().toISOString();
+
+        const format = new URL(request.url).searchParams.get("format")?.toLowerCase();
+        if (format === "csv") {
+          const rows: AppStatusCsvRow[] = [
+            ...apps.map((a) => ({
+              scope: "app" as const,
+              key: a.key,
+              label: a.label,
+              status: a.status,
+              badgeLabel: a.badgeLabel,
+              access: a.access,
+              accessible: a.accessible,
+              explanation: a.explanation,
+              url: a.url,
+              detailPath: a.detailPath,
+            })),
+            ...ecosystem.map((e) => ({
+              scope: "ecosystem" as const,
+              key: e.key,
+              label: e.label,
+              status: e.status,
+              badgeLabel: e.badgeLabel,
+              access: e.access,
+              accessible: e.accessible,
+              explanation: e.explanation,
+              url: e.url,
+              detailPath: "",
+            })),
+          ];
+
+          return new Response(appStatusCsv(rows), {
+            status: 200,
+            headers: {
+              ...CORS,
+              "Content-Type": "text/csv; charset=utf-8",
+              "Content-Disposition": `attachment; filename="${appStatusCsvFilename(checkedAt)}"`,
+              "Cache-Control": "public, max-age=60",
+            },
+          });
+        }
+
+
         return new Response(
           JSON.stringify(
             {
               ok: true,
               service: "reson8-app-status",
               schemaVersion: APP_STATUS_SCHEMA_VERSION,
-              checkedAt: new Date().toISOString(),
+              checkedAt,
               counts: {
                 apps: apps.length,
                 ecosystem: ecosystem.length,
