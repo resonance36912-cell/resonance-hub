@@ -5,6 +5,7 @@ import { getAppEntry, type AppRegistryEntry, type ResonanceAppKey } from "@/lib/
 
 import { statusMeaning } from "@/lib/app-status-meaning";
 import { suggestApps } from "@/lib/app-slug-suggest";
+import { emitAppSuggestionClick } from "@/lib/app-suggestion-analytics";
 import { appDetailMeta, appDetailUrl } from "@/lib/app-status-meta";
 
 import { ROUTES } from "@/lib/routes";
