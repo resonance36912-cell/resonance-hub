@@ -170,8 +170,9 @@
   textarea:focus-visible,
   summary:focus-visible,
   [tabindex]:focus-visible {
-    outline: 2px solid var(--color-ring, hsl(290 90% 65%));
+    outline: 2px solid var(--color-ring, hsl(290 90% 65%)) !important;
     outline-offset: 2px;
+
     border-radius: inherit;
   }
 }
