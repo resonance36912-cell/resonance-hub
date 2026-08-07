@@ -356,6 +356,28 @@ jobs:
         if: steps.smoke_target.outputs.needs_local == 'true'
         run: bunx --bun @lhci/cli@0.14.x autorun --config=./lighthouserc.json
 
+      # Lighthouse score gate for /apps/<unknown-slug>: hard-fails when
+      # performance / accessibility / best-practices / SEO fall below their
+      # committed floors OR regress past the tolerance vs
+      # baselines/lighthouse-not-found.json. Median of 3 runs per URL.
+      - name: Lighthouse score gate (not-found page)
+        if: steps.smoke_target.outputs.needs_local == 'true'
+        env:
+          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+          LH_RUNS: "3"
+          LH_TOLERANCE: "0.05"
+        run: bun run scripts/verify-lighthouse-not-found.ts
+
+      - name: Upload not-found Lighthouse reports
+        if: always() && steps.smoke_target.outputs.needs_local == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-not-found
+          path: reports/lighthouse-not-found/
+          if-no-files-found: ignore
+          retention-days: 14
+
+
       - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
         run: |
