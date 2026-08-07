@@ -81,7 +81,7 @@ function PricingPage() {
 
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
+      <nav aria-label="Primary" className="fixed top-0 w-full z-50 px-6 py-4 flex justify-between items-center backdrop-blur-xl bg-background/60 border-b border-white/5">
         <AppLink to={ROUTES.home} className="flex items-center gap-2.5 min-w-0">
           <img src={resonanceLockup} alt="The Resonance" className="h-6 sm:h-7 w-auto brightness-0 invert" />
         </AppLink>
