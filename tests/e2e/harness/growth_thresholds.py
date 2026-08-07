@@ -161,7 +161,7 @@ def format_report(report: dict, title: str = "growth-slope thresholds") -> str:
     window = report.get("window") or {}
     if window:
         lines.append("window: " + ", ".join(f"{k}={v}" for k, v in window.items()))
-    if report["violations"]:
+    if report.get("violations"):
         lines.append("violations: " + ", ".join(report["violations"]))
         suffix = "PER_MIN" if report.get("unit") == "min" else "PER_HOUR"
         scope = f"{suite}_" if suite else ""
