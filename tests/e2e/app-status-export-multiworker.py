@@ -135,24 +135,47 @@ def fd_stats(pid: int) -> dict:
     return {"fds": total, "sockets": sockets, "threads": threads}
 
 
+def socket_inodes(pid: int) -> set[str]:
+    """Inode numbers of the socket fds this worker process holds."""
+    inodes: set[str] = set()
+    try:
+        entries = list(Path(f"/proc/{pid}/fd").iterdir())
+    except OSError:
+        return inodes
+    for entry in entries:
+        try:
+            target = os.readlink(entry)
+        except OSError:
+            continue
+        if target.startswith("socket:["):
+            inodes.add(target[8:-1])
+    return inodes
+
+
 def established_peers(pid: int, local_port: int | None = None) -> int:
-    """Established TCP conns for this worker; optionally only for one client port."""
-    hexport = f"{local_port:04X}" if local_port is not None else None
+    """Established conns on the harness port owned by THIS worker.
+
+    /proc/<pid>/net/tcp is per-netns, not per-process, so ownership is resolved
+    by matching each TCP row's inode against the worker's own socket fds.
+    """
+    mine = socket_inodes(pid)
+    hexpeer = f"{local_port:04X}" if local_port is not None else None
     hexlocal = f"{PORT:04X}"
     count = 0
     for name in ("tcp", "tcp6"):
-        p = Path(f"/proc/{pid}/net/{name}")
-        if not p.exists():
+        f = Path(f"/proc/{pid}/net/{name}")
+        if not f.exists():
             continue
-        for line in p.read_text().splitlines()[1:]:
+        for line in f.read_text().splitlines()[1:]:
             cols = line.split()
-            if len(cols) < 4 or cols[3] != "01":  # ESTABLISHED
+            if len(cols) < 10 or cols[3] != "01":  # ESTABLISHED
                 continue
             if cols[1].split(":")[-1].upper() != hexlocal:
                 continue
-            if hexport and cols[2].split(":")[-1].upper() != hexport:
+            if hexpeer and cols[2].split(":")[-1].upper() != hexpeer:
                 continue
-            count += 1
+            if cols[9] in mine:
+                count += 1
     return count
 
 
