@@ -126,6 +126,21 @@ function AppDetailPage() {
     <main className="mx-auto max-w-4xl p-6">
       <BackToHubHeader />
 
+      {from && from !== entry.key ? (
+        <div
+          role="status"
+          className="mt-4 rounded-lg border border-border bg-muted/50 p-3 text-sm text-muted-foreground"
+        >
+          <span className="font-medium text-foreground">Redirected.</span>{" "}
+          <code className="rounded bg-muted px-1 py-0.5">/apps/{from}</code> isn't the canonical
+          address for {entry.label}. We've brought you to{" "}
+          <code className="rounded bg-muted px-1 py-0.5">/apps/{entry.key}</code> — bookmark this
+          one.
+        </div>
+      ) : null}
+
+
+
       <header className="mt-6">
         <div className="flex items-center gap-3">
           <span
