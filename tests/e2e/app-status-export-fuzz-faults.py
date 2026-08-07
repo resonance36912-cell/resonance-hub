@@ -23,6 +23,7 @@ import io
 import json
 import os
 import random
+import re
 import sys
 import urllib.parse
 import zipfile
@@ -83,14 +84,20 @@ def check(label: str, ok: bool, detail: str = "") -> bool:
 
 
 def parse_fault_at(raw: str):
-    """Mirror of src/lib/app-status-export-fault.ts parseFaultAt."""
-    if raw is None or raw.strip() == "":
+    """Mirror of src/lib/app-status-export-fault.ts parseFaultAt (JS Number())."""
+    if raw is None:
         return None
-    try:
-        value = float(raw)
-    except ValueError:
+    s = raw.strip()
+    if s == "":
         return None
-    if value != value or value in (float("inf"), float("-inf")):
+    if not s.isascii():
+        return None
+    # JS Number() accepts decimal, exponent, and 0x/0o/0b literals only.
+    if re.fullmatch(r"0[xX][0-9a-fA-F]+|0[oO][0-7]+|0[bB][01]+", s):
+        value = float(int(s, 0))
+    elif re.fullmatch(r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?", s):
+        value = float(s)
+    else:
         return None
     if not value.is_integer() or value < 0:
         return None
