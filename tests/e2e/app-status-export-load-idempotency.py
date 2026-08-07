@@ -483,7 +483,11 @@ def main() -> int:
         # --- resource stability ---
         peaks = {k: max([baseline[k]] + [s[k] for s in samples])
                  for k in ("fds", "sockets", "threads", "rss_kb")}
-        slopes = {k: slope_per_minute(samples, k) for k in ("fds", "sockets", "threads")}
+        # Trend is measured on the steady-state window only: the first samples
+        # capture connection ramp-up, which is a step, not growth.
+        steady = [s for s in samples if s["t"] >= 0.3 * duration]
+        slopes = {k: slope_per_minute(steady, k) for k in ("fds", "sockets", "threads")}
+
         t.check(peaks["fds"] <= baseline["fds"] + FD_BAND + CONCURRENCY,
                 f"[resources] fds bounded under load ({baseline['fds']} -> peak {peaks['fds']})")
         t.check(peaks["sockets"] <= baseline["sockets"] + SOCK_BAND,
