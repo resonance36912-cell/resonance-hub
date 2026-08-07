@@ -80,9 +80,12 @@ BUDGETS = {
 }
 PER_WORKER_MS = 260  # added to every budget for each concurrent worker
 
-FD_BAND, SOCK_BAND, THREAD_BAND = 10, CONCURRENCY + 4, 4
-FD_SLOPE, SOCK_SLOPE, THREAD_SLOPE = 6.0, 4.0, 2.0  # per minute
-RSS_HEADROOM_MB = 1200
+BANDS = growth.band_limits({"fds": 10, "sockets": CONCURRENCY + 4, "threads": 4})
+FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
+# Per-minute growth-slope limits; override via GROWTH_*_SLOPE_PER_MIN /
+# GROWTH_SLOPE_TOLERANCE (see tests/e2e/harness/growth_thresholds.py).
+SLOPE_LIMITS = growth.slope_limits("minute", {"fds": 6.0, "sockets": 4.0, "threads": 2.0})
+RSS_HEADROOM_MB = int(float(os.environ.get("RSS_HEADROOM_MB", "1200")))
 
 
 def sha(b: bytes) -> str:
