@@ -42,15 +42,24 @@ const CAPABILITIES: Record<ResonanceAppKey, Capability[]> = {
 // catalog and this page never contradict each other.
 
 export const Route = createFileRoute("/apps/$appKey")({
+  validateSearch: (search: Record<string, unknown>): { from?: string } => ({
+    from: typeof search.from === "string" && search.from.length <= 64 ? search.from : undefined,
+  }),
   loader: ({ params }): { entry: AppRegistryEntry } => {
     const entry = getAppEntry(params.appKey);
     if (!entry) throw notFound();
     // Canonicalise hyphenated / mixed-case slugs (e.g. /apps/sync-vision).
     if (entry.key !== params.appKey) {
-      throw redirect({ to: "/apps/$appKey", params: { appKey: entry.key }, replace: true });
+      throw redirect({
+        to: "/apps/$appKey",
+        params: { appKey: entry.key },
+        search: { from: params.appKey },
+        replace: true,
+      });
     }
     return { entry };
   },
+
 
   head: ({ loaderData }) => {
     if (!loaderData) {
