@@ -249,10 +249,13 @@ async def main() -> int:
         browser = await p.chromium.launch(headless=True)
         ctx = await browser.new_context(viewport={"width": 1280, "height": 1800})
         page = await ctx.new_page()
-        page.on(
-            "console",
-            lambda m: console_errors.append(m.text) if m.type == "error" else None,
-        )
+        def on_console(m) -> None:
+            # The not-found document itself is served with HTTP 404 by design,
+            # which Chromium logs as a resource error — not an app bug.
+            if m.type == "error" and "Failed to load resource" not in m.text:
+                console_errors.append(m.text)
+
+        page.on("console", on_console)
         try:
             await test_tab_order_and_focus(page)
             await test_enter_activates(page)
