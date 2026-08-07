@@ -164,21 +164,16 @@ def check_clean(fmt: str, rows: int | None, status: int, headers: dict, body: by
                 results.append((af is not None and int(af.group(1)) == rows + 1,
                                 f"[{label}] autoFilter spans all {rows} rows"))
 
-
 # --- browser ---------------------------------------------------------------
-async def click_download(page, link_id: str):
-    try:
-        async with page.expect_download(timeout=90_000) as info:
-            await page.click(f"#{link_id}")
-        download = await info.value
-        failure = await asyncio.wait_for(download.failure(), timeout=30)
-        return download, failure
-    except Exception:
-        return None, "no download started"
-
-
 async def parallel_browser_downloads(page, specs: list[tuple[str, str, int | None]], results: list) -> None:
-    """specs: (id, fmt, faultAt). All links are clicked back-to-back in one tab."""
+    """specs: (id, fmt, faultAt). All links are clicked back-to-back in one tab.
+
+    Downloads are collected off the page event and matched back by URL, since
+    concurrent downloads can complete in any order.
+    """
+    collected: dict = {}
+    page.on("download", lambda d: collected.setdefault(d.url, d))
+
     await page.evaluate(
         """(specs) => {
             document.body.innerHTML = '';
@@ -190,8 +185,27 @@ async def parallel_browser_downloads(page, specs: list[tuple[str, str, int | Non
         }""",
         [[sid, harness_url(fmt, fault)] for sid, fmt, fault in specs],
     )
-    tasks = [asyncio.create_task(click_download(page, sid)) for sid, _, _ in specs]
-    done = await asyncio.gather(*tasks)
+    for sid, _, _ in specs:
+        await page.click(f"#{sid}")
+
+    urls = [harness_url(fmt, fault) for _, fmt, fault in specs]
+    for _ in range(120):
+        if all(u in collected for u in urls):
+            break
+        await asyncio.sleep(1)
+
+    done = []
+    for url in urls:
+        download = collected.get(url)
+        if download is None:
+            done.append((None, "no download started"))
+            continue
+        try:
+            failure = await asyncio.wait_for(download.failure(), timeout=60)
+        except Exception:
+            failure = "failure() timed out"
+        done.append((download, failure))
+
 
     for (sid, fmt, fault), (download, failure) in zip(specs, done):
         label = f"browser {sid}"
