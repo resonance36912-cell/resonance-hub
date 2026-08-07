@@ -1,0 +1,129 @@
+name: Outdated pinned dependencies
+
+# Scheduled REPORT-ONLY audit of exact version pins.
+#
+# Every dependency here is pinned exactly (enforced by verify-pinned-deps.yml),
+# so nothing ever updates by itself. This job asks the npm registry what the
+# latest published version of each pin is and files a single issue containing a
+# ready-to-apply update plan.
+#
+# It deliberately does NOT change package.json, bun.lock, or overrides, and does
+# not open PRs — Dependabot (.github/dependabot.yml) handles proposing bumps.
+# This is the human-readable overview: what's behind, grouped by risk, with the
+# exact commands to apply and re-verify.
+#
+# The issue is reused: one open issue is updated in place per run, so scheduled
+# runs never pile up duplicates.
+
+on:
+  schedule:
+    # Mondays 06:00 UTC — a plan waiting at the start of the week.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      skip_issue:
+        description: "Only write the report artifact, do not touch the issue"
+        type: boolean
+        required: false
+        default: false
+  # Keep the checker itself honest when its own code changes.
+  pull_request:
+    paths:
+      - "scripts/check-outdated-pins.ts"
+      - "scripts/lib/outdated-pins.ts"
+      - "scripts/lib/outdated-pins.test.ts"
+      - ".github/workflows/outdated-pins.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: outdated-pins-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Report outdated pins and file an update plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # Needed to create/update the plan issue. Not granted on pull_request runs
+      # from forks, which is why the issue step is gated on the schedule below.
+      issues: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # A bug in the comparison logic would silently report "all up to date",
+      # so the unit tests gate the audit rather than trailing it.
+      - name: Unit-test the outdated-pin logic
+        run: bunx vitest run scripts/lib/outdated-pins.test.ts
+
+      - name: Check pins against the npm registry (read-only)
+        id: audit
+        run: bun run scripts/check-outdated-pins.ts
+
+      # Proof the audit mutated nothing. If a future change starts writing pins,
+      # this fails instead of quietly rewriting the lockfile on a schedule.
+      - name: Assert the repo is untouched
+        run: |
+          if [ -n "$(git status --porcelain -- package.json bun.lock)" ]; then
+            echo "::error::check-outdated-pins.ts modified package.json or bun.lock — it must be report-only"
+            git --no-pager diff -- package.json bun.lock
+            exit 1
+          fi
+          echo "package.json and bun.lock are unchanged."
+
+      - name: Upload the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-pins-report
+          path: reports/outdated-pins.*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: File or update the update-plan issue
+        if: github.event_name != 'pull_request' && inputs.skip_issue != true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTDATED_COUNT: ${{ steps.audit.outputs.outdated_count }}
+          SUMMARY: ${{ steps.audit.outputs.summary }}
+        run: |
+          set -euo pipefail
+          MARKER='<!-- reson8:outdated-pins -->'
+          TITLE='Outdated pinned dependencies — update plan'
+          BODY_FILE=reports/outdated-pins.md
+
+          # Find our own issue by marker, so a human-titled issue is never hijacked.
+          EXISTING=$(gh issue list --state open --limit 100 --json number,body \
+            --jq "[.[] | select(.body != null and (.body | contains(\"$MARKER\")))] | .[0].number // empty")
+
+          if [ "${OUTDATED_COUNT}" = "0" ]; then
+            if [ -n "$EXISTING" ]; then
+              gh issue comment "$EXISTING" --body "All pins are back at their latest published versions — closing this plan."
+              gh issue close "$EXISTING"
+              echo "Closed #$EXISTING: everything is up to date."
+            else
+              echo "Nothing outdated and no open plan issue. Done."
+            fi
+            exit 0
+          fi
+
+          if [ -n "$EXISTING" ]; then
+            gh issue edit "$EXISTING" --title "$TITLE" --body-file "$BODY_FILE"
+            echo "Updated #$EXISTING — ${SUMMARY}"
+          else
+            # --label is best-effort: a repo without the label should still get the issue.
+            URL=$(gh issue create --title "$TITLE" --body-file "$BODY_FILE" --label dependencies \
+              || gh issue create --title "$TITLE" --body-file "$BODY_FILE")
+            echo "Opened $URL — ${SUMMARY}"
+          fi

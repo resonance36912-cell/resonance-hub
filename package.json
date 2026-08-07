@@ -56,6 +56,8 @@
     "baseline:lighthouse-not-found": "bun run scripts/verify-lighthouse-not-found.ts --update",
     "test:lighthouse-scores": "bun test scripts/lib/lighthouse-scores.test.ts",
     "test:pinned-deps": "bun test scripts/lib/pinned-deps.test.ts",
+    "deps:outdated": "bun run scripts/check-outdated-pins.ts",
+    "test:outdated-pins": "vitest run scripts/lib/outdated-pins.test.ts",
     "verify:not-found-jsonld-live": "bun run scripts/verify-not-found-jsonld-live.ts",
     "check:app-status-drift": "bun run scripts/check-app-status-drift.ts",
     "baseline:app-status": "bun run scripts/check-app-status-drift.ts --update",
