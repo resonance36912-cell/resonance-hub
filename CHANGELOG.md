@@ -16,7 +16,10 @@ to the PR or issue where useful.
 
 ### Added
 
-_Nothing yet._
+- Lighthouse score gate for the app not-found page: `bun run verify:lighthouse-not-found`
+  fails CI when performance, accessibility, best-practices, or SEO drops below its
+  floor or regresses past tolerance vs `baselines/lighthouse-not-found.json`.
+
 
 <!--
 Examples:
