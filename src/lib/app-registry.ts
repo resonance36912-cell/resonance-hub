@@ -136,9 +136,24 @@ export type AppKey = ResonanceAppKey;
 
 export const BILLABLE_APP_KEYS: AppKey[] = Object.keys(APP_REGISTRY) as AppKey[];
 
-export function getAppEntry(key: string): AppRegistryEntry | null {
-  return (APP_REGISTRY as Record<string, AppRegistryEntry>)[key] ?? null;
+/**
+ * Resolve a URL slug to a canonical registry key.
+ * Accepts hyphenated and mixed-case slugs (e.g. "sync-vision" -> "sync_vision").
+ */
+export function resolveAppKey(slug: string): AppKey | null {
+  const raw = slug.trim();
+  const candidates = [raw, raw.toLowerCase(), raw.toLowerCase().replace(/-/g, "_")];
+  for (const c of candidates) {
+    if (c in APP_REGISTRY) return c as AppKey;
+  }
+  return null;
 }
+
+export function getAppEntry(key: string): AppRegistryEntry | null {
+  const resolved = resolveAppKey(key);
+  return resolved ? (APP_REGISTRY as Record<string, AppRegistryEntry>)[resolved] : null;
+}
+
 
 /**
  * Wider ecosystem — informational/media only. NEVER reference these from
