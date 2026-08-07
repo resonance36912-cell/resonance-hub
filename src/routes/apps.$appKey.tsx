@@ -270,11 +270,24 @@ function AppNotFound() {
             Did you mean{suggestions.length > 1 ? " one of these" : ""}?
           </h2>
           <ul className="mt-3 space-y-2">
-            {suggestions.map(({ entry }) => (
+            {suggestions.map(({ entry, score }, index) => (
               <li key={entry.key}>
                 <AppLink
                   to="/apps/$appKey"
                   params={{ appKey: entry.key }}
+                  data-suggestion-key={entry.key}
+                  data-suggestion-rank={index + 1}
+                  onClick={() =>
+                    emitAppSuggestionClick({
+                      fromSlug: appKey,
+                      fromPath: `/apps/${appKey}`,
+                      appKey: entry.key,
+                      toPath: `/apps/${entry.key}`,
+                      rank: index + 1,
+                      suggestionCount: suggestions.length,
+                      score,
+                    })
+                  }
                   className="block rounded-lg border border-border p-4 transition-colors hover:bg-muted"
                 >
                   <span className="font-medium">{entry.label}</span>
@@ -288,6 +301,7 @@ function AppNotFound() {
           </ul>
         </section>
       )}
+
 
       <p className="mt-6 text-sm">
         <AppLink to={ROUTES.apps} className="text-primary underline">
