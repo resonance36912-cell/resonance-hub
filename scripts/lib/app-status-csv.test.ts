@@ -5,7 +5,7 @@ import {
   csvCell,
   APP_STATUS_CSV_HEADERS,
   type AppStatusCsvRow,
-} from "./app-status-csv";
+} from "@/lib/app-status-csv";
 
 const row: AppStatusCsvRow = {
   scope: "app",
