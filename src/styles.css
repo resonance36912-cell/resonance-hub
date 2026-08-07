@@ -43,7 +43,8 @@
   --muted: hsl(265 10% 65%);
   --muted-foreground: hsl(265 10% 65%);
   --border: hsl(265 15% 16%);
-  --primary: hsl(290 90% 65%);
+  /* WCAG AA: white on this primary is 5.75:1 (was 65% ≈ 2.9:1 — failing) */
+  --primary: hsl(290 90% 42%);
   --primary-foreground: hsl(0 0% 100%);
 
   /* Brand spectrum — violet → magenta → pink (podcast palette) */
