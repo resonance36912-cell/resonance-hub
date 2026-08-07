@@ -160,7 +160,7 @@ def main() -> int:
               f"{len(rows)} growth slopes are inside their configured limits.")
 
     comment = build_comment(args.label, report, rows, unit, growth_ok,
-                            args.artifact, args.run_url, slug)
+                            args.artifact, args.run_url, slug, suite)
     out = Path(args.comment_out) if args.comment_out else report_path.parent / "growth-comment.md"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(comment)
