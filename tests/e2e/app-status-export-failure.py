@@ -9,7 +9,10 @@ Covers:
      partial file, and the body is not CSV or a ZIP fragment.
   3. Clicking a link to a failing export in a real browser triggers no download.
   4. Validation failures (unknown appKey/tag -> 400) behave the same way.
-  5. Successful exports are fully buffered: Content-Length matches the byte
+  5. Failure responses omit every attachment-related header (Content-Disposition,
+     Content-Transfer-Encoding, Content-Range, X-Filename, ...), never declare a
+     Content-Length that belongs to the would-be export, and stay uncacheable.
+  6. Successful exports are fully buffered: Content-Length matches the byte
      length, CSV ends with a complete CRLF-terminated record, and XLSX contains
      a valid ZIP end-of-central-directory record (never truncated).
 
@@ -79,6 +82,65 @@ async def check_error_response(req, label: str, target: str, expected_status: in
     return payload
 
 
+ATTACHMENT_HEADERS = (
+    "content-disposition",
+    "content-transfer-encoding",
+    "content-description",
+    "content-range",
+    "x-filename",
+    "x-suggested-filename",
+    "x-download-options",
+)
+
+EXPORT_MIME_HINTS = ("text/csv", "application/vnd.openxmlformats", "application/octet-stream")
+
+
+async def check_error_headers(req, label: str, target: str, body_len_by_fmt: dict, results: list) -> None:
+    """A failed export must look like JSON, never like a (partial) attachment."""
+    res = await req.get(target)
+    body = await res.body()
+    headers = {k.lower(): v for k, v in res.headers.items()}
+
+    for name in ATTACHMENT_HEADERS:
+        results.append((name not in headers, f"[{label}] no {name} header (got {headers.get(name)!r})"))
+
+    ctype = headers.get("content-type", "")
+    results.append((
+        ctype.startswith("application/json"),
+        f"[{label}] Content-Type is JSON (got {ctype!r})",
+    ))
+    results.append((
+        not any(hint in ctype for hint in EXPORT_MIME_HINTS),
+        f"[{label}] Content-Type carries no export/download MIME hint",
+    ))
+
+    declared = headers.get("content-length")
+    if declared is None:
+        results.append((True, f"[{label}] no Content-Length declared (chunked JSON is fine)"))
+    else:
+        results.append((
+            declared == str(len(body)),
+            f"[{label}] Content-Length matches the JSON body ({declared} vs {len(body)})",
+        ))
+        results.append((
+            declared not in {str(n) for n in body_len_by_fmt.values()},
+            f"[{label}] Content-Length is not the would-be export size (got {declared}, exports {sorted(body_len_by_fmt.values())})",
+        ))
+
+    results.append((
+        headers.get("cache-control") in ("no-store", "no-cache"),
+        f"[{label}] error is uncacheable (cache-control={headers.get('cache-control')!r})",
+    ))
+    results.append((
+        headers.get("accept-ranges") is None,
+        f"[{label}] no Accept-Ranges, so no resumable-download semantics",
+    ))
+    results.append((
+        headers.get("access-control-expose-headers", "").lower().find("content-disposition") == -1,
+        f"[{label}] Content-Disposition is not even exposed to CORS clients",
+    ))
+
+
 async def check_no_download(page, target: str, label: str, results: list) -> None:
     # No `download` attribute: the browser must save a file only when the
     # server sends Content-Disposition: attachment.
@@ -133,6 +195,12 @@ async def main() -> int:
         page = await context.new_page()
         req = context.request
 
+        export_sizes = {}
+        for fmt in ("csv", "xlsx"):
+            ok_res = await req.get(url(fmt))
+            export_sizes[fmt] = len(await ok_res.body())
+        results.append((all(v > 0 for v in export_sizes.values()), f"[setup] baseline export sizes {export_sizes}"))
+
         injected_supported = True
         for fmt in ("csv", "xlsx"):
             target = url(fmt, f"faultInject={fmt}")
@@ -147,6 +215,7 @@ async def main() -> int:
                 ))
                 continue
             await check_error_response(req, f"{fmt} mid-export failure", target, 500, results)
+            await check_error_headers(req, f"{fmt} mid-export failure headers", target, export_sizes, results)
             await check_no_download(page, target, f"{fmt} mid-export failure", results)
 
         results.append((True, f"[env] fault injection {'enabled' if injected_supported else 'compiled out'}"))
@@ -154,6 +223,7 @@ async def main() -> int:
         for fmt in ("csv", "xlsx"):
             bad = url(fmt, "appKey=nope_not_real&tag=bogus")
             await check_error_response(req, f"{fmt} invalid filters", bad, 400, results)
+            await check_error_headers(req, f"{fmt} invalid filters headers", bad, export_sizes, results)
             await check_no_download(page, bad, f"{fmt} invalid filters", results)
 
         await check_success_is_complete(req, results)

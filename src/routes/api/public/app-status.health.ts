@@ -138,7 +138,13 @@ export const Route = createFileRoute("/api/public/app-status/health")({
                 JSON.stringify({ ok: false, error: filtered.error }, null, 2),
                 {
                   status: 400,
-                  headers: { ...CORS, "Content-Type": "application/json; charset=utf-8" },
+                  headers: {
+                    ...CORS,
+                    "Content-Type": "application/json; charset=utf-8",
+                    // Error envelopes must never be cached as if they were an
+                    // export, and must never carry attachment headers.
+                    "Cache-Control": "no-store",
+                  },
                 },
               );
             }
