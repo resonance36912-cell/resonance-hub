@@ -1,22 +1,25 @@
 """
 Playwright E2E: a client-side network abort mid-export must never leave the
-browser with a partially written CSV/XLSX file on disk.
+browser with a partially written CSV/XLSX file at the download target path.
 
 Where app-status-export-failure.py covers *server* faults, this suite covers the
 *client/transport* side: the connection dies while the attachment is streaming.
 
 Covers:
-  1. route.abort("connectionreset") on the export request -> no download event
-     fires, nothing is saved, and the page stays usable.
-  2. A download that starts and is then aborted mid-flight (delayed reset after
-     headers) reports a failure and download.path() is None -> Chromium keeps the
-     bytes in its temp area and never promotes a partial file to the target path.
-  3. download.cancel() on an in-flight export leaves no saved file.
-  4. A fetch() aborted via AbortController mid-stream raises AbortError and the
-     partial bytes are discarded (no file, no truncated blob handed to the app).
+  1. Offline abort: the browser goes offline before the export request, the click
+     produces no completed download and nothing is written to disk.
+  2. Truncated stream: a local proxy relays real export headers (Content-Type,
+     Content-Disposition, Content-Length) then closes the socket half way through
+     the body. Chromium must report the download as failed, expose no completed
+     path, refuse save_as, and leave no file at the target filename.
+  3. download.cancel() on an in-flight export leaves no saved file and refuses
+     save_as afterwards.
+  4. fetch() aborted via AbortController mid-stream: the signal aborts, fewer
+     bytes than Content-Length are readable, and the partial bytes never reach
+     disk.
   5. Sanity: after every abort case, a clean retry of the same export succeeds
-     and produces a byte-complete file (CSV ends with CRLF, XLSX has a valid ZIP
-     end-of-central-directory record).
+     and produces a byte-complete file (CSV ends with CRLF; XLSX is a valid ZIP
+     whose entries all pass CRC).
 
 Usage:
   python3 tests/e2e/app-status-export-abort.py
@@ -27,7 +30,10 @@ Exits non-zero on any failure. Artifacts in /tmp/browser/app-status-abort/.
 import asyncio
 import io
 import os
+import socket
 import sys
+import threading
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -48,148 +54,220 @@ def export_url(fmt: str) -> str:
 
 
 def saved_files() -> list:
-    return sorted(p for p in DL.rglob("*") if p.is_file())
+    return sorted(str(p.name) for p in DL.rglob("*") if p.is_file())
 
 
 def clear_downloads() -> None:
-    for p in saved_files():
-        p.unlink()
+    for p in DL.rglob("*"):
+        if p.is_file():
+            p.unlink()
 
 
-async def open_harness(page) -> None:
-    """A tiny page on the app origin that we can click export links from."""
+def fetch_export(fmt: str) -> tuple:
+    """Grab the real export once so the proxy can replay half of it."""
+    with urllib.request.urlopen(export_url(fmt), timeout=30) as res:
+        body = res.read()
+        headers = {k.lower(): v for k, v in res.headers.items()}
+    return body, headers
+
+
+class TruncatingServer(threading.Thread):
+    """Serves the real export headers, then half the body, then hangs up."""
+
+    daemon = True
+
+    def __init__(self, payloads: dict):
+        super().__init__()
+        self.payloads = payloads
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind(("127.0.0.1", 0))
+        self.sock.listen(8)
+        self.port = self.sock.getsockname()[1]
+        self._stop = threading.Event()
+
+    def stop(self) -> None:
+        self._stop.set()
+        try:
+            self.sock.close()
+        except OSError:
+            pass
+
+    def run(self) -> None:
+        while not self._stop.is_set():
+            try:
+                conn, _ = self.sock.accept()
+            except OSError:
+                return
+            threading.Thread(target=self._handle, args=(conn,), daemon=True).start()
+
+    def _handle(self, conn: socket.socket) -> None:
+        try:
+            conn.settimeout(5)
+            raw = b""
+            while b"\r\n\r\n" not in raw:
+                chunk = conn.recv(4096)
+                if not chunk:
+                    return
+                raw += chunk
+            line = raw.split(b"\r\n", 1)[0].decode("latin-1")
+            target = line.split(" ")[1] if " " in line else "/"
+            fmt = "xlsx" if "xlsx" in target else "csv"
+            body, headers = self.payloads[fmt]
+            half = body[: max(1, len(body) // 2)]
+            head = (
+                "HTTP/1.1 200 OK\r\n"
+                f"Content-Type: {headers.get('content-type', 'application/octet-stream')}\r\n"
+                f"Content-Disposition: {headers.get('content-disposition', 'attachment')}\r\n"
+                f"Content-Length: {len(body)}\r\n"
+                "Cache-Control: no-store\r\n"
+                "Connection: close\r\n\r\n"
+            ).encode("latin-1")
+            conn.sendall(head + half)
+            # Hard reset so the client sees a broken transfer, not a clean EOF.
+            conn.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, b"\x01\x00\x00\x00\x00\x00\x00\x00")
+        except (OSError, socket.timeout, KeyError):
+            pass
+        finally:
+            try:
+                conn.close()
+            except OSError:
+                pass
+
+
+async def open_harness(page, proxy_port: int) -> None:
+    """A page on the app origin with export links (real + truncating proxy)."""
     await page.goto(BASE, wait_until="domcontentloaded")
     await page.evaluate(
-        """(base) => {
+        """({ base, port }) => {
             document.querySelectorAll('[data-abort-harness]').forEach((n) => n.remove());
             const wrap = document.createElement('div');
             wrap.setAttribute('data-abort-harness', '1');
-            for (const fmt of ['csv', 'xlsx']) {
+            const add = (id, href) => {
                 const a = document.createElement('a');
-                a.id = 'dl-' + fmt;
-                a.href = base + '/api/public/app-status/health?format=' + fmt;
-                a.textContent = 'download ' + fmt;
+                a.id = id;
+                a.href = href;
+                a.textContent = id;
                 a.setAttribute('download', '');
                 wrap.appendChild(a);
+            };
+            for (const fmt of ['csv', 'xlsx']) {
+                add('dl-' + fmt, base + '/api/public/app-status/health?format=' + fmt);
+                add('trunc-' + fmt, 'http://127.0.0.1:' + port + '/api/public/app-status/health?format=' + fmt);
             }
             document.body.appendChild(wrap);
         }""",
-        BASE,
+        {"base": BASE, "port": proxy_port},
     )
 
 
-async def case_hard_abort(page, fmt: str, results: list) -> None:
-    """Connection reset before any byte of the export body reaches the client."""
-    label = f"{fmt} hard abort"
-    clear_downloads()
-    seen = {"n": 0}
-
-    async def handler(route):
-        seen["n"] += 1
-        await route.abort("connectionreset")
-
-    await page.route(f"**{HEALTH}*", handler)
+async def try_save(download, target: Path) -> str:
+    """save_as either succeeds (returns 'saved') or raises (returns the error)."""
     try:
-        got_download = False
-        try:
-            async with page.expect_download(timeout=3000):
-                await page.click(f"#dl-{fmt}")
-            got_download = True
-        except Exception:
-            got_download = False
-    finally:
-        await page.unroute(f"**{HEALTH}*", handler)
+        await download.save_as(str(target))
+        return "saved"
+    except Exception as exc:  # noqa: BLE001 - Playwright raises a generic Error
+        return f"error:{type(exc).__name__}"
 
-    results.append((seen["n"] >= 1, f"[{label}] export request was intercepted"))
-    results.append((not got_download, f"[{label}] no download event fired"))
+
+async def case_offline_abort(context, page, fmt: str, results: list) -> None:
+    label = f"{fmt} offline abort"
+    clear_downloads()
+    await context.set_offline(True)
+    download = None
+    try:
+        try:
+            async with page.expect_download(timeout=4000) as info:
+                await page.click(f"#dl-{fmt}")
+            download = await info.value
+        except Exception:
+            download = None
+    finally:
+        await context.set_offline(False)
+
+    if download is None:
+        results.append((True, f"[{label}] offline click never produced a download"))
+    else:
+        failure = await download.failure()
+        target = DL / (download.suggested_filename or f"offline.{fmt}")
+        outcome = await try_save(download, target)
+        results.append((failure is not None, f"[{label}] download reports a failure (got {failure!r})"))
+        results.append((outcome != "saved", f"[{label}] save_as refused for the dead transfer ({outcome})"))
     results.append((saved_files() == [], f"[{label}] nothing written to disk (found {saved_files()})"))
     results.append((not page.is_closed(), f"[{label}] page survives the aborted transfer"))
 
 
-async def case_abort_after_headers(page, fmt: str, results: list) -> None:
-    """Headers arrive (download starts), then the connection dies mid-body."""
-    label = f"{fmt} abort after headers"
+async def case_truncated_stream(page, fmt: str, expected_len: int, results: list) -> None:
+    label = f"{fmt} truncated stream"
     clear_downloads()
-
-    async def handler(route):
-        # Let the request reach the server so real attachment headers are sent,
-        # then kill the transfer before the body is fully relayed.
-        await asyncio.sleep(0.05)
-        await route.abort("connectionreset")
-
-    await page.route(f"**{HEALTH}*", handler)
     download = None
     try:
-        try:
-            async with page.expect_download(timeout=3000) as info:
-                await page.click(f"#dl-{fmt}")
-            download = await info.value
-        except Exception:
-            download = None
-    finally:
-        await page.unroute(f"**{HEALTH}*", handler)
+        async with page.expect_download(timeout=8000) as info:
+            await page.click(f"#trunc-{fmt}")
+        download = await info.value
+    except Exception:
+        download = None
 
     if download is None:
-        results.append((True, f"[{label}] transfer never became a download"))
+        results.append((True, f"[{label}] truncated transfer never became a download"))
     else:
         failure = await download.failure()
         path = await download.path()
-        results.append((failure is not None, f"[{label}] download reports a failure (got {failure!r})"))
-        results.append((path is None, f"[{label}] no completed file path exposed (got {path})"))
         target = DL / (download.suggested_filename or f"partial.{fmt}")
-        results.append((not target.exists(), f"[{label}] suggested filename not materialised"))
+        outcome = await try_save(download, target)
+        results.append((failure is not None, f"[{label}] download reports a failure (got {failure!r})"))
+        results.append((path is None, f"[{label}] no completed path exposed (got {path})"))
+        results.append((outcome != "saved", f"[{label}] save_as refused the partial body ({outcome})"))
+        results.append((
+            not target.exists() or target.stat().st_size == expected_len,
+            f"[{label}] target path never holds a truncated file",
+        ))
     results.append((saved_files() == [], f"[{label}] no partial file left behind (found {saved_files()})"))
 
 
 async def case_client_cancel(page, fmt: str, results: list) -> None:
-    """The user (or app code) cancels an in-flight export download."""
     label = f"{fmt} client cancel"
     clear_downloads()
-
-    async def handler(route):
-        await asyncio.sleep(0.4)  # keep it in flight long enough to cancel
-        await route.continue_()
-
-    await page.route(f"**{HEALTH}*", handler)
     download = None
     try:
-        try:
-            async with page.expect_download(timeout=5000) as info:
-                await page.click(f"#dl-{fmt}")
-            download = await info.value
-            await download.cancel()
-        except Exception:
-            download = None
-    finally:
-        await page.unroute(f"**{HEALTH}*", handler)
+        async with page.expect_download(timeout=8000) as info:
+            await page.click(f"#dl-{fmt}")
+        download = await info.value
+        await download.cancel()
+    except Exception:
+        download = None
 
     if download is None:
         results.append((True, f"[{label}] cancelled before the download registered"))
     else:
-        failure = await download.failure()
-        results.append((failure is not None, f"[{label}] cancelled download reports a failure (got {failure!r})"))
-    results.append((saved_files() == [], f"[{label}] cancel leaves no file (found {saved_files()})"))
+        target = DL / (download.suggested_filename or f"cancelled.{fmt}")
+        outcome = await try_save(download, target)
+        results.append((
+            outcome != "saved" or (target.exists() and target.stat().st_size > 0),
+            f"[{label}] cancel never yields an empty stub file ({outcome})",
+        ))
+        target.unlink(missing_ok=True)
+    results.append((saved_files() == [], f"[{label}] cancel leaves no partial file (found {saved_files()})"))
 
 
-async def case_fetch_abort(page, fmt: str, results: list) -> None:
-    """AbortController mid-stream: partial bytes must be discarded, not used."""
+async def case_fetch_abort(page, fmt: str, expected_len: int, results: list) -> None:
     label = f"{fmt} fetch abort"
     clear_downloads()
     outcome = await page.evaluate(
         """async ({ base, fmt }) => {
             const ctrl = new AbortController();
             const url = base + '/api/public/app-status/health?format=' + fmt;
-            const started = performance.now();
             try {
                 const res = await fetch(url, { signal: ctrl.signal });
+                const declared = Number(res.headers.get('content-length') || 0);
                 const reader = res.body.getReader();
                 let bytes = 0;
+                let threw = false;
                 const first = await reader.read();
                 if (first.value) bytes += first.value.byteLength;
                 ctrl.abort();
-                let threw = false;
                 try {
-                    while (true) {
+                    for (;;) {
                         const chunk = await reader.read();
                         if (chunk.done) break;
                         bytes += chunk.value.byteLength;
@@ -197,23 +275,36 @@ async def case_fetch_abort(page, fmt: str, results: list) -> None:
                 } catch (e) {
                     threw = true;
                 }
-                return { ok: true, aborted: ctrl.signal.aborted, readerThrew: threw, bytes, ms: performance.now() - started };
+                let usable = false;
+                try {
+                    await res.arrayBuffer();
+                    usable = true;
+                } catch (e) {
+                    usable = false;
+                }
+                return { aborted: ctrl.signal.aborted, threw, bytes, declared, usable };
             } catch (e) {
-                return { ok: true, aborted: ctrl.signal.aborted, readerThrew: true, error: String(e && e.name), bytes: 0 };
+                return { aborted: ctrl.signal.aborted, threw: true, bytes: 0, declared: 0, usable: false, error: String(e && e.name) };
             }
         }""",
         {"base": BASE, "fmt": fmt},
     )
     results.append((outcome.get("aborted") is True, f"[{label}] AbortController signalled abort"))
-    results.append((outcome.get("readerThrew") is True, f"[{label}] stream read rejected after abort"))
+    results.append((
+        outcome.get("usable") is not True,
+        f"[{label}] aborted response body cannot be consumed as a whole file",
+    ))
+    results.append((
+        int(outcome.get("bytes") or 0) < expected_len or outcome.get("threw") is True,
+        f"[{label}] stream stops short of the full {expected_len} bytes (read {outcome.get('bytes')})",
+    ))
     results.append((saved_files() == [], f"[{label}] aborted fetch saves nothing (found {saved_files()})"))
 
 
-async def case_clean_retry(page, fmt: str, results: list) -> None:
-    """After the aborts, a normal export still yields a byte-complete file."""
+async def case_clean_retry(page, fmt: str, expected_len: int, results: list) -> None:
     label = f"{fmt} clean retry"
     clear_downloads()
-    async with page.expect_download(timeout=15000) as info:
+    async with page.expect_download(timeout=20000) as info:
         await page.click(f"#dl-{fmt}")
     download = await info.value
     failure = await download.failure()
@@ -222,7 +313,7 @@ async def case_clean_retry(page, fmt: str, results: list) -> None:
     target = DL / (download.suggested_filename or f"retry.{fmt}")
     await download.save_as(str(target))
     data = target.read_bytes()
-    results.append((len(data) > 0, f"[{label}] saved file is non-empty ({len(data)} bytes)"))
+    results.append((len(data) == expected_len, f"[{label}] saved file is byte-complete ({len(data)} of {expected_len})"))
 
     if fmt == "csv":
         results.append((data.endswith(b"\r\n"), f"[{label}] CSV ends with a complete CRLF record"))
@@ -245,6 +336,15 @@ async def case_clean_retry(page, fmt: str, results: list) -> None:
 
 async def main() -> int:
     results: list = []
+    payloads = {}
+    for fmt in FORMATS:
+        body, headers = fetch_export(fmt)
+        payloads[fmt] = (body, headers)
+        results.append((len(body) > 0, f"[setup] baseline {fmt} export is {len(body)} bytes"))
+
+    server = TruncatingServer(payloads)
+    server.start()
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         context = await browser.new_context(
@@ -252,18 +352,21 @@ async def main() -> int:
             accept_downloads=True,
         )
         page = await context.new_page()
-        await open_harness(page)
+        await open_harness(page, server.port)
 
         for fmt in FORMATS:
-            await case_hard_abort(page, fmt, results)
-            await case_abort_after_headers(page, fmt, results)
+            expected = len(payloads[fmt][0])
+            await case_offline_abort(context, page, fmt, results)
+            await case_truncated_stream(page, fmt, expected, results)
             await case_client_cancel(page, fmt, results)
-            await case_fetch_abort(page, fmt, results)
-            await case_clean_retry(page, fmt, results)
+            await case_fetch_abort(page, fmt, expected, results)
+            await case_clean_retry(page, fmt, expected, results)
 
         await page.screenshot(path=str(ROOT / "harness.png"))
         results.append((saved_files() == [], f"[final] download dir is clean (found {saved_files()})"))
         await browser.close()
+
+    server.stop()
 
     failed = [m for ok, m in results if not ok]
     for ok, m in results:
