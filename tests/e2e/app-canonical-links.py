@@ -76,7 +76,7 @@ async def main() -> int:
         context = await browser.new_context(viewport={"width": 1280, "height": 1800})
         page = await context.new_page()
 
-        pages = ["/apps", "/apps/not-a-real-app"] + [f"/apps/{a['key']}" for a in apps]
+        pages = ["/apps", "/apps/sinc-vision"] + [f"/apps/{a['key']}" for a in apps]
         all_slugs: set[str] = set()
 
         for path in pages:
