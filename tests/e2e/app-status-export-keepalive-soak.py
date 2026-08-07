@@ -277,7 +277,10 @@ def export_path(fmt: str, chunks: list | None = None) -> str:
     return p if not chunks else f"{p}&{fault_query(chunks)}"
 
 
+# Tokens that may still coerce to a number (1e3, 0x10) are only ever mixed with
+# reachable offsets; JUNK never coerces, so a junk-only plan must export cleanly.
 MALFORMED = ["abc", "", "1e3", "0x10", "-4", "1.5", "NaN", " 12 "]
+JUNK = ["abc", "NaN", "nope", "zzz", "null", "true", "", "faultAt"]
 
 
 def fault_plan(i: int, size: int) -> tuple[list, bool]:
@@ -296,7 +299,7 @@ def fault_plan(i: int, size: int) -> tuple[list, bool]:
         return [10 ** 9, [2 * 10 ** 9, a]], True
     if variant == 4:  # nothing reachable -> must be a clean export
         return [10 ** 9, [2 * 10 ** 9, 3 * 10 ** 9]], False
-    return [MALFORMED[i % len(MALFORMED)], MALFORMED[(i + 3) % len(MALFORMED)]], False
+    return [JUNK[i % len(JUNK)], [JUNK[(i + 3) % len(JUNK)], JUNK[(i + 5) % len(JUNK)]]], False
 
 
 # --- soak ------------------------------------------------------------------
@@ -426,6 +429,9 @@ def soak(pid: int, sizes: dict, t: Tally) -> dict:
             f"peak {peaks['sockets']})")
     t.check(settled["threads"] <= baseline["threads"] + THREAD_BAND,
             f"[final] threads settled ({baseline['threads']} -> {settled['threads']})")
+    t.check(peaks["rss_kb"] <= baseline["rss_kb"] + 800 * 1024,
+            f"[final] server RSS bounded ({baseline['rss_kb'] // 1024} -> "
+            f"{peaks['rss_kb'] // 1024} MiB peak)")
     t.check(counters["faults"] > 0 and counters["retries"] > 0,
             "[final] soak actually exercised faults and retries")
 
