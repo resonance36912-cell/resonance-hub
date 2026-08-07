@@ -336,6 +336,8 @@ def start_nginx_proxy(ports: list) -> subprocess.Popen | None:
     servers = "\n".join(f"    server {HOST}:{p};" for p in ports)
     (prefix / "conf/nginx.conf").write_text(f"""
 daemon off;
+{'user root;' if os.geteuid() == 0 else ''}
+
 error_log {prefix}/logs/error.log warn;
 pid {prefix}/logs/nginx.pid;
 events {{ worker_connections 1024; }}
