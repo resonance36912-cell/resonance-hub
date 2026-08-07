@@ -93,80 +93,110 @@ export const Route = createFileRoute("/api/public/app-status/health")({
         const format = searchParams.get("format")?.toLowerCase();
 
         if (format === "csv" || format === "xlsx") {
+          /**
+           * Export bodies are fully encoded in memory before any response is
+           * constructed, so a mid-export failure can never reach the client as
+           * a truncated attachment: we return a JSON error envelope with no
+           * Content-Disposition instead.
+           */
           try {
-          const allRows: AppStatusCsvRow[] = [
-            ...apps.map((a) => ({
-              scope: "app" as const,
-              key: a.key,
-              label: a.label,
-              status: a.status,
-              badgeLabel: a.badgeLabel,
-              access: a.access,
-              accessible: a.accessible,
-              explanation: a.explanation,
-              url: a.url,
-              detailPath: a.detailPath,
-            })),
-            ...ecosystem.map((e) => ({
-              scope: "ecosystem" as const,
-              key: e.key,
-              label: e.label,
-              status: e.status,
-              badgeLabel: e.badgeLabel,
-              access: e.access,
-              accessible: e.accessible,
-              explanation: e.explanation,
-              url: e.url,
-              detailPath: "",
-            })),
-          ];
+            const allRows: AppStatusCsvRow[] = [
+              ...apps.map((a) => ({
+                scope: "app" as const,
+                key: a.key,
+                label: a.label,
+                status: a.status,
+                badgeLabel: a.badgeLabel,
+                access: a.access,
+                accessible: a.accessible,
+                explanation: a.explanation,
+                url: a.url,
+                detailPath: a.detailPath,
+              })),
+              ...ecosystem.map((e) => ({
+                scope: "ecosystem" as const,
+                key: e.key,
+                label: e.label,
+                status: e.status,
+                badgeLabel: e.badgeLabel,
+                access: e.access,
+                accessible: e.accessible,
+                explanation: e.explanation,
+                url: e.url,
+                detailPath: "",
+              })),
+            ];
 
-          const filters = parseAppStatusFilters({
-            appKey: searchParams.getAll("appKey"),
-            tag: searchParams.getAll("tag"),
-          });
-          const filtered = filterAppStatusRows(allRows, filters);
-
-          if (!filtered.ok) {
-            return new Response(
-              JSON.stringify({ ok: false, error: filtered.error }, null, 2),
-              {
-                status: 400,
-                headers: { ...CORS, "Content-Type": "application/json; charset=utf-8" },
-              },
-            );
-          }
-
-          const rows = filtered.rows;
-          const slug = filterSlug(filters);
-
-          if (format === "xlsx") {
-            const workbook = appStatusWorkbook({
-              rows,
-              legend,
-              checkedAt,
-              schemaVersion: APP_STATUS_SCHEMA_VERSION,
+            const filters = parseAppStatusFilters({
+              appKey: searchParams.getAll("appKey"),
+              tag: searchParams.getAll("tag"),
             });
-            return new Response(workbook as unknown as BodyInit, {
+            const filtered = filterAppStatusRows(allRows, filters);
+
+            if (!filtered.ok) {
+              return new Response(
+                JSON.stringify({ ok: false, error: filtered.error }, null, 2),
+                {
+                  status: 400,
+                  headers: { ...CORS, "Content-Type": "application/json; charset=utf-8" },
+                },
+              );
+            }
+
+            const rows = filtered.rows;
+            const slug = filterSlug(filters);
+
+            // Dev-only fault injection so tests can prove the failure path
+            // never emits a partial attachment. Ignored in production builds.
+            if (import.meta.env.DEV && searchParams.get("faultInject") === format) {
+              throw new Error(`injected ${format} encoder failure`);
+            }
+
+            if (format === "xlsx") {
+              const workbook = appStatusWorkbook({
+                rows,
+                legend,
+                checkedAt,
+                schemaVersion: APP_STATUS_SCHEMA_VERSION,
+              });
+              return new Response(workbook as unknown as BodyInit, {
+                status: 200,
+                headers: {
+                  ...CORS,
+                  "Content-Type": APP_STATUS_XLSX_CONTENT_TYPE,
+                  "Content-Disposition": `attachment; filename="${appStatusXlsxFilename(checkedAt).replace(/\.xlsx$/, `${slug}.xlsx`)}"`,
+                  "Cache-Control": "public, max-age=60",
+                },
+              });
+            }
+
+            return new Response(appStatusCsv(rows), {
               status: 200,
               headers: {
                 ...CORS,
-                "Content-Type": APP_STATUS_XLSX_CONTENT_TYPE,
-                "Content-Disposition": `attachment; filename="${appStatusXlsxFilename(checkedAt).replace(/\.xlsx$/, `${slug}.xlsx`)}"`,
+                "Content-Type": "text/csv; charset=utf-8",
+                "Content-Disposition": `attachment; filename="${appStatusCsvFilename(checkedAt).replace(/\.csv$/, `${slug}.csv`)}"`,
                 "Cache-Control": "public, max-age=60",
               },
             });
+          } catch (error) {
+            console.error("[app-status] export failed", error);
+            return new Response(
+              JSON.stringify(
+                { ok: false, error: `Failed to generate the ${format} export.`, format },
+                null,
+                2,
+              ),
+              {
+                status: 500,
+                headers: {
+                  ...CORS,
+                  "Content-Type": "application/json; charset=utf-8",
+                  "Cache-Control": "no-store",
+                },
+              },
+            );
           }
-
-          return new Response(appStatusCsv(rows), {
-            status: 200,
-            headers: {
-              ...CORS,
-              "Content-Type": "text/csv; charset=utf-8",
-              "Content-Disposition": `attachment; filename="${appStatusCsvFilename(checkedAt).replace(/\.csv$/, `${slug}.csv`)}"`,
-              "Cache-Control": "public, max-age=60",
-            },
-          });
         }
 
 
