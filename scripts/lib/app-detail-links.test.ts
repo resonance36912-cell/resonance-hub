@@ -63,11 +63,17 @@ function sourceFiles(dir: string, acc: string[] = []): string[] {
 const ROOT = join(import.meta.dir, "..", "..");
 const FILES = sourceFiles(join(ROOT, "src"));
 
+/** Strip comments so documentation examples aren't treated as links. */
+function stripComments(text: string): string {
+  return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+}
+
 describe("no source file hardcodes a non-canonical /apps/<slug>", () => {
   it("scans every src file for /apps/ literals", () => {
     const offenders: string[] = [];
     for (const file of FILES) {
-      const text = readFileSync(file, "utf8");
+      const text = stripComments(readFileSync(file, "utf8"));
+
       for (const [, slug] of text.matchAll(/\/apps\/([A-Za-z0-9_$-]+)/g)) {
         if (NON_APP_APPS_SEGMENTS.has(slug)) continue;
         // Template holes like /apps/${key} are resolved at runtime.
