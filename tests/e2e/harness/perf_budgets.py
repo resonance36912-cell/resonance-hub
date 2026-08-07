@@ -30,6 +30,13 @@ BUDGETS: dict[str, tuple[float, float, str, str]] = {
     "DCL_MS": (2_800, 1_800, "ms", "DOMContentLoaded"),
     "LOAD_MS": (4_000, 2_500, "ms", "load event"),
     "SUGGESTIONS_MS": (3_000, 2_000, "ms", "suggestion links visible"),
+    "CONTENT_MS": (3_000, 2_000, "ms", "main content visible"),
+    # Client-side (SPA) navigation between catalog and detail pages
+    "SPA_NAV_MS": (2_000, 1_200, "ms", "client-side navigation"),
+    "SPA_BACK_MS": (2_000, 1_000, "ms", "history-back navigation"),
+    "SPA_REQUESTS": (60, 12, "count", "requests during SPA nav"),
+    "SPA_BYTES": (8_000_000, 250_000, "bytes", "bytes during SPA nav"),
+
     # Asset graph
     "REQUESTS": (600, 45, "count", "subresource requests"),
     "CSS_REQUESTS": (10, 6, "count", "stylesheet requests"),
