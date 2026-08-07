@@ -493,6 +493,7 @@ def main() -> int:
         # capture connection ramp-up, which is a step, not growth.
         steady = [s for s in samples if s["t"] >= 0.3 * duration]
         slopes = {k: slope_per_minute(steady, k) for k in ("fds", "sockets", "threads")}
+        slopes["rss_mb"] = slope_per_minute(steady, "rss_kb") / 1024.0
 
         t.check(peaks["fds"] <= baseline["fds"] + FD_BAND + CONCURRENCY,
                 f"[resources] fds bounded under load ({baseline['fds']} -> peak {peaks['fds']})")
@@ -504,11 +505,10 @@ def main() -> int:
         t.check(peaks["rss_kb"] <= baseline["rss_kb"] + RSS_HEADROOM_MB * 1024,
                 f"[resources] RSS bounded ({baseline['rss_kb'] // 1024} -> "
                 f"{peaks['rss_kb'] // 1024} MiB peak)")
-        t.check(slopes["fds"] <= FD_SLOPE, f"[trend] fd growth flat ({slopes['fds']:.2f}/min)")
-        t.check(slopes["sockets"] <= SOCK_SLOPE,
-                f"[trend] socket-fd growth flat ({slopes['sockets']:.2f}/min)")
-        t.check(slopes["threads"] <= THREAD_SLOPE,
-                f"[trend] thread growth flat ({slopes['threads']:.2f}/min)")
+        growth_report = growth.assert_slopes(
+            t, slopes, SLOPE_LIMITS, "minute",
+            window={"samples": len(steady), "from_seconds": round(0.3 * duration, 1),
+                    "to_seconds": round(duration, 1), "concurrency": CONCURRENCY})
 
         time.sleep(2.5)
         settled = fd_stats(proc.pid)
