@@ -37,6 +37,8 @@ const TOLERANCE = Number(process.env["LH_TOLERANCE"] ?? DEFAULT_TOLERANCE);
 const UPDATE = process.argv.includes("--update");
 
 /** Paths audited: a zero-match slug and a close-match slug (suggestion list). */
+const SKIP_AUDITS = ["http-status-code", "is-crawlable"];
+
 const PATHS = ["/apps/definitely-not-an-app-xyz", "/apps/sync-visionn"];
 
 const OUT_DIR = join(process.cwd(), "reports", "lighthouse-not-found");
@@ -84,6 +86,10 @@ function collect(): Record<string, CategoryScores> {
         `--url=${url}`,
         "--numberOfRuns=1",
         "--settings.ignoreStatusCode=true",
+        // A correct 404 page necessarily fails these two SEO audits (non-2xx
+        // status, noindex). Skipping them keeps the SEO score meaningful:
+        // titles, descriptions, crawlable links, structured data, font sizes.
+        `--settings.skipAudits=${SKIP_AUDITS.join(",")}`,
         `--settings.preset=desktop`,
         `--settings.chromeFlags=--no-sandbox --headless=new --disable-gpu`,
       ];
@@ -119,6 +125,12 @@ function collect(): Record<string, CategoryScores> {
         perPath.set(category, [...(perPath.get(category) ?? []), score]);
       }
       samples.set(path, perPath);
+      // Keep the raw report as a CI artifact, then drain the LHCI dir so the
+      // next run's "latest" file is unambiguous.
+      writeFileSync(
+        join(OUT_DIR, `lhr-${path.replace(/[^a-z0-9]+/gi, "-")}-run${run}.json`),
+        readFileSync(join(lhrDir, latest), "utf8")
+      );
       rmSync(join(lhrDir, latest), { force: true });
     }
   }
