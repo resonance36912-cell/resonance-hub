@@ -446,7 +446,7 @@ async def main() -> int:
                 peak_rss = max(peak_rss, peaks.get("rss", 0))
                 print(f"  {'ramp c=' + str(concurrency):<28} peak rss={peaks.get('rss', 0):.1f}MiB "
                       f"peak fds={peaks.get('fds', 0)} peak threads={peaks.get('threads', 0)}")
-                assert_latency(f"ramp c={concurrency}", stats, BUDGET, results)
+                assert_latency(f"ramp c={concurrency}", stats, load_budget(concurrency), results)
                 report["phases"][f"ramp_c{concurrency}"] = {**stats, "peak_rss": peaks.get("rss", 0)}
 
             # --- phase: sustained --------------------------------------------
@@ -457,7 +457,7 @@ async def main() -> int:
             peak_rss = max(peak_rss, peaks.get("rss", 0))
             print(f"  {'sustained':<28} peak rss={peaks.get('rss', 0):.1f}MiB "
                   f"peak fds={peaks.get('fds', 0)}")
-            assert_latency("sustained", stats, BUDGET, results)
+            assert_latency("sustained", stats, load_budget(32), results)
             results.append((stats["throughput"] > 5,
                             f"[sustained] throughput above floor "
                             f"({stats['throughput']:.1f} req/s)"))
@@ -470,7 +470,7 @@ async def main() -> int:
                 proc.pid, run_batch(req, plan, 24, "heavy-offsets", results, references))
             peak_rss = max(peak_rss, peaks.get("rss", 0))
             print(f"  {'heavy-offsets':<28} peak rss={peaks.get('rss', 0):.1f}MiB")
-            assert_latency("heavy-offsets", stats, BUDGET, results)
+            assert_latency("heavy-offsets", stats, load_budget(24), results)
             report["phases"]["heavy_offsets"] = {**stats, "peak_rss": peaks.get("rss", 0)}
 
             # --- phase: memory ceiling ---------------------------------------
