@@ -56,9 +56,9 @@ LIVE_BUDGET_MS = 4000
 # --- fixture generation ----------------------------------------------------
 GEN = r"""
 import { writeFileSync } from "node:fs";
-import { appStatusCsv } from "./src/lib/app-status-csv";
-import { appStatusWorkbook } from "./src/lib/app-status-xlsx";
-import { APP_STATUS_LEGEND, APP_STATUS_MEANING } from "./src/lib/app-status-meaning";
+import { appStatusCsv } from "__ROOT__/src/lib/app-status-csv";
+import { appStatusWorkbook } from "__ROOT__/src/lib/app-status-xlsx";
+import { APP_STATUS_LEGEND, APP_STATUS_MEANING } from "__ROOT__/src/lib/app-status-meaning";
 
 const [dir, ...sizes] = process.argv.slice(2);
 const statuses = APP_STATUS_LEGEND;
@@ -104,7 +104,7 @@ console.log(JSON.stringify(out));
 
 def generate_fixtures(sizes: list[int]) -> list[dict]:
     script = SS / "generate.ts"
-    script.write_text(GEN)
+    script.write_text(GEN.replace("__ROOT__", str(ROOT)))
     res = subprocess.run(
         ["bun", str(script), str(SS), *[str(s) for s in sizes]],
         cwd=ROOT, capture_output=True, text=True, check=True,
