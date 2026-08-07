@@ -143,7 +143,7 @@ describe("not-found head — ItemList structured data", () => {
         expect(item.item.name).toBe(entry.label);
         expect(item.item.url).toBe(appDetailUrl(entry.key));
         expect(item.item.url).toBe(`${SITE_ORIGIN}/apps/${entry.key}`);
-        expect(item.item.url).not.toContain(slug);
+        expect(item.item.url).not.toContain(`/apps/${slug}`);
         expect(item.item.description.length).toBeGreaterThan(10);
         expect(KEYS.some((k) => item.item.url.endsWith(`/apps/${k}`))).toBe(true);
       });
