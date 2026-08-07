@@ -63,9 +63,11 @@ ATTACHMENT_HEADERS = ("content-disposition", "content-transfer-encoding", "conte
 MIME = {"csv": "text/csv",
         "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
 
-# Growth tolerances: absolute band vs baseline + trend per hour.
-FD_BAND, SOCK_BAND, THREAD_BAND = 12, 6, 2
-FD_SLOPE_PER_HOUR, SOCK_SLOPE_PER_HOUR, THREAD_SLOPE_PER_HOUR = 4.0, 2.0, 1.0
+# Growth tolerances: absolute band vs baseline + trend per hour. Both are
+# configurable via GROWTH_* env vars (tests/e2e/harness/growth_thresholds.py).
+BANDS = growth.band_limits({"fds": 12, "sockets": 6, "threads": 2})
+FD_BAND, SOCK_BAND, THREAD_BAND = BANDS["fds"], BANDS["sockets"], BANDS["threads"]
+SLOPE_LIMITS = growth.slope_limits("hour", {"fds": 4.0, "sockets": 2.0, "threads": 1.0})
 
 
 # --- harness ---------------------------------------------------------------
