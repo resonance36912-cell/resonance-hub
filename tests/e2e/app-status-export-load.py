@@ -282,7 +282,7 @@ async def run_batch(req, plan: list[dict], concurrency: int, label: str,
                                          f"{label} fault#{idx}", results)
             else:
                 clean_ms.append(ms)
-                if status != 200 or body != references[item["fmt"]]:
+                if status != 200 or fingerprint(item["fmt"], body) != references[item["fmt"]]:
                     check_clean_response(item["fmt"], status, headers, body,
                                          f"{label} clean#{idx}", results,
                                          references[item["fmt"]])
