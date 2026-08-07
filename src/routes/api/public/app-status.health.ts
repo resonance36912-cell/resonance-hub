@@ -23,6 +23,7 @@ import {
   appStatusXlsxFilename,
   APP_STATUS_XLSX_CONTENT_TYPE,
 } from "@/lib/app-status-xlsx";
+import { injectExportFault, parseFaultAt } from "@/lib/app-status-export-fault";
 import {
   parseAppStatusFilters,
   filterAppStatusRows,
@@ -158,6 +159,13 @@ export const Route = createFileRoute("/api/public/app-status/health")({
               throw new Error(`injected ${format} encoder failure`);
             }
 
+            // Dev-only: `faultAt=<byte offset>` fails the encoder once it has
+            // already produced that many bytes, proving that a mid-export death
+            // still yields a JSON envelope and never partial attachment data.
+            const faultAt = import.meta.env.DEV
+              ? parseFaultAt(searchParams.get("faultAt"))
+              : null;
+
             if (format === "xlsx") {
               const workbook = appStatusWorkbook({
                 rows,
@@ -165,6 +173,7 @@ export const Route = createFileRoute("/api/public/app-status/health")({
                 checkedAt,
                 schemaVersion: APP_STATUS_SCHEMA_VERSION,
               });
+              injectExportFault(workbook, faultAt, "xlsx");
               return new Response(workbook as unknown as BodyInit, {
                 status: 200,
                 headers: {
@@ -176,7 +185,9 @@ export const Route = createFileRoute("/api/public/app-status/health")({
               });
             }
 
-            return new Response(appStatusCsv(rows), {
+            const csv = appStatusCsv(rows);
+            injectExportFault(csv, faultAt, "csv");
+            return new Response(csv, {
               status: 200,
               headers: {
                 ...CORS,
