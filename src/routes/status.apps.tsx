@@ -137,6 +137,13 @@ function AppStatusHealthPage() {
         >
           Download CSV (badge meanings &amp; access lines) →
         </a>
+        <a
+          href="/api/public/app-status/health?format=xlsx"
+          className="text-primary underline underline-offset-2"
+        >
+          Download Excel workbook →
+        </a>
+
         <AppLink to="/status/meta-diff" className="text-primary underline underline-offset-2">
           Registry vs rendered meta diff →
         </AppLink>

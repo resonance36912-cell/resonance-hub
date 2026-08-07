@@ -18,6 +18,12 @@ import {
   appStatusCsvFilename,
   type AppStatusCsvRow,
 } from "@/lib/app-status-csv";
+import {
+  appStatusWorkbook,
+  appStatusXlsxFilename,
+  APP_STATUS_XLSX_CONTENT_TYPE,
+} from "@/lib/app-status-xlsx";
+
 
 
 /**
@@ -79,7 +85,8 @@ export const Route = createFileRoute("/api/public/app-status/health")({
         const checkedAt = new Date().toISOString();
 
         const format = new URL(request.url).searchParams.get("format")?.toLowerCase();
-        if (format === "csv") {
+
+        if (format === "csv" || format === "xlsx") {
           const rows: AppStatusCsvRow[] = [
             ...apps.map((a) => ({
               scope: "app" as const,
@@ -107,6 +114,24 @@ export const Route = createFileRoute("/api/public/app-status/health")({
             })),
           ];
 
+          if (format === "xlsx") {
+            const workbook = appStatusWorkbook({
+              rows,
+              legend,
+              checkedAt,
+              schemaVersion: APP_STATUS_SCHEMA_VERSION,
+            });
+            return new Response(workbook as unknown as BodyInit, {
+              status: 200,
+              headers: {
+                ...CORS,
+                "Content-Type": APP_STATUS_XLSX_CONTENT_TYPE,
+                "Content-Disposition": `attachment; filename="${appStatusXlsxFilename(checkedAt)}"`,
+                "Cache-Control": "public, max-age=60",
+              },
+            });
+          }
+
           return new Response(appStatusCsv(rows), {
             status: 200,
             headers: {
@@ -117,6 +142,7 @@ export const Route = createFileRoute("/api/public/app-status/health")({
             },
           });
         }
+
 
 
         return new Response(
