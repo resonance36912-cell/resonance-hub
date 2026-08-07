@@ -275,11 +275,9 @@ def audit_structure(scope, data):
         check(f"{scope} {el['tag']} is keyboard reachable [{label}]",
               not el["inAriaHidden"] and (el["tabindex"] or "0") != "-1",
               f"aria-hidden={el['inAriaHidden']} tabindex={el['tabindex']}")
-        check(f"{scope} {el['tag']} has a focus indicator [{label}]",
-              "focus-visible:ring" in el["className"]
-              or "focus-visible:outline" in el["className"]
-              or el["outlineStyle"] != "none",
-              f"class={el['className'][:60]!r}")
+        # The focus indicator itself is verified live in focus_walk(), which
+        # focuses each element and reads the applied :focus-visible styles.
+
 
     for attr in data["ariaAttrs"]:
         name = attr["name"]
