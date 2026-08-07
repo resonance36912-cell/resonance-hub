@@ -31,6 +31,8 @@ Artifacts: /tmp/browser/app-status-export-load-idem/{report.json,samples.csv}
 Usage:
   python3 tests/e2e/app-status-export-load-idempotency.py
   CONCURRENCY=16 ROUNDS=12 ROWS=9000 python3 tests/e2e/app-status-export-load-idempotency.py
+  GROWTH_FD_SLOPE_PER_MIN=2 GROWTH_SLOPE_TOLERANCE=1.5 python3 tests/e2e/app-status-export-load-idempotency.py
+  (growth-slope limits: see tests/e2e/harness/growth_thresholds.py)
 """
 import hashlib
 import io

@@ -30,6 +30,8 @@ Artifacts: /tmp/browser/app-status-keepalive-soak/{report.json,samples.csv,progr
 Usage:
   python3 tests/e2e/app-status-export-keepalive-soak.py            # 2 hours
   SOAK_SECONDS=180 python3 tests/e2e/app-status-export-keepalive-soak.py
+  GROWTH_FD_SLOPE_PER_HOUR=2 GROWTH_SLOPE_TOLERANCE=1.5 python3 tests/e2e/app-status-export-keepalive-soak.py
+  (growth-slope limits: see tests/e2e/harness/growth_thresholds.py)
 """
 import io
 import json
