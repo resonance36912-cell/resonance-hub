@@ -397,15 +397,17 @@ def run_mode(mode: str, upstreams: list, sizes: dict, t: Tally) -> dict:
         return {"mode": mode, "skipped": "no nginx binary available"}
 
     try:
-        baseline_up = {}
-        for u in upstreams:
-            baseline_up[u["port"]] = fd_stats(u["proc"].pid)
+        # Warm up both hops first so lazily-created fds/threads (runtime thread
+        # pools, upstream keep-alive sockets) exist before baselining.
+        conn = KeepAlive(PROXY_PORT)
+        for fmt in ("csv", "xlsx"):
+            s, h, b, reuse = conn.request(export_path(fmt))
+            check_clean(fmt, s, h, b, f"{mode} warmup {fmt}", t)
+            t.check(reuse, f"[{mode} warmup {fmt}] proxy keeps the client connection alive")
+        time.sleep(1)
+        baseline_up = {u["port"]: fd_stats(u["proc"].pid) for u in upstreams}
         baseline_proxy = fd_stats(proxy.pid)
 
-        conn = KeepAlive(PROXY_PORT)
-        s, h, b, reuse = conn.request(export_path("csv"))
-        check_clean("csv", s, h, b, f"{mode} warmup", t)
-        t.check(reuse, f"[{mode} warmup] proxy keeps the client connection alive")
 
         seen_upstreams: set = set()
         seen_worker_pids: set = set()
