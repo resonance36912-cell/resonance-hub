@@ -149,12 +149,15 @@ async def main() -> int:
         )
         check(len(set(hrefs)) == len(hrefs), "no duplicate suggestions rendered")
 
-        # each suggestion resolves without a redirect hop
+        await page.close()
+
+        # each suggestion resolves without a redirect hop (fresh page per href)
         for href in hrefs:
+            page = await ctx.new_page()
             resp = await page.goto(f"{BASE}{href}", wait_until="domcontentloaded")
             check(resp is not None and resp.status == 200, f"{href} responds 200")
             check(page.url.rstrip("/").endswith(href), f"{href} needs no redirect hop")
-        await page.close()
+            await page.close()
 
         await browser.close()
 
