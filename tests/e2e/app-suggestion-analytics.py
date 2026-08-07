@@ -72,12 +72,17 @@ class Recorder:
         self.events: list[dict] = []
         self.statuses: list[int] = []
 
-    def attach(self, page) -> None:
-        page.on("request", self._on_request)
-        page.on("response", self._on_response)
+    def attach(self, page, ctx) -> None:
+        # sendBeacon requests are not always attributed to the page, so listen
+        # on the browser context as well (dedup happens in _on_request).
+        for target in (page, ctx):
+            target.on("request", self._on_request)
+            target.on("response", self._on_response)
 
     def _on_request(self, req) -> None:
         if ENDPOINT not in req.url or req.method != "POST":
+            return
+        if any(e.get("_url") == req.url and e.get("_ts") == req.timing.get("startTime") for e in self.events):
             return
         try:
             self.events.append(json.loads(req.post_data or "{}"))
@@ -99,7 +104,7 @@ class Recorder:
 async def click_suggestion(ctx, slug: str, index: int) -> tuple[Recorder, str, dict]:
     page = await ctx.new_page()
     rec = Recorder()
-    rec.attach(page)
+    rec.attach(page, ctx)
     await page.goto(f"{BASE}/apps/{slug}", wait_until="domcontentloaded")
     await page.wait_for_timeout(400)
 
