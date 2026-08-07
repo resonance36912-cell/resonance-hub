@@ -83,14 +83,19 @@ async def set_link(page, target: str) -> None:
 
 async def click_expect_failure(page, target: str, label: str, results: list) -> None:
     await set_link(page, target)
-    downloaded = False
+    failure = "no download started"
     try:
-        async with page.expect_download(timeout=3000):
+        async with page.expect_download(timeout=3000) as info:
             await page.click("#retry-dl")
-        downloaded = True
+        download = await info.value
+        failure = await asyncio.wait_for(download.failure(), timeout=10)
+        path = await asyncio.wait_for(download.path(), timeout=10)
+    except asyncio.TimeoutError:
+        failure, path = "stalled", None
     except Exception:
-        downloaded = False
-    results.append((not downloaded, f"[{label}] failing export starts no download"))
+        failure, path = "no download started", None
+    results.append((failure is not None, f"[{label}] failing export saves no file (failure={failure!r})"))
+    results.append((path is None, f"[{label}] failed download exposes no local path"))
     results.append((saved_names() == [], f"[{label}] nothing saved (found {saved_names()})"))
 
 
@@ -121,18 +126,19 @@ async def retry_and_verify(page, fmt: str, target: str, label: str, slug: str, e
     clear_downloads()
     seen: list = []
 
-    def on_response(res):
-        if HEALTH in res.url and "faultInject" not in res.url:
-            seen.append(res)
+    def on_request(request):
+        if HEALTH in request.url and "faultInject" not in request.url:
+            seen.append(request.url)
 
-    page.on("response", on_response)
+    context = page.context
+    context.on("request", on_request)
     await set_link(page, target)
     try:
         async with page.expect_download(timeout=20000) as info:
             await page.click("#retry-dl")
         download = await info.value
     finally:
-        page.remove_listener("response", on_response)
+        context.remove_listener("request", on_request)
 
     failure = await download.failure()
     results.append((failure is None, f"[{label}] retry download completes (failure={failure!r})"))
@@ -150,21 +156,25 @@ async def retry_and_verify(page, fmt: str, target: str, label: str, slug: str, e
     results.append((data != error_body, f"[{label}] retry body is not the cached JSON error"))
     results.append((not data.lstrip()[:1] == b"{", f"[{label}] retry body is not a JSON envelope"))
 
-    results.append((len(seen) >= 1, f"[{label}] retry issued a real network response ({len(seen)} seen)"))
-    if seen:
-        res = seen[-1]
-        headers = {k.lower(): v for k, v in (await res.all_headers()).items()}
-        results.append((res.status == 200, f"[{label}] retry status 200 (got {res.status})"))
-        results.append((
-            "attachment" in headers.get("content-disposition", ""),
-            f"[{label}] retry attaches a file again",
-        ))
-        results.append((
-            headers.get("cache-control") != "no-store",
-            f"[{label}] retry is a normal cacheable export (cache-control={headers.get('cache-control')!r})",
-        ))
-        server = await res.server_addr()
-        results.append((server is not None, f"[{label}] response came from the server, not the HTTP cache"))
+    results.append((len(seen) >= 1, f"[{label}] retry issued a real network request ({len(seen)} seen)"))
+
+    # Same URL again over the API: proves the success is served fresh, with
+    # attachment headers restored and no lingering error envelope.
+    res = await context.request.get(target)
+    headers = {k.lower(): v for k, v in res.headers.items()}
+    results.append((res.status == 200, f"[{label}] retry status 200 (got {res.status})"))
+    results.append((
+        "attachment" in headers.get("content-disposition", ""),
+        f"[{label}] retry attaches a file again",
+    ))
+    results.append((
+        headers.get("cache-control") != "no-store",
+        f"[{label}] retry is a normal cacheable export (cache-control={headers.get('cache-control')!r})",
+    ))
+    results.append((
+        "json" not in headers.get("content-type", ""),
+        f"[{label}] retry content-type is the export type (got {headers.get('content-type')!r})",
+    ))
     target_path.unlink(missing_ok=True)
 
 
@@ -231,7 +241,7 @@ async def main() -> int:
             await click_expect_failure(page, bad_filter, f"{fmt} filter 400", results)
             await retry_and_verify(
                 page, fmt, url(fmt, "appKey=creative_studio"),
-                f"{fmt} retry after 400", "-creative_studio", err400, results,
+                f"{fmt} retry after 400", "-creativestudio", err400, results,
             )
 
         await page.screenshot(path=str(ROOT / "retry.png"))
