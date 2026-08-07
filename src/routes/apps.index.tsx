@@ -112,8 +112,8 @@ export const Route = createFileRoute("/apps/")({
         content:
           "Browse and search the Resonance app suite: publishing, creative, video, and growth tools built on one billing spine.",
       },
-
     ],
+    links: [{ rel: "canonical", href: "https://reson8.life/apps" }],
   }),
   component: AppsCatalogPage,
 });
