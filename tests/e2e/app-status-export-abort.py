@@ -321,7 +321,12 @@ async def case_clean_retry(page, fmt: str, expected_len: int, results: list) -> 
     target = DL / (download.suggested_filename or f"retry.{fmt}")
     await download.save_as(str(target))
     data = target.read_bytes()
-    results.append((len(data) == expected_len, f"[{label}] saved file is byte-complete ({len(data)} of {expected_len})"))
+    # XLSX embeds a generation timestamp, so the length can drift a few bytes.
+    tolerance = 0 if fmt == "csv" else 64
+    results.append((
+        abs(len(data) - expected_len) <= tolerance,
+        f"[{label}] saved file is byte-complete ({len(data)} vs baseline {expected_len})",
+    ))
 
     if fmt == "csv":
         results.append((data.endswith(b"\r\n"), f"[{label}] CSV ends with a complete CRLF record"))
