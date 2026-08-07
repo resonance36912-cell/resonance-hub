@@ -81,10 +81,12 @@ FOCUS_INFO = """() => {
   };
 }"""
 
-# Fails the run if anything in the journey depends on a mouse event.
+# Fails the run if anything in the journey depends on a pointing device.
+# 'click' is deliberately excluded: pressing Enter on a focused anchor fires a
+# trusted click by spec, so it is keyboard activation, not mouse input.
 MOUSE_GUARD = """() => {
   window.__mouseEvents = [];
-  for (const type of ['mousedown', 'mouseup', 'click', 'pointerdown', 'dblclick']) {
+  for (const type of ['mousedown', 'mouseup', 'pointerdown', 'pointerup', 'dblclick', 'mousemove']) {
     window.addEventListener(type, (e) => {
       if (e.isTrusted) window.__mouseEvents.push(type);
     }, true);
