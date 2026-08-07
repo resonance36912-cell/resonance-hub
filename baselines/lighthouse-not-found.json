@@ -1,0 +1,18 @@
+{
+  "urls": {
+    "/apps/definitely-not-an-app-xyz": {
+      "performance": 0.92,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.58
+    },
+    "/apps/sync-visionn": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.58
+    }
+  },
+  "updatedAt": "2026-08-07T12:32:30.423Z",
+  "note": "promoted via verify-lighthouse-not-found --update"
+}

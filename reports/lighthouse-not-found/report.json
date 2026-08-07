@@ -1,0 +1,100 @@
+{
+  "baseUrl": "http://127.0.0.1:8080",
+  "tolerance": 0.03,
+  "measured": {
+    "/apps/definitely-not-an-app-xyz": {
+      "performance": 0.92,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.58
+    },
+    "/apps/sync-visionn": {
+      "performance": 0.93,
+      "accessibility": 1,
+      "best-practices": 0.96,
+      "seo": 0.58
+    }
+  },
+  "rows": [
+    {
+      "url": "/apps/definitely-not-an-app-xyz",
+      "category": "performance",
+      "measured": 0.92,
+      "floor": 0.85,
+      "baseline": null,
+      "limit": 0.85,
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "url": "/apps/definitely-not-an-app-xyz",
+      "category": "accessibility",
+      "measured": 1,
+      "floor": 0.95,
+      "baseline": null,
+      "limit": 0.95,
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "url": "/apps/definitely-not-an-app-xyz",
+      "category": "best-practices",
+      "measured": 0.96,
+      "floor": 0.9,
+      "baseline": null,
+      "limit": 0.9,
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "url": "/apps/definitely-not-an-app-xyz",
+      "category": "seo",
+      "measured": 0.58,
+      "floor": 0.9,
+      "baseline": null,
+      "limit": 0.9,
+      "ok": false,
+      "reason": "below-floor"
+    },
+    {
+      "url": "/apps/sync-visionn",
+      "category": "performance",
+      "measured": 0.93,
+      "floor": 0.85,
+      "baseline": null,
+      "limit": 0.85,
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "url": "/apps/sync-visionn",
+      "category": "accessibility",
+      "measured": 1,
+      "floor": 0.95,
+      "baseline": null,
+      "limit": 0.95,
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "url": "/apps/sync-visionn",
+      "category": "best-practices",
+      "measured": 0.96,
+      "floor": 0.9,
+      "baseline": null,
+      "limit": 0.9,
+      "ok": true,
+      "reason": "ok"
+    },
+    {
+      "url": "/apps/sync-visionn",
+      "category": "seo",
+      "measured": 0.58,
+      "floor": 0.9,
+      "baseline": null,
+      "limit": 0.9,
+      "ok": false,
+      "reason": "below-floor"
+    }
+  ]
+}
