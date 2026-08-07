@@ -90,7 +90,13 @@ class Recorder:
             # sendBeacon sends a Blob body — post_data can be None, so prefer
             # the raw buffer.
             raw = req.post_data_buffer or (req.post_data or "").encode()
-            self.events.append(json.loads(raw.decode("utf-8") or "{}"))
+            text = raw.decode("utf-8")
+            if not text:
+                return  # body unavailable on this listener; the other one has it
+            parsed = json.loads(text)
+            if parsed in self.events:
+                return  # same beacon seen on both page and context listeners
+            self.events.append(parsed)
         except Exception as exc:  # pragma: no cover - diagnostic only
             self.events.append({"_parse_error": str(exc), "_raw": req.post_data})
 
