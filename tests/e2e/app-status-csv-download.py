@@ -340,16 +340,20 @@ def check_escaping(text: str, data: dict, results: list) -> None:
         (special_seen["comma"] > 0,
          f"registry exercises comma escaping ({special_seen['comma']} field(s))")
     )
-    # Unquoted cells must contain no delimiter/quote/newline at all.
+    # Plain values must be emitted bare — no gratuitous quoting that would leak
+    # literal quote characters into the imported cell.
     for idx, row in enumerate(rows, start=1):
         raw = records[idx] if idx < len(records) else ""
-        for cell in raw.split(","):
-            if cell.startswith('"'):
+        for h in header:
+            value = row[h]
+            if re.search(r'[",\r\n]', value):
                 continue
             results.append(
-                ('"' not in cell and "\n" not in cell,
-                 f"{row['key']}: unquoted cell {cell[:24]!r} needs no escaping")
+                (f",{value}," in f",{raw}," or raw.startswith(f"{value},")
+                 or raw.endswith(f",{value}"),
+                 f"{row['key']}.{h}: plain value {value[:24]!r} emitted unquoted")
             )
+
 
 
 def check_escape_rule(results: list) -> None:
