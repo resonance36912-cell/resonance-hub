@@ -129,6 +129,9 @@ jobs:
         with:
           name: export-lb-proxy
           path: |
+            /tmp/browser/app-status-lb-proxy/report.json
+            /tmp/browser/app-status-lb-proxy/nginx/logs/error.log
+
           if-no-files-found: warn
           retention-days: 30
 
