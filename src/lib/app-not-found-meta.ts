@@ -19,11 +19,23 @@ import {
  */
 
 export type HeadScript = { type: string; children: string };
+export type HeadLink = { rel: string; href: string };
 
 export type NotFoundHead = {
   meta: HeadMetaTag[];
+  links: HeadLink[];
   scripts: HeadScript[];
 };
+
+/** Shared social image for pages without their own artwork (1024x1024). */
+export const NOT_FOUND_OG_IMAGE = `${SITE_ORIGIN}/og-logo.png`;
+export const NOT_FOUND_OG_IMAGE_ALT = "The Resonance logo";
+
+/** Absolute URL of the requested (broken) slug. */
+export function notFoundPageUrl(slug: string): string {
+  return `${SITE_ORIGIN}/apps/${encodeURIComponent(slug)}`;
+}
+
 
 /** Page title — names the bad slug so tab history stays readable. */
 export function notFoundTitle(slug: string): string {
@@ -78,6 +90,9 @@ export function notFoundHead(slug: string): NotFoundHead {
   const description = notFoundDescription(slug);
   const structured = notFoundStructuredData(slug);
 
+  const pageUrl = notFoundPageUrl(slug);
+  const suggestions = suggestApps(slug);
+
   const meta: HeadMetaTag[] = [
     { title },
     { name: "description", content: description },
@@ -86,24 +101,36 @@ export function notFoundHead(slug: string): NotFoundHead {
     { property: "og:title", content: title },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },
-    { property: "og:url", content: `${SITE_ORIGIN}/apps/${slug}` },
+    // Self-referencing: never consolidate a dead URL onto a real page.
+    { property: "og:url", content: pageUrl },
+    { property: "og:site_name", content: "Resonance" },
+    { property: "og:image", content: NOT_FOUND_OG_IMAGE },
+    { property: "og:image:alt", content: NOT_FOUND_OG_IMAGE_ALT },
+    { property: "og:image:width", content: "1024" },
+    { property: "og:image:height", content: "1024" },
     { name: "twitter:card", content: "summary" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
+    { name: "twitter:image", content: NOT_FOUND_OG_IMAGE },
+    { name: "twitter:image:alt", content: NOT_FOUND_OG_IMAGE_ALT },
     { name: "resonance:not-found-slug", content: slug },
     {
       name: "resonance:suggestion-count",
-      content: String(suggestApps(slug).length),
+      content: String(suggestions.length),
     },
   ];
 
   return {
     meta,
+    // Self-referencing canonical only — pointing a 404 at the catalog would
+    // ask crawlers to treat the broken URL as that page.
+    links: [{ rel: "canonical", href: pageUrl }],
     scripts: structured
       ? [{ type: "application/ld+json", children: JSON.stringify(structured) }]
       : [],
   };
 }
+
 
 /** Re-exported for tests and callers that only need the title helper. */
 export { appDetailTitle };
