@@ -243,7 +243,7 @@ async def case_client_cancel(page, fmt: str, results: list) -> None:
         async with page.expect_download(timeout=8000) as info:
             await page.click(f"#dl-{fmt}")
         download = await info.value
-        await download.cancel()
+        await with_timeout(download.cancel())
     except Exception:
         download = None
 
