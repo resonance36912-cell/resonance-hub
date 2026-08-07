@@ -49,6 +49,15 @@ BASE = os.environ.get("BASE_URL", "http://localhost:8080").rstrip("/")
 SLUG = os.environ.get("PERF_SLUG", "sinc-vision")
 RUNS = int(os.environ.get("PERF_RUNS", "3"))
 SUITE = "not-found"
+# External origins the page is allowed to touch (the font provider declared in
+# __root.tsx). Anything else counts against THIRD_PARTY_REQUESTS (budget: 0).
+ALLOWED_THIRD_PARTY = [
+    h.strip()
+    for h in os.environ.get(
+        "PERF_ALLOWED_THIRD_PARTY", "fonts.googleapis.com,fonts.gstatic.com"
+    ).split(",")
+    if h.strip()
+]
 REPORT = Path(os.environ.get("PERF_REPORT", "/tmp/browser/app-nf-perf/report.json"))
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 
@@ -76,19 +85,24 @@ COLLECT = """() => {
     const e = performance.getEntriesByName(n)[0];
     return e ? Math.round(e.startTime) : null;
   };
-  const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
-  const lcp = lcpEntries.length ? Math.round(lcpEntries[lcpEntries.length - 1].startTime) : null;
+  const lcp = window.__lcp != null ? Math.round(window.__lcp) : null;
   const bytes = (pred) => res.filter(pred).reduce((a, r) => a + (r.transferSize || r.encodedBodySize || 0), 0);
   const isCss = (r) => r.name.split('?')[0].endsWith('.css') || r.initiatorType === 'css';
   const isFont = (r) => /\\.(woff2?|ttf|otf)(\\?|$)/.test(r.name) || r.initiatorType === 'font';
   const isImg = (r) => r.initiatorType === 'img' || /\\.(png|jpe?g|webp|avif|gif|svg)(\\?|$)/.test(r.name);
   const isJs = (r) => r.initiatorType === 'script' || /\\.(m?js|ts|tsx|jsx)(\\?|$)/.test(r.name);
-  const thirdParty = res.filter((r) => {
-    try { return new URL(r.name).host !== location.host; } catch { return false; }
-  }).map((r) => r.name);
+  // Expected external origins (self-declared font provider) are budgeted
+  // separately; anything else is an unexpected third party.
+  const ALLOWED = new Set(ALLOWED_THIRD_PARTY);
+  const host = (u) => { try { return new URL(u).host; } catch { return ''; } };
+  const external = res.map((r) => r.name).filter((n) => host(n) && host(n) !== location.host);
+  const thirdParty = external.filter((n) => !ALLOWED.has(host(n)));
+  const fontOrigins = [...new Set(external.filter((n) => ALLOWED.has(host(n))).map(host))];
+  const preconnected = [...document.querySelectorAll('link[rel="preconnect"], link[rel="dns-prefetch"]')]
+    .map((l) => host(l.href)).filter(Boolean);
   const blockingCss = [...document.querySelectorAll('link[rel="stylesheet"]')]
     .map((l) => l.href)
-    .filter((h) => { try { return new URL(h).host !== location.host; } catch { return false; } });
+    .filter((h) => host(h) && host(h) !== location.host && !ALLOWED.has(host(h)));
 
   return {
     TTFB_MS: Math.round(nav.responseStart),
@@ -107,6 +121,8 @@ COLLECT = """() => {
     FULLY_LOADED_MS: res.length ? Math.round(Math.max(...res.map((r) => r.responseEnd))) : Math.round(nav.loadEventEnd),
     THIRD_PARTY_REQUESTS: thirdParty.length,
     _thirdParty: thirdParty.slice(0, 6),
+    _fontOrigins: fontOrigins,
+    _unpreconnectedFontOrigins: fontOrigins.filter((o) => !preconnected.includes(o)),
     _blockingCrossOriginCss: blockingCss,
     _names: res.map((r) => r.name),
     _slowest: res.slice().sort((a, b) => b.duration - a.duration).slice(0, 5)
@@ -156,9 +172,13 @@ async def one_run(browser, run_index: int, problems: list[str], bad_status: list
 
     page.on("response", on_response)
 
-    # Observe LCP before navigation-driven paints settle.
+    # Record LCP as it happens: the buffered entry list is not readable via
+    # getEntriesByType in Chromium, only through an observer callback.
     await page.add_init_script(
-        "new PerformanceObserver(() => {}).observe({ type: 'largest-contentful-paint', buffered: true });"
+        "window.__lcp = null;"
+        "new PerformanceObserver((list) => {"
+        "  for (const e of list.getEntries()) window.__lcp = e.startTime;"
+        "}).observe({ type: 'largest-contentful-paint', buffered: true });"
     )
 
     await page.goto(doc_url, wait_until="domcontentloaded")
@@ -170,7 +190,12 @@ async def one_run(browser, run_index: int, problems: list[str], bad_status: list
     # Let LCP and any late assets settle before reading the timeline.
     await asyncio.sleep(1.5)
 
-    data = await page.evaluate(COLLECT)
+    data = await page.evaluate(
+        f"(ALLOWED_THIRD_PARTY) => ({COLLECT})()".replace("() => {", "() => {", 1),
+        None,
+    ) if False else await page.evaluate(
+        "(ALLOWED_THIRD_PARTY) => (" + COLLECT + ")()", ALLOWED_THIRD_PARTY
+    )
     data["SUGGESTIONS_MS"] = suggestions_ms
     data["_run"] = run_index
     await context.close()
@@ -235,7 +260,12 @@ async def main() -> int:
     )
     check(
         not runs[-1]["_thirdParty"],
-        f"no third-party requests on the not-found page ({runs[-1]['_thirdParty']})",
+        f"no unexpected third-party requests on the not-found page ({runs[-1]['_thirdParty']})",
+    )
+    check(
+        not runs[-1]["_unpreconnectedFontOrigins"],
+        "every allowed external origin is preconnected "
+        f"({runs[-1]['_unpreconnectedFontOrigins']})",
     )
     check(not problems, f"no console errors or warnings ({problems[:4]})")
 
