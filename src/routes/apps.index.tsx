@@ -327,7 +327,9 @@ function TileCard({ tile }: { tile: Tile }) {
   return (
     <a
       href={tile.url}
+      data-app-card={tile.key}
       target={external ? "_blank" : undefined}
+
       rel={external ? "noopener noreferrer" : undefined}
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition hover:border-primary hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary"
     >

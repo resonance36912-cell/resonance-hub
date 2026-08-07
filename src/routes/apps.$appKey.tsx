@@ -131,7 +131,7 @@ function AppDetailPage() {
 
 
 
-      <header className="mt-6">
+      <header className="mt-6" data-app-detail={entry.key}>
         <div className="flex items-center gap-3">
           <span
             aria-hidden
