@@ -8,6 +8,11 @@ name: Export keep-alive soak & multiworker
 #   * multiworker      — same keep-alive reuse + fault-retry assertions across
 #     a SO_REUSEPORT worker pool, asserting no lingering sockets per worker.
 #
+# Growth-slope limits are tuned per suite: set GROWTH_SOAK_* for the keep-alive
+# soak and GROWTH_LOAD_* for the load/idempotency job (e.g.
+# GROWTH_SOAK_FD_SLOPE_PER_HOUR, GROWTH_LOAD_FD_SLOPE_PER_MIN,
+# GROWTH_LOAD_SLOPE_TOLERANCE). The unscoped GROWTH_* forms still apply to both.
+#
 # Both write their artifacts under /tmp/browser/, which this workflow collects
 # and uploads. The soak duration defaults to 30 minutes on CI (the local
 # default is 2 hours); override it with the workflow_dispatch input.
@@ -118,7 +123,7 @@ jobs:
         run: |
           python3 tests/e2e/harness/growth_calibrate.py \
             --report /tmp/browser/app-status-keepalive-soak/report.json \
-            --profile export-keepalive-soak --unit hour \
+            --profile export-keepalive-soak --unit hour --suite SOAK \
             --run "$GITHUB_RUN_ID" --update | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Commit calibrated thresholds
@@ -296,7 +301,7 @@ jobs:
         run: |
           python3 tests/e2e/harness/growth_calibrate.py \
             --report /tmp/browser/app-status-export-load-idem/report.json \
-            --profile export-load-idempotency --unit minute \
+            --profile export-load-idempotency --unit minute --suite LOAD \
             --run "$GITHUB_RUN_ID" --update | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Commit calibrated thresholds
