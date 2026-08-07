@@ -70,6 +70,7 @@ class Recorder:
 
     def __init__(self) -> None:
         self.events: list[dict] = []
+        self._seen: set[int] = set()
         self.statuses: list[int] = []
 
     def attach(self, page, ctx) -> None:
@@ -82,8 +83,9 @@ class Recorder:
     def _on_request(self, req) -> None:
         if ENDPOINT not in req.url or req.method != "POST":
             return
-        if any(e.get("_url") == req.url and e.get("_ts") == req.timing.get("startTime") for e in self.events):
+        if id(req) in self._seen:
             return
+        self._seen.add(id(req))
         try:
             self.events.append(json.loads(req.post_data or "{}"))
         except Exception as exc:  # pragma: no cover - diagnostic only
@@ -106,7 +108,7 @@ async def click_suggestion(ctx, slug: str, index: int) -> tuple[Recorder, str, d
     rec = Recorder()
     rec.attach(page, ctx)
     await page.goto(f"{BASE}/apps/{slug}", wait_until="domcontentloaded")
-    await page.wait_for_timeout(400)
+    await page.wait_for_timeout(1500)
 
     links = page.locator('main ul li a[data-suggestion-key]')
     count = await links.count()
