@@ -171,6 +171,21 @@ async function main() {
 
   write(join(OUT_DIR, "outdated-pins.json"), `${JSON.stringify(report, null, 2)}\n`);
   write(join(OUT_DIR, "outdated-pins.md"), `${body}\n`);
+  // Rendered by /dependency-thresholds so the browser can show exactly which
+  // knobs produced this run (see src/lib/pin-thresholds.ts).
+  write(
+    join(OUT_DIR, "outdated-pins-thresholds.json"),
+    `${JSON.stringify(
+      {
+        generatedAt: report.generatedAt,
+        values: config,
+        mutedCount,
+        description: describeConfig(config),
+      },
+      null,
+      2,
+    )}\n`,
+  );
 
   process.stdout.write(`\n${summary}\n`);
   for (const d of report.outdated) {
