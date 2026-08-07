@@ -66,7 +66,12 @@ on:
       - "scripts/apply-outdated-pins.ts"
       - "scripts/lib/outdated-pins.ts"
       - "scripts/lib/outdated-pins.test.ts"
+      - "scripts/lib/outdated-pins-config.ts"
+      - "scripts/lib/outdated-pins-config.test.ts"
       - ".github/workflows/outdated-pins.yml"
+  # Every push to main runs the pin-drift gate below, independent of cadence.
+  push:
+    branches: [main]
 
 
 permissions:
@@ -77,6 +82,54 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ------------------------------------------------------------------ #
+  # Pin-drift gate — runs on EVERY trigger of this workflow (schedule,  #
+  # manual dispatch, PR, push), before and independent of the cadence   #
+  # gate. The scheduled audit only reports what upstream published; a   #
+  # package.json <-> bun.lock mismatch is a repo defect that must fail  #
+  # CI immediately, even in an hour when no scheduled audit runs.       #
+  # ------------------------------------------------------------------ #
+  pin-drift:
+    name: Fail on package.json <-> bun.lock pin drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # A bug in the audit core would turn this gate into a silent no-op that
+      # passes on drifted pins, so its unit tests run first.
+      - name: Test the pin-audit core
+        run: bunx vitest run scripts/lib/pinned-deps.test.ts
+
+      # Stale lockfile fails here first, with bun's own error.
+      - name: Install with the frozen lockfile
+        run: bun install --frozen-lockfile
+
+      - name: Audit pins against bun.lock
+        id: drift
+        run: bun run scripts/verify-deps-pinned.ts
+
+      - name: Explain the drift and how to resync
+        if: failure()
+        run: |
+          {
+            echo "## Dependency pin drift"
+            echo
+            echo "package.json and bun.lock disagree, or an entry is not pinned to an exact version."
+            echo "The offending packages and their expected bun.lock versions are in the step log above."
+            echo
+            echo '```bash'
+            echo "bun install                       # re-resolve bun.lock"
+            echo "bun run scripts/verify-deps-pinned.ts   # confirm it is clean"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   # Turns PINS_AUDIT_DAYS / PINS_AUDIT_HOUR into a single run/skip decision, so
   # the cadence is a repo variable rather than a committed cron expression.
   cadence:
@@ -116,7 +169,9 @@ jobs:
 
   audit:
     name: Report outdated pins and file an update plan
-    needs: cadence
+    # Gated on pin-drift: an update plan derived from a repo whose pins already
+    # disagree with the lockfile would propose versions against a broken base.
+    needs: [cadence, pin-drift]
     if: needs.cadence.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
