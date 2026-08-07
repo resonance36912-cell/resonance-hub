@@ -366,6 +366,10 @@ async def main():
             seen = 0
             for _ in range(60):
                 await page.keyboard.press("Tab")
+                # Some cards animate outline-width via `transition-all`; let the
+                # focus ring settle before measuring computed styles.
+                await page.wait_for_timeout(120)
+
                 stop = await page.evaluate(
                     """() => {
                          const el = document.activeElement;
