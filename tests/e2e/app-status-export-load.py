@@ -342,14 +342,16 @@ async def with_sampling(pid: int, coro):
 # --- live endpoint ---------------------------------------------------------
 async def live_batch(req, results: list) -> None:
     try:
-        probe_status, _, probe_body, _ = await timed_fetch(req, live_url("csv", [64, 128, 4096]))
+        probe_status, probe_headers, probe_body, _ = await timed_fetch(
+            req, live_url("csv", [64, 128, 4096]))
     except Exception as exc:
         print(f"  live endpoint unreachable ({exc}); skipping")
         return
     if probe_status != 500:
         print(f"  live faultAt injection unavailable (status {probe_status}); skipping")
         return
-    check_fault_response(probe_status, {}, probe_body, "live probe", results)
+    check_fault_response(probe_status, probe_headers, probe_body, "live probe", results)
+
 
     plan = [{"fmt": "csv" if i % 2 == 0 else "xlsx",
              "faults": [] if i % 3 == 2 else [16, 64, 256, 1024],
