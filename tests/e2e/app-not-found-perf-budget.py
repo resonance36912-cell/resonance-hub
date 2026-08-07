@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """
 E2E performance budget for the /apps/<unknown-slug> not-found page.
 
