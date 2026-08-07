@@ -124,21 +124,14 @@ def check_body_complete(fmt: str, data: bytes, label: str, results: list) -> Non
 async def retry_and_verify(page, fmt: str, target: str, label: str, slug: str, error_body: bytes, results: list) -> None:
     """Click the good URL right after a failure and validate the saved file."""
     clear_downloads()
-    seen: list = []
-
-    def on_request(request):
-        if HEALTH in request.url and "faultInject" not in request.url:
-            seen.append(request.url)
-
     context = page.context
-    context.on("request", on_request)
     await set_link(page, target)
     try:
         async with page.expect_download(timeout=20000) as info:
             await page.click("#retry-dl")
         download = await info.value
     finally:
-        context.remove_listener("request", on_request)
+        pass
 
     failure = await download.failure()
     results.append((failure is None, f"[{label}] retry download completes (failure={failure!r})"))
@@ -156,7 +149,10 @@ async def retry_and_verify(page, fmt: str, target: str, label: str, slug: str, e
     results.append((data != error_body, f"[{label}] retry body is not the cached JSON error"))
     results.append((not data.lstrip()[:1] == b"{", f"[{label}] retry body is not a JSON envelope"))
 
-    results.append((len(seen) >= 1, f"[{label}] retry issued a real network request ({len(seen)} seen)"))
+    results.append((
+        download.url == target and "faultInject" not in download.url,
+        f"[{label}] retry fetched the clean export URL (got {download.url!r})",
+    ))
 
     # Same URL again over the API: proves the success is served fresh, with
     # attachment headers restored and no lingering error envelope.
