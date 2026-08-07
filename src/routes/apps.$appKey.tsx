@@ -42,15 +42,24 @@ const CAPABILITIES: Record<ResonanceAppKey, Capability[]> = {
 // catalog and this page never contradict each other.
 
 export const Route = createFileRoute("/apps/$appKey")({
+  validateSearch: (search: Record<string, unknown>): { from?: string } => ({
+    from: typeof search.from === "string" && search.from.length <= 64 ? search.from : undefined,
+  }),
   loader: ({ params }): { entry: AppRegistryEntry } => {
     const entry = getAppEntry(params.appKey);
     if (!entry) throw notFound();
     // Canonicalise hyphenated / mixed-case slugs (e.g. /apps/sync-vision).
     if (entry.key !== params.appKey) {
-      throw redirect({ to: "/apps/$appKey", params: { appKey: entry.key }, replace: true });
+      throw redirect({
+        to: "/apps/$appKey",
+        params: { appKey: entry.key },
+        search: { from: params.appKey },
+        replace: true,
+      });
     }
     return { entry };
   },
+
 
   head: ({ loaderData }) => {
     if (!loaderData) {
@@ -98,8 +107,10 @@ export const Route = createFileRoute("/apps/$appKey")({
 
 function AppDetailPage() {
   const { entry } = Route.useLoaderData() as { entry: AppRegistryEntry };
+  const { from } = Route.useSearch();
   const meaning = statusMeaning(entry.status);
   const capabilities: Capability[] = CAPABILITIES[entry.key];
+
   const pricingRoute =
     entry.key === "epublisher"
       ? ROUTES.epublisherPricing
@@ -114,6 +125,21 @@ function AppDetailPage() {
   return (
     <main className="mx-auto max-w-4xl p-6">
       <BackToHubHeader />
+
+      {from && from !== entry.key ? (
+        <div
+          role="status"
+          className="mt-4 rounded-lg border border-border bg-muted/50 p-3 text-sm text-muted-foreground"
+        >
+          <span className="font-medium text-foreground">Redirected.</span>{" "}
+          <code className="rounded bg-muted px-1 py-0.5">/apps/{from}</code> isn't the canonical
+          address for {entry.label}. We've brought you to{" "}
+          <code className="rounded bg-muted px-1 py-0.5">/apps/{entry.key}</code> — bookmark this
+          one.
+        </div>
+      ) : null}
+
+
 
       <header className="mt-6">
         <div className="flex items-center gap-3">
