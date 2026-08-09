@@ -145,14 +145,30 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // checkout_sessions.status so /checkout/success can poll it.
         let sessionId: string | null = null;
         let sessionUserId: string | null = null;
+        // A coupon-discounted launch recorded the charged amount + code on the
+        // session; the amount check below trusts that server-written row, never
+        // the ITN payload.
+        let sessionAmountCents: number | null = null;
+        let sessionCouponCode: string | null = null;
         if (mPaymentId) {
           const { data: sessRow } = await supabaseAdmin
             .from("checkout_sessions" as never)
-            .select("id, user_id")
+            .select("id, user_id, amount_cents, metadata")
             .eq("m_payment_id" as never, mPaymentId as never)
             .maybeSingle();
-          const s = sessRow as unknown as { id: string; user_id: string } | null;
-          if (s) { sessionId = s.id; sessionUserId = s.user_id; }
+          const s = sessRow as unknown as {
+            id: string;
+            user_id: string;
+            amount_cents: number | null;
+            metadata: Record<string, unknown> | null;
+          } | null;
+          if (s) {
+            sessionId = s.id;
+            sessionUserId = s.user_id;
+            sessionAmountCents = s.amount_cents == null ? null : Number(s.amount_cents);
+            const code = s.metadata?.coupon_code;
+            sessionCouponCode = typeof code === "string" && code ? code : null;
+          }
         }
 
         const recordEvent = async (input: {
@@ -312,14 +328,46 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
           return new Response("missing user", { status: 400 });
         }
-        if (grossCents !== def.amountCents) {
+        // With a coupon the charged amount is the discounted session amount.
+        const chargedCents =
+          sessionCouponCode && sessionAmountCents != null ? sessionAmountCents : def.amountCents;
+        if (grossCents !== chargedCents) {
           await recordEvent({ event_type: "amount_mismatch", http_status: 400 });
-          await updateSession("failed", `Got ${grossCents}, expected ${def.amountCents}`);
+          await updateSession("failed", `Got ${grossCents}, expected ${chargedCents}`);
           await finalize("amount_mismatch", 400, "amount mismatch");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "amount_mismatch", http_status: 400,
-            error_message: `Got ${grossCents}, expected ${def.amountCents}` });
+            error_message: `Got ${grossCents}, expected ${chargedCents}` });
           return new Response("amount mismatch", { status: 400 });
+        }
+
+        // ---------- Coupon consumption ----------
+        // Only consume the code once the payment actually completed, keyed on
+        // m_payment_id so PayFast retries never double-count a redemption.
+        if (sessionCouponCode && paymentStatus === "COMPLETE" && mPaymentId) {
+          try {
+            const { data: already } = await supabaseAdmin
+              .from("coupon_redemptions")
+              .select("id")
+              .eq("m_payment_id", mPaymentId)
+              .maybeSingle();
+            if (!already) {
+              const { error: redeemErr } = await supabaseAdmin.rpc("coupon_redeem", {
+                _code: sessionCouponCode,
+                _user_id: userId,
+                _sku: sku ?? undefined,
+                _app: def.app,
+                _amount_cents: def.amountCents,
+                _checkout_session_id: sessionId ?? undefined,
+                _m_payment_id: mPaymentId,
+              });
+              // A coupon that expired between launch and settlement must never
+              // block a paid order — log and continue.
+              if (redeemErr) console.error("coupon_redeem failed (non-fatal):", redeemErr.message);
+            }
+          } catch (err) {
+            console.error("coupon redemption write failed (non-fatal):", err);
+          }
         }
 
 
@@ -372,7 +420,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
                     app: def.app,
                     tier: def.tier,
                     billing_cycle: def.cycle,
-                    amount_cents: def.amountCents,
+                    amount_cents: chargedCents,
                     currency: "ZAR",
                     status: isPackRefund ? "refunded" : "paid",
                     recipient_email: recipient,
@@ -457,7 +505,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
               status: nextStatus as never,
               payfast_token: params.token ?? null,
               payfast_payment_id: pfPaymentId,
-              amount_cents: def.amountCents,
+              amount_cents: chargedCents,
               currency: "ZAR",
               billing_cycle: def.cycle,
               current_period_end: nextStatus === "active" ? periodEnd.toISOString() : null,
@@ -591,7 +639,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
                   app: def.app,
                   tier: def.tier,
                   billing_cycle: def.cycle,
-                  amount_cents: def.amountCents,
+                  amount_cents: chargedCents,
                   currency: "ZAR",
                   status: invoiceStatus,
                   recipient_email: recipient,
@@ -635,7 +683,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
                   sku: sku!,
                   app: def.app,
                   tier: def.tier,
-                  amount_cents: def.amountCents,
+                  amount_cents: chargedCents,
                   status: suppressed ? "suppressed" : "queued",
                   skipped_reason: suppressed ? `suppressed:${suppressed.reason}` : null,
                 });

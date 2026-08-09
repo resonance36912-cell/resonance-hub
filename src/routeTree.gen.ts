@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RedeemRouteImport } from './routes/redeem'
 import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -62,6 +63,7 @@ import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
@@ -107,6 +109,11 @@ import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './rou
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RedeemRoute = RedeemRouteImport.update({
+  id: '/redeem',
+  path: '/redeem',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RcgfRoute = RcgfRouteImport.update({
@@ -372,6 +379,11 @@ const AdminCreditsRoute = AdminCreditsRouteImport.update({
   path: '/admin/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/admin/coupons',
+  path: '/admin/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
   id: '/admin/billing',
   path: '/admin/billing',
@@ -608,6 +620,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
+  '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -618,6 +631,7 @@ export interface FileRoutesByFullPath {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -704,6 +718,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
+  '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -714,6 +729,7 @@ export interface FileRoutesByTo {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -801,6 +817,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
+  '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -811,6 +828,7 @@ export interface FileRoutesById {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -899,6 +917,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/rcgf'
+    | '/redeem'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -909,6 +928,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -995,6 +1015,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/rcgf'
+    | '/redeem'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -1005,6 +1026,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -1091,6 +1113,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/rcgf'
+    | '/redeem'
     | '/sitemap.xml'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -1101,6 +1124,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -1188,6 +1212,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   RcgfRoute: typeof RcgfRoute
+  RedeemRoute: typeof RedeemRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -1198,6 +1223,7 @@ export interface RootRouteChildren {
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -1277,6 +1303,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/redeem': {
+      id: '/redeem'
+      path: '/redeem'
+      fullPath: '/redeem'
+      preLoaderRoute: typeof RedeemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rcgf': {
@@ -1643,6 +1676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/admin/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/billing': {
       id: '/admin/billing'
       path: '/admin/billing'
@@ -1992,6 +2032,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
+  RedeemRoute: RedeemRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
@@ -2003,6 +2044,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
   AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,

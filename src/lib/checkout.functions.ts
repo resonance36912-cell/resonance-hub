@@ -251,6 +251,7 @@ export function orderPayfastFieldsForSubmit(fields: Record<string, string>): Rec
 
 const LaunchInput = z.object({
   sku: z.string().min(3).max(80),
+  couponCode: z.string().trim().min(2).max(64).optional(),
   returnTo: z
     .string()
     .url()
@@ -271,6 +272,10 @@ export type PayfastLaunch = {
   amountCents: number;
   label: string;
   sessionId: string;
+  /** Pre-discount price, present only when a coupon was applied. */
+  originalAmountCents?: number;
+  couponCode?: string | null;
+  discountCents?: number;
 };
 
 async function buildLaunch(
@@ -279,7 +284,10 @@ async function buildLaunch(
   def: SkuDef,
   returnToInput: string | undefined,
   origin: { proto: string; host: string; sourceIp: string | null; userAgent: string | null },
-  meta: { retryOfSubscriptionId?: string } = {},
+  meta: {
+    retryOfSubscriptionId?: string;
+    coupon?: { code: string; discountCents: number; finalAmountCents: number };
+  } = {},
 ): Promise<PayfastLaunch> {
   const merchantId = process.env.PAYFAST_MERCHANT_ID ?? "";
   const merchantKey = process.env.PAYFAST_MERCHANT_KEY ?? "";
@@ -294,7 +302,11 @@ async function buildLaunch(
 
   const originUrl = `${origin.proto}://${origin.host}`;
   const returnTo = returnToInput ?? `${originUrl}/account/subscriptions`;
-  const amount = (def.amountCents / 100).toFixed(2);
+  // A validated coupon lowers the charged amount. def.amountCents stays the
+  // catalogue truth; effectiveCents is what PayFast is actually asked for and
+  // what checkout_sessions records, so the ITN amount check can verify it.
+  const effectiveCents = meta.coupon ? meta.coupon.finalAmountCents : def.amountCents;
+  const amount = (effectiveCents / 100).toFixed(2);
   const mPaymentId = `${userId}:${def.sku}:${Date.now()}`;
 
   // Create the checkout_sessions row FIRST so it's queryable the instant PayFast
@@ -308,7 +320,7 @@ async function buildLaunch(
       app: def.app,
       tier: def.tier,
       cycle: def.cycle,
-      amount_cents: def.amountCents,
+      amount_cents: effectiveCents,
       currency: "ZAR",
       m_payment_id: mPaymentId,
       status: "pending",
@@ -317,7 +329,18 @@ async function buildLaunch(
       sandbox,
       source_ip: origin.sourceIp,
       user_agent: origin.userAgent,
-      metadata: { kind: def.kind, label: def.label },
+      metadata: {
+        kind: def.kind,
+        label: def.label,
+        catalogue_amount_cents: def.amountCents,
+        ...(meta.coupon
+          ? {
+              coupon_code: meta.coupon.code,
+              coupon_discount_cents: meta.coupon.discountCents,
+              coupon_final_amount_cents: meta.coupon.finalAmountCents,
+            }
+          : {}),
+      },
     } as never)
     .select("id")
     .single();
@@ -334,9 +357,14 @@ async function buildLaunch(
     provider: "payfast",
     event_type: "launch",
     m_payment_id: mPaymentId,
-    amount_cents: def.amountCents,
+    amount_cents: effectiveCents,
     source_ip: origin.sourceIp,
-    metadata: { sku: def.sku, sandbox, retry_of: meta.retryOfSubscriptionId ?? null },
+    metadata: {
+      sku: def.sku,
+      sandbox,
+      retry_of: meta.retryOfSubscriptionId ?? null,
+      coupon_code: meta.coupon?.code ?? null,
+    },
   } as never);
 
   const unsignedFields: Record<string, string> = {
@@ -364,7 +392,8 @@ async function buildLaunch(
     user_id: userId,
     sku: def.sku,
     session_id: sessionId,
-    amount_cents: def.amountCents,
+    amount_cents: effectiveCents,
+    coupon_code: meta.coupon?.code ?? null,
     amount_zar: amount,
     m_payment_id: fields.m_payment_id,
     sandbox,
@@ -377,7 +406,7 @@ async function buildLaunch(
       user_id: userId,
       sku: def.sku,
       m_payment_id: fields.m_payment_id,
-      amount_cents: def.amountCents,
+      amount_cents: effectiveCents,
       currency: "ZAR",
       action_url: action,
       sandbox,
@@ -389,7 +418,21 @@ async function buildLaunch(
     console.error("Failed to write payfast_launch_logs:", err);
   }
 
-  return { action, fields, sku: def.sku, amountCents: def.amountCents, label: def.label, sessionId };
+  return {
+    action,
+    fields,
+    sku: def.sku,
+    amountCents: effectiveCents,
+    label: def.label,
+    sessionId,
+    ...(meta.coupon
+      ? {
+          originalAmountCents: def.amountCents,
+          couponCode: meta.coupon.code,
+          discountCents: meta.coupon.discountCents,
+        }
+      : {}),
+  };
 }
 
 async function requestOrigin() {
@@ -492,7 +535,42 @@ export const createPayfastLaunch = createServerFn({ method: "POST" })
     // by a user who does not already own that legacy subscription.
     const def = await resolveSkuForPurchase(context.supabase, data.sku);
     const email = (context.claims as { email?: string } | null)?.email ?? "";
-    return buildLaunch(context.userId, email, def, data.returnTo, await requestOrigin());
+
+    // Coupons are validated server-side against the resolved catalogue price.
+    // The client never supplies an amount; a rejected code fails the launch.
+    let coupon: { code: string; discountCents: number; finalAmountCents: number } | undefined;
+    if (data.couponCode) {
+      const [{ supabaseAdmin }, { couponReasonMessage, PAYFAST_MIN_CENTS }] = await Promise.all([
+        import("@/integrations/supabase/client.server"),
+        import("./coupons"),
+      ]);
+      const { data: rawPreview, error: previewErr } = await supabaseAdmin.rpc("coupon_preview", {
+        _code: data.couponCode,
+        _user_id: context.userId,
+        _sku: def.sku,
+        _app: def.app,
+        _amount_cents: def.amountCents,
+      });
+      if (previewErr) throw new Error(previewErr.message);
+      const row = (Array.isArray(rawPreview) ? rawPreview[0] : rawPreview) as
+        | { valid: boolean; reason: string; kind: string; discount_cents_applied: number; final_amount_cents: number }
+        | null;
+      if (!row || !row.valid) throw new Error(couponReasonMessage(row?.reason ?? "unknown_code"));
+      if (row.kind !== "discount") throw new Error(couponReasonMessage("not_a_checkout_coupon"));
+      const finalAmountCents = Number(row.final_amount_cents);
+      if (finalAmountCents < PAYFAST_MIN_CENTS) {
+        throw new Error(couponReasonMessage("below_minimum"));
+      }
+      coupon = {
+        code: data.couponCode.trim().toUpperCase(),
+        discountCents: Number(row.discount_cents_applied),
+        finalAmountCents,
+      };
+    }
+
+    return buildLaunch(context.userId, email, def, data.returnTo, await requestOrigin(), {
+      ...(coupon ? { coupon } : {}),
+    });
   });
 
 
