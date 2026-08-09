@@ -2,6 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { SKU_CATALOG } from "./checkout.functions";
+import type {
+  CouponKind,
+  CouponPreview,
+  CouponRedemptionRow,
+  CouponRow,
+} from "./coupons";
 
 // -----------------------------------------------------------------------------
 // Coupon system — admin CRUD + user-facing preview/redeem
@@ -12,71 +18,6 @@ import { SKU_CATALOG } from "./checkout.functions";
 // service_role, so every call here goes through the admin client AFTER the
 // caller has been authenticated (and, for CRUD, verified as an admin).
 // -----------------------------------------------------------------------------
-
-export type CouponKind = "discount" | "credits" | "entitlement";
-export type CouponDiscountType = "percent" | "fixed";
-
-export type CouponRow = {
-  id: string;
-  code: string;
-  kind: CouponKind;
-  description: string | null;
-  discount_type: CouponDiscountType | null;
-  discount_percent: number | null;
-  discount_cents: number | null;
-  credits_amount: number | null;
-  credits_app: string | null;
-  entitlement_app_key: string | null;
-  entitlement_tier: string | null;
-  entitlement_days: number | null;
-  applies_to_apps: string[];
-  applies_to_skus: string[];
-  valid_from: string;
-  valid_until: string | null;
-  max_redemptions: number | null;
-  max_per_user: number;
-  redemption_count: number;
-  enabled: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
-export type CouponPreview = {
-  valid: boolean;
-  reason: string;
-  coupon_id: string | null;
-  code: string | null;
-  kind: CouponKind | null;
-  description: string | null;
-  discount_cents_applied: number;
-  final_amount_cents: number;
-  credits_amount: number | null;
-  credits_app: string | null;
-  entitlement_app_key: string | null;
-  entitlement_tier: string | null;
-  entitlement_days: number | null;
-};
-
-export type CouponRedemptionRow = {
-  id: string;
-  coupon_id: string;
-  user_id: string;
-  kind: CouponKind;
-  code: string;
-  app: string | null;
-  sku: string | null;
-  original_amount_cents: number | null;
-  discount_cents_applied: number | null;
-  final_amount_cents: number | null;
-  credits_granted: number | null;
-  entitlement_id: string | null;
-  m_payment_id: string | null;
-  created_at: string;
-};
-
-/** PayFast rejects amounts below R5.00 — a 100% discount must use a
- *  credits/entitlement coupon redeemed on /redeem instead. */
-export const PAYFAST_MIN_CENTS = 500;
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -130,36 +71,6 @@ function normalizePreview(raw: unknown): CouponPreview {
     entitlement_tier: (row.entitlement_tier as string) ?? null,
     entitlement_days: row.entitlement_days == null ? null : Number(row.entitlement_days),
   };
-}
-
-/** Human-readable message for a `coupon_preview.reason` code. */
-export function couponReasonMessage(reason: string): string {
-  switch (reason) {
-    case "ok":
-      return "Coupon applied.";
-    case "unknown_code":
-      return "That code doesn't exist.";
-    case "disabled":
-      return "That code is no longer active.";
-    case "not_yet_valid":
-      return "That code isn't active yet.";
-    case "expired":
-      return "That code has expired.";
-    case "exhausted":
-      return "That code has reached its redemption limit.";
-    case "per_user_limit":
-      return "You've already used that code.";
-    case "app_not_allowed":
-      return "That code doesn't apply to this app.";
-    case "sku_not_allowed":
-      return "That code doesn't apply to this plan.";
-    case "not_a_checkout_coupon":
-      return "That code isn't a checkout discount — redeem it on the Redeem page.";
-    case "not_redeemable_standalone":
-      return "That code is a checkout discount — enter it on the checkout page.";
-    default:
-      return reason ? `Coupon rejected (${reason}).` : "Coupon rejected.";
-  }
 }
 
 // -----------------------------------------------------------------------------
