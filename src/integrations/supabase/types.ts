@@ -478,6 +478,165 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_redemptions: {
+        Row: {
+          app: string | null
+          checkout_session_id: string | null
+          code: string
+          coupon_id: string
+          created_at: string
+          credits_granted: number | null
+          discount_cents_applied: number | null
+          entitlement_id: string | null
+          final_amount_cents: number | null
+          id: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          m_payment_id: string | null
+          metadata: Json
+          original_amount_cents: number | null
+          sku: string | null
+          user_id: string
+        }
+        Insert: {
+          app?: string | null
+          checkout_session_id?: string | null
+          code: string
+          coupon_id: string
+          created_at?: string
+          credits_granted?: number | null
+          discount_cents_applied?: number | null
+          entitlement_id?: string | null
+          final_amount_cents?: number | null
+          id?: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          m_payment_id?: string | null
+          metadata?: Json
+          original_amount_cents?: number | null
+          sku?: string | null
+          user_id: string
+        }
+        Update: {
+          app?: string | null
+          checkout_session_id?: string | null
+          code?: string
+          coupon_id?: string
+          created_at?: string
+          credits_granted?: number | null
+          discount_cents_applied?: number | null
+          entitlement_id?: string | null
+          final_amount_cents?: number | null
+          id?: string
+          kind?: Database["public"]["Enums"]["coupon_kind"]
+          m_payment_id?: string | null
+          metadata?: Json
+          original_amount_cents?: number | null
+          sku?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_checkout_session_id_fkey"
+            columns: ["checkout_session_id"]
+            isOneToOne: false
+            referencedRelation: "checkout_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          applies_to_apps: string[]
+          applies_to_skus: string[]
+          code: string
+          created_at: string
+          created_by: string | null
+          credits_amount: number | null
+          credits_app: string | null
+          description: string | null
+          discount_cents: number | null
+          discount_percent: number | null
+          discount_type:
+            | Database["public"]["Enums"]["coupon_discount_type"]
+            | null
+          enabled: boolean
+          entitlement_app_key: string | null
+          entitlement_days: number | null
+          entitlement_tier: string | null
+          id: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          max_per_user: number
+          max_redemptions: number | null
+          metadata: Json
+          redemption_count: number
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          applies_to_apps?: string[]
+          applies_to_skus?: string[]
+          code: string
+          created_at?: string
+          created_by?: string | null
+          credits_amount?: number | null
+          credits_app?: string | null
+          description?: string | null
+          discount_cents?: number | null
+          discount_percent?: number | null
+          discount_type?:
+            | Database["public"]["Enums"]["coupon_discount_type"]
+            | null
+          enabled?: boolean
+          entitlement_app_key?: string | null
+          entitlement_days?: number | null
+          entitlement_tier?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          max_per_user?: number
+          max_redemptions?: number | null
+          metadata?: Json
+          redemption_count?: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          applies_to_apps?: string[]
+          applies_to_skus?: string[]
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          credits_amount?: number | null
+          credits_app?: string | null
+          description?: string | null
+          discount_cents?: number | null
+          discount_percent?: number | null
+          discount_type?:
+            | Database["public"]["Enums"]["coupon_discount_type"]
+            | null
+          enabled?: boolean
+          entitlement_app_key?: string | null
+          entitlement_days?: number | null
+          entitlement_tier?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["coupon_kind"]
+          max_per_user?: number
+          max_redemptions?: number | null
+          metadata?: Json
+          redemption_count?: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       credit_ledger: {
         Row: {
           app: string
@@ -2659,6 +2818,65 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      coupon_preview: {
+        Args: {
+          _amount_cents?: number
+          _app?: string
+          _code: string
+          _sku?: string
+          _user_id: string
+        }
+        Returns: {
+          code: string
+          coupon_id: string
+          credits_amount: number
+          credits_app: string
+          description: string
+          discount_cents_applied: number
+          entitlement_app_key: string
+          entitlement_days: number
+          entitlement_tier: string
+          final_amount_cents: number
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          reason: string
+          valid: boolean
+        }[]
+      }
+      coupon_redeem: {
+        Args: {
+          _amount_cents?: number
+          _app?: string
+          _checkout_session_id?: string
+          _code: string
+          _m_payment_id?: string
+          _sku?: string
+          _user_id: string
+        }
+        Returns: {
+          app: string | null
+          checkout_session_id: string | null
+          code: string
+          coupon_id: string
+          created_at: string
+          credits_granted: number | null
+          discount_cents_applied: number | null
+          entitlement_id: string | null
+          final_amount_cents: number | null
+          id: string
+          kind: Database["public"]["Enums"]["coupon_kind"]
+          m_payment_id: string | null
+          metadata: Json
+          original_amount_cents: number | null
+          sku: string | null
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coupon_redemptions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -2909,6 +3127,8 @@ export type Database = {
       application_status: "active" | "beta" | "hidden" | "retired"
       consent_decision: "granted" | "withdrawn"
       consent_purpose: "essential" | "analytics" | "marketing" | "ai_training"
+      coupon_discount_type: "percent" | "fixed"
+      coupon_kind: "discount" | "credits" | "entitlement"
       dsr_kind: "export" | "erasure" | "rectification"
       dsr_status: "pending" | "in_progress" | "completed" | "rejected"
       governance_proposal_status:
@@ -3101,6 +3321,8 @@ export const Constants = {
       application_status: ["active", "beta", "hidden", "retired"],
       consent_decision: ["granted", "withdrawn"],
       consent_purpose: ["essential", "analytics", "marketing", "ai_training"],
+      coupon_discount_type: ["percent", "fixed"],
+      coupon_kind: ["discount", "credits", "entitlement"],
       dsr_kind: ["export", "erasure", "rectification"],
       dsr_status: ["pending", "in_progress", "completed", "rejected"],
       governance_proposal_status: [
