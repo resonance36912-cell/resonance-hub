@@ -63,6 +63,7 @@ import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
@@ -378,6 +379,11 @@ const AdminCreditsRoute = AdminCreditsRouteImport.update({
   path: '/admin/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/admin/coupons',
+  path: '/admin/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
   id: '/admin/billing',
   path: '/admin/billing',
@@ -625,6 +631,7 @@ export interface FileRoutesByFullPath {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -722,6 +729,7 @@ export interface FileRoutesByTo {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -820,6 +828,7 @@ export interface FileRoutesById {
   '/account/subscriptions': typeof AccountSubscriptionsRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -919,6 +928,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -1016,6 +1026,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -1113,6 +1124,7 @@ export interface FileRouteTypes {
     | '/account/subscriptions'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -1211,6 +1223,7 @@ export interface RootRouteChildren {
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -1663,6 +1676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCreditsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/admin/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/billing': {
       id: '/admin/billing'
       path: '/admin/billing'
@@ -2024,6 +2044,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
   AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
