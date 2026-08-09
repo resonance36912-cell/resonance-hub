@@ -13,6 +13,8 @@ import {
   type SkuDef,
 } from "@/lib/checkout.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
+import { previewCoupon } from "@/lib/coupons.functions";
+import { couponReasonMessage, type CouponPreview } from "@/lib/coupons";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
 
@@ -213,6 +215,11 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function PayBlock({ sku, email, returnTo }: { sku: string; email: string; returnTo?: string }) {
   const launch = useServerFn(createPayfastLaunch);
+  const preview = useServerFn(previewCoupon);
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<CouponPreview | null>(null);
+  const [couponMsg, setCouponMsg] = useState<string | null>(null);
+  const [couponBusy, setCouponBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [payload, setPayload] = useState<PayfastLaunch | null>(null);
@@ -234,11 +241,43 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
     return () => clearTimeout(t);
   }, [loading]);
 
+  async function applyCoupon() {
+    const code = couponInput.trim();
+    if (!code) return;
+    setCouponBusy(true);
+    setCouponMsg(null);
+    try {
+      const res = await preview({ data: { code, sku } });
+      if (res.valid && res.kind === "discount") {
+        setCoupon(res);
+        setCouponMsg(couponReasonMessage("ok"));
+      } else {
+        setCoupon(null);
+        setCouponMsg(
+          couponReasonMessage(res.valid ? "not_a_checkout_coupon" : res.reason || "unknown_code"),
+        );
+      }
+    } catch (e) {
+      setCoupon(null);
+      setCouponMsg((e as Error).message);
+    } finally {
+      setCouponBusy(false);
+    }
+  }
+
+  function clearCoupon() {
+    setCoupon(null);
+    setCouponMsg(null);
+    setCouponInput("");
+  }
+
   async function start() {
     setLoading(true);
     setError(null);
     try {
-      const res = await launch({ data: { sku, returnTo } });
+      const res = await launch({
+        data: { sku, returnTo, ...(coupon?.code ? { couponCode: coupon.code } : {}) },
+      });
       setPayload(res);
     } catch (e) {
       setError((e as Error).message);
@@ -257,6 +296,19 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
         />
         <Row label="Billing" value={def?.cycle === "once" ? "One-time payment" : "Monthly · cancel anytime"} />
 
+        {coupon?.code && (
+          <>
+            <Row label="Coupon" value={coupon.code} />
+            <Row
+              label="Discount"
+              value={`− R${(coupon.discount_cents_applied / 100).toFixed(2)}`}
+            />
+            <Row
+              label="You pay"
+              value={`R${(coupon.final_amount_cents / 100).toFixed(2)}`}
+            />
+          </>
+        )}
         <Row label="Account" value={email} />
         {returnTo && <Row label="Returns to" value={new URL(returnTo).host} />}
       </div>
@@ -277,6 +329,59 @@ function PayBlock({ sku, email, returnTo }: { sku: string; email: string; return
           </div>
         </div>
       )}
+
+      {/* Coupon code */}
+      <div className="mb-5 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+        <label htmlFor="coupon-code" className="block text-[11px] uppercase tracking-[0.18em] text-white/55 mb-2">
+          Coupon code (optional)
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="coupon-code"
+            value={couponInput}
+            onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+            maxLength={64}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="RESONANCE20"
+            disabled={!!coupon || loading || !!payload}
+            className="flex-1 rounded-lg border border-white/15 bg-background/60 px-3 py-2 text-sm font-mono tracking-wider disabled:opacity-60"
+          />
+          {coupon ? (
+            <button
+              type="button"
+              onClick={clearCoupon}
+              className="px-4 py-2 rounded-lg border border-white/20 text-xs font-bold uppercase tracking-wider hover:border-white/50"
+            >
+              Remove
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={applyCoupon}
+              disabled={couponBusy || !couponInput.trim() || loading || !!payload}
+              className="px-4 py-2 rounded-lg border border-white/20 text-xs font-bold uppercase tracking-wider hover:border-white/50 disabled:opacity-50"
+            >
+              {couponBusy ? "Checking…" : "Apply"}
+            </button>
+          )}
+        </div>
+        {couponMsg && (
+          <p
+            className={`mt-2 text-xs ${coupon ? "text-emerald-300" : "text-amber-300"}`}
+            role="status"
+          >
+            {couponMsg}
+          </p>
+        )}
+        <p className="mt-2 text-[11px] text-white/45">
+          Credit or access codes are redeemed on the{" "}
+          <AppLink to={ROUTES.redeem} className="underline hover:text-white">
+            redeem page
+          </AppLink>
+          .
+        </p>
+      </div>
 
       <button
         onClick={start}
