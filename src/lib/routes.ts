@@ -70,6 +70,7 @@ export const ROUTES = {
   login: routePath("/login"),
   mcp: routePath("/mcp"),
   pricing: routePath("/pricing"),
+  redeem: routePath("/redeem"),
   rcgf: routePath("/rcgf"),
   sitemapXml: routePath("/sitemap.xml"),
   updatesPreview: routePath("/updates/preview"),
@@ -101,6 +102,7 @@ export const ROUTES = {
 
   adminAppSubmissions: routePath("/admin/app-submissions"),
   adminBilling: routePath("/admin/billing"),
+  adminCoupons: routePath("/admin/coupons"),
   adminCredits: routePath("/admin/credits"),
   adminEmailDomain: routePath("/admin/email-domain"),
   adminEmails: routePath("/admin/emails"),
