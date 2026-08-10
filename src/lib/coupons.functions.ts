@@ -338,7 +338,139 @@ export const deleteCoupon = createServerFn({ method: "POST" })
     return { deleted: true };
   });
 
+// -----------------------------------------------------------------------------
+// Admin bulk CSV import
+// -----------------------------------------------------------------------------
+
+const importRowSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(3)
+    .max(64)
+    .regex(/^[A-Za-z0-9_-]+$/),
+  kind: z.enum(["discount", "credits", "entitlement"]),
+  description: z.string().trim().max(500).nullable().default(null),
+  discountType: z.enum(["percent", "fixed"]).nullable().default(null),
+  discountPercent: z.number().int().min(1).max(100).nullable().default(null),
+  discountCents: z.number().int().min(1).max(10_000_000).nullable().default(null),
+  creditsAmount: z.number().int().min(1).max(10_000_000).nullable().default(null),
+  creditsApp: z.string().trim().max(64).nullable().default(null),
+  entitlementAppKey: z.string().trim().max(64).nullable().default(null),
+  entitlementTier: z.string().trim().max(64).nullable().default(null),
+  entitlementDays: z.number().int().min(1).max(3650).nullable().default(null),
+  appliesToApps: z.array(z.string().trim().min(1).max(64)).max(20).default([]),
+  appliesToSkus: z.array(z.string().trim().min(1).max(80)).max(50).default([]),
+  validUntil: z.string().datetime().nullable().default(null),
+  maxRedemptions: z.number().int().min(1).max(1_000_000).nullable().default(null),
+  maxPerUser: z.number().int().min(1).max(1000).default(1),
+  enabled: z.boolean().default(true),
+});
+
+export type CouponImportOutcome = {
+  code: string;
+  status: "created" | "updated" | "skipped" | "failed";
+  message: string | null;
+};
+
+export const bulkImportCoupons = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        rows: z.array(importRowSchema).min(1).max(500),
+        // When false, existing codes are skipped instead of being overwritten.
+        updateExisting: z.boolean().default(false),
+      })
+      .parse(d),
+  )
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ results: CouponImportOutcome[]; created: number; updated: number; skipped: number; failed: number }> => {
+      const supabaseAdmin = await assertAdmin(context.userId);
+
+      const codes = data.rows.map((r) => r.code.trim().toUpperCase());
+      const { data: existingRows, error: existingErr } = await supabaseAdmin
+        .from("coupons")
+        .select("id, code")
+        .in("code", codes);
+      if (existingErr) throw new Error(existingErr.message);
+      const existing = new Map<string, string>(
+        (existingRows ?? []).map((r) => [r.code as string, r.id as string]),
+      );
+
+      const results: CouponImportOutcome[] = [];
+
+      for (const row of data.rows) {
+        const code = row.code.trim().toUpperCase();
+        const payload = {
+          code,
+          kind: row.kind,
+          description: row.description?.trim() || null,
+          discount_type: row.kind === "discount" ? row.discountType : null,
+          discount_percent:
+            row.kind === "discount" && row.discountType === "percent" ? row.discountPercent : null,
+          discount_cents:
+            row.kind === "discount" && row.discountType === "fixed" ? row.discountCents : null,
+          credits_amount: row.kind === "credits" ? row.creditsAmount : null,
+          credits_app: row.kind === "credits" ? row.creditsApp?.trim() || null : null,
+          entitlement_app_key:
+            row.kind === "entitlement" ? row.entitlementAppKey?.trim() || null : null,
+          entitlement_tier: row.kind === "entitlement" ? row.entitlementTier?.trim() || null : null,
+          entitlement_days: row.kind === "entitlement" ? row.entitlementDays : null,
+          applies_to_apps: row.appliesToApps,
+          applies_to_skus: row.appliesToSkus,
+          valid_until: row.validUntil,
+          max_redemptions: row.maxRedemptions,
+          max_per_user: row.maxPerUser,
+          enabled: row.enabled,
+        };
+
+        const existingId = existing.get(code);
+        try {
+          if (existingId) {
+            if (!data.updateExisting) {
+              results.push({ code, status: "skipped", message: "Code already exists" });
+              continue;
+            }
+            const { error } = await supabaseAdmin
+              .from("coupons")
+              .update(payload)
+              .eq("id", existingId);
+            if (error) throw new Error(error.message);
+            results.push({ code, status: "updated", message: null });
+          } else {
+            const { error } = await supabaseAdmin
+              .from("coupons")
+              .insert({ ...payload, valid_from: new Date().toISOString(), created_by: context.userId });
+            if (error) {
+              if (/duplicate key/i.test(error.message)) {
+                results.push({ code, status: "skipped", message: "Code already exists" });
+                continue;
+              }
+              throw new Error(error.message);
+            }
+            results.push({ code, status: "created", message: null });
+          }
+        } catch (e) {
+          results.push({ code, status: "failed", message: (e as Error).message });
+        }
+      }
+
+      return {
+        results,
+        created: results.filter((r) => r.status === "created").length,
+        updated: results.filter((r) => r.status === "updated").length,
+        skipped: results.filter((r) => r.status === "skipped").length,
+        failed: results.filter((r) => r.status === "failed").length,
+      };
+    },
+  );
+
 export const listCouponRedemptions = createServerFn({ method: "POST" })
+
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z
