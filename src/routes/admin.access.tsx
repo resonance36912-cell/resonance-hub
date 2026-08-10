@@ -70,7 +70,7 @@ function AdminAccessPage() {
 
   const statusQ = useQuery({
     queryKey: ["admin-access-status"],
-    queryFn: () => statusFn({ data: {} }),
+    queryFn: () => statusFn(),
     enabled: signedIn === true,
     retry: false,
   });
