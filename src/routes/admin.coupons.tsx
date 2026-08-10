@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupons,
@@ -9,11 +9,19 @@ import {
   setCouponEnabled,
   deleteCoupon,
   listCouponRedemptions,
+  bulkImportCoupons,
+  type CouponImportOutcome,
 } from "@/lib/coupons.functions";
 import { describeCoupon, type CouponKind, type CouponRow } from "@/lib/coupons";
+import {
+  COUPON_CSV_TEMPLATE,
+  MAX_COUPON_CSV_ROWS,
+  parseCouponCsv,
+} from "@/lib/coupon-csv";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { AppLink } from "@/components/AppLink";
 import { ROUTES } from "@/lib/routes";
+
 
 export const Route = createFileRoute("/admin/coupons")({
   head: () => ({
