@@ -92,12 +92,24 @@ function AdminCouponsPage() {
   const toggleFn = useServerFn(setCouponEnabled);
   const deleteFn = useServerFn(deleteCoupon);
   const redemptionsFn = useServerFn(listCouponRedemptions);
+  const importFn = useServerFn(bulkImportCoupons);
   const qc = useQueryClient();
 
   const [form, setForm] = useState<FormState>(EMPTY);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [openRedemptions, setOpenRedemptions] = useState<string | null>(null);
+
+  const [csvText, setCsvText] = useState("");
+  const [csvFileName, setCsvFileName] = useState<string | null>(null);
+  const [updateExisting, setUpdateExisting] = useState(false);
+  const [importResults, setImportResults] = useState<CouponImportOutcome[] | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const parsed = useMemo(
+    () => (csvText.trim() ? parseCouponCsv(csvText) : null),
+    [csvText],
+  );
 
   const couponsQ = useQuery({
     queryKey: ["admin-coupons"],
@@ -109,6 +121,42 @@ function AdminCouponsPage() {
     queryFn: () => redemptionsFn({ data: { couponId: openRedemptions, limit: 100 } }),
     enabled: !!openRedemptions,
   });
+
+  const runImport = useMutation({
+    mutationFn: async () => {
+      if (!parsed || parsed.rows.length === 0) throw new Error("Nothing valid to import");
+      return importFn({ data: { rows: parsed.rows, updateExisting } });
+    },
+    onSuccess: (res) => {
+      setImportError(null);
+      setImportResults(res.results);
+      qc.invalidateQueries({ queryKey: ["admin-coupons"] });
+    },
+    onError: (e) => {
+      setImportResults(null);
+      setImportError((e as Error).message);
+    },
+  });
+
+  async function onCsvFile(file: File | null | undefined) {
+    if (!file) return;
+    const text = await file.text();
+    setCsvFileName(file.name);
+    setImportResults(null);
+    setImportError(null);
+    setCsvText(text);
+  }
+
+  function downloadTemplate() {
+    const blob = new Blob([`${COUPON_CSV_TEMPLATE}\n`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "coupon-import-template.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
 
   const save = useMutation({
     mutationFn: async () => {
