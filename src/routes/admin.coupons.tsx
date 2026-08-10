@@ -510,6 +510,185 @@ function AdminCouponsPage() {
           </div>
         </section>
 
+        <section className="rounded-lg border bg-card p-5 space-y-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="font-bold">Bulk import from CSV</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload or paste a CSV to create up to {MAX_COUPON_CSV_ROWS} coupons at
+                once. Rows are validated in the browser first — nothing is written
+                until you confirm the import.
+              </p>
+            </div>
+            <button onClick={downloadTemplate} className="px-4 py-2 rounded-full border text-sm">
+              Download template
+            </button>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className={labelCls} htmlFor="csv-file">CSV file</label>
+              <input
+                id="csv-file"
+                type="file"
+                accept=".csv,text/csv"
+                className={field}
+                onChange={(e) => void onCsvFile(e.target.files?.[0])}
+              />
+              {csvFileName && (
+                <p className="text-xs text-muted-foreground mt-1">Loaded {csvFileName}</p>
+              )}
+            </div>
+            <div>
+              <label className={labelCls} htmlFor="csv-text">Or paste CSV</label>
+              <textarea
+                id="csv-text"
+                rows={6}
+                className={`${field} font-mono text-xs`}
+                placeholder={COUPON_CSV_TEMPLATE}
+                value={csvText}
+                onChange={(e) => {
+                  setCsvText(e.target.value);
+                  setImportResults(null);
+                  setImportError(null);
+                }}
+              />
+            </div>
+          </div>
+
+          {parsed && (
+            <div className="space-y-3">
+              <p className="text-sm">
+                <span className="font-bold">{parsed.rows.length}</span> valid row
+                {parsed.rows.length === 1 ? "" : "s"} ready
+                {parsed.issues.length > 0 && (
+                  <>
+                    {" · "}
+                    <span className="text-destructive font-bold">{parsed.issues.length}</span>{" "}
+                    row{parsed.issues.length === 1 ? "" : "s"} with problems
+                  </>
+                )}
+              </p>
+
+              {parsed.issues.length > 0 && (
+                <ul className="text-xs text-destructive space-y-1" role="alert">
+                  {parsed.issues.slice(0, 25).map((iss, i) => (
+                    <li key={`${iss.line}-${i}`}>
+                      Line {iss.line}
+                      {iss.code ? ` (${iss.code})` : ""}: {iss.message}
+                    </li>
+                  ))}
+                  {parsed.issues.length > 25 && (
+                    <li>…and {parsed.issues.length - 25} more</li>
+                  )}
+                </ul>
+              )}
+
+              {parsed.rows.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="text-xs uppercase tracking-wide text-muted-foreground">
+                      <tr className="border-b">
+                        <th className="text-left py-2">Code</th>
+                        <th className="text-left py-2">Effect</th>
+                        <th className="text-left py-2">Scope</th>
+                        <th className="text-left py-2">Expires</th>
+                        <th className="text-left py-2">Limits</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parsed.rows.slice(0, 20).map((r) => (
+                        <tr key={r.code} className="border-b last:border-0">
+                          <td className="py-2 font-mono">{r.code}</td>
+                          <td className="py-2">
+                            {describeCoupon({
+                              kind: r.kind,
+                              discount_type: r.discountType,
+                              discount_percent: r.discountPercent,
+                              discount_cents: r.discountCents,
+                              credits_amount: r.creditsAmount,
+                              credits_app: r.creditsApp,
+                              entitlement_app_key: r.entitlementAppKey,
+                              entitlement_tier: r.entitlementTier,
+                              entitlement_days: r.entitlementDays,
+                            } as unknown as CouponRow)}
+                          </td>
+                          <td className="py-2 text-xs text-muted-foreground">
+                            {r.appliesToApps.length ? r.appliesToApps.join(", ") : "all apps"}
+                            {r.appliesToSkus.length ? ` · ${r.appliesToSkus.join(", ")}` : ""}
+                          </td>
+                          <td className="py-2">
+                            {r.validUntil ? new Date(r.validUntil).toLocaleDateString() : "—"}
+                          </td>
+                          <td className="py-2 text-xs text-muted-foreground">
+                            {r.maxRedemptions ? `${r.maxRedemptions} total` : "unlimited"} ·{" "}
+                            {r.maxPerUser}/user · {r.enabled ? "enabled" : "disabled"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {parsed.rows.length > 20 && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Showing the first 20 of {parsed.rows.length} rows.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={updateExisting}
+              onChange={(e) => setUpdateExisting(e.target.checked)}
+            />
+            Overwrite coupons whose code already exists (otherwise they are skipped)
+          </label>
+
+          {importError && (
+            <p className="text-sm text-destructive" role="alert">{importError}</p>
+          )}
+
+          <button
+            onClick={() => runImport.mutate()}
+            disabled={runImport.isPending || !parsed || parsed.rows.length === 0}
+            className="px-5 py-2.5 rounded-full bg-primary-surface text-primary-foreground font-bold text-sm disabled:opacity-60"
+          >
+            {runImport.isPending
+              ? "Importing…"
+              : `Import ${parsed?.rows.length ?? 0} coupon${parsed?.rows.length === 1 ? "" : "s"}`}
+          </button>
+
+          {importResults && (
+            <div className="rounded-lg border p-4 space-y-2">
+              <p className="text-sm font-bold">Import results</p>
+              <ul className="text-xs space-y-1">
+                {importResults.map((r) => (
+                  <li key={r.code}>
+                    <span className="font-mono">{r.code}</span>{" "}
+                    <span
+                      className={
+                        r.status === "failed"
+                          ? "text-destructive"
+                          : r.status === "skipped"
+                            ? "text-muted-foreground"
+                            : "text-emerald-500"
+                      }
+                    >
+                      {r.status}
+                    </span>
+                    {r.message ? ` — ${r.message}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+
+
+
         <section className="rounded-lg border bg-card p-5">
           <h2 className="font-bold mb-4">All coupons</h2>
           {couponsQ.isLoading ? (
