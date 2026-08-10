@@ -66,6 +66,7 @@ import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
+import { Route as AdminAccessRouteImport } from './routes/admin.access'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
 import { Route as AccountPrivacyRouteImport } from './routes/account.privacy'
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
@@ -394,6 +395,11 @@ const AdminAppSubmissionsRoute = AdminAppSubmissionsRouteImport.update({
   path: '/admin/app-submissions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAccessRoute = AdminAccessRouteImport.update({
+  id: '/admin/access',
+  path: '/admin/access',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
@@ -629,6 +635,7 @@ export interface FileRoutesByFullPath {
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/privacy': typeof AccountPrivacyRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -727,6 +734,7 @@ export interface FileRoutesByTo {
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/privacy': typeof AccountPrivacyRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -826,6 +834,7 @@ export interface FileRoutesById {
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
   '/account/privacy': typeof AccountPrivacyRoute
   '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/coupons': typeof AdminCouponsRoute
@@ -926,6 +935,7 @@ export interface FileRouteTypes {
     | '/account/invoices'
     | '/account/privacy'
     | '/account/subscriptions'
+    | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
     | '/admin/coupons'
@@ -1024,6 +1034,7 @@ export interface FileRouteTypes {
     | '/account/invoices'
     | '/account/privacy'
     | '/account/subscriptions'
+    | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
     | '/admin/coupons'
@@ -1122,6 +1133,7 @@ export interface FileRouteTypes {
     | '/account/invoices'
     | '/account/privacy'
     | '/account/subscriptions'
+    | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
     | '/admin/coupons'
@@ -1221,6 +1233,7 @@ export interface RootRouteChildren {
   AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
   AccountPrivacyRoute: typeof AccountPrivacyRoute
   AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminAccessRoute: typeof AdminAccessRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
@@ -1697,6 +1710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAppSubmissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/access': {
+      id: '/admin/access'
+      path: '/admin/access'
+      fullPath: '/admin/access'
+      preLoaderRoute: typeof AdminAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/subscriptions': {
       id: '/account/subscriptions'
       path: '/account/subscriptions'
@@ -2042,6 +2062,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
   AccountPrivacyRoute: AccountPrivacyRoute,
   AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminAccessRoute: AdminAccessRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCouponsRoute: AdminCouponsRoute,
