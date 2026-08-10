@@ -100,7 +100,9 @@ export const ROUTES = {
 
   admin: routePath("/admin"),
 
+  adminAccess: routePath("/admin/access"),
   adminAppSubmissions: routePath("/admin/app-submissions"),
+
   adminBilling: routePath("/admin/billing"),
   adminCoupons: routePath("/admin/coupons"),
   adminCredits: routePath("/admin/credits"),
