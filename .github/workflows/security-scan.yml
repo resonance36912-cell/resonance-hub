@@ -1,0 +1,328 @@
+name: Security scan
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Daily at 03:17 UTC — catches newly-disclosed CVEs in pinned deps.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+env:
+  # SARIF artifact retention in days. Override by setting repo/org variable
+  # SARIF_RETENTION_DAYS (GitHub caps user-set retention at 90 days).
+  # Default: 14 days — long enough to triage a work week + weekend, short
+  # enough to keep artifact storage bounded.
+  SARIF_RETENTION_DAYS: ${{ vars.SARIF_RETENTION_DAYS || '14' }}
+  # Number of top rule IDs to include in job-summary tables AND PR-annotation
+  # emissions for both CodeQL and Semgrep. Override with repo/org variable
+  # SARIF_SUMMARY_TOP_N. Default: 10 — small enough to skim in a PR review,
+  # large enough to cover the meaningful long tail on most runs.
+  SARIF_SUMMARY_TOP_N: ${{ vars.SARIF_SUMMARY_TOP_N || '10' }}
+
+permissions:
+  contents: read
+  security-events: write
+  # `write` (not `read`) is required so the pr-comment job below can post
+  # and update the sticky SARIF-artifacts comment via the GitHub API.
+  pull-requests: write
+
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  invariants:
+    name: Project security invariants
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Run verify-security-invariants
+        run: bun run scripts/verify-security-invariants.ts
+
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No license required for public repos. For private repos add
+          # GITLEAKS_LICENSE in repo secrets and uncomment:
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
+          GITLEAKS_ENABLE_SUMMARY: "true"
+
+  dependency-audit:
+    name: Dependency audit (npm advisories)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Verify pinned dependency versions
+        # Fails if package.json uses range specifiers (^, ~, >=) or if
+        # bun.lock resolved a different version than package.json declares.
+        # Keeps fresh installs deterministic so security scans stay green.
+        run: bun run scripts/verify-pinned-deps.ts
+      - name: Install with frozen lockfile
+        # --frozen-lockfile ensures CI installs exactly what's committed;
+        # any drift between package.json and bun.lock fails the job.
+        run: bun install --frozen-lockfile
+      - name: bun audit (high+)
+        # `bun audit` queries the npm advisory DB. Fail only on high/critical
+        # so transient low-severity noise doesn't block PRs.
+        run: bun audit --audit-level=high
+
+  sast-semgrep:
+    name: SAST (semgrep)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: semgrep ci
+        # Curated rulesets:
+        #   p/owasp-top-ten, p/javascript, p/typescript, p/react,
+        #   p/nodejsscan, p/secrets
+        run: |
+          semgrep ci \
+            --config p/owasp-top-ten \
+            --config p/javascript \
+            --config p/typescript \
+            --config p/react \
+            --config p/nodejsscan \
+            --config p/secrets \
+            --error \
+            --sarif --output=semgrep.sarif || true
+      - name: Upload SARIF to GitHub code scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+      - name: Setup Bun (for SARIF summarizer)
+        if: always()
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Summarize Semgrep findings to job summary
+        # Parses semgrep.sarif and appends top rule IDs + file:line to
+        # $GITHUB_STEP_SUMMARY so alerts are visible in the run log.
+        if: always()
+        run: bun run scripts/summarize-sarif.ts semgrep.sarif --label "Semgrep" --top "$SARIF_SUMMARY_TOP_N"
+      - name: Upload Semgrep SARIF artifact (always)
+        # Uploads SARIF on every run — success or failure — so alerts can be
+        # triaged locally without needing the Security tab. Retention is
+        # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
+        id: upload-semgrep-sarif
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          # Artifact name includes the short SHA and workflow run ID so multiple
+          # runs (e.g. re-runs, matrix retries) don't collide and each artifact
+          # can be traced back to its exact commit + run.
+          name: semgrep-sarif-${{ github.run_id }}-${{ github.sha }}
+          path: semgrep.sarif
+          if-no-files-found: warn
+          retention-days: ${{ env.SARIF_RETENTION_DAYS }}
+      - name: Annotate PR with top Semgrep findings
+        # Emits ::warning / ::error workflow commands so the top findings
+        # render as inline annotations on the PR "Files changed" tab. Each
+        # annotation message links back to this run's SARIF artifact entry.
+        # Runs on pull_request only; only fires when the upload actually
+        # produced an artifact ID (i.e. semgrep.sarif existed).
+        if: always() && github.event_name == 'pull_request' && steps.upload-semgrep-sarif.outputs.artifact-id != ''
+        env:
+          ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-semgrep-sarif.outputs.artifact-id }}
+        run: bun run scripts/annotate-sarif.ts semgrep.sarif --label "Semgrep" --top "$SARIF_SUMMARY_TOP_N" --artifact-url "$ARTIFACT_URL"
+
+  codeql:
+    name: CodeQL (JavaScript/TypeScript)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended,security-and-quality
+      - name: Analyze
+        id: codeql-analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+          output: codeql-results
+      - name: Summarize CodeQL findings to job summary
+        # Parses the SARIF that CodeQL just emitted and appends a compact
+        # Markdown table (top rule IDs + locations) to $GITHUB_STEP_SUMMARY
+        # so reviewers can triage the top alerts without downloading anything.
+        if: always()
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Write CodeQL summary
+        if: always()
+        run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL" --top "$SARIF_SUMMARY_TOP_N"
+      - name: Upload CodeQL SARIF artifact (always)
+        # Uploads SARIF on every run — success or failure — so alerts can be
+        # triaged locally without needing the Security tab. Retention is
+        # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
+        id: upload-codeql-sarif
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          # Artifact name includes the workflow run ID and commit SHA for easy
+          # correlation across re-runs and branches.
+          name: codeql-sarif-${{ github.run_id }}-${{ github.sha }}
+          path: codeql-results
+          if-no-files-found: warn
+          retention-days: ${{ env.SARIF_RETENTION_DAYS }}
+      - name: Annotate PR with top CodeQL findings
+        # Emits ::warning / ::error workflow commands so the top findings
+        # render as inline annotations on the PR "Files changed" tab. Each
+        # annotation message links back to this run's SARIF artifact entry.
+        # Runs on pull_request only; skipped if the SARIF wasn't produced.
+        if: always() && github.event_name == 'pull_request' && steps.upload-codeql-sarif.outputs.artifact-id != ''
+        env:
+          ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-codeql-sarif.outputs.artifact-id }}
+        run: bun run scripts/annotate-sarif.ts codeql-results --label "CodeQL" --top "$SARIF_SUMMARY_TOP_N" --artifact-url "$ARTIFACT_URL"
+
+  pr-comment:
+    name: SARIF artifacts PR comment
+    # Only runs on pull_request events; skipped for push/schedule/manual runs
+    # since there is no PR to comment on. Always runs even if scan jobs
+    # failed — reviewers still want the SARIF download link for triage.
+    if: github.event_name == 'pull_request'
+    needs: [sast-semgrep, codeql]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+      actions: read
+      contents: read
+    steps:
+      - name: Post/update sticky SARIF-artifacts comment
+        uses: actions/github-script@v7
+        env:
+          RUN_ID: ${{ github.run_id }}
+          SHA: ${{ github.sha }}
+          SEMGREP_RESULT: ${{ needs.sast-semgrep.result }}
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+          RETENTION: ${{ env.SARIF_RETENTION_DAYS }}
+        with:
+          script: |
+            const marker = '<!-- security-scan:sarif-artifacts -->';
+            const { RUN_ID, SHA, SEMGREP_RESULT, CODEQL_RESULT, RETENTION } = process.env;
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${RUN_ID}`;
+            const summaryUrl = `${runUrl}#step-summary`;
+            const shortSha = SHA.slice(0, 7);
+
+            // Fork PRs run with a read-only GITHUB_TOKEN — pull-requests: write
+            // is downgraded, and listWorkflowRunArtifacts may also be blocked.
+            // Detect the fork case up front so we can skip API calls that would
+            // 403 and fall back to job-summary links instead of hard-failing.
+            const isFork = !!(pr.head?.repo?.full_name && pr.head.repo.full_name !== `${owner}/${repo}`);
+
+            // Try to resolve real artifact download URLs. Any failure (403 on
+            // fork PRs, transient API error, empty list) falls back to the
+            // job summary link so reviewers still get somewhere useful to click.
+            let artifactData = { artifacts: [] };
+            let artifactsResolved = false;
+            try {
+              const res = await github.rest.actions.listWorkflowRunArtifacts({
+                owner, repo, run_id: Number(RUN_ID), per_page: 100,
+              });
+              artifactData = res.data;
+              artifactsResolved = true;
+            } catch (err) {
+              core.warning(`Could not list run artifacts (${err.status || 'error'}: ${err.message}); falling back to job-summary links.`);
+            }
+
+            const artifactCell = (namePrefix, label) => {
+              const a = artifactData.artifacts.find((x) => x.name.startsWith(namePrefix));
+              if (a) {
+                return `[\`${a.name}\`](https://github.com/${owner}/${repo}/actions/runs/${RUN_ID}/artifacts/${a.id})`;
+              }
+              if (!artifactsResolved) {
+                // API unavailable (e.g. fork PR) — link to the run's Artifacts
+                // section and to the job summary so reviewers can still triage.
+                return `[Artifacts tab](${runUrl}#artifacts) · [${label} summary](${summaryUrl})`;
+              }
+              return `_(not produced — job may have failed before upload)_`;
+            };
+            const icon = (r) => r === 'success' ? '✅' : r === 'failure' ? '❌' : r === 'cancelled' ? '⚪' : '⏭️';
+
+            const forkNote = isFork
+              ? `\n> ℹ️ **Fork PR detected** — GitHub restricts the Actions API for forks, so direct artifact download links may be unavailable. Use the [job summary](${summaryUrl}) or the run's [Artifacts tab](${runUrl}#artifacts) instead.\n`
+              : '';
+
+            const body = [
+              marker,
+              `## 🔎 Security scan SARIF artifacts`,
+              ``,
+              `Commit \`${shortSha}\` · [Run #${RUN_ID}](${runUrl}) · Retention: **${RETENTION} days**`,
+              forkNote,
+              `| Scanner | Status | SARIF artifact |`,
+              `| ------- | ------ | -------------- |`,
+              `| Semgrep | ${icon(SEMGREP_RESULT)} \`${SEMGREP_RESULT}\` | ${artifactCell('semgrep-sarif-', 'Semgrep')} |`,
+              `| CodeQL  | ${icon(CODEQL_RESULT)} \`${CODEQL_RESULT}\` | ${artifactCell('codeql-sarif-', 'CodeQL')} |`,
+              ``,
+              `<sub>Download the SARIF, then triage with any viewer (e.g. \`code --install-extension MS-SarifVSCode.sarif-viewer\`), or check the top rule IDs in the [job summary](${summaryUrl}).</sub>`,
+            ].join('\n');
+
+            // Sticky comment upsert. On fork PRs GITHUB_TOKEN lacks
+            // pull-requests: write, so listComments/create/update will 403.
+            // Wrap in try/catch and mirror the payload into the job summary so
+            // reviewers still see the artifact table on the run page.
+            const emitFallbackSummary = (reason) => {
+              core.warning(`PR comment skipped (${reason}); rendering to job summary instead.`);
+              core.summary
+                .addRaw(body.replace(marker, ''))
+                .addRaw(`\n\n_Posted to the job summary because the PR comment could not be written (${reason})._\n`)
+                .write();
+            };
+
+            try {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner, repo, issue_number: prNumber, per_page: 100,
+              });
+              const existing = comments.find((c) => c.body && c.body.includes(marker));
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+              }
+            } catch (err) {
+              const status = err.status || 'error';
+              if (status === 403 || status === 404 || isFork) {
+                emitFallbackSummary(`fork PR / restricted token: ${err.message}`);
+              } else {
+                emitFallbackSummary(`${status}: ${err.message}`);
+                throw err;
+              }
+            }

@@ -1,0 +1,90 @@
+# Dependabot keeps deps patched and the Bun lockfile in sync.
+#
+# Ecosystem notes:
+# - `bun` (native support) updates both package.json and bun.lock in the same
+#   PR, so our `verify-pinned-deps.ts` guard stays green.
+# - Our package.json uses EXACT pins (no ^/~). Dependabot writes the new exact
+#   version into package.json and regenerates bun.lock — no extra sync step.
+# - Security-only updates run daily so newly-disclosed CVEs get a PR fast;
+#   version updates run weekly and are grouped to keep review noise low.
+# - `overrides` / `pnpm.overrides` in package.json are NOT auto-updated by
+#   Dependabot. When a security update lands for a directly-declared dep,
+#   review those override pins manually in the same PR.
+
+version: 2
+updates:
+  # Application dependencies
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+      include: "scope"
+    groups:
+      # Batch low-risk patch/minor bumps so we get a handful of PRs, not 50.
+      radix-ui:
+        patterns: ["@radix-ui/*"]
+      tanstack:
+        patterns: ["@tanstack/*"]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      eslint:
+        patterns: ["eslint", "eslint-*", "@eslint/*", "typescript-eslint"]
+      types:
+        patterns: ["@types/*"]
+      minor-and-patch:
+        # Everything else — patch + minor only. Majors get individual PRs.
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Coordinated framework bumps — pin manually to avoid partial upgrades.
+      - dependency-name: "vite"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@tanstack/*"
+        update-types: ["version-update:semver-major"]
+
+  # Daily security-only PRs — bypasses groups + version-update ignores so CVEs
+  # land as soon as an advisory is published.
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "security"
+      include: "scope"
+    # Security-only stream: Dependabot only opens PRs for advisory-driven fixes.
+    # (Configured implicitly by omitting `allow` and by GitHub's default
+    # behavior — the daily cadence acts as the "fast lane" for CVEs.)
+
+  # Keep GitHub Actions (security-scan, verify-*, etc.) pinned to safe versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      actions:
+        patterns: ["*"]

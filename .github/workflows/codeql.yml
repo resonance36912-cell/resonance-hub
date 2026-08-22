@@ -1,0 +1,130 @@
+name: CodeQL
+
+# GitHub Advanced Security SAST scan. Analyzes the JS/TS codebase with the
+# `security-extended` query suite and fails the build on any high- or
+# critical-severity finding. Results are also uploaded to the repository's
+# Code Scanning tab (when GHAS is enabled) via `upload: true`, and to the job
+# summary + inline PR annotations regardless.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly full scan so new advisories against unchanged code still surface.
+    - cron: "0 6 * * 1"
+
+jobs:
+  analyze:
+    name: CodeQL analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # security-extended widens coverage beyond the default query pack;
+          # security-and-quality would additionally include maintainability
+          # rules, which we skip here to keep the signal focused on security.
+          queries: security-extended
+
+      - name: Perform CodeQL analysis
+        id: analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          # Emit SARIF locally so the follow-up step can enforce a severity
+          # gate independent of Code Scanning being enabled on the repo.
+          output: codeql-results
+          upload: true
+
+      - name: Upload SARIF as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-${{ matrix.language }}
+          path: codeql-results
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Summarize CodeQL findings
+        if: always()
+        run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL (${{ matrix.language }})" --top 15
+
+      - name: Annotate CodeQL findings on PR
+        if: always()
+        env:
+          ARTIFACT_URL: ${{ steps.analyze.outputs.sarif-output-url }}
+        run: |
+          bun run scripts/annotate-sarif.ts codeql-results \
+            --label "CodeQL (${{ matrix.language }})" \
+            --top 20 \
+            --artifact-url "${ARTIFACT_URL:-}"
+
+      # Severity gate: parse the SARIF file(s) produced above and fail the
+      # build if any result has security-severity >= 7.0 (i.e. High or
+      # Critical on the CVSS scale CodeQL uses for security queries).
+      - name: Fail on high-severity CodeQL findings
+        if: always() && steps.analyze.outcome == 'success'
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          FILES=(codeql-results/*.sarif)
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "No SARIF output found; skipping severity gate."
+            exit 0
+          fi
+          python3 - "${FILES[@]}" <<'PY'
+          import json, sys
+          THRESHOLD = 7.0  # CVSS >= 7.0 => High or Critical
+          offenders = []
+          for path in sys.argv[1:]:
+              with open(path) as fh:
+                  sarif = json.load(fh)
+              for run in sarif.get("runs", []):
+                  rules = {}
+                  for r in run.get("tool", {}).get("driver", {}).get("rules", []):
+                      rid = r.get("id")
+                      sev = (r.get("properties") or {}).get("security-severity")
+                      try:
+                          rules[rid] = float(sev) if sev is not None else None
+                      except (TypeError, ValueError):
+                          rules[rid] = None
+                  for res in run.get("results", []):
+                      rid = res.get("ruleId") or (res.get("rule") or {}).get("id")
+                      sev = (res.get("properties") or {}).get("security-severity")
+                      try:
+                          sev_f = float(sev) if sev is not None else rules.get(rid)
+                      except (TypeError, ValueError):
+                          sev_f = rules.get(rid)
+                      if sev_f is not None and sev_f >= THRESHOLD:
+                          loc = ""
+                          locs = res.get("locations") or []
+                          if locs:
+                              pl = (locs[0].get("physicalLocation") or {})
+                              uri = (pl.get("artifactLocation") or {}).get("uri", "")
+                              line = (pl.get("region") or {}).get("startLine", "")
+                              loc = f"{uri}:{line}"
+                          offenders.append((rid, sev_f, loc))
+          if offenders:
+              print(f"::error::CodeQL: {len(offenders)} high/critical finding(s) (CVSS >= {THRESHOLD}):")
+              for rid, sev, loc in offenders[:50]:
+                  print(f"  - {rid} (severity {sev}) {loc}")
+              sys.exit(1)
+          print(f"CodeQL: no findings at CVSS >= {THRESHOLD}.")
+          PY

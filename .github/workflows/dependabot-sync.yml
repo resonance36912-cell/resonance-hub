@@ -1,0 +1,520 @@
+name: Dependabot lockfile sync
+
+# Runs on every Dependabot PR. Purpose:
+#   1. Hard-fail if `bun install` regenerates bun.lock differently than what
+#      Dependabot committed (stale lockfile → drift).
+#   2. Hard-fail if syncing overrides from bun.lock changes package.json or
+#      re-resolves bun.lock (overrides drift).
+#   3. Re-run the pinned-deps guard + `bun audit` on the final state.
+#
+# We intentionally do NOT auto-commit fixes: a drifted lockfile must be
+# corrected in the PR branch (locally or by re-running Dependabot) before it
+# can merge.
+#
+# ─── Required status check ───────────────────────────────────────────────
+# Configure branch protection on `main` to require this status check:
+#
+#   Dependabot lockfile sync / drift-gate
+#
+# The `drift-gate` job is the single required check. It runs on every PR
+# (including non-Dependabot PRs, where `sync-lockfile` is skipped) and only
+# fails when `sync-lockfile` actually failed. This lets branch protection
+# block Dependabot merges on drift without wedging human PRs in "pending".
+# Do NOT require `sync-lockfile` directly — it's conditional on the actor
+# and would leave non-Dependabot PRs stuck waiting for a check that never
+# reports.
+# ─────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "package.json"
+      - "bun.lock"
+      - ".github/dependabot.yml"
+  # Manual trigger for troubleshooting: run the exact drift gates against any
+  # branch without waiting for Dependabot to open a PR. No PR comment is
+  # posted (there's no PR context) — inspect the workflow-run Summary tab and
+  # the `dependabot-sync-drift` artifact instead.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to check out (defaults to the ref this workflow was dispatched on)."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  # Include event_name so a manual dispatch on `main` can't cancel an
+  # in-flight Dependabot PR run on the same ref.
+  group: dependabot-sync-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  sync-lockfile:
+    name: sync-lockfile
+    if: github.event_name == 'workflow_dispatch' || github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Surface drift + artifact metadata to the drift-gate job so it can render
+    # a workflow-run summary without re-parsing summary.json.
+    outputs:
+      any_drift: ${{ steps.drift_summary.outputs.any_drift }}
+      lock_install_status: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
+      lock_install_snippet: ${{ steps.drift_summary.outputs.bun_lock_after_install_snippet }}
+      pkg_json_status: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_status }}
+      pkg_json_snippet: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_snippet }}
+      lock_reinstall_status: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_status }}
+      lock_reinstall_snippet: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
+      artifact_url: ${{ steps.upload_drift.outputs.artifact-url }}
+    steps:
+      # Checkout target ref:
+      #   - pull_request → the PR head branch (from the fork or same repo).
+      #   - workflow_dispatch → the user-supplied `ref` input, falling back to
+      #     the branch the workflow was dispatched on (github.ref_name).
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Verify bun.lock consistency (shared script)
+        id: lockfile_consistency
+        continue-on-error: true
+        # Single source of truth for drift checks. The same script is invoked
+        # locally via `bun run verify:lockfile-consistency`, so CI and local
+        # runs stay identical. Writes machine-readable summary.json + per-step
+        # .diff files under drift-artifacts/ that the comment step consumes.
+        run: bun run scripts/verify-lockfile-consistency.ts --out-dir=drift-artifacts
+
+      - name: Extract drift summary for PR comment
+        id: drift_summary
+        if: always()
+        run: |
+          set -e
+          summary=drift-artifacts/summary.json
+          if [ ! -f "$summary" ]; then
+            echo "any_drift=false" >> "$GITHUB_OUTPUT"
+            for id in bun_lock_after_install package_json_after_overrides_sync bun_lock_after_reinstall; do
+              echo "${id}_status=success" >> "$GITHUB_OUTPUT"
+            done
+            exit 0
+          fi
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("drift-artifacts/summary.json", "utf8"));
+            const out = process.env.GITHUB_OUTPUT;
+            const append = (k, v) => fs.appendFileSync(out, `${k}=${v}\n`);
+            const appendMulti = (k, v) => fs.appendFileSync(out, `${k}<<__EOF__\n${v}\n__EOF__\n`);
+            append("any_drift", data.results.some(r => !r.ok) ? "true" : "false");
+            for (const r of data.results) {
+              append(`${r.id}_status`, r.ok ? "success" : "failure");
+              if (!r.ok && r.snippet) appendMulti(`${r.id}_snippet`, r.snippet);
+            }
+          '
+
+      - name: Upload drift diffs on failure
+        id: upload_drift
+        if: steps.lockfile_consistency.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependabot-sync-drift
+          path: drift-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
+
+
+      - name: Verify pinned dependency versions
+        id: verify_pins
+        # Skip when the shared drift check failed — pins are meaningless on a
+        # drifted tree, and we want the comment to render before we fail.
+        if: steps.lockfile_consistency.outcome == 'success'
+        run: |
+          set +e
+          out=$(bun run scripts/verify-pinned-deps.ts 2>&1)
+          code=$?
+          echo "$out"
+          {
+            echo "exit_code=$code"
+            echo "output<<EOF"
+            echo "$out"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Verify overrides match bun.lock
+        if: steps.verify_pins.outcome == 'success'
+        run: bun run scripts/sync-overrides-from-lock.ts --check
+
+      - name: bun audit (configurable threshold)
+        id: bun_audit
+        if: steps.verify_pins.outcome == 'success'
+        continue-on-error: true
+
+        # Threshold config via repo/org variables (Settings → Secrets and variables → Actions → Variables):
+        #   BUN_AUDIT_LEVEL      — severity floor: low | moderate | high | critical (default: high)
+        #   BUN_AUDIT_MAX_VULNS  — max advisories at/above LEVEL before failing (default: 0)
+        env:
+          BUN_AUDIT_LEVEL: ${{ vars.BUN_AUDIT_LEVEL || 'high' }}
+          BUN_AUDIT_MAX_VULNS: ${{ vars.BUN_AUDIT_MAX_VULNS || '0' }}
+        run: |
+          set +e
+          human=$(bun audit --audit-level="$BUN_AUDIT_LEVEL" 2>&1)
+          human_code=$?
+          echo "$human"
+
+          json=$(bun audit --audit-level="$BUN_AUDIT_LEVEL" --json 2>/dev/null)
+          # Count advisories at/above the configured level. bun audit --json
+          # emits either { advisories: {...} } (npm-compatible) or a metadata
+          # object with per-severity counts. Handle both, fall back to human
+          # exit code when parsing fails.
+          count=$(printf '%s' "$json" | node -e '
+            let raw = ""; process.stdin.on("data", c => raw += c); process.stdin.on("end", () => {
+              const level = process.env.BUN_AUDIT_LEVEL;
+              const order = ["low","moderate","high","critical"];
+              const min = order.indexOf(level);
+              if (min < 0) { console.log("0"); return; }
+              try {
+                const data = JSON.parse(raw);
+                const advisories = data.advisories && typeof data.advisories === "object" ? Object.values(data.advisories) : [];
+                if (advisories.length) {
+                  const n = advisories.filter(a => order.indexOf(String(a.severity || "").toLowerCase()) >= min).length;
+                  console.log(String(n)); return;
+                }
+                const vuln = (data.metadata && data.metadata.vulnerabilities) || data.vulnerabilities || {};
+                let n = 0; for (const sev of order.slice(min)) n += Number(vuln[sev] || 0);
+                console.log(String(n));
+              } catch { console.log(""); }
+            });
+          ' 2>/dev/null)
+
+          if [ -z "$count" ]; then
+            # JSON parse failed — fall back to exit code (0 = no vulns, non-zero = at least 1).
+            count=$([ "$human_code" -eq 0 ] && echo 0 || echo 1)
+            parsed="false"
+          else
+            parsed="true"
+          fi
+
+          echo "Advisories at level '$BUN_AUDIT_LEVEL' or above: $count (threshold: $BUN_AUDIT_MAX_VULNS)"
+
+          {
+            echo "level=$BUN_AUDIT_LEVEL"
+            echo "threshold=$BUN_AUDIT_MAX_VULNS"
+            echo "count=$count"
+            echo "parsed=$parsed"
+            echo "output<<EOF"
+            echo "$human"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          if [ "$count" -gt "$BUN_AUDIT_MAX_VULNS" ]; then
+            echo "::error::bun audit found $count advisories at severity '$BUN_AUDIT_LEVEL' or above (max allowed: $BUN_AUDIT_MAX_VULNS)."
+            exit 1
+          fi
+          exit 0
+
+
+      - name: Post/update PR summary comment
+        # Sticky comment (marker-based) summarizing drift + pinned-deps + audit
+        # so reviewers see the exact failed step and can jump straight to the
+        # uploaded diff artifact. Skipped on workflow_dispatch — there's no PR
+        # to comment on; inspect the run Summary tab + drift artifact instead.
+        if: always() && github.event_name == 'pull_request'
+
+        uses: actions/github-script@v7
+        env:
+          DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
+          DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_install_snippet }}
+          DRIFT_PACKAGE_JSON: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_status }}
+          DRIFT_PACKAGE_JSON_SNIPPET: ${{ steps.drift_summary.outputs.package_json_after_overrides_sync_snippet }}
+          DRIFT_LOCK_REINSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_status }}
+          DRIFT_LOCK_REINSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_reinstall_snippet }}
+          ARTIFACT_URL: ${{ steps.upload_drift.outputs.artifact-url }}
+          PINS_STATUS: ${{ steps.verify_pins.outcome }}
+          PINS_OUTPUT: ${{ steps.verify_pins.outputs.output }}
+          AUDIT_STATUS: ${{ steps.bun_audit.outcome }}
+          AUDIT_OUTPUT: ${{ steps.bun_audit.outputs.output }}
+          AUDIT_LEVEL: ${{ steps.bun_audit.outputs.level }}
+          AUDIT_THRESHOLD: ${{ steps.bun_audit.outputs.threshold }}
+          AUDIT_COUNT: ${{ steps.bun_audit.outputs.count }}
+          AUDIT_PARSED: ${{ steps.bun_audit.outputs.parsed }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const marker = '<!-- dependabot-sync-summary -->';
+            const icon = (s) => s === 'success' ? '✅' : s === 'failure' ? '❌' : s === 'skipped' ? '⏭️' : '➖';
+            const trim = (s, n = 4000) => !s ? '(no output)' : (s.length > n ? s.slice(0, n) + `\n… (truncated, ${s.length - n} more chars)` : s);
+
+            const driftRows = [
+              ['bun install → bun.lock drift', process.env.DRIFT_LOCK_INSTALL, process.env.DRIFT_LOCK_INSTALL_SNIPPET],
+              ['overrides sync → package.json drift', process.env.DRIFT_PACKAGE_JSON, process.env.DRIFT_PACKAGE_JSON_SNIPPET],
+              ['re-install → bun.lock drift', process.env.DRIFT_LOCK_REINSTALL, process.env.DRIFT_LOCK_REINSTALL_SNIPPET],
+            ];
+
+            const anyDrift = driftRows.some(([, s]) => s === 'failure');
+            const artifactUrl = process.env.ARTIFACT_URL || '';
+            const runUrl = process.env.RUN_URL;
+
+            // Deep link to the exact required check that blocked the merge.
+            // `check_name` filters the PR Checks tab; the name must match the
+            // status context registered in branch protection.
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const driftGateCheckName = 'Dependabot lockfile sync / drift-gate';
+            const driftGateCheckUrl =
+              `${context.serverUrl}/${owner}/${repo}/pull/${issue_number}/checks` +
+              `?check_name=${encodeURIComponent(driftGateCheckName)}`;
+
+            const lines = [
+              marker,
+              '### Dependabot sync summary',
+              '',
+              `**Drift checks:** ${anyDrift ? '❌ drift detected — do NOT merge until fixed' : '✅ no drift'}`,
+              '',
+              `**Blocking check:** [\`${driftGateCheckName}\`](${driftGateCheckUrl})${anyDrift ? ' — currently ❌ failing' : ''}`,
+              '',
+              '| Step | Result |',
+              '| --- | --- |',
+              ...driftRows.map(([label, status]) => `| \`${label}\` | ${icon(status)} ${status || 'n/a'} |`),
+            ];
+
+            if (anyDrift) {
+              lines.push('', '**Diff artifact:** ' + (artifactUrl
+                ? `[\`dependabot-sync-drift\`](${artifactUrl}) (14-day retention)`
+                : `see the [workflow run](${runUrl}) → Artifacts → \`dependabot-sync-drift\``));
+
+              for (const [label, status, snippet] of driftRows) {
+                if (status === 'failure' && snippet) {
+                  lines.push(
+                    '',
+                    `<details><summary>Diff snippet — ${label}</summary>`,
+                    '',
+                    '```diff',
+                    trim(snippet, 3500),
+                    '```',
+                    '',
+                    '</details>',
+                  );
+                }
+              }
+              lines.push(
+                '',
+                '**How to fix:** run `bun run scripts/sync-overrides-from-lock.ts && bun install` locally, commit `package.json` + `bun.lock`, and push to this branch.',
+              );
+            }
+
+            lines.push(
+              '',
+              '### Verification',
+              `- ${icon(process.env.PINS_STATUS)} \`verify-pinned-deps.ts\` — **${process.env.PINS_STATUS || 'skipped'}**`,
+              (() => {
+                const lvl = process.env.AUDIT_LEVEL || 'high';
+                const thr = process.env.AUDIT_THRESHOLD || '0';
+                const cnt = process.env.AUDIT_COUNT;
+                const parsed = process.env.AUDIT_PARSED === 'true';
+                const status = process.env.AUDIT_STATUS || 'skipped';
+                const detail = cnt !== undefined && cnt !== ''
+                  ? ` — ${cnt} advisor${cnt === '1' ? 'y' : 'ies'} at \`${lvl}+\` (threshold: \`${thr}\`)${parsed ? '' : ' _(count inferred from exit code)_'}`
+                  : ` — level \`${lvl}\`, threshold \`${thr}\``;
+                return `- ${icon(status)} \`bun audit\` — **${status}**${detail}`;
+              })(),
+              '',
+              '<details><summary>verify-pinned-deps.ts output</summary>',
+              '',
+              '```',
+              trim(process.env.PINS_OUTPUT),
+              '```',
+              '',
+              '</details>',
+              '',
+              '<details><summary>bun audit output</summary>',
+              '',
+              '```',
+              trim(process.env.AUDIT_OUTPUT),
+              '```',
+              '',
+              '</details>',
+              '',
+              `[Full workflow run ↗](${runUrl})`,
+            );
+
+            const body = lines.join('\n');
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      - name: Enforce drift + audit failures
+        # Runs last so the PR comment is posted before the job fails. Turns the
+        # deferred `continue-on-error` drift/audit outcomes into a hard job failure.
+        if: always()
+        run: |
+          fail=0
+          for step_outcome in \
+            "lockfile_consistency:${{ steps.lockfile_consistency.outcome }}" \
+            "bun_audit:${{ steps.bun_audit.outcome }}"; do
+            name="${step_outcome%%:*}"
+            outcome="${step_outcome##*:}"
+            if [ "$outcome" = "failure" ]; then
+              echo "::error::Step failed: $name"
+              fail=1
+            fi
+          done
+          exit $fail
+
+  # Stable required-check target for branch protection.
+  #
+  # Runs on every PR (no `if:` gate) so GitHub always reports a status with
+  # this exact name. On non-Dependabot PRs `sync-lockfile` is skipped and this
+  # job passes. On Dependabot PRs it mirrors `sync-lockfile`'s result, so
+  # branch protection blocks the merge whenever drift is detected.
+  drift-gate:
+    name: drift-gate
+    needs: [sync-lockfile]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    env:
+      RESULT: ${{ needs.sync-lockfile.result }}
+      ANY_DRIFT: ${{ needs.sync-lockfile.outputs.any_drift }}
+      LOCK_INSTALL_STATUS: ${{ needs.sync-lockfile.outputs.lock_install_status }}
+      LOCK_INSTALL_SNIPPET: ${{ needs.sync-lockfile.outputs.lock_install_snippet }}
+      PKG_JSON_STATUS: ${{ needs.sync-lockfile.outputs.pkg_json_status }}
+      PKG_JSON_SNIPPET: ${{ needs.sync-lockfile.outputs.pkg_json_snippet }}
+      LOCK_REINSTALL_STATUS: ${{ needs.sync-lockfile.outputs.lock_reinstall_status }}
+      LOCK_REINSTALL_SNIPPET: ${{ needs.sync-lockfile.outputs.lock_reinstall_snippet }}
+      ARTIFACT_URL: ${{ needs.sync-lockfile.outputs.artifact_url }}
+      SYNC_JOB_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Write workflow-run summary
+        if: always()
+        # Renders to the "Summary" tab of the workflow run so reviewers can see
+        # drift results without opening the sync-lockfile job. Links to the PR
+        # comment artifact and includes the exact failed-step diff snippets.
+        run: |
+          icon() {
+            case "$1" in
+              success) echo "✅" ;;
+              failure) echo "❌" ;;
+              skipped) echo "⏭️" ;;
+              *) echo "➖" ;;
+            esac
+          }
+
+          summary="$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Dependabot lockfile sync — drift-gate"
+            echo
+            case "$RESULT" in
+              success)
+                echo "**Result:** ✅ no drift — safe to merge."
+                ;;
+              skipped)
+                echo "**Result:** ⏭️ skipped — this PR is not from Dependabot, so drift checks did not run."
+                echo
+                echo "The gate passes automatically for non-Dependabot PRs so branch protection stays unblocked."
+                ;;
+              cancelled)
+                echo "**Result:** ➖ cancelled — the drift check was cancelled before completing. Re-run the workflow."
+                ;;
+              *)
+                echo "**Result:** ❌ drift detected — merge is blocked by branch protection."
+                ;;
+            esac
+            echo
+            echo "[Open sync-lockfile job ↗]($SYNC_JOB_URL)"
+          } >> "$summary"
+
+          # Only render the drift table when sync-lockfile actually ran.
+          if [ "$RESULT" != "success" ] && [ "$RESULT" != "failure" ]; then
+            exit 0
+          fi
+
+          {
+            echo
+            echo "### Drift checks"
+            echo
+            echo "| Step | Result |"
+            echo "| --- | --- |"
+            echo "| \`bun install\` → \`bun.lock\` drift | $(icon "${LOCK_INSTALL_STATUS:-skipped}") ${LOCK_INSTALL_STATUS:-skipped} |"
+            echo "| overrides sync → \`package.json\` drift | $(icon "${PKG_JSON_STATUS:-skipped}") ${PKG_JSON_STATUS:-skipped} |"
+            echo "| re-install → \`bun.lock\` drift | $(icon "${LOCK_REINSTALL_STATUS:-skipped}") ${LOCK_REINSTALL_STATUS:-skipped} |"
+          } >> "$summary"
+
+          # Emit a details block per failed step with the exact diff snippet.
+          emit_snippet() {
+            local label="$1" status="$2" snippet="$3"
+            [ "$status" = "failure" ] || return 0
+            [ -n "$snippet" ] || return 0
+            {
+              echo
+              echo "<details><summary>Diff snippet — ${label}</summary>"
+              echo
+              echo '```diff'
+              # Truncate to keep the summary under GitHub's 1 MiB cap.
+              printf '%s\n' "$snippet" | head -c 60000
+              echo
+              echo '```'
+              echo
+              echo "</details>"
+            } >> "$summary"
+          }
+          emit_snippet "bun install → bun.lock drift" "$LOCK_INSTALL_STATUS" "$LOCK_INSTALL_SNIPPET"
+          emit_snippet "overrides sync → package.json drift" "$PKG_JSON_STATUS" "$PKG_JSON_SNIPPET"
+          emit_snippet "re-install → bun.lock drift" "$LOCK_REINSTALL_STATUS" "$LOCK_REINSTALL_SNIPPET"
+
+          if [ "$ANY_DRIFT" = "true" ]; then
+            {
+              echo
+              echo "### Diff artifact"
+              if [ -n "$ARTIFACT_URL" ]; then
+                echo "[\`dependabot-sync-drift\`]($ARTIFACT_URL) (14-day retention) — contains \`summary.json\`, per-step \`.diff\` files, and both committed vs regenerated \`bun.lock\` / \`package.json\`."
+              else
+                echo "See the [workflow run]($SYNC_JOB_URL) → **Artifacts** → \`dependabot-sync-drift\`."
+              fi
+              echo
+              echo "### How to fix"
+              echo
+              echo '```bash'
+              echo 'bun run scripts/sync-overrides-from-lock.ts'
+              echo 'bun install'
+              echo 'git add package.json bun.lock && git commit -m "chore: sync lockfile" && git push'
+              echo '```'
+            } >> "$summary"
+          fi
+
+      - name: Gate on sync-lockfile result
+        # Runs after the summary is written so the "Summary" tab is populated
+        # even when we exit non-zero (which blocks the required check).
+        run: |
+          echo "sync-lockfile result: $RESULT"
+          case "$RESULT" in
+            success|skipped)
+              echo "✅ drift-gate: passing (sync-lockfile=$RESULT)"
+              exit 0
+              ;;
+            *)
+              echo "::error::drift-gate: sync-lockfile reported '$RESULT' — see the workflow-run Summary tab for the drift table and diff snippets."
+              exit 1
+              ;;
+          esac
+
+
+
+
