@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { sendLovableEmail } from "@lovable.dev/email-js";
+import { sendRonsEmail } from "@/lib/email-provider.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
@@ -110,14 +110,14 @@ async function sendBootstrapVerificationEmail({
   tokenHash: string;
   userId: string;
 }): Promise<void> {
-  const apiKey = process.env.LOVABLE_API_KEY;
+  const apiKey = process.env.RONS_EMAIL_API_KEY ?? process.env.LOVABLE_API_KEY;
   if (!apiKey) throw new Error("First-admin verification email is not configured.");
 
   const verificationUrl = bootstrapVerificationUrl(token);
   const htmlUrl = verificationUrl.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
   const messageId = crypto.randomUUID();
 
-  await sendLovableEmail(
+  await sendRonsEmail(
     {
       to: email,
       from: BOOTSTRAP_FROM,
@@ -130,7 +130,6 @@ async function sendBootstrapVerificationEmail({
       idempotency_key: `admin-bootstrap-${userId}-${tokenHash.slice(0, 16)}`,
       message_id: messageId,
     },
-    { apiKey, sendUrl: process.env.LOVABLE_SEND_URL },
   );
 }
 

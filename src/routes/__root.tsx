@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -108,12 +109,28 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function BackToHubGlobal() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  if (pathname === "/") return null;
+
+  return (
+    <Link
+      to="/"
+      aria-label="Back to Hub"
+      className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-border bg-background/95 px-4 py-2 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-colors hover:bg-accent"
+    >
+      Back to Hub
+    </Link>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <VisitTracker />
+      <BackToHubGlobal />
       <Outlet />
     </QueryClientProvider>
   );

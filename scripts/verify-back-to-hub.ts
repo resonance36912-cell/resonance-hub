@@ -25,7 +25,7 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 
 const ROUTES_DIR = "src/routes";
 
@@ -41,6 +41,10 @@ const SKIP_DIRS = new Set(["api", "email", "lovable"]);
 const OPT_OUT_MARKER = "@no-back-to-hub";
 const REQUIRED_TARGET = /(?:to|href)\s*=\s*["']\/["']/;
 const REQUIRED_LABEL = /Back to Hub/;
+
+const ROOT_ROUTE = "src/routes/__root.tsx";
+const rootSource = readFileSync(ROOT_ROUTE, "utf8");
+const GLOBAL_BACK_TO_HUB = REQUIRED_TARGET.test(rootSource) && REQUIRED_LABEL.test(rootSource);
 
 function* walk(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
@@ -63,7 +67,7 @@ const failures: Diag[] = [];
 
 for (const path of walk(ROUTES_DIR)) {
   const rel = relative(".", path);
-  const name = path.split("/").pop()!;
+  const name = basename(path);
 
   if (!/\.(t|j)sx?$/.test(name)) continue;
   if (SKIP_FILENAMES.has(name)) { skipped.push({ file: rel, reason: "infra" }); continue; }
@@ -89,6 +93,11 @@ for (const path of walk(ROUTES_DIR)) {
 
   if (src.includes(OPT_OUT_MARKER)) {
     skipped.push({ file: rel, reason: "opted out via // @no-back-to-hub" });
+    continue;
+  }
+
+  if (GLOBAL_BACK_TO_HUB) {
+    checked.push(`${rel} (global shell)`);
     continue;
   }
 

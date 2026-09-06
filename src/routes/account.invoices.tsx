@@ -37,7 +37,7 @@ function InvoicesGate() {
   if (state === "anon") return (
     <Shell>
       <p className="text-sm">
-        <Link to="/auth" className="text-primary underline">Sign in</Link> to view your invoices.
+        <Link to="/login" search={{ next: "/account/invoices" }} className="text-primary underline">Sign in</Link> to view your invoices.
       </p>
     </Shell>
   );

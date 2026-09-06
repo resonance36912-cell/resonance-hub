@@ -11,9 +11,9 @@ export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
+  beforeLoad: async ({ params }) => {
     const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    if (error || !data.user) throw redirect({ to: "/login", search: { next: `/account/invoices/by-payment/${params.pf}` } });
   },
   component: ByPaymentPage,
 });
