@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import { describe, expect, test } from "bun:test";
 import {
@@ -360,7 +360,9 @@ describe("first-admin bootstrap security regressions", () => {
   });
 
   test("does not place the private allowlist in tracked runtime config", () => {
-    expect(read(".env")).not.toContain("ADMIN_BOOTSTRAP_EMAILS");
+    const envPath = resolve(ROOT, ".env");
+    const trackedEnv = existsSync(envPath) ? read(".env") : "";
+    expect(trackedEnv).not.toContain("ADMIN_BOOTSTRAP_EMAILS");
     expect(read("wrangler.jsonc")).not.toContain("ADMIN_BOOTSTRAP_EMAILS");
   });
 });
