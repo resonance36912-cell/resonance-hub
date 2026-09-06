@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import type { Database } from "@/integrations/supabase/types";
 import { deriveFeatures, logEntitlementCheck, type Tier } from "@/lib/entitlement.functions";
+import { fetchSubscriptionRows, resolveBearerUserId } from "@/lib/backend-provider.server";
 
 /**
  * Public entitlement endpoint for spoke apps.
@@ -73,37 +72,27 @@ export const Route = createFileRoute("/api/public/entitlement")({
           return json({ error: "Missing Bearer token" }, 401);
         }
 
-        const SUPABASE_URL = process.env.SUPABASE_URL!;
-        const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY!;
-        if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+        let userId: string | null = null;
+        try {
+          userId = await resolveBearerUserId(token);
+        } catch {
           return json({ error: "Server misconfigured" }, 500);
         }
-
-        const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-          global: { headers: { Authorization: `Bearer ${token}` } },
-          auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-        });
-
-        const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(token);
-        if (claimsErr || !claimsData?.claims?.sub) {
+        if (!userId) {
           void logEntitlementCheck({ userId: null, app, tier: null, status: "unauthorized", source: null, error: "invalid_token", sourceIp, userAgent });
           return json({ error: "Invalid or expired token" }, 401);
         }
-        const userId = claimsData.claims.sub as string;
-
-        const { data: rows, error } = await supabase
-          .from("subscriptions")
-          .select("app,tier,status,current_period_end")
-          .eq("user_id", userId)
-          .in("app", [app, "all_access"]);
-
-        if (error) {
-          console.error("entitlement query failed:", error);
-          void logEntitlementCheck({ userId, app, tier: "free", status: "inactive", source: "none", error: error.message, sourceIp, userAgent });
+        let rows;
+        try {
+          rows = await fetchSubscriptionRows(token, userId, [app, "all_access"]);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "provider lookup failed";
+          console.error("entitlement query failed:", message);
+          void logEntitlementCheck({ userId, app, tier: "free", status: "inactive", source: "none", error: message, sourceIp, userAgent });
           return json({ error: "Lookup failed" }, 500);
         }
 
-        const active = (rows ?? []).filter((r) => r.status === "active");
+        const active = rows.filter((r) => r.status === "active");
         const bundle = active.find((r) => r.app === "all_access");
         const direct = active.find((r) => r.app === app);
         const winner = bundle ?? direct;

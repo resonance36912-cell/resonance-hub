@@ -18,8 +18,7 @@
  * (and re-vendor the canonical snippet into every spoke).
  */
 
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
+import { fetchSubscriptionRows, resolveBearerUserId } from "@/lib/backend-provider.server";
 import { deriveFeatures, type AppKey, type Tier } from "@/lib/entitlement.functions";
 
 // ── Tier ranking (mirror of canonical) ──────────────────────────────────────
@@ -126,29 +125,19 @@ export async function requireTierFromRequest(args: {
     );
   }
 
-  // 2. Validate the JWT and pull the user id (cheap, no DB round-trip).
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    throw new Response(
-      JSON.stringify({ error: "server_misconfigured" }),
-      { status: 500, headers },
-    );
+  // 2. Validate the bearer token through the selected backend provider.
+  let userId: string | null = null;
+  try {
+    userId = await resolveBearerUserId(accessToken);
+  } catch {
+    throw new Response(JSON.stringify({ error: "server_misconfigured" }), { status: 500, headers });
   }
-
-  const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    global: { headers: { Authorization: `Bearer ${accessToken}` } },
-    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-  });
-
-  const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(accessToken);
-  if (claimsErr || !claimsData?.claims?.sub) {
+  if (!userId) {
     throw new Response(
       JSON.stringify({ error: "unauthorized", message: "Invalid or expired token" }),
       { status: 401, headers },
     );
   }
-  const userId = claimsData.claims.sub as string;
 
   // 3. Cache lookup.
   let ent: CachedEntitlement | undefined;
@@ -161,21 +150,18 @@ export async function requireTierFromRequest(args: {
   //    matching `/api/public/entitlement` exactly so spoke- and proxy-paths
   //    return identical answers.
   if (!ent) {
-    const { data: rows, error: queryErr } = await supabase
-      .from("subscriptions")
-      .select("app,tier,status,current_period_end")
-      .eq("user_id", userId)
-      .in("app", [app, "all_access"]);
-
-    if (queryErr) {
-      // Fail closed.
+    let rows;
+    try {
+      rows = await fetchSubscriptionRows(accessToken, userId, [app, "all_access"]);
+    } catch {
+      // Fail closed on provider/query errors.
       throw new Response(
         JSON.stringify(upgradeBody(app, required, "free", "inactive", returnTo)),
         { status: 402, headers },
       );
     }
 
-    const active = (rows ?? []).filter((r) => r.status === "active");
+    const active = rows.filter((r) => r.status === "active");
     const bundle = active.find((r) => r.app === "all_access");
     const direct = active.find((r) => r.app === app);
     const winner = bundle ?? direct;
