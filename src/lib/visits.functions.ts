@@ -21,7 +21,7 @@ const RecordInput = z.object({
 });
 
 export const recordVisit = createServerFn({ method: "POST" })
-  .inputValidator((i: unknown) => RecordInput.parse(i))
+  .validator((i: unknown) => RecordInput.parse(i))
   .handler(async ({ data }) => {
     let userAgent: string | null = null;
     let sourceIp: string | null = null;

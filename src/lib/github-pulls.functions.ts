@@ -96,7 +96,7 @@ function summarizeReviews(reviews: any[]) {
 
 export const listOpenPulls = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: string[] }) =>
+  .validator((data: { repos: string[] }) =>
     z
       .object({
         repos: z

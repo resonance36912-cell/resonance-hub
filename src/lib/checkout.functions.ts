@@ -214,7 +214,7 @@ function requestOrigin() {
 
 export const createPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => LaunchInput.parse(input))
+  .validator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
     const def = SKU_CATALOG[data.sku];
     if (!def) throw new Error(`Unknown SKU: ${data.sku}`);
@@ -240,7 +240,7 @@ const RetryInput = z.object({
  */
 export const retryPayfastLaunch = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => RetryInput.parse(input))
+  .validator((input: unknown) => RetryInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
     const { supabase, userId } = context;
     const { data: sub, error } = await supabase

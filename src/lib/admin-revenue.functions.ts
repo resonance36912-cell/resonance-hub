@@ -110,7 +110,7 @@ const UpsertCost = z.object({
 
 export const upsertSkuCost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => UpsertCost.parse(i))
+  .validator((i: unknown) => UpsertCost.parse(i))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin

@@ -202,7 +202,7 @@ const Input = z.object({
 
 export const getSecurityScanReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => Input.parse(input))
+  .validator((input) => Input.parse(input))
   .handler(async ({ data, context }): Promise<SecurityScanReport> => {
     const { data: adminRow, error: adminErr } = await context.supabase
       .from("user_roles")

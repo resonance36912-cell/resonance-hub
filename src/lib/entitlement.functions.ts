@@ -101,7 +101,7 @@ export async function logEntitlementCheck(args: {
 
 export const getEntitlement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { app: AppKey }) => ({ app: AppSchema.parse(input.app) }))
+  .validator((input: { app: AppKey }) => ({ app: AppSchema.parse(input.app) }))
   .handler(async ({ data, context }): Promise<Entitlement> => {
     const { supabase, userId } = context;
     const checkedAt = new Date().toISOString();

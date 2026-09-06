@@ -272,7 +272,7 @@ export async function runRepoBatch(
 
 export const getCiHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => GetCiHealthInputSchema.parse(data))
+  .validator((data: unknown) => GetCiHealthInputSchema.parse(data))
   .handler(async ({ data, context }) => {
     await requireAdmin(context);
     const { repos, invalidCount } = await runRepoBatch(data.repos, loadRepoCi);
@@ -361,7 +361,7 @@ async function fetchJobLogsTail(
 
 export const getRunDetails = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => {
+  .validator((data: unknown) => {
     const parsed = GetRunDetailsInputSchema.parse(data);
     const check = validateRepoSlug(parsed.repo);
     if (!check.ok) throw new Error(check.error);

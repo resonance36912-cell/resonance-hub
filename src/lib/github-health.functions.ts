@@ -203,7 +203,7 @@ async function loadRepo(repo: string, now: number): Promise<RepoHealth> {
 
 export const getRepoHealth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: string[] }) =>
+  .validator((data: { repos: string[] }) =>
     z
       .object({
         repos: z

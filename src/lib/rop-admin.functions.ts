@@ -33,7 +33,7 @@ const RegisterInput = z.object({
 
 export const registerHubApp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => RegisterInput.parse(d))
+  .validator((d: unknown) => RegisterInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -71,7 +71,7 @@ const IdInput = z.object({ id: z.string().uuid() });
 
 export const rotateHubAppKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => IdInput.parse(d))
+  .validator((d: unknown) => IdInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -100,7 +100,7 @@ const StatusInput = z.object({
 
 export const setHubAppStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => StatusInput.parse(d))
+  .validator((d: unknown) => StatusInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -136,7 +136,7 @@ const SuggestionPatch = z.object({
 
 export const updateHubSuggestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => SuggestionPatch.parse(d))
+  .validator((d: unknown) => SuggestionPatch.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

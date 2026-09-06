@@ -68,7 +68,7 @@ const Input = z.object({
 
 export const updateCiAlertConfig = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => Input.parse(input))
+  .validator((input) => Input.parse(input))
   .handler(async ({ data, context }): Promise<CiAlertConfig> => {
     await requireAdmin(context)
     const { data: row, error } = await context.supabase

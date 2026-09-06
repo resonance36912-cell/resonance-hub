@@ -68,7 +68,7 @@ export type GhRelease = {
 
 export const listRecentReleases = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: string[]; perRepo?: number }) =>
+  .validator((data: { repos: string[]; perRepo?: number }) =>
     z
       .object({
         repos: z

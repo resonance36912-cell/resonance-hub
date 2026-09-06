@@ -52,7 +52,7 @@ async function requireAdmin(ctx: { supabase: any; userId: string }) {
 
 export const listOpenIssues = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { repos: string[] }) =>
+  .validator((data: { repos: string[] }) =>
     z
       .object({
         repos: z

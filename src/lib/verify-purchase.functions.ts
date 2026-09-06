@@ -27,7 +27,7 @@ const FRESH_WINDOW_MS = 30 * 60 * 1000;
 
 export const getVerifiedPurchase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => Input.parse(input))
+  .validator((input) => Input.parse(input))
   .handler(async ({ data, context }): Promise<VerifiedPurchase> => {
     const def = SKU_CATALOG[data.sku];
     if (!def) {

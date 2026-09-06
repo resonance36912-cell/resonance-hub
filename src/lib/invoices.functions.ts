@@ -44,7 +44,7 @@ export const getMyInvoices = createServerFn({ method: "GET" })
 
 export const getInvoiceById = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { id: string }) => {
+  .validator((data: { id: string }) => {
     if (!data?.id || typeof data.id !== "string") throw new Error("id required");
     return data;
   })
@@ -62,7 +62,7 @@ export const getInvoiceById = createServerFn({ method: "GET" })
 
 export const findInvoiceByPfPaymentId = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { pfPaymentId: string }) => {
+  .validator((data: { pfPaymentId: string }) => {
     if (!data?.pfPaymentId || typeof data.pfPaymentId !== "string") {
       throw new Error("pfPaymentId required");
     }
@@ -84,7 +84,7 @@ export const findInvoiceByPfPaymentId = createServerFn({ method: "GET" })
 
 export const listAllInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (data: { status?: string; app?: string; q?: string } | undefined) => data ?? {},
   )
   .handler(async ({ context, data }): Promise<InvoiceRow[]> => {

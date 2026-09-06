@@ -35,7 +35,7 @@ const SaveInput = z.object({
 
 export const saveCiRepoPreset = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => SaveInput.parse(input))
+  .validator((input) => SaveInput.parse(input))
   .handler(async ({ data, context }): Promise<CiRepoPreset> => {
     const repos = Array.from(new Set(data.repos))
     const { data: row, error } = await context.supabase
@@ -64,7 +64,7 @@ const DeleteInput = z.object({ id: z.string().uuid() })
 
 export const deleteCiRepoPreset = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => DeleteInput.parse(input))
+  .validator((input) => DeleteInput.parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const { error } = await context.supabase
       .from('ci_repo_presets')
