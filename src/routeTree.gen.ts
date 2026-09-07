@@ -59,6 +59,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiSovereignAuthActionRouteImport } from './routes/api/sovereign/auth/$action'
 import { Route as ApiPublicUpdatesRssRouteImport } from './routes/api/public/updates/rss'
 import { Route as ApiPublicUpdatesAtomRouteImport } from './routes/api/public/updates/atom'
 import { Route as ApiPublicRopPullBroadcastsRouteImport } from './routes/api/public/rop/pull-broadcasts'
@@ -332,6 +333,11 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSovereignAuthActionRoute = ApiSovereignAuthActionRouteImport.update({
+  id: '/api/sovereign/auth/$action',
+  path: '/api/sovereign/auth/$action',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicUpdatesRssRoute = ApiPublicUpdatesRssRouteImport.update({
   id: '/api/public/updates/rss',
   path: '/api/public/updates/rss',
@@ -479,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -546,6 +553,7 @@ export interface FileRoutesByTo {
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -614,6 +622,7 @@ export interface FileRoutesById {
   '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -683,6 +692,7 @@ export interface FileRouteTypes {
     | '/api/public/rop/pull-broadcasts'
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
+    | '/api/sovereign/auth/$action'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -750,6 +760,7 @@ export interface FileRouteTypes {
     | '/api/public/rop/pull-broadcasts'
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
+    | '/api/sovereign/auth/$action'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -817,6 +828,7 @@ export interface FileRouteTypes {
     | '/api/public/rop/pull-broadcasts'
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
+    | '/api/sovereign/auth/$action'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -881,6 +893,7 @@ export interface RootRouteChildren {
   ApiPublicRopPullBroadcastsRoute: typeof ApiPublicRopPullBroadcastsRoute
   ApiPublicUpdatesAtomRoute: typeof ApiPublicUpdatesAtomRoute
   ApiPublicUpdatesRssRoute: typeof ApiPublicUpdatesRssRoute
+  ApiSovereignAuthActionRoute: typeof ApiSovereignAuthActionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1241,6 +1254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/sovereign/auth/$action': {
+      id: '/api/sovereign/auth/$action'
+      path: '/api/sovereign/auth/$action'
+      fullPath: '/api/sovereign/auth/$action'
+      preLoaderRoute: typeof ApiSovereignAuthActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/updates/rss': {
       id: '/api/public/updates/rss'
       path: '/api/public/updates/rss'
@@ -1435,6 +1455,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
   ApiPublicUpdatesAtomRoute: ApiPublicUpdatesAtomRoute,
   ApiPublicUpdatesRssRoute: ApiPublicUpdatesRssRoute,
+  ApiSovereignAuthActionRoute: ApiSovereignAuthActionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
