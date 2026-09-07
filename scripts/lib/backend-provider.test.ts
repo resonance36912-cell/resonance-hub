@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
   compareSubscriptionShadow,
   fetchSovereignSubscriptionRows,
@@ -19,6 +21,7 @@ const savedFetch = globalThis.fetch;
 const savedProvider = process.env.RESONANCE_BACKEND_PROVIDER;
 const savedGateway = process.env.RESONANCE_SOVEREIGN_GATEWAY_URL;
 const savedRoleShadow = process.env.RONS_ROLE_SHADOW;
+const savedKeyPath = process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE;
 const savedConsoleInfo = console.info;
 
 afterEach(() => {
@@ -29,6 +32,8 @@ afterEach(() => {
   else process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = savedGateway;
   if (savedRoleShadow === undefined) delete process.env.RONS_ROLE_SHADOW;
   else process.env.RONS_ROLE_SHADOW = savedRoleShadow;
+  if (savedKeyPath === undefined) delete process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE;
+  else process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE = savedKeyPath;
   console.info = savedConsoleInfo;
 });
 
@@ -136,19 +141,23 @@ describe("backend provider boundary", () => {
     expect(called).toBe(false);
   });
 
-  test("reads sovereign subscription details with explicit user scoping", async () => {
+  test("reads sovereign subscription details through the keyed account procedure", async () => {
     process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    const keyPath = join(tmpdir(), `rons-provider-${crypto.randomUUID()}.key`);
+    await Bun.write(keyPath, "p".repeat(64));
+    process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE = keyPath;
     let body: any = null;
     globalThis.fetch = (async (_input, init) => {
       body = JSON.parse(String(init?.body ?? "{}"));
-      return Response.json([{ id: "sub-1", app: "epublisher", tier: "pro", status: "active",
+      expect(new Headers(init?.headers).get("x-rons-procedure-key")).toHaveLength(64);
+      return Response.json({ procedure: "read_subscription_account", rows: [{ id: "sub-1", app: "epublisher", tier: "pro", status: "active",
         billing_cycle: "monthly", amount_cents: 14900, currency: "ZAR",
-        current_period_end: null, cancelled_at: null, updated_at: "2026-09-07T00:00:00Z" }]);
+        current_period_end: null, cancelled_at: null, updated_at: "2026-09-07T00:00:00Z" }] });
     }) as typeof fetch;
-    const rows = await fetchSubscriptionDetails("cookie-token", "22222222-2222-4222-8222-222222222222");
+    const userId = "22222222-2222-4222-8222-222222222222";
+    const rows = await fetchSubscriptionDetails("cookie-token", userId);
     expect(rows[0]?.id).toBe("sub-1");
-    expect(body).toMatchObject({ table: "subscriptions", action: "select",
-      filters: [{ column: "user_id", op: "eq", value: "22222222-2222-4222-8222-222222222222" }] });
+    expect(body).toEqual({ name: "read_subscription_account", args: { user_id: userId } });
   });
 
   test("reads sovereign account email from the local auth user response", async () => {
@@ -188,11 +197,12 @@ describe("backend provider boundary", () => {
 });
 
 test("invoice and ROP admin guards no longer depend on has_role RPC", () => {
-  for (const rel of ["src/lib/invoices.functions.ts", "src/lib/rop-admin.functions.ts"]) {
-    const source = readFileSync(rel, "utf8");
-    expect(source).toContain("hasBackendRole");
-    expect(source).not.toContain('.rpc("has_role"');
-  }
+  const invoices = readFileSync("src/lib/invoices.functions.ts", "utf8");
+  const rop = readFileSync("src/lib/rop-admin.functions.ts", "utf8");
+  expect(invoices).toContain("hasServerBackendRole");
+  expect(rop).toContain("hasBackendRole");
+  expect(invoices).not.toContain('.rpc("has_role"');
+  expect(rop).not.toContain('.rpc("has_role"');
 });
 
 describe("backend provider shadow comparison", () => {
