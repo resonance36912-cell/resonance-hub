@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import {
   Outlet,
   Link,
@@ -124,6 +125,41 @@ function BackToHubGlobal() {
   );
 }
 
+function isPrivateDemoHost(host: string): boolean {
+  if (host === "localhost" || host === "127.0.0.1") return true;
+  if (host.startsWith("10.") || host.startsWith("192.168.")) return true;
+  const match = /^172\.(\d+)\./.exec(host);
+  return Boolean(match && Number(match[1]) >= 16 && Number(match[1]) <= 31);
+}
+
+function LocalDemoLauncher() {
+  const [host, setHost] = useState<string | null>(null);
+  useEffect(() => {
+    const current = window.location.hostname;
+    if (isPrivateDemoHost(current)) setHost(current);
+  }, []);
+  if (!host) return null;
+  const apps = [
+    ["ePublisher", 3101], ["Creative Studio", 3201], ["Sync Vision", 3301],
+  ] as const;
+  return (
+    <aside className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur">
+      <div className="mb-2 flex items-center justify-between gap-4">
+        <span className="text-xs font-semibold text-foreground">RONS Local Demo</span>
+        <span className="text-[10px] text-muted-foreground">public URLs unchanged</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {apps.map(([label, port]) => (
+          <a key={port} href={`http://${host}:${port}`} target="_blank" rel="noopener noreferrer"
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent">
+            {label}
+          </a>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -131,6 +167,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <VisitTracker />
       <BackToHubGlobal />
+      <LocalDemoLauncher />
       <Outlet />
     </QueryClientProvider>
   );
