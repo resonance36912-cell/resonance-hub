@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
+import { hasBackendRole } from "@/lib/backend-provider.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
@@ -201,16 +203,12 @@ const Input = z.object({
 });
 
 export const getSecurityScanReport = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input) => Input.parse(input))
   .handler(async ({ data, context }): Promise<SecurityScanReport> => {
-    const { data: adminRow, error: adminErr } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (adminErr || !adminRow) throw new Error("Forbidden");
+    if (!(await hasBackendRole(context.userId, "admin", supabaseAdmin))) {
+      throw new Error("Forbidden");
+    }
 
     const lovableKey = process.env.LOVABLE_API_KEY;
     const ghKey = process.env.GITHUB_API_KEY;

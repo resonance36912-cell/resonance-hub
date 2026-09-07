@@ -26,6 +26,8 @@ const adminClient = paths(/supabaseAdmin/);
 const rpc = paths(/\.rpc\s*\(/);
 const storage = paths(/\.storage\./);
 const tableAccess = paths(/\.from\s*\(/);
+const ronsServerAuth = paths(/middleware\(\[requireRonsAuth\]\)/);
+const hostedServerAuth = paths(/middleware\(\[requireSupabaseAuth\]\)/);
 
 const report = {
   schema: "rons-sovereign-cutover-readiness/v1",
@@ -44,13 +46,15 @@ const report = {
     rpcFiles: rpc,
     storageFiles: storage,
     tableAccessFiles: tableAccess,
+    ronsServerAuthFiles: ronsServerAuth,
+    hostedServerAuthFiles: hostedServerAuth,
   },
   blockers: [
     ...(directAuth.length ? ["direct_supabase_auth_remains"] : []),
     ...(adminClient.length ? ["supabase_admin_paths_remain"] : []),
     ...(rpc.length ? ["supabase_rpc_contracts_remain"] : []),
     ...(storage.length ? ["supabase_storage_paths_remain"] : []),
-    ...(!process.env.SUPABASE_SERVICE_ROLE_KEY ? ["hosted_subscription_mirror_not_verified"] : []),
+    ...(process.env.RONS_SUBSCRIPTION_MIRROR_VERIFIED !== "1" ? ["hosted_subscription_mirror_not_verified"] : []),
     ...(process.env.RONS_ROLE_MIRROR_VERIFIED !== "1" ? ["hosted_role_mirror_not_verified"] : []),
   ],
 };

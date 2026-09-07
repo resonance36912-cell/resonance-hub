@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function requireAdmin(userId: string) {
@@ -70,7 +70,7 @@ export type VisitStats = {
 };
 
 export const getVisitStats = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }): Promise<VisitStats> => {
     await requireAdmin(context.userId);
 

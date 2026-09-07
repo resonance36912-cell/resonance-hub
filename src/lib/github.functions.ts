@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
+import { hasBackendRole } from "@/lib/backend-provider.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
 
@@ -40,18 +42,12 @@ async function ghFetch(path: string) {
   return res.json();
 }
 
-async function requireAdmin(ctx: { supabase: any; userId: string }) {
-  const { data, error } = await ctx.supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", ctx.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (error || !data) throw new Error("Forbidden");
+async function requireAdmin(ctx: { userId: string }) {
+  if (!(await hasBackendRole(ctx.userId, "admin", supabaseAdmin))) throw new Error("Forbidden");
 }
 
 export const listOpenIssues = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((data: { repos: string[] }) =>
     z
       .object({

@@ -22,3 +22,16 @@ describe("sovereign cutover readiness report", () => {
     ]) expect(source).toContain(blocker);
   });
 });
+
+
+describe("sovereign cutover readiness adoption metrics", () => {
+  test("reports provider-neutral and hosted server-auth cohorts", () => {
+    expect(source).toContain("ronsServerAuthFiles");
+    expect(source).toContain("hostedServerAuthFiles");
+  });
+
+  test("requires explicit subscription parity rather than credential presence", () => {
+    expect(source).toContain("RONS_SUBSCRIPTION_MIRROR_VERIFIED");
+    expect(source).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY[^\n]*hosted_subscription_mirror_not_verified/);
+  });
+});
