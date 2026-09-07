@@ -22,6 +22,17 @@ export default defineConfig({
     include: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"],
     ignoreOutdatedRequests: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/@supabase/") || id.includes("\\node_modules\\@supabase\\")) {
+            return "vendor-supabase";
+          }
+        },
+      },
+    },
+  },
   plugins: [
     tailwindcss(),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),

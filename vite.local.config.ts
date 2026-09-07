@@ -11,6 +11,17 @@ export default defineConfig({
     alias: { "@": `${process.cwd()}/src` },
     dedupe: ["react", "react-dom", "@tanstack/react-query", "@tanstack/query-core"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/@supabase/") || id.includes("\\node_modules\\@supabase\\")) {
+            return "vendor-supabase";
+          }
+        },
+      },
+    },
+  },
   plugins: [
     tailwindcss(),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
