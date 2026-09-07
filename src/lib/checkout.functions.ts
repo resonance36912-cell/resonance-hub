@@ -2,8 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { createHash } from "crypto";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import {
+  fetchBackendUserEmail,
+  fetchSubscriptionDetails,
+  recordPayfastLaunchAudit,
+} from "@/lib/backend-provider.server";
 import { isAllowedReturnTo } from "./return-to-allowlist";
 
 
@@ -181,17 +185,10 @@ async function buildLaunch(
   }));
 
   try {
-    await supabaseAdmin.from("payfast_launch_logs").insert({
-      user_id: userId,
-      sku: def.sku,
-      m_payment_id: fields.m_payment_id,
-      amount_cents: def.amountCents,
-      currency: "ZAR",
-      action_url: action,
-      sandbox,
-      source_ip: origin.sourceIp,
-      user_agent: origin.userAgent,
-      return_to: returnTo,
+    await recordPayfastLaunchAudit({
+      user_id: userId, sku: def.sku, m_payment_id: fields.m_payment_id,
+      amount_cents: def.amountCents, currency: "ZAR", action_url: action, sandbox,
+      source_ip: origin.sourceIp, user_agent: origin.userAgent, return_to: returnTo,
     });
   } catch (err) {
     console.error("Failed to write payfast_launch_logs:", err);
@@ -213,12 +210,14 @@ function requestOrigin() {
 }
 
 export const createPayfastLaunch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input: unknown) => LaunchInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
     const def = SKU_CATALOG[data.sku];
     if (!def) throw new Error(`Unknown SKU: ${data.sku}`);
-    const email = (context.claims as { email?: string } | null)?.email ?? "";
+    const credential = resolveRonsRequestCredential(getRequest());
+    if (!credential) throw new Error("Unauthorized: Invalid or missing session");
+    const email = (await fetchBackendUserEmail(credential)) ?? "";
     return buildLaunch(context.userId, email, def, data.returnTo, requestOrigin());
   });
 
@@ -239,17 +238,15 @@ const RetryInput = z.object({
  * subscription row is not mutated — ITN will upsert on payment success.
  */
 export const retryPayfastLaunch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input: unknown) => RetryInput.parse(input))
   .handler(async ({ data, context }): Promise<PayfastLaunch> => {
-    const { supabase, userId } = context;
-    const { data: sub, error } = await supabase
-      .from("subscriptions")
-      .select("id, user_id, app, tier, billing_cycle, status")
-      .eq("id", data.subscriptionId)
-      .maybeSingle();
-    if (error) throw new Error(`Lookup failed: ${error.message}`);
-    if (!sub || sub.user_id !== userId) throw new Error("Subscription not found");
+    const userId = context.userId;
+    const credential = resolveRonsRequestCredential(getRequest());
+    if (!credential) throw new Error("Unauthorized: Invalid or missing session");
+    const subs = await fetchSubscriptionDetails(credential, userId);
+    const sub = subs.find((row) => row.id === data.subscriptionId) ?? null;
+    if (!sub) throw new Error("Subscription not found");
     if (sub.status === "active") {
       throw new Error("Subscription is already active — nothing to retry");
     }
@@ -258,7 +255,7 @@ export const retryPayfastLaunch = createServerFn({ method: "POST" })
     const def = SKU_CATALOG[key];
     if (!def) throw new Error(`No SKU available to retry (${key})`);
 
-    const email = (context.claims as { email?: string } | null)?.email ?? "";
+    const email = (await fetchBackendUserEmail(credential)) ?? "";
     return buildLaunch(userId, email, def, data.returnTo, requestOrigin(), {
       retryOfSubscriptionId: sub.id,
     });

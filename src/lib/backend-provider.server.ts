@@ -469,6 +469,21 @@ export async function fetchAdminBillingRows(): Promise<{
   };
 }
 
+export type PayfastLaunchAuditRow = {
+  user_id: string; sku: string; m_payment_id: string; amount_cents: number; currency: "ZAR";
+  action_url: string; sandbox: boolean; source_ip: string | null; user_agent: string | null; return_to: string | null;
+};
+
+export async function recordPayfastLaunchAudit(row: PayfastLaunchAuditRow): Promise<void> {
+  if (getBackendProvider() === "sovereign") {
+    await sovereignProcedure<{ id: string; created_at: string }>("record_payfast_launch", { row });
+    return;
+  }
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin.from("payfast_launch_logs").insert(row);
+  if (error) throw new Error(error.message ?? "Hosted PayFast launch audit failed");
+}
+
 export type EntitlementAuditRecord = {
   user_id: string | null;
   app: string;
