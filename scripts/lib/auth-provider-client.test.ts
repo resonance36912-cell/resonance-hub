@@ -22,6 +22,16 @@ describe("RONS client auth facade", () => {
     expect(source).toContain("supabase.auth.signUp(credentials)");
     expect(source).not.toContain("/api/sovereign/auth/sign-in");
     expect(source).not.toContain("/api/sovereign/auth/sign-up");
+    expect(source).toContain("/api/sovereign/auth/exchange");
+    expect(source).toContain("Authorization: `Bearer ${authoritativeAccessToken}`");
+  });
+
+
+  test("shadow exchange is conditional and authoritative sign-out clears only the shadow cookie", () => {
+    const source = readFileSync("src/lib/auth-provider.ts", "utf8");
+    expect(source).toContain("if (!sovereignUserId && authoritativeUserId && authoritativeAccessToken)");
+    expect(source).toContain('/api/sovereign/auth/sign-out');
+    expect(source).toContain("shadow cleanup is non-authoritative");
   });
 
   test("central login and server-function attacher use the facade", () => {

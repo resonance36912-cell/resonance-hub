@@ -5,7 +5,7 @@ import {
 } from "@/lib/sovereign-auth-proxy.server";
 
 const GET_ACTIONS = new Set<SovereignAuthAction>(["session", "user"]);
-const POST_ACTIONS = new Set<SovereignAuthAction>(["sign-in", "sign-up", "sign-out"]);
+const POST_ACTIONS = new Set<SovereignAuthAction>(["sign-in", "sign-up", "sign-out", "exchange"]);
 
 function actionFromRequest(request: Request): SovereignAuthAction | null {
   const action = new URL(request.url).pathname.split("/").filter(Boolean).at(-1) ?? "";

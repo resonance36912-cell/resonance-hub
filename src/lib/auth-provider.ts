@@ -21,47 +21,53 @@ export function compareAuthShadow(
 function shadowEnabled(): boolean {
   return typeof window !== "undefined" && import.meta.env.VITE_RONS_AUTH_SHADOW === "1";
 }
+async function sovereignShadowUserId(action: "session" | "user"): Promise<string | null> {
+  const response = await fetch(`/api/sovereign/auth/${action}`, {
+    method: "GET", credentials: "include", headers: { Accept: "application/json" },
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as { user?: { id?: string }; session?: { user?: { id?: string } } | null };
+  return body.user?.id ?? body.session?.user?.id ?? null;
+}
+
 async function shadowRead(
   action: "session" | "user",
   authoritativeUserId: string | null | undefined,
+  authoritativeAccessToken?: string | null,
 ): Promise<void> {
   if (!shadowEnabled()) return;
   try {
-    const response = await fetch(`/api/sovereign/auth/${action}`, {
-      method: "GET",
-      credentials: "include",
-      headers: { Accept: "application/json" },
-    });
-    let sovereignUserId: string | null = null;
-    if (response.ok) {
-      const body = (await response.json()) as {
-        user?: { id?: string };
-        session?: { user?: { id?: string } } | null;
-      };
-      sovereignUserId = body.user?.id ?? body.session?.user?.id ?? null;
+    let sovereignUserId = await sovereignShadowUserId(action);
+    if (!sovereignUserId && authoritativeUserId && authoritativeAccessToken) {
+      const exchange = await fetch("/api/sovereign/auth/exchange", {
+        method: "POST", credentials: "include",
+        headers: { Accept: "application/json", Authorization: `Bearer ${authoritativeAccessToken}` },
+      });
+      if (exchange.ok) {
+        const body = (await exchange.json()) as { user?: { id?: string } };
+        sovereignUserId = body.user?.id ?? null;
+      }
     }
-    console.info("[RONS auth shadow]", {
-      action,
-      ...compareAuthShadow(authoritativeUserId, sovereignUserId),
-    });
+    console.info("[RONS auth shadow]", { action, ...compareAuthShadow(authoritativeUserId, sovereignUserId) });
   } catch {
     console.info("[RONS auth shadow]", { action, unavailable: true });
   }
 }
+
 export const ronsAuth = {
   async getSession() {
     const result = await supabase.auth.getSession();
-    void shadowRead("session", result.data.session?.user?.id);
+    void shadowRead("session", result.data.session?.user?.id, result.data.session?.access_token);
     return result;
   },
   async getUser(jwt?: string) {
     const result = jwt ? await supabase.auth.getUser(jwt) : await supabase.auth.getUser();
-    void shadowRead("user", result.data.user?.id);
+    void shadowRead("user", result.data.user?.id, jwt);
     return result;
   },
   onAuthStateChange(callback: (event: AuthChangeEvent, session: Session | null) => void | Promise<void>) {
     return supabase.auth.onAuthStateChange(async (event, session) => {
-      void shadowRead("session", session?.user?.id);
+      void shadowRead("session", session?.user?.id, session?.access_token);
       await callback(event, session);
     });
   },
@@ -71,8 +77,14 @@ export const ronsAuth = {
   signUp(credentials: Parameters<typeof supabase.auth.signUp>[0]) {
     return supabase.auth.signUp(credentials);
   },
-  signOut(options?: Parameters<typeof supabase.auth.signOut>[0]) {
-    return supabase.auth.signOut(options);
+  async signOut(options?: Parameters<typeof supabase.auth.signOut>[0]) {
+    const result = await supabase.auth.signOut(options);
+    if (!result.error && shadowEnabled()) {
+      try {
+        await fetch("/api/sovereign/auth/sign-out", { method: "POST", credentials: "include" });
+      } catch { /* shadow cleanup is non-authoritative */ }
+    }
+    return result;
   },
   signInWithOAuth(credentials: Parameters<typeof supabase.auth.signInWithOAuth>[0]) {
     return supabase.auth.signInWithOAuth(credentials);

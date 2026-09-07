@@ -33,6 +33,13 @@ function supabaseClient(accessToken: string) {
   });
 }
 
+export async function resolveHostedBearerUserId(accessToken: string): Promise<string | null> {
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.auth.getClaims(accessToken);
+  if (error || !data?.claims?.sub) return null;
+  return String(data.claims.sub);
+}
+
 export async function resolveBearerUserId(accessToken: string): Promise<string | null> {
   if (getBackendProvider() === "sovereign") {
     const response = await fetch(`${sovereignGatewayUrl()}/v1/auth/user`, {
@@ -42,11 +49,7 @@ export async function resolveBearerUserId(accessToken: string): Promise<string |
     const body = (await response.json()) as { user?: { id?: string } };
     return body.user?.id ?? null;
   }
-
-  const client = supabaseClient(accessToken);
-  const { data, error } = await client.auth.getClaims(accessToken);
-  if (error || !data?.claims?.sub) return null;
-  return String(data.claims.sub);
+  return resolveHostedBearerUserId(accessToken);
 }
 export async function fetchSovereignSubscriptionRows(
   userId: string,

@@ -1,3 +1,6 @@
+import { readFile } from "node:fs/promises";
+import { resolveHostedBearerUserId } from "@/lib/backend-provider.server";
+
 const COOKIE_NAME = "rons_sovereign_session";
 const DEFAULT_GATEWAY = "http://127.0.0.1:58600";
 const MAX_BODY_BYTES = 16 * 1024;
@@ -7,7 +10,8 @@ export type SovereignAuthAction =
   | "user"
   | "sign-in"
   | "sign-up"
-  | "sign-out";
+  | "sign-out"
+  | "exchange";
 
 const ACTION_PATH: Record<SovereignAuthAction, string> = {
   session: "/v1/auth/session",
@@ -15,6 +19,7 @@ const ACTION_PATH: Record<SovereignAuthAction, string> = {
   "sign-in": "/v1/auth/sign-in",
   "sign-up": "/v1/auth/sign-up",
   "sign-out": "/v1/auth/sign-out",
+  exchange: "/v1/auth/exchange",
 };
 
 function enabled(): boolean {
@@ -23,6 +28,23 @@ function enabled(): boolean {
 
 function gateway(): string {
   return (process.env.RESONANCE_SOVEREIGN_GATEWAY_URL ?? DEFAULT_GATEWAY).replace(/\/$/, "");
+}
+
+async function exchangeSecret(): Promise<string> {
+  const path = process.env.RONS_AUTH_EXCHANGE_KEY_FILE?.trim();
+  if (!path) throw new Error("auth exchange key path missing");
+  const value = (await readFile(path, "utf8")).trim();
+  if (value.length < 32 || value.length > 4096) throw new Error("auth exchange key invalid");
+  return value;
+}
+
+const UUID_SUBJECT = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function bearerToken(request: Request): string | null {
+  const header = request.headers.get("authorization") ?? "";
+  if (!header.toLowerCase().startsWith("bearer ")) return null;
+  const token = header.slice(7).trim();
+  return token && token.length <= 8192 ? token : null;
 }
 
 function readCookie(request: Request): string | null {
@@ -76,13 +98,16 @@ export async function handleSovereignAuthProxy(
   request: Request,
   action: SovereignAuthAction,
   fetchImpl: typeof fetch = fetch,
+  resolveHostedUserId: (accessToken: string) => Promise<string | null> = resolveHostedBearerUserId,
+  readExchangeSecret: () => Promise<string> = exchangeSecret,
 ): Promise<Response> {
   if (!enabled()) return json({ error: "Not found" }, 404);
   if (!(action in ACTION_PATH)) return json({ error: "Unsupported auth action" }, 404);
-  const isMutation = action === "sign-in" || action === "sign-up" || action === "sign-out";
+  const isMutation = action === "sign-in" || action === "sign-up" || action === "sign-out" || action === "exchange";
   if (isMutation && !sameOriginPost(request)) return json({ error: "Origin rejected" }, 403);
 
   let body: string | undefined;
+  let exchangeHeader: string | null = null;
   if (action === "sign-in" || action === "sign-up") {
     body = await request.text();
     if (new TextEncoder().encode(body).byteLength > MAX_BODY_BYTES) {
@@ -96,12 +121,24 @@ export async function handleSovereignAuthProxy(
     } catch {
       return json({ error: "Invalid JSON" }, 400);
     }
+  } else if (action === "exchange") {
+    const hostedToken = bearerToken(request);
+    if (!hostedToken) return json({ error: "Missing hosted Bearer token" }, 401);
+    let subject: string | null = null;
+    try { subject = await resolveHostedUserId(hostedToken); }
+    catch { return json({ error: "Hosted auth verification unavailable" }, 503); }
+    if (!subject) return json({ error: "Invalid hosted session" }, 401);
+    if (!UUID_SUBJECT.test(subject)) return json({ error: "Invalid hosted identity subject" }, 502);
+    try { exchangeHeader = await readExchangeSecret(); }
+    catch { return json({ error: "Sovereign exchange unavailable" }, 503); }
+    body = JSON.stringify({ provider: "supabase", subject });
   }
 
   const token = readCookie(request);
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (token) headers.Authorization = `Bearer ${token}`;
+  if (exchangeHeader) headers["X-RONS-Exchange-Key"] = exchangeHeader;
+  else if (token) headers.Authorization = `Bearer ${token}`;
 
   let upstream: Response;
   try {
@@ -124,7 +161,7 @@ export async function handleSovereignAuthProxy(
   const responseHeaders = new Headers();
   if (action === "sign-out") {
     responseHeaders.set("Set-Cookie", clearCookieHeader(request));
-  } else if (upstream.ok && (action === "sign-in" || action === "sign-up")) {
+  } else if (upstream.ok && (action === "sign-in" || action === "sign-up" || action === "exchange")) {
     const session = payload && typeof payload === "object" && !Array.isArray(payload)
       ? (payload as Record<string, unknown>).session
       : null;
