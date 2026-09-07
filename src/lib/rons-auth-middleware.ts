@@ -24,6 +24,13 @@ function cookieToken(request: Request): string | null {
   }
   return null;
 }
+export function resolveRonsRequestCredential(request: Request): string | null {
+  if (getBackendProvider() === "sovereign") {
+    return cookieToken(request) ?? bearerToken(request);
+  }
+  return bearerToken(request);
+}
+
 async function resolveSovereignCookieUserId(
   request: Request,
   fetchImpl: typeof fetch = fetch,

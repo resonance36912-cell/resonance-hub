@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import { fetchSubscriptionRows, writeEntitlementAudit } from "@/lib/backend-provider.server";
 
 const AppSchema = z.enum([
   "epublisher",
@@ -84,7 +84,7 @@ export async function logEntitlementCheck(args: {
   userAgent?: string | null;
 }): Promise<void> {
   try {
-    await supabaseAdmin.from("entitlement_log").insert({
+    await writeEntitlementAudit({
       user_id: args.userId,
       app: args.app,
       tier: args.tier,
@@ -100,10 +100,10 @@ export async function logEntitlementCheck(args: {
 }
 
 export const getEntitlement = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input: { app: AppKey }) => ({ app: AppSchema.parse(input.app) }))
   .handler(async ({ data, context }): Promise<Entitlement> => {
-    const { supabase, userId } = context;
+    const { userId } = context;
     const checkedAt = new Date().toISOString();
     let req: ReturnType<typeof getRequest> | null = null;
     try {
@@ -114,21 +114,21 @@ export const getEntitlement = createServerFn({ method: "POST" })
     const sourceIp = req?.headers.get("x-forwarded-for") ?? null;
     const userAgent = req?.headers.get("user-agent") ?? null;
 
-    const { data: rows, error } = await supabase
-      .from("subscriptions")
-      .select("app,tier,status,current_period_end")
-      .eq("user_id", userId)
-      .in("app", [data.app, "all_access"]);
-
-    if (error) {
-      console.error("getEntitlement query failed:", error);
+    let rows: Awaited<ReturnType<typeof fetchSubscriptionRows>>;
+    try {
+      const credential = req ? resolveRonsRequestCredential(req) : null;
+      if (!credential) throw new Error("Authenticated request credential unavailable");
+      rows = await fetchSubscriptionRows(credential, userId, [data.app, "all_access"]);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "provider lookup failed";
+      console.error("getEntitlement query failed:", message);
       void logEntitlementCheck({
         userId,
         app: data.app,
         tier: "free",
         status: "inactive",
         source: "none",
-        error: error.message,
+        error: message,
         sourceIp,
         userAgent,
       });

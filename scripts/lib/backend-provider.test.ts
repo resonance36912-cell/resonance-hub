@@ -9,6 +9,7 @@ import {
   hasServerBackendRole,
   recordSovereignIdentityObservation,
   resolveBearerUserId,
+  writeEntitlementAudit,
 } from "../../src/lib/backend-provider.server";
 
 const savedFetch = globalThis.fetch;
@@ -90,6 +91,23 @@ describe("backend provider boundary", () => {
       return Response.json([{ role: "admin" }]);
     }) as typeof fetch;
     expect(await hasServerBackendRole("22222222-2222-4222-8222-222222222222", "admin")).toBe(true);
+  });
+
+  test("writes sovereign entitlement audits only to the local ledger", async () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    const bodies: Array<Record<string, unknown>> = [];
+    globalThis.fetch = (async (input, init) => {
+      expect(String(input)).toBe("http://127.0.0.1:58600/v1/db/query");
+      bodies.push(JSON.parse(String(init?.body ?? "{}")));
+      return Response.json([{ id: "audit-1" }]);
+    }) as typeof fetch;
+    await writeEntitlementAudit({
+      user_id: "22222222-2222-4222-8222-222222222222", app: "epublisher",
+      tier: "pro", status: "active", source: "direct", error: null,
+      source_ip: null, user_agent: "test",
+    });
+    expect(bodies[0]).toMatchObject({ table: "entitlement_log", action: "insert" });
+    expect(JSON.stringify(bodies)).not.toContain("service_role");
   });
 
   test("records a credential-free sovereign identity observation", async () => {

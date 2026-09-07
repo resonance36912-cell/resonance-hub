@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { resolveRonsRequestUserId } from "../../src/lib/rons-auth-middleware";
+import { resolveRonsRequestCredential, resolveRonsRequestUserId } from "../../src/lib/rons-auth-middleware";
 
 const savedProvider = process.env.RESONANCE_BACKEND_PROVIDER;
 const savedGateway = process.env.RESONANCE_SOVEREIGN_GATEWAY_URL;
@@ -33,6 +33,17 @@ describe("RONS server auth middleware", () => {
     expect(seen).toEqual([{ url: "http://127.0.0.1:58600/v1/auth/user", auth: "Bearer test-cookie-token" }]);
   });
 
+  test("request credential prefers the sovereign httpOnly cookie", () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    const request = new Request("https://reson8.life/_server", {
+      headers: {
+        Cookie: "rons_sovereign_session=cookie-token",
+        Authorization: "Bearer header-token",
+      },
+    });
+    expect(resolveRonsRequestCredential(request)).toBe("cookie-token");
+  });
+
   test("sovereign mode fails closed without a session", async () => {
     process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
     const request = new Request("https://reson8.life/_server");
@@ -54,6 +65,7 @@ const USER_ID_ONLY_COHORT = [
   "src/lib/visits.functions.ts",
   "src/lib/rop-admin.functions.ts",
   "src/lib/email-domain.functions.ts",
+  "src/lib/entitlement.functions.ts",
 ];
 
 describe("RONS server auth adoption", () => {

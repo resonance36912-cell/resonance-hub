@@ -88,6 +88,32 @@ export async function fetchSubscriptionRows(
   return (data ?? []) as SubscriptionRow[];
 }
 
+export type EntitlementAuditRecord = {
+  user_id: string | null;
+  app: string;
+  tier: string | null;
+  status: string;
+  source: string | null;
+  error: string | null;
+  source_ip: string | null;
+  user_agent: string | null;
+};
+
+export async function writeEntitlementAudit(record: EntitlementAuditRecord): Promise<void> {
+  if (getBackendProvider() === "sovereign") {
+    const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "entitlement_log", action: "insert", values: record, filters: [] }),
+    });
+    if (!response.ok) throw new Error(`Sovereign entitlement audit failed (${response.status})`);
+    return;
+  }
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin.from("entitlement_log").insert(record);
+  if (error) throw new Error(error.message ?? "Hosted entitlement audit failed");
+}
+
 export type BackendRole = "admin" | "user";
 
 async function hasSovereignRole(userId: string, role: BackendRole): Promise<boolean> {
