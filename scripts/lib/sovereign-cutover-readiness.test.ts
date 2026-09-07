@@ -17,7 +17,7 @@ describe("sovereign cutover readiness report", () => {
     for (const blocker of [
       "direct_supabase_auth_remains", "supabase_admin_paths_remain",
       "supabase_rpc_contracts_remain", "supabase_storage_paths_remain",
-      "hosted_subscription_mirror_not_verified",
+      "hosted_subscription_mirror_not_verified", "hosted_role_mirror_not_verified",
     ]) expect(source).toContain(blocker);
   });
 });

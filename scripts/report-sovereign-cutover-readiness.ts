@@ -50,6 +50,7 @@ const report = {
     ...(rpc.length ? ["supabase_rpc_contracts_remain"] : []),
     ...(storage.length ? ["supabase_storage_paths_remain"] : []),
     ...(!process.env.SUPABASE_SERVICE_ROLE_KEY ? ["hosted_subscription_mirror_not_verified"] : []),
+    ...(process.env.RONS_ROLE_MIRROR_VERIFIED !== "1" ? ["hosted_role_mirror_not_verified"] : []),
   ],
 };
 
