@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   SKU_CATALOG,
   PACK_CATALOG,
@@ -55,12 +55,12 @@ function CheckoutPage() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    ronsAuth.getSession().then(({ data }) => {
       if (!mounted) return;
       setEmail(data.session?.user?.email ?? null);
       setAuthReady(true);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = ronsAuth.onAuthStateChange((_e, session) => {
       setEmail(session?.user?.email ?? null);
     });
     return () => {
@@ -353,11 +353,11 @@ function AuthBlock({ onSignedIn }: { onSignedIn: () => void }) {
     setNotice(null);
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await ronsAuth.signInWithPassword({ email, password });
         if (error) throw error;
         onSignedIn();
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await ronsAuth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/checkout${window.location.search}` },

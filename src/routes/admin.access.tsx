@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   bootstrapAdmin,
   getAdminBootstrapStatus,
@@ -181,7 +181,7 @@ function AdminAccessPage() {
     setError(null);
 
     try {
-      const { data, error: authError } = await supabase.auth.getUser();
+      const { data, error: authError } = await ronsAuth.getUser();
       if (authError) throw authError;
       if (!data.user) {
         setStatus("signed_out");
@@ -267,7 +267,7 @@ function AdminAccessPage() {
     setError(null);
     discardBootstrapToken();
     try {
-      const { error: signOutError } = await supabase.auth.signOut();
+      const { error: signOutError } = await ronsAuth.signOut();
       if (signOutError) throw signOutError;
       await navigate({ to: "/admin/login" });
     } catch {

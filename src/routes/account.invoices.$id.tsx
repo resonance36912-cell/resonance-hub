@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   getInvoiceById,
   formatMoney,
@@ -31,7 +31,7 @@ function ReceiptGate() {
   const [state, setState] = useState<"checking" | "authed" | "anon">("checking");
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (!mounted) return;
       setState(data.user ? "authed" : "anon");
     });

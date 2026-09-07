@@ -2,6 +2,7 @@ import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { checkEmailDomain, type RecordCheck } from "@/lib/email-domain.functions";
 
 export const Route = createFileRoute("/admin/email-domain")({
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/admin/email-domain")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await ronsAuth.getUser();
     if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: roleRow } = await supabase
       .from("user_roles")

@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   lookupCreditUser,
   adjustCredits,
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/admin/credits")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await ronsAuth.getUser();
     if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")

@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { listPayfastAudit, type AuditTrace } from "@/lib/payfast-audit.functions";
 
 export const Route = createFileRoute("/admin/payfast-audit")({
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/admin/payfast-audit")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await ronsAuth.getUser();
     if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: roleRow } = await supabase
       .from("user_roles")

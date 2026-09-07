@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { listAllSubscriptions, type AdminSubRow } from "@/lib/admin-revenue.functions";
 import { getVisitStats } from "@/lib/visits.functions";
 import { listPayfastAudit } from "@/lib/payfast-audit.functions";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/admin/")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await ronsAuth.getUser();
     if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")
@@ -84,7 +85,7 @@ function AdminHome() {
   }, [rows]);
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await ronsAuth.signOut();
     navigate({ to: "/admin/login" });
   }
 

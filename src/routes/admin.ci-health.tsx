@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   getCiHealth,
   getRunDetails,
@@ -94,7 +95,7 @@ export const Route = createFileRoute("/admin/ci-health")({
   }),
   validateSearch: zodValidator(searchSchema),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await ronsAuth.getUser();
     if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")

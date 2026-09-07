@@ -1,13 +1,14 @@
 import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [{ title: "Admin Login — Resonance" }, { name: "robots", content: "noindex, nofollow" }],
   }),
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
+    const { data } = await ronsAuth.getUser();
     if (data.user) {
       const { data: role } = await supabase
         .from("user_roles")
@@ -56,7 +57,7 @@ function AdminLoginPage() {
     // Handle case where user lands on this page already signed in
     // (e.g. after email confirmation link, or returning after sign-in).
     let cancelled = false;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (cancelled || !data.user) return;
       void routeSignedInUser(data.user.id).catch(() => {
         if (!cancelled) {
@@ -77,7 +78,7 @@ function AdminLoginPage() {
     setNotice(null);
     try {
       if (mode === "signin") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await ronsAuth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
           await routeSignedInUser(data.user.id);
@@ -88,7 +89,7 @@ function AdminLoginPage() {
             "Account creation is disabled. Contact an existing admin for an invite link.",
           );
         }
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await ronsAuth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/admin/login` },

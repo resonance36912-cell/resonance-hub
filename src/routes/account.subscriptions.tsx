@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   APP_META,
   getMySubscriptions,
@@ -145,7 +145,7 @@ function SubscriptionsGate() {
     log("gate_mounted");
 
     // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: sub } = ronsAuth.onAuthStateChange((event, session) => {
       if (cancelled) return;
       const elapsedMs = Math.round(performance.now() - mountedAt);
       diagnostics.lastAuthEvent = { event, hasSession: !!session, elapsedMs };
@@ -165,7 +165,7 @@ function SubscriptionsGate() {
     });
 
     // 2. Probe current session (local, sync-ish).
-    supabase.auth.getSession().then(({ data, error }) => {
+    ronsAuth.getSession().then(({ data, error }) => {
       if (cancelled) return;
       const elapsedMs = Math.round(performance.now() - mountedAt);
       diagnostics.sessionProbe = {
@@ -187,7 +187,7 @@ function SubscriptionsGate() {
     //    this is the closest analogue to the old beforeLoad getUser() call
     //    and gives us a definitive signal if a stale local session ever
     //    lies about being signed in.
-    supabase.auth.getUser().then(({ data, error }) => {
+    ronsAuth.getUser().then(({ data, error }) => {
       if (cancelled) return;
       const elapsedMs = Math.round(performance.now() - mountedAt);
       const isSessionMissing = error?.message === "Auth session missing!";

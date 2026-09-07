@@ -1,7 +1,7 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { findInvoiceByPfPaymentId } from "@/lib/invoices.functions";
 
 export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
     ],
   }),
   beforeLoad: async ({ params }) => {
-    const { data, error } = await supabase.auth.getUser();
+    const { data, error } = await ronsAuth.getUser();
     if (error || !data.user) throw redirect({ to: "/login", search: { next: `/account/invoices/by-payment/${params.pf}` } });
   },
   component: ByPaymentPage,

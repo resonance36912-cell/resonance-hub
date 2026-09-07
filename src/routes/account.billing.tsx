@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   getMyBilling,
   labelForApp,
@@ -30,11 +30,11 @@ function BillingGate() {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (!alive) return;
       setState(data.user ? "authed" : "anon");
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = ronsAuth.onAuthStateChange((_e, session) => {
       if (!alive) return;
       setState(session?.user ? "authed" : "anon");
     });
