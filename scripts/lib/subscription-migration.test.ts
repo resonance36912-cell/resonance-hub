@@ -53,6 +53,18 @@ describe("subscription shadow migration", () => {
     expect(source).toContain('const APPLY = process.argv.includes("--apply")');
     expect(source).toContain('RONS_SUBSCRIPTION_MIGRATION_CONFIRM !== "YES"');
     expect(source).not.toContain('action: "delete"');
+    expect(source).toContain('gatewayProcedure("read_subscription_mirror", {})');
+    expect(source).toContain('gatewayProcedure("mirror_subscriptions", { rows: hosted })');
+    expect(source).toContain('"X-RONS-Procedure-Key": procedureKey()');
+    expect(source).not.toContain('/v1/db/query');
+  });
+
+  test("secure wrapper uses the local procedure-key file without printing it", () => {
+    const source = readFileSync("scripts/run-subscription-migration-secure.ps1", "utf8");
+    expect(source).toContain("RONS_GATEWAY_PROCEDURE_KEY_FILE");
+    expect(source).toContain("gateway-procedure-key");
+    expect(source).toContain("Test-Path");
+    expect(source).toContain("ZeroFreeBSTR");
   });
 
   test("migration output is summary-only rather than row/token logging", () => {
