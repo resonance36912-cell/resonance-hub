@@ -22,6 +22,10 @@ describe("role shadow migration", () => {
     const source = readFileSync("scripts/migrate-user-roles-to-sovereign.ts", "utf8");
     expect(source).toContain('const APPLY = process.argv.includes("--apply")');
     expect(source).toContain('RONS_ROLE_MIGRATION_CONFIRM !== "YES"');
+    expect(source).toContain('gatewayProcedure("mirror_user_roles"');
+    expect(source).toContain("RONS_GATEWAY_PROCEDURE_KEY_FILE");
+    expect(source).not.toContain('table: "user_roles", action: "insert"');
+    expect(source).not.toContain('table: "user_roles", action: "update"');
     expect(source).not.toContain("delete");
   });
   test("secure wrapper keeps hosted credential transient", () => {
@@ -29,5 +33,8 @@ describe("role shadow migration", () => {
     expect(source).toContain("-AsSecureString");
     expect(source).toContain("ZeroFreeBSTR");
     expect(source).toContain('if ($confirm -cne "YES")');
+    expect(source).toContain("RONS_GATEWAY_PROCEDURE_KEY_FILE");
+    expect(source).toContain("gateway-procedure-key");
+    expect(source).toContain("Test-Path $procedureKeyFile");
   });
 });

@@ -1,8 +1,10 @@
+import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import { buildRoleMigrationDiff, sanitizeRoleRow, type MigratableRole } from "./lib/role-migration";
 
 const GATEWAY = (process.env.RESONANCE_SOVEREIGN_GATEWAY_URL ?? "http://127.0.0.1:58600").replace(/\/$/, "");
 const APPLY = process.argv.includes("--apply");
+const PROCEDURE_KEY_FILE = process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE ?? "";
 const COLUMNS = "id,user_id,role,created_at";
 
 function requireHostedConfig() {
@@ -21,6 +23,23 @@ async function gatewayQuery(body: Record<string, unknown>) {
   if (!response.ok) throw new Error(`Sovereign gateway query failed (${response.status})`);
   return await response.json();
 }
+function requireProcedureKey(): string {
+  if (!PROCEDURE_KEY_FILE) throw new Error("RONS_GATEWAY_PROCEDURE_KEY_FILE is required for role mirror apply.");
+  const value = readFileSync(PROCEDURE_KEY_FILE, "utf8").trim();
+  if (!value) throw new Error("Gateway procedure key file is empty.");
+  return value;
+}
+
+async function gatewayProcedure(name: string, args: Record<string, unknown>) {
+  const response = await fetch(`${GATEWAY}/v1/db/procedure`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-RONS-Procedure-Key": requireProcedureKey() },
+    body: JSON.stringify({ name, args }),
+  });
+  if (!response.ok) throw new Error(`Sovereign gateway procedure failed (${response.status})`);
+  return await response.json();
+}
+
 async function fetchHostedRows(): Promise<MigratableRole[]> {
   const { url, serviceRole } = requireHostedConfig();
   const client = createClient(url, serviceRole, {
@@ -48,16 +67,8 @@ function summary(diff: ReturnType<typeof buildRoleMigrationDiff>) {
 async function applyRows(hosted: MigratableRole[], local: MigratableRole[]) {
   const diff = buildRoleMigrationDiff(hosted, local);
   if (diff.conflicts.length) throw new Error(`Identity conflicts block role migration: ${diff.conflicts.length}`);
-  for (const row of diff.toInsert) {
-    await gatewayQuery({ table: "user_roles", action: "insert", values: row, filters: [] });
-  }
-  for (const row of diff.toUpdate) {
-    await gatewayQuery({
-      table: "user_roles", action: "update",
-      values: { created_at: row.created_at },
-      filters: [{ column: "id", op: "eq", value: row.id }],
-    });
-  }
+  const rows = [...diff.toInsert, ...diff.toUpdate];
+  if (rows.length) await gatewayProcedure("mirror_user_roles", { rows });
 }
 
 async function main() {
