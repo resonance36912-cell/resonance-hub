@@ -161,6 +161,158 @@ export async function fetchPlanChangeRows(accessToken: string, userId: string): 
   return (data ?? []) as unknown as PlanChangeBackendRow[];
 }
 
+export type CiAlertConfigBackendRow = {
+  recipient_email: string | null;
+  repos: string[];
+  enabled: boolean;
+  default_branch_only: boolean;
+  slack_webhook_url: string | null;
+  updated_at: string | null;
+};
+
+async function sovereignDbQuery<T>(body: Record<string, unknown>): Promise<T> {
+  const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`Sovereign database request failed (${response.status})`);
+  return (await response.json()) as T;
+}
+
+export async function fetchCiAlertConfigRow(accessToken: string): Promise<CiAlertConfigBackendRow | null> {
+  const columns = "recipient_email,repos,enabled,default_branch_only,slack_webhook_url,updated_at";
+  if (getBackendProvider() === "sovereign") {
+    const rows = await sovereignDbQuery<CiAlertConfigBackendRow[]>({
+      table: "ci_alert_config", action: "select", columns,
+      filters: [{ column: "id", op: "eq", value: 1 }], options: { limit: 1 },
+    });
+    return rows[0] ?? null;
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.from("ci_alert_config").select(columns).eq("id", 1).maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data ?? null) as unknown as CiAlertConfigBackendRow | null;
+}
+
+export async function saveCiAlertConfigRow(
+  accessToken: string,
+  input: Omit<CiAlertConfigBackendRow, "updated_at">,
+): Promise<CiAlertConfigBackendRow> {
+  const columns = "recipient_email,repos,enabled,default_branch_only,slack_webhook_url,updated_at";
+  const values = { id: 1, ...input, updated_at: new Date().toISOString() };
+  if (getBackendProvider() === "sovereign") {
+    const updated = await sovereignDbQuery<CiAlertConfigBackendRow[]>({
+      table: "ci_alert_config", action: "update", values,
+      filters: [{ column: "id", op: "eq", value: 1 }], options: {},
+    });
+    if (updated[0]) return updated[0];
+    const inserted = await sovereignDbQuery<CiAlertConfigBackendRow[]>({
+      table: "ci_alert_config", action: "insert", values, filters: [], options: {},
+    });
+    if (!inserted[0]) throw new Error("Sovereign CI alert configuration write returned no row");
+    return inserted[0];
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.from("ci_alert_config").upsert(values, { onConflict: "id" })
+    .select(columns).single();
+  if (error) throw new Error(error.message);
+  return data as unknown as CiAlertConfigBackendRow;
+}
+
+export type CiRepoPresetBackendRow = {
+  id: string;
+  name: string;
+  repos: string[];
+  updated_at: string;
+};
+
+export async function listCiRepoPresetRows(
+  accessToken: string,
+  userId: string,
+): Promise<CiRepoPresetBackendRow[]> {
+  const columns = "id,name,repos,updated_at";
+  if (getBackendProvider() === "sovereign") {
+    return sovereignDbQuery<CiRepoPresetBackendRow[]>({
+      table: "ci_repo_presets", action: "select", columns,
+      filters: [{ column: "user_id", op: "eq", value: userId }],
+      options: { order: { column: "name", ascending: true }, limit: 100 },
+    });
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.from("ci_repo_presets").select(columns)
+    .eq("user_id", userId).order("name", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as CiRepoPresetBackendRow[];
+}
+
+async function findSovereignPresetId(userId: string, name: string): Promise<string | null> {
+  const rows = await sovereignDbQuery<Array<{ id: string }>>({
+    table: "ci_repo_presets", action: "select", columns: "id",
+    filters: [{ column: "user_id", op: "eq", value: userId }, { column: "name", op: "eq", value: name }],
+    options: { limit: 1 },
+  });
+  return rows[0]?.id ?? null;
+}
+
+export async function saveCiRepoPresetRow(
+  accessToken: string,
+  userId: string,
+  name: string,
+  repos: string[],
+): Promise<CiRepoPresetBackendRow> {
+  const columns = "id,name,repos,updated_at";
+  const updated_at = new Date().toISOString();
+  if (getBackendProvider() === "sovereign") {
+    const existingId = await findSovereignPresetId(userId, name);
+    if (existingId) {
+      const updated = await sovereignDbQuery<CiRepoPresetBackendRow[]>({
+        table: "ci_repo_presets", action: "update", values: { repos, updated_at },
+        filters: [{ column: "user_id", op: "eq", value: userId }, { column: "id", op: "eq", value: existingId }],
+        options: {},
+      });
+      if (updated[0]) return updated[0];
+    }
+    const inserted = await sovereignDbQuery<CiRepoPresetBackendRow[]>({
+      table: "ci_repo_presets", action: "upsert",
+      values: { user_id: userId, name, repos, updated_at }, filters: [], options: {},
+    });
+    if (inserted[0]) return inserted[0];
+    const retryId = await findSovereignPresetId(userId, name);
+    if (!retryId) throw new Error("Sovereign CI preset write returned no row");
+    const retried = await sovereignDbQuery<CiRepoPresetBackendRow[]>({
+      table: "ci_repo_presets", action: "update", values: { repos, updated_at },
+      filters: [{ column: "user_id", op: "eq", value: userId }, { column: "id", op: "eq", value: retryId }], options: {},
+    });
+    if (!retried[0]) throw new Error("Sovereign CI preset update returned no row");
+    return retried[0];
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.from("ci_repo_presets").upsert(
+    { user_id: userId, name, repos, updated_at },
+    { onConflict: "user_id,name" },
+  ).select(columns).single();
+  if (error) throw new Error(error.message);
+  return data as unknown as CiRepoPresetBackendRow;
+}
+
+export async function deleteCiRepoPresetRow(
+  accessToken: string,
+  userId: string,
+  id: string,
+): Promise<void> {
+  if (getBackendProvider() === "sovereign") {
+    await sovereignDbQuery<CiRepoPresetBackendRow[]>({
+      table: "ci_repo_presets", action: "delete", columns: "*", values: null,
+      filters: [{ column: "user_id", op: "eq", value: userId }, { column: "id", op: "eq", value: id }], options: {},
+    });
+    return;
+  }
+  const client = supabaseClient(accessToken);
+  const { error } = await client.from("ci_repo_presets").delete().eq("user_id", userId).eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export type EntitlementAuditRecord = {
   user_id: string | null;
   app: string;

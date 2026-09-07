@@ -1,6 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 import { z } from 'zod'
-import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
+import { requireRonsAuth, resolveRonsRequestCredential } from '@/lib/rons-auth-middleware'
+import {
+  deleteCiRepoPresetRow,
+  listCiRepoPresetRows,
+  saveCiRepoPresetRow,
+} from '@/lib/backend-provider.server'
 
 export type CiRepoPreset = {
   id: string
@@ -11,16 +17,18 @@ export type CiRepoPreset = {
 
 const RepoRegex = /^[\w.-]+\/[\w.-]+$/
 
+function requireCredential(): string {
+  const request = getRequest()
+  const credential = resolveRonsRequestCredential(request)
+  if (!credential) throw new Error('Unauthorized: Invalid or missing session')
+  return credential
+}
+
 export const listCiRepoPresets = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }): Promise<CiRepoPreset[]> => {
-    const { data, error } = await context.supabase
-      .from('ci_repo_presets')
-      .select('id, name, repos, updated_at')
-      .eq('user_id', context.userId)
-      .order('name', { ascending: true })
-    if (error) throw new Error(error.message)
-    return (data ?? []).map((r: any) => ({
+    const rows = await listCiRepoPresetRows(requireCredential(), context.userId)
+    return rows.map((r) => ({
       id: r.id,
       name: r.name,
       repos: Array.isArray(r.repos) ? r.repos : [],
@@ -34,24 +42,15 @@ const SaveInput = z.object({
 })
 
 export const saveCiRepoPreset = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input) => SaveInput.parse(input))
   .handler(async ({ data, context }): Promise<CiRepoPreset> => {
-    const repos = Array.from(new Set(data.repos))
-    const { data: row, error } = await context.supabase
-      .from('ci_repo_presets')
-      .upsert(
-        {
-          user_id: context.userId,
-          name: data.name,
-          repos,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_id,name' },
-      )
-      .select('id, name, repos, updated_at')
-      .single()
-    if (error) throw new Error(error.message)
+    const row = await saveCiRepoPresetRow(
+      requireCredential(),
+      context.userId,
+      data.name,
+      Array.from(new Set(data.repos)),
+    )
     return {
       id: row.id,
       name: row.name,
@@ -63,14 +62,9 @@ export const saveCiRepoPreset = createServerFn({ method: 'POST' })
 const DeleteInput = z.object({ id: z.string().uuid() })
 
 export const deleteCiRepoPreset = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input) => DeleteInput.parse(input))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
-    const { error } = await context.supabase
-      .from('ci_repo_presets')
-      .delete()
-      .eq('user_id', context.userId)
-      .eq('id', data.id)
-    if (error) throw new Error(error.message)
+    await deleteCiRepoPresetRow(requireCredential(), context.userId, data.id)
     return { ok: true }
   })

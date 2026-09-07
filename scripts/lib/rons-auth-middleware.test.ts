@@ -58,6 +58,8 @@ import { readFileSync } from "node:fs";
 
 const USER_ID_ONLY_COHORT = [
   "src/lib/admin-revenue.functions.ts",
+  "src/lib/ci-alert-config.functions.ts",
+  "src/lib/ci-repo-presets.functions.ts",
   "src/lib/email-sends.functions.ts",
   "src/lib/entitlement-admin.functions.ts",
   "src/lib/itn-logs.functions.ts",
