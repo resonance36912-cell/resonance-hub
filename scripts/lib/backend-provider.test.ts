@@ -4,6 +4,7 @@ import {
   fetchSovereignSubscriptionRows,
   fetchSubscriptionRows,
   getBackendProvider,
+  recordSovereignIdentityObservation,
   resolveBearerUserId,
 } from "../../src/lib/backend-provider.server";
 
@@ -39,6 +40,29 @@ describe("backend provider boundary", () => {
       });
     }) as typeof fetch;
     expect(await resolveBearerUserId("test-token")).toBe("user-1");
+  });
+
+  test("records a credential-free sovereign identity observation", async () => {
+    process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = "http://127.0.0.1:58600";
+    const bodies: Array<Record<string, unknown>> = [];
+    globalThis.fetch = (async (_input, init) => {
+      bodies.push(JSON.parse(String(init?.body ?? "{}")));
+      return new Response(JSON.stringify([]), { status: 200, headers: { "Content-Type": "application/json" } });
+    }) as typeof fetch;
+    const userId = "22222222-2222-4222-8222-222222222222";
+    await recordSovereignIdentityObservation(userId);
+    expect(bodies).toHaveLength(2);
+    expect(bodies[0]).toMatchObject({ table: "identity_links", action: "upsert" });
+    expect(JSON.stringify(bodies)).not.toContain("password");
+    expect(JSON.stringify(bodies)).not.toContain("token");
+    expect(JSON.stringify(bodies)).not.toContain("email");
+  });
+
+  test("rejects non-UUID identity subjects before writing", async () => {
+    let called = false;
+    globalThis.fetch = (async () => { called = true; return new Response(); }) as typeof fetch;
+    await expect(recordSovereignIdentityObservation("not-a-uuid")).rejects.toThrow("UUID");
+    expect(called).toBe(false);
   });
 
   test("filters sovereign subscription rows to requested apps", async () => {

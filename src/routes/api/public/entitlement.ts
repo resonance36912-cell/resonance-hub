@@ -6,6 +6,7 @@ import {
   fetchSovereignSubscriptionRows,
   fetchSubscriptionRows,
   getBackendProvider,
+  recordSovereignIdentityObservation,
   resolveBearerUserId,
 } from "@/lib/backend-provider.server";
 
@@ -96,6 +97,14 @@ export const Route = createFileRoute("/api/public/entitlement")({
           console.error("entitlement query failed:", message);
           void logEntitlementCheck({ userId, app, tier: "free", status: "inactive", source: "none", error: message, sourceIp, userAgent });
           return json({ error: "Lookup failed" }, 500);
+        }
+
+        if (process.env.RONS_IDENTITY_SHADOW === "1" && getBackendProvider() === "supabase") {
+          try {
+            await recordSovereignIdentityObservation(userId);
+          } catch {
+            console.info("[RONS identity shadow]", { unavailable: true });
+          }
         }
 
         if (process.env.RONS_ENTITLEMENT_SHADOW === "1" && getBackendProvider() === "supabase") {

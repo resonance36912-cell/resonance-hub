@@ -85,6 +85,35 @@ export async function fetchSubscriptionRows(
   return (data ?? []) as SubscriptionRow[];
 }
 
+export async function recordSovereignIdentityObservation(userId: string): Promise<void> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) {
+    throw new Error("Identity subject must be a UUID");
+  }
+  const now = new Date().toISOString();
+  const base = `${sovereignGatewayUrl()}/v1/db/query`;
+  const headers = { "Content-Type": "application/json" };
+  const observed = {
+    provider: "supabase", provider_subject: userId, sovereign_user_id: null,
+    status: "observed", first_seen_at: now, last_seen_at: now, claimed_at: null,
+  };
+  const inserted = await fetch(base, {
+    method: "POST", headers,
+    body: JSON.stringify({ table: "identity_links", action: "upsert", values: observed, filters: [] }),
+  });
+  if (!inserted.ok) throw new Error(`Identity shadow insert failed (${inserted.status})`);
+  const touched = await fetch(base, {
+    method: "POST", headers,
+    body: JSON.stringify({
+      table: "identity_links", action: "update", values: { last_seen_at: now },
+      filters: [
+        { column: "provider", op: "eq", value: "supabase" },
+        { column: "provider_subject", op: "eq", value: userId },
+      ],
+    }),
+  });
+  if (!touched.ok) throw new Error(`Identity shadow update failed (${touched.status})`);
+}
+
 export type SubscriptionShadowComparison = {
   match: boolean;
   authoritativeCount: number;

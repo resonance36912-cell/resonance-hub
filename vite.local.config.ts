@@ -6,6 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+  define: {
+    "import.meta.env.VITE_RONS_AUTH_SHADOW": JSON.stringify("1"),
+  },
   css: { transformer: "lightningcss" },
   resolve: {
     alias: { "@": `${process.cwd()}/src` },
