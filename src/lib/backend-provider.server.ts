@@ -88,6 +88,36 @@ export async function fetchSubscriptionRows(
   return (data ?? []) as SubscriptionRow[];
 }
 
+export type BackendRole = "admin" | "user";
+
+async function hasSovereignRole(userId: string, role: BackendRole): Promise<boolean> {
+  const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ table: "user_roles", action: "select", columns: "role",
+      filters: [{ column: "user_id", op: "eq", value: userId }, { column: "role", op: "eq", value: role }],
+      options: { limit: 1 } }),
+  });
+  if (!response.ok) throw new Error(`Sovereign role lookup failed (${response.status})`);
+  const rows = (await response.json()) as Array<{ role?: string }>;
+  return rows.some((row) => row.role === role);
+}
+
+export async function hasBackendRole(userId: string, role: BackendRole, hostedClient?: unknown): Promise<boolean> {
+  if (getBackendProvider() === "sovereign") return hasSovereignRole(userId, role);
+  if (!hostedClient) throw new Error("Hosted role client is required");
+  const client = hostedClient as any;
+  const { data, error } = await client.from("user_roles").select("role").eq("user_id", userId).eq("role", role).limit(1);
+  if (error) throw new Error(error.message ?? "Hosted role lookup failed");
+  const authoritative = Boolean(data?.some((row: { role?: string }) => row.role === role));
+  if (process.env.RONS_ROLE_SHADOW === "1") {
+    try {
+      const sovereign = await hasSovereignRole(userId, role);
+      console.info("[RONS role shadow]", { role, match: authoritative === sovereign, authoritative, sovereign });
+    } catch { console.info("[RONS role shadow]", { role, unavailable: true }); }
+  }
+  return authoritative;
+}
+
 export async function recordSovereignIdentityObservation(userId: string): Promise<void> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) {
     throw new Error("Identity subject must be a UUID");

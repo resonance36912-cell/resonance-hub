@@ -1,13 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasBackendRole } from "@/lib/backend-provider.server";
 
 async function assertAdmin(context: { supabase: any; userId: string }) {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error || !data) throw new Error("Forbidden");
+  if (!(await hasBackendRole(context.userId, "admin", context.supabase))) throw new Error("Forbidden");
 }
 
 // ─── List apps ────────────────────────────────────────────────────────────────

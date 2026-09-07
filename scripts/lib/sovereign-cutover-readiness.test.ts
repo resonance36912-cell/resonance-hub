@@ -10,6 +10,7 @@ describe("sovereign cutover readiness report", () => {
     expect(source).toContain("clientAuthFacade");
     expect(source).toContain("entitlementShadow");
     expect(source).toContain("identityShadow");
+    expect(source).toContain("roleShadow");
     expect(source).toContain("cutoverReady");
   });
 

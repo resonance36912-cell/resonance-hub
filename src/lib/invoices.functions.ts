@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasBackendRole } from "@/lib/backend-provider.server";
 
 export type InvoiceRow = {
   id: string;
@@ -90,11 +91,7 @@ export const listAllInvoices = createServerFn({ method: "GET" })
   .handler(async ({ context, data }): Promise<InvoiceRow[]> => {
     const { supabase, userId } = context;
     // Enforce admin (RLS also enforces, but fail fast for a clearer error).
-    const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Forbidden");
+    if (!(await hasBackendRole(userId, "admin", supabase))) throw new Error("Forbidden");
 
     let query = supabase
       .from("invoices" as never)

@@ -36,6 +36,7 @@ const report = {
     clientAuthFacade: authFacade.includes("RONS auth shadow"),
     entitlementShadow: rows.some((r) => r.text.includes("RONS entitlement shadow")),
     identityShadow: rows.some((r) => r.text.includes("RONS identity shadow")),
+    roleShadow: rows.some((r) => r.text.includes("RONS role shadow")),
   },
   dependencies: {
     directSupabaseAuthFiles: directAuth,
@@ -59,6 +60,7 @@ const cutoverReady =
   report.blockers.length === 0 &&
   report.shadow.clientAuthFacade &&
   report.shadow.entitlementShadow &&
-  report.shadow.identityShadow;
+  report.shadow.identityShadow &&
+  report.shadow.roleShadow;
 
 console.log(JSON.stringify({ ...report, cutoverReady }, null, 2));

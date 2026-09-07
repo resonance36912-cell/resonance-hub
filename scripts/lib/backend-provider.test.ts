@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import {
   compareSubscriptionShadow,
   fetchSovereignSubscriptionRows,
   fetchSubscriptionRows,
   getBackendProvider,
+  hasBackendRole,
   recordSovereignIdentityObservation,
   resolveBearerUserId,
 } from "../../src/lib/backend-provider.server";
@@ -11,6 +13,8 @@ import {
 const savedFetch = globalThis.fetch;
 const savedProvider = process.env.RESONANCE_BACKEND_PROVIDER;
 const savedGateway = process.env.RESONANCE_SOVEREIGN_GATEWAY_URL;
+const savedRoleShadow = process.env.RONS_ROLE_SHADOW;
+const savedConsoleInfo = console.info;
 
 afterEach(() => {
   globalThis.fetch = savedFetch;
@@ -18,6 +22,9 @@ afterEach(() => {
   else process.env.RESONANCE_BACKEND_PROVIDER = savedProvider;
   if (savedGateway === undefined) delete process.env.RESONANCE_SOVEREIGN_GATEWAY_URL;
   else process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = savedGateway;
+  if (savedRoleShadow === undefined) delete process.env.RONS_ROLE_SHADOW;
+  else process.env.RONS_ROLE_SHADOW = savedRoleShadow;
+  console.info = savedConsoleInfo;
 });
 
 describe("backend provider boundary", () => {
@@ -40,6 +47,38 @@ describe("backend provider boundary", () => {
       });
     }) as typeof fetch;
     expect(await resolveBearerUserId("test-token")).toBe("user-1");
+  });
+
+  test("checks hosted admin role without the has_role RPC", async () => {
+    delete process.env.RESONANCE_BACKEND_PROVIDER;
+    const q: any = {}; q.select = () => q; q.eq = () => q;
+    q.limit = async () => ({ data: [{ role: "admin" }], error: null });
+    expect(await hasBackendRole("22222222-2222-4222-8222-222222222222", "admin", { from: () => q })).toBe(true);
+  });
+
+  test("role shadow compares local parity without logging user identity", async () => {
+    delete process.env.RESONANCE_BACKEND_PROVIDER;
+    process.env.RONS_ROLE_SHADOW = "1";
+    const userId = "22222222-2222-4222-8222-222222222222";
+    const q: any = {}; q.select = () => q; q.eq = () => q;
+    q.limit = async () => ({ data: [{ role: "admin" }], error: null });
+    globalThis.fetch = (async () => new Response(JSON.stringify([]), { status: 200, headers: { "Content-Type": "application/json" } })) as typeof fetch;
+    const logs: unknown[][] = []; console.info = (...args: unknown[]) => { logs.push(args); };
+    expect(await hasBackendRole(userId, "admin", { from: () => q })).toBe(true);
+    const serialized = JSON.stringify(logs);
+    expect(serialized).toContain("RONS role shadow");
+    expect(serialized).not.toContain(userId);
+    expect(serialized).toContain('"match":false');
+  });
+
+  test("checks sovereign admin role through the local gateway", async () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    globalThis.fetch = (async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}"));
+      expect(body).toMatchObject({ table: "user_roles", action: "select", columns: "role" });
+      return new Response(JSON.stringify([{ role: "admin" }]), { status: 200, headers: { "Content-Type": "application/json" } });
+    }) as typeof fetch;
+    expect(await hasBackendRole("22222222-2222-4222-8222-222222222222", "admin")).toBe(true);
   });
 
   test("records a credential-free sovereign identity observation", async () => {
@@ -75,6 +114,14 @@ describe("backend provider boundary", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]?.app).toBe("epublisher");
   });
+});
+
+test("invoice and ROP admin guards no longer depend on has_role RPC", () => {
+  for (const rel of ["src/lib/invoices.functions.ts", "src/lib/rop-admin.functions.ts"]) {
+    const source = readFileSync(rel, "utf8");
+    expect(source).toContain("hasBackendRole");
+    expect(source).not.toContain('.rpc("has_role"');
+  }
 });
 
 describe("backend provider shadow comparison", () => {
