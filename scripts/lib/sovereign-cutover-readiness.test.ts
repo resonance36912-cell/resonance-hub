@@ -35,3 +35,18 @@ describe("sovereign cutover readiness adoption metrics", () => {
     expect(source).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY[^\n]*hosted_subscription_mirror_not_verified/);
   });
 });
+
+describe("sovereign GitHub transport readiness", () => {
+  test("tracks provider isolation and active transport", () => {
+    expect(source).toContain("githubProvider");
+    expect(source).toContain("lovableGithubCallerFiles");
+    expect(source).toContain("githubTransport");
+    expect(source).toContain("RONS_GITHUB_DIRECT_VERIFIED");
+  });
+
+  test("blocks cutover until direct GitHub transport is active and verified", () => {
+    expect(source).toContain("github_direct_transport_not_active");
+    expect(source).toContain("github_direct_transport_not_verified");
+    expect(source).toContain("lovable_github_calls_outside_provider");
+  });
+});

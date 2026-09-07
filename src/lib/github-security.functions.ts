@@ -3,8 +3,7 @@ import { z } from "zod";
 import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { hasBackendRole } from "@/lib/backend-provider.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
+import { assertGitHubTransportConfigured, githubRequest } from "./github-provider.server";
 
 export type AlertSeverity =
   | "critical"
@@ -85,20 +84,12 @@ function normalizeSeverity(raw: RawAlert): AlertSeverity {
   return "unknown";
 }
 
-async function ghFetch(path: string, lovableKey: string, ghKey: string) {
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": ghKey,
-    },
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    return { ok: false as const, status: res.status, body: text.slice(0, 500) };
-  }
+async function ghFetch(path: string) {
+  const res = await githubRequest(path, { method: "GET" });
+  const body = await res.text();
+  if (!res.ok) return { ok: false as const, status: res.status, body: body.slice(0, 500) };
   try {
-    return { ok: true as const, data: JSON.parse(text) };
+    return { ok: true as const, data: JSON.parse(body) };
   } catch {
     return { ok: false as const, status: res.status, body: "invalid_json" };
   }
@@ -106,8 +97,6 @@ async function ghFetch(path: string, lovableKey: string, ghKey: string) {
 
 async function fetchAlertsForRepo(
   repo: string,
-  lovableKey: string,
-  ghKey: string,
 ): Promise<RepoSecurityScan> {
   const html_url = `https://github.com/${repo}`;
   const empty = {
@@ -121,8 +110,6 @@ async function fetchAlertsForRepo(
 
   const res = await ghFetch(
     `/repos/${repo}/code-scanning/alerts?state=open&per_page=100`,
-    lovableKey,
-    ghKey,
   );
 
   if (!res.ok) {
@@ -210,14 +197,10 @@ export const getSecurityScanReport = createServerFn({ method: "POST" })
       throw new Error("Forbidden");
     }
 
-    const lovableKey = process.env.LOVABLE_API_KEY;
-    const ghKey = process.env.GITHUB_API_KEY;
-    if (!lovableKey || !ghKey) {
-      throw new Error("Missing LOVABLE_API_KEY or GITHUB_API_KEY.");
-    }
+    assertGitHubTransportConfigured();
 
     const results = await Promise.all(
-      data.repos.map((r) => fetchAlertsForRepo(r, lovableKey, ghKey)),
+      data.repos.map((r) => fetchAlertsForRepo(r)),
     );
 
     return { repos: results, fetched_at: new Date().toISOString() };

@@ -3,43 +3,17 @@ import { z } from "zod";
 import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { hasBackendRole } from "@/lib/backend-provider.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { githubJson, githubRequest, GitHubApiError } from "./github-provider.server";
 import { validateRepoSlug } from "./repo-slug";
 import {
   GetCiHealthInputSchema,
   GetRunDetailsInputSchema,
 } from "./github-ci.contract";
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
-
-export class GitHubApiError extends Error {
-  status: number;
-  body: string;
-  constructor(status: number, body: string) {
-    super(`GitHub gateway ${status}: ${body.slice(0, 200)}`);
-    this.status = status;
-    this.body = body;
-  }
-}
+export { GitHubApiError };
 
 async function ghFetch(path: string) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const ghKey = process.env.GITHUB_API_KEY;
-  if (!lovableKey) throw new Error("LOVABLE_API_KEY missing");
-  if (!ghKey) throw new Error("GITHUB_API_KEY missing (GitHub connector not linked)");
-
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": ghKey,
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new GitHubApiError(res.status, body);
-  }
-  return res.json();
+  return githubJson(path, { method: "GET" });
 }
 
 export { validateRepoSlug };
@@ -50,7 +24,7 @@ export function friendlyGithubError(err: unknown, repo: string): string {
       return `Repository "${repo}" not found or not accessible with the connected GitHub account`;
     }
     if (err.status === 401 || err.status === 403) {
-      return `Access denied to "${repo}" (HTTP ${err.status}). Reconnect the GitHub connector with the "repo" scope.`;
+      return `Access denied to "${repo}" (HTTP ${err.status}). Reconnect the GitHub integration with the required repository scope.`;
     }
     if (err.status === 429) return `GitHub rate limit hit for "${repo}" — try again shortly`;
     if (err.status >= 500) return `GitHub is unavailable (HTTP ${err.status})`;
@@ -62,19 +36,7 @@ export function friendlyGithubError(err: unknown, repo: string): string {
 
 
 async function ghFetchRaw(path: string): Promise<Response> {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const ghKey = process.env.GITHUB_API_KEY;
-  if (!lovableKey) throw new Error("LOVABLE_API_KEY missing");
-  if (!ghKey) throw new Error("GITHUB_API_KEY missing (GitHub connector not linked)");
-  return fetch(`${GATEWAY_URL}${path}`, {
-    method: "GET",
-    redirect: "follow",
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": ghKey,
-    },
-  });
+  return githubRequest(path, { method: "GET", redirect: "follow" });
 }
 
 async function requireAdmin(ctx: { userId: string }) {

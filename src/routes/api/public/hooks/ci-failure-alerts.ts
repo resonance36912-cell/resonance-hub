@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createClient } from '@supabase/supabase-js'
+import { assertGitHubTransportConfigured, githubJson } from '@/lib/github-provider.server'
 
 // Hourly cron poll: scans configured repos for newly failed workflow runs,
 // dedupes against ci_alert_sent, and emails the configured recipient.
 // Called by pg_cron with `apikey: <SUPABASE_PUBLISHABLE_KEY>` header.
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/github'
 const MAX_FAILURES_PER_EMAIL = 25
 const LOOKBACK_HOURS = 26 // slight overlap over hourly schedule
 
@@ -21,18 +21,8 @@ interface WorkflowRun {
   updated_at: string
 }
 
-async function ghFetch(path: string, lovableKey: string, ghKey: string) {
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${lovableKey}`,
-      'X-Connection-Api-Key': ghKey,
-    },
-  })
-  if (!res.ok) {
-    throw new Error(`GitHub gateway ${res.status}: ${(await res.text()).slice(0, 200)}`)
-  }
-  return res.json()
+async function ghFetch(path: string) {
+  return githubJson(path, { method: 'GET' })
 }
 
 export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
@@ -42,8 +32,6 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
         const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
         const supabaseUrl = process.env.SUPABASE_URL
         const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-        const lovableKey = process.env.LOVABLE_API_KEY
-        const ghKey = process.env.GITHUB_API_KEY
 
         // Cron auth: apikey header must match project publishable key.
         const apikey = request.headers.get('apikey') ?? request.headers.get('x-apikey')
@@ -53,9 +41,17 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
             headers: { 'Content-Type': 'application/json' },
           })
         }
-        if (!supabaseUrl || !serviceRoleKey || !lovableKey || !ghKey) {
+        if (!supabaseUrl || !serviceRoleKey) {
           return new Response(
             JSON.stringify({ error: 'missing_environment' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } },
+          )
+        }
+        try {
+          assertGitHubTransportConfigured()
+        } catch {
+          return new Response(
+            JSON.stringify({ error: 'missing_github_transport' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } },
           )
         }
@@ -107,7 +103,7 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
             let defaultBranch: string | null = null
             if (defaultBranchOnly) {
               try {
-                const repoInfo: any = await ghFetch(`/repos/${repo}`, lovableKey, ghKey)
+                const repoInfo: any = await ghFetch(`/repos/${repo}`)
                 defaultBranch = repoInfo?.default_branch ?? null
               } catch (err) {
                 console.error(
@@ -125,8 +121,6 @@ export const Route = createFileRoute('/api/public/hooks/ci-failure-alerts')({
                 : ''
             const data: any = await ghFetch(
               `/repos/${repo}/actions/runs?per_page=50${branchQuery}`,
-              lovableKey,
-              ghKey,
             )
             const runs: WorkflowRun[] = data?.workflow_runs ?? []
             const candidates = runs.filter(

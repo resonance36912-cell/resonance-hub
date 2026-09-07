@@ -5,12 +5,11 @@
 //   - Zod enforces strict length/format limits on every field.
 //   - Honeypot field silently drops bot submissions.
 //   - Body is composed from validated fields only; no raw HTML is echoed.
-//   - GitHub token is never exposed to the browser (connector gateway).
+//   - GitHub credentials are server-only and never exposed to the browser.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
-
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/github";
+import { assertGitHubTransportConfigured, githubRequest } from "@/lib/github-provider.server";
 
 const bodySchema = z.object({
   repo: z
@@ -73,11 +72,11 @@ export const Route = createFileRoute("/api/public/forms/create-issue")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
       POST: async ({ request }) => {
-        const lovableKey = process.env.LOVABLE_API_KEY;
-        const ghKey = process.env.GITHUB_API_KEY;
-        if (!lovableKey || !ghKey) {
+        try {
+          assertGitHubTransportConfigured();
+        } catch {
           return json(503, {
-            error: "GitHub connector not configured on the server.",
+            error: "GitHub transport not configured on the server.",
           });
         }
 
@@ -126,13 +125,11 @@ export const Route = createFileRoute("/api/public/forms/create-issue")({
           labels: input.labels,
         };
 
-        const gh = await fetch(`${GATEWAY_URL}/repos/${input.repo}/issues`, {
+        const gh = await githubRequest(`/repos/${input.repo}/issues`, {
           method: "POST",
           headers: {
             Accept: "application/vnd.github+json",
             "Content-Type": "application/json",
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": ghKey,
           },
           body: JSON.stringify(payload),
         });
