@@ -118,6 +118,12 @@ export async function hasBackendRole(userId: string, role: BackendRole, hostedCl
   return authoritative;
 }
 
+export async function hasServerBackendRole(userId: string, role: BackendRole): Promise<boolean> {
+  if (getBackendProvider() === "sovereign") return hasSovereignRole(userId, role);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return hasBackendRole(userId, role, supabaseAdmin);
+}
+
 export async function recordSovereignIdentityObservation(userId: string): Promise<void> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId)) {
     throw new Error("Identity subject must be a UUID");

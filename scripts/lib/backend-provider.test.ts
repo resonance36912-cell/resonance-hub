@@ -6,6 +6,7 @@ import {
   fetchSubscriptionRows,
   getBackendProvider,
   hasBackendRole,
+  hasServerBackendRole,
   recordSovereignIdentityObservation,
   resolveBearerUserId,
 } from "../../src/lib/backend-provider.server";
@@ -79,6 +80,16 @@ describe("backend provider boundary", () => {
       return new Response(JSON.stringify([{ role: "admin" }]), { status: 200, headers: { "Content-Type": "application/json" } });
     }) as typeof fetch;
     expect(await hasBackendRole("22222222-2222-4222-8222-222222222222", "admin")).toBe(true);
+  });
+
+  test("server role helper stays on the sovereign ledger in sovereign mode", async () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    globalThis.fetch = (async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}"));
+      expect(body).toMatchObject({ table: "user_roles", action: "select" });
+      return Response.json([{ role: "admin" }]);
+    }) as typeof fetch;
+    expect(await hasServerBackendRole("22222222-2222-4222-8222-222222222222", "admin")).toBe(true);
   });
 
   test("records a credential-free sovereign identity observation", async () => {

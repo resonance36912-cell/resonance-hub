@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
-import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware'
+import { requireRonsAuth } from '@/lib/rons-auth-middleware'
+import { hasServerBackendRole } from '@/lib/backend-provider.server'
 
 const SENDER_DOMAIN = 'notify.www.reson8.life'
 const DKIM_SELECTORS = ['k1', 'mailo', 'lovable', 's1', 'smtp', 'email', 'default']
@@ -34,16 +35,9 @@ export type RecordCheck = {
 }
 
 export const checkEmailDomain = createServerFn({ method: 'POST' })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context
-    const { data: roleRow } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .maybeSingle()
-    if (!roleRow) {
+    if (!(await hasServerBackendRole(context.userId, 'admin'))) {
       return { ok: false as const, error: 'Forbidden — admin role required.' }
     }
 
