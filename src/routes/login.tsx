@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 
 // Validate `next` as a same-origin relative path so we can't be redirected to
 // an external site after login.
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/login")({
   ssr: false,
   validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s.next) }),
   beforeLoad: async ({ search }) => {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await ronsAuth.getSession();
     if (data.session) throw redirect({ href: search.next });
   },
   component: LoginPage,
@@ -32,7 +32,7 @@ function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+    const { data: sub } = ronsAuth.onAuthStateChange((_evt, session) => {
       if (session) window.location.href = next;
     });
     return () => sub.subscription.unsubscribe();
@@ -45,11 +45,11 @@ function LoginPage() {
     setNotice(null);
     try {
       if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await ronsAuth.signInWithPassword({ email, password });
         if (error) throw error;
         window.location.href = next;
       } else {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await ronsAuth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}${next}` },
@@ -70,7 +70,7 @@ function LoginPage() {
     // Send Google back to /login with the same `next` so the post-OAuth
     // useEffect above forwards the user on to the intended destination.
     const redirectTo = `${window.location.origin}/login?next=${encodeURIComponent(next)}`;
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { error } = await ronsAuth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },
     });

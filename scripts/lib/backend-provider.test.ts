@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import {
+  compareSubscriptionShadow,
+  fetchSovereignSubscriptionRows,
   fetchSubscriptionRows,
   getBackendProvider,
   resolveBearerUserId,
@@ -48,5 +50,29 @@ describe("backend provider boundary", () => {
     const rows = await fetchSubscriptionRows("test-token", "user-1", ["epublisher"]);
     expect(rows).toHaveLength(1);
     expect(rows[0]?.app).toBe("epublisher");
+  });
+});
+
+describe("backend provider shadow comparison", () => {
+  test("treats equivalent subscription rows as a match regardless of order", () => {
+    const hosted = [
+      { app: "epublisher", tier: "pro", status: "active", current_period_end: null },
+      { app: "all_access", tier: "all_access", status: "cancelled", current_period_end: "2026-10-01" },
+    ];
+    const local = [hosted[1]!, hosted[0]!];
+    expect(compareSubscriptionShadow(hosted, local)).toEqual({
+      match: true,
+      authoritativeCount: 2,
+      sovereignCount: 2,
+    });
+  });
+
+  test("reports a mismatch without exposing user identity", () => {
+    const result = compareSubscriptionShadow(
+      [{ app: "epublisher", tier: "pro", status: "active", current_period_end: null }],
+      [],
+    );
+    expect(result).toEqual({ match: false, authoritativeCount: 1, sovereignCount: 0 });
+    expect(Object.keys(result)).not.toContain("userId");
   });
 });

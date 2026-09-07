@@ -48,27 +48,32 @@ export async function resolveBearerUserId(accessToken: string): Promise<string |
   if (error || !data?.claims?.sub) return null;
   return String(data.claims.sub);
 }
+export async function fetchSovereignSubscriptionRows(
+  userId: string,
+  apps: readonly SubscriptionApp[],
+): Promise<SubscriptionRow[]> {
+  const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      table: "subscriptions",
+      action: "select",
+      columns: "app,tier,status,current_period_end",
+      filters: [{ column: "user_id", op: "eq", value: userId }],
+      options: { limit: 100 },
+    }),
+  });
+  if (!response.ok) throw new Error(`Sovereign subscription lookup failed (${response.status})`);
+  const rows = (await response.json()) as SubscriptionRow[];
+  return rows.filter((row) => apps.includes(row.app as SubscriptionApp));
+}
+
 export async function fetchSubscriptionRows(
   accessToken: string,
   userId: string,
   apps: readonly SubscriptionApp[],
 ): Promise<SubscriptionRow[]> {
-  if (getBackendProvider() === "sovereign") {
-    const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: "subscriptions",
-        action: "select",
-        columns: "app,tier,status,current_period_end",
-        filters: [{ column: "user_id", op: "eq", value: userId }],
-        options: { limit: 100 },
-      }),
-    });
-    if (!response.ok) throw new Error(`Sovereign subscription lookup failed (${response.status})`);
-    const rows = (await response.json()) as SubscriptionRow[];
-    return rows.filter((row) => apps.includes(row.app as SubscriptionApp));
-  }
+  if (getBackendProvider() === "sovereign") return fetchSovereignSubscriptionRows(userId, apps);
 
   const client = supabaseClient(accessToken);
   const { data, error } = await client
@@ -78,4 +83,34 @@ export async function fetchSubscriptionRows(
     .in("app", apps);
   if (error) throw new Error(error.message);
   return (data ?? []) as SubscriptionRow[];
+}
+
+export type SubscriptionShadowComparison = {
+  match: boolean;
+  authoritativeCount: number;
+  sovereignCount: number;
+};
+
+function normalizedSubscriptionRows(rows: readonly SubscriptionRow[]): string[] {
+  return rows
+    .map((row) => JSON.stringify([
+      row.app,
+      row.tier,
+      row.status,
+      row.current_period_end ?? null,
+    ]))
+    .sort();
+}
+
+export function compareSubscriptionShadow(
+  authoritativeRows: readonly SubscriptionRow[],
+  sovereignRows: readonly SubscriptionRow[],
+): SubscriptionShadowComparison {
+  const authoritative = normalizedSubscriptionRows(authoritativeRows);
+  const sovereign = normalizedSubscriptionRows(sovereignRows);
+  return {
+    match: authoritative.length === sovereign.length && authoritative.every((value, index) => value === sovereign[index]),
+    authoritativeCount: authoritative.length,
+    sovereignCount: sovereign.length,
+  };
 }

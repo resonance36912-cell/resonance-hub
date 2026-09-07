@@ -1,7 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { deriveFeatures, logEntitlementCheck, type Tier } from "@/lib/entitlement.functions";
-import { fetchSubscriptionRows, resolveBearerUserId } from "@/lib/backend-provider.server";
+import {
+  compareSubscriptionShadow,
+  fetchSovereignSubscriptionRows,
+  fetchSubscriptionRows,
+  getBackendProvider,
+  resolveBearerUserId,
+} from "@/lib/backend-provider.server";
 
 /**
  * Public entitlement endpoint for spoke apps.
@@ -90,6 +96,18 @@ export const Route = createFileRoute("/api/public/entitlement")({
           console.error("entitlement query failed:", message);
           void logEntitlementCheck({ userId, app, tier: "free", status: "inactive", source: "none", error: message, sourceIp, userAgent });
           return json({ error: "Lookup failed" }, 500);
+        }
+
+        if (process.env.RONS_ENTITLEMENT_SHADOW === "1" && getBackendProvider() === "supabase") {
+          try {
+            const sovereignRows = await fetchSovereignSubscriptionRows(userId, [app, "all_access"]);
+            console.info("[RONS entitlement shadow]", {
+              app,
+              ...compareSubscriptionShadow(rows, sovereignRows),
+            });
+          } catch {
+            console.info("[RONS entitlement shadow]", { app, unavailable: true });
+          }
         }
 
         const active = rows.filter((r) => r.status === "active");
