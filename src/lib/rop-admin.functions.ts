@@ -1,17 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { hasBackendRole } from "@/lib/backend-provider.server";
 
-async function assertAdmin(context: { supabase: any; userId: string }) {
-  if (!(await hasBackendRole(context.userId, "admin", context.supabase))) throw new Error("Forbidden");
+async function assertAdmin(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  if (!(await hasBackendRole(userId, "admin", supabaseAdmin))) throw new Error("Forbidden");
 }
 
 // ─── List apps ────────────────────────────────────────────────────────────────
 export const listHubApps = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("hub_apps")
@@ -29,10 +30,10 @@ const RegisterInput = z.object({
 });
 
 export const registerHubApp = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((d: unknown) => RegisterInput.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { mintSigningKey, hashSigningKey } = await import("@/lib/rop/hmac.server");
     const minted = mintSigningKey();
@@ -67,10 +68,10 @@ export const registerHubApp = createServerFn({ method: "POST" })
 const IdInput = z.object({ id: z.string().uuid() });
 
 export const rotateHubAppKey = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((d: unknown) => IdInput.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { mintSigningKey, hashSigningKey } = await import("@/lib/rop/hmac.server");
     const minted = mintSigningKey();
@@ -96,10 +97,10 @@ const StatusInput = z.object({
 });
 
 export const setHubAppStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((d: unknown) => StatusInput.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("hub_apps")
@@ -111,9 +112,9 @@ export const setHubAppStatus = createServerFn({ method: "POST" })
 
 // ─── Suggestions ──────────────────────────────────────────────────────────────
 export const listHubSuggestions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("hub_suggestions")
@@ -132,10 +133,10 @@ const SuggestionPatch = z.object({
 });
 
 export const updateHubSuggestion = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((d: unknown) => SuggestionPatch.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const patch: Record<string, unknown> = {};
     if (data.status !== undefined) patch.status = data.status;
@@ -164,9 +165,9 @@ export const updateHubSuggestion = createServerFn({ method: "POST" })
 
 // ─── Recent perf summary ──────────────────────────────────────────────────────
 export const getHubPerfSummary = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { data, error } = await supabaseAdmin
@@ -181,9 +182,9 @@ export const getHubPerfSummary = createServerFn({ method: "GET" })
 
 // ─── Outcomes ─────────────────────────────────────────────────────────────────
 export const listHubOutcomes = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("hub_outcomes")

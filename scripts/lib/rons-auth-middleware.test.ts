@@ -52,6 +52,7 @@ const USER_ID_ONLY_COHORT = [
   "src/lib/itn-logs.functions.ts",
   "src/lib/payfast-audit.functions.ts",
   "src/lib/visits.functions.ts",
+  "src/lib/rop-admin.functions.ts",
 ];
 
 describe("RONS server auth adoption", () => {
