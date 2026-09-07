@@ -88,6 +88,79 @@ export async function fetchSubscriptionRows(
   return (data ?? []) as SubscriptionRow[];
 }
 
+
+export async function fetchBackendUserEmail(accessToken: string): Promise<string | null> {
+  if (getBackendProvider() === "sovereign") {
+    const response = await fetch(`${sovereignGatewayUrl()}/v1/auth/user`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as { user?: { email?: string | null } };
+    return body.user?.email ?? null;
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.auth.getClaims(accessToken);
+  if (error) return null;
+  const email = (data?.claims as { email?: unknown } | undefined)?.email;
+  return typeof email === "string" ? email : null;
+}
+
+export type SubscriptionDetailRow = SubscriptionRow & {
+  id: string;
+  billing_cycle: string;
+  amount_cents: number;
+  currency: string;
+  cancelled_at: string | null;
+  updated_at: string;
+};
+
+export async function fetchSubscriptionDetails(
+  accessToken: string,
+  userId: string,
+): Promise<SubscriptionDetailRow[]> {
+  const columns = "id,app,tier,status,billing_cycle,amount_cents,currency,current_period_end,cancelled_at,updated_at";
+  if (getBackendProvider() === "sovereign") {
+    const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "subscriptions", action: "select", columns,
+        filters: [{ column: "user_id", op: "eq", value: userId }],
+        options: { limit: 100 } }),
+    });
+    if (!response.ok) throw new Error(`Sovereign subscription detail lookup failed (${response.status})`);
+    return (await response.json()) as SubscriptionDetailRow[];
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.from("subscriptions").select(columns)
+    .eq("user_id", userId).order("updated_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as SubscriptionDetailRow[];
+}
+
+
+export type PlanChangeBackendRow = {
+  id: string; from_app: string | null; from_tier: string | null; to_app: string; to_tier: string;
+  change_type: string; reason: string | null; pf_payment_id: string | null; created_at: string;
+};
+
+export async function fetchPlanChangeRows(accessToken: string, userId: string): Promise<PlanChangeBackendRow[]> {
+  const columns = "id,from_app,from_tier,to_app,to_tier,change_type,reason,pf_payment_id,created_at";
+  if (getBackendProvider() === "sovereign") {
+    const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "plan_changes", action: "select", columns,
+        filters: [{ column: "user_id", op: "eq", value: userId }], options: { limit: 50 } }),
+    });
+    if (!response.ok) throw new Error(`Sovereign plan-change lookup failed (${response.status})`);
+    const rows = (await response.json()) as PlanChangeBackendRow[];
+    return rows.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)).slice(0, 50);
+  }
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client.from("plan_changes").select(columns)
+    .eq("user_id", userId).order("created_at", { ascending: false }).limit(50);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as PlanChangeBackendRow[];
+}
+
 export type EntitlementAuditRecord = {
   user_id: string | null;
   app: string;

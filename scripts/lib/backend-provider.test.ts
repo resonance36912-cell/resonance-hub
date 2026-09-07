@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import {
   compareSubscriptionShadow,
   fetchSovereignSubscriptionRows,
+  fetchBackendUserEmail,
+  fetchPlanChangeRows,
+  fetchSubscriptionDetails,
   fetchSubscriptionRows,
   getBackendProvider,
   hasBackendRole,
@@ -131,6 +134,45 @@ describe("backend provider boundary", () => {
     globalThis.fetch = (async () => { called = true; return new Response(); }) as typeof fetch;
     await expect(recordSovereignIdentityObservation("not-a-uuid")).rejects.toThrow("UUID");
     expect(called).toBe(false);
+  });
+
+  test("reads sovereign subscription details with explicit user scoping", async () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    let body: any = null;
+    globalThis.fetch = (async (_input, init) => {
+      body = JSON.parse(String(init?.body ?? "{}"));
+      return Response.json([{ id: "sub-1", app: "epublisher", tier: "pro", status: "active",
+        billing_cycle: "monthly", amount_cents: 14900, currency: "ZAR",
+        current_period_end: null, cancelled_at: null, updated_at: "2026-09-07T00:00:00Z" }]);
+    }) as typeof fetch;
+    const rows = await fetchSubscriptionDetails("cookie-token", "22222222-2222-4222-8222-222222222222");
+    expect(rows[0]?.id).toBe("sub-1");
+    expect(body).toMatchObject({ table: "subscriptions", action: "select",
+      filters: [{ column: "user_id", op: "eq", value: "22222222-2222-4222-8222-222222222222" }] });
+  });
+
+  test("reads sovereign account email from the local auth user response", async () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    globalThis.fetch = (async (_input, init) => {
+      expect((init?.headers as Record<string, string>).Authorization).toBe("Bearer cookie-token");
+      return Response.json({ user: { email: "owner@example.test" } });
+    }) as typeof fetch;
+    expect(await fetchBackendUserEmail("cookie-token")).toBe("owner@example.test");
+  });
+
+  test("reads sovereign plan changes with explicit user scoping", async () => {
+    process.env.RESONANCE_BACKEND_PROVIDER = "sovereign";
+    let body: any = null;
+    globalThis.fetch = (async (_input, init) => {
+      body = JSON.parse(String(init?.body ?? "{}"));
+      return Response.json([{ id: "pc-1", from_app: null, from_tier: null, to_app: "epublisher",
+        to_tier: "pro", change_type: "initial", reason: null, pf_payment_id: null,
+        created_at: "2026-09-07T12:00:00Z" }]);
+    }) as typeof fetch;
+    const rows = await fetchPlanChangeRows("cookie-token", "22222222-2222-4222-8222-222222222222");
+    expect(rows[0]?.id).toBe("pc-1");
+    expect(body).toMatchObject({ table: "plan_changes", action: "select",
+      filters: [{ column: "user_id", op: "eq", value: "22222222-2222-4222-8222-222222222222" }] });
   });
 
   test("filters sovereign subscription rows to requested apps", async () => {

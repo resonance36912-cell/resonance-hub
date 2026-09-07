@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import { fetchPlanChangeRows } from "@/lib/backend-provider.server";
 
 export type PlanChangeRow = {
   id: string;
@@ -18,14 +20,11 @@ export type PlanChangeRow = {
  * RLS on public.plan_changes scopes rows to auth.uid().
  */
 export const getMyPlanChanges = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }): Promise<{ rows: PlanChangeRow[] }> => {
-    const { supabase } = context;
-    const { data, error } = await supabase
-      .from("plan_changes" as never)
-      .select("id,from_app,from_tier,to_app,to_tier,change_type,reason,pf_payment_id,created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (error) throw new Error(error.message);
-    return { rows: (data as PlanChangeRow[] | null) ?? [] };
+    const request = getRequest();
+    const credential = request ? resolveRonsRequestCredential(request) : null;
+    if (!credential) throw new Error("Authenticated request credential unavailable");
+    const rows = await fetchPlanChangeRows(credential, context.userId);
+    return { rows: rows as PlanChangeRow[] };
   });

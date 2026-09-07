@@ -66,6 +66,9 @@ const USER_ID_ONLY_COHORT = [
   "src/lib/rop-admin.functions.ts",
   "src/lib/email-domain.functions.ts",
   "src/lib/entitlement.functions.ts",
+  "src/lib/subscriptions.functions.ts",
+  "src/lib/verify-purchase.functions.ts",
+  "src/lib/plan-changes.functions.ts",
 ];
 
 describe("RONS server auth adoption", () => {

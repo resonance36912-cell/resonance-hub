@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import { fetchSubscriptionDetails } from "@/lib/backend-provider.server";
 import { SKU_CATALOG } from "@/lib/checkout.functions";
 
 /**
@@ -26,7 +28,7 @@ export type VerifiedPurchase = {
 const FRESH_WINDOW_MS = 30 * 60 * 1000;
 
 export const getVerifiedPurchase = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input) => Input.parse(input))
   .handler(async ({ data, context }): Promise<VerifiedPurchase> => {
     const def = SKU_CATALOG[data.sku];
@@ -41,17 +43,13 @@ export const getVerifiedPurchase = createServerFn({ method: "POST" })
       };
     }
 
-    const { supabase, userId } = context;
-    const { data: rows, error } = await supabase
-      .from("subscriptions")
-      .select("app,tier,status,current_period_end,updated_at")
-      .eq("user_id", userId)
-      .eq("app", def.app as never)
-      .order("updated_at", { ascending: false })
-      .limit(1);
-
-    if (error) throw new Error(error.message);
-    const row = rows?.[0];
+    const request = getRequest();
+    const credential = request ? resolveRonsRequestCredential(request) : null;
+    if (!credential) throw new Error("Authenticated request credential unavailable");
+    const rows = await fetchSubscriptionDetails(credential, context.userId);
+    const row = rows
+      .filter((candidate) => candidate.app === def.app)
+      .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))[0];
     if (!row) {
       return {
         verified: false,

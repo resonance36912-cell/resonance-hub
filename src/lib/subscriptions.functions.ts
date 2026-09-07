@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getRequest } from "@tanstack/react-start/server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import { fetchBackendUserEmail, fetchSubscriptionDetails } from "@/lib/backend-provider.server";
 
 export type AppKey =
   | "epublisher"
@@ -30,20 +32,14 @@ export const APP_META: Record<AppKey, { label: string; accent: string; url: stri
 };
 
 export const getMySubscriptions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }): Promise<{ subscriptions: SubscriptionRow[]; email: string | null }> => {
-    const { supabase, userId, claims } = context;
-
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .select("id,app,tier,status,billing_cycle,amount_cents,currency,current_period_end,cancelled_at,updated_at")
-      .eq("user_id", userId)
-      .order("updated_at", { ascending: false });
-
-    if (error) throw new Error(error.message);
-
-    return {
-      subscriptions: (data ?? []) as SubscriptionRow[],
-      email: (claims as { email?: string } | null)?.email ?? null,
-    };
+    const request = getRequest();
+    const credential = request ? resolveRonsRequestCredential(request) : null;
+    if (!credential) throw new Error("Authenticated request credential unavailable");
+    const [subscriptions, email] = await Promise.all([
+      fetchSubscriptionDetails(credential, context.userId),
+      fetchBackendUserEmail(credential),
+    ]);
+    return { subscriptions: subscriptions as SubscriptionRow[], email };
   });
