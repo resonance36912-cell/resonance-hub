@@ -65,7 +65,7 @@ CREATE POLICY "users read own roles" ON public.hub_user_roles
   FOR SELECT TO authenticated USING (user_id = auth.uid());
 
 CREATE OR REPLACE FUNCTION public.hub_has_role(_user_id uuid, _role public.hub_app_role)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path = '' AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.hub_user_roles WHERE user_id = _user_id AND role = _role
   )
@@ -92,7 +92,18 @@ CREATE TABLE IF NOT EXISTS public.hub_apps (
 
 CREATE INDEX IF NOT EXISTS hub_apps_status_idx ON public.hub_apps(status);
 
-GRANT SELECT ON public.hub_apps TO authenticated;
+GRANT SELECT (
+  id,
+  slug,
+  name,
+  origin_url,
+  status,
+  workspace_id,
+  metadata,
+  created_by,
+  created_at,
+  updated_at
+) ON public.hub_apps TO authenticated;
 GRANT ALL    ON public.hub_apps TO service_role;
 
 ALTER TABLE public.hub_apps ENABLE ROW LEVEL SECURITY;
@@ -131,7 +142,7 @@ CREATE POLICY "admins manage access" ON public.hub_app_access
   WITH CHECK (public.hub_has_role(auth.uid(), 'hub_admin'));
 
 CREATE OR REPLACE FUNCTION public.hub_user_app_access(_user_id uuid, _app_id uuid)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path = '' AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.hub_app_access WHERE user_id = _user_id AND app_id = _app_id
   )

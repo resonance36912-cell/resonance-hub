@@ -1,7 +1,12 @@
-import { createStart, createMiddleware } from "@tanstack/react-start";
+import { createStart, createMiddleware, createCsrfMiddleware } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+
+const csrfMiddleware = createCsrfMiddleware({
+  filter: (ctx) => ctx.handlerType === "serverFn",
+});
 
 const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   try {
@@ -13,8 +18,12 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
     console.error(error);
     // Let TanStack's serverFn handler format its own error envelope; a raw
     // HTML fallback would break the RPC client and blank the page.
-    const url = request?.url ?? "";
-    if (url.includes("/_serverFn/")) {
+    const activeRequest = request ?? getRequest();
+    const url = activeRequest?.url ?? "";
+    const isServerFn =
+      url.includes("/_serverFn/") ||
+      activeRequest?.headers?.get("x-tsr-serverFn")?.toLowerCase() === "true";
+    if (isServerFn) {
       throw error;
     }
     return new Response(renderErrorPage(), {
@@ -25,6 +34,6 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: [csrfMiddleware, errorMiddleware],
   functionMiddleware: [attachSupabaseAuth],
 }));

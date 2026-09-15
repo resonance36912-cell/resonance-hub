@@ -1,3 +1,4 @@
+// @no-back-to-hub redirect-only compatibility route
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { ROUTES } from "@/lib/routes";
