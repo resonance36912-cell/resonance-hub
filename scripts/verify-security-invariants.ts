@@ -149,18 +149,25 @@ for (const file of walk("src")) {
       /requireSupabaseAuth/.test(src) ||
       /has_role/.test(src) ||
       /verifyWebhook|HMAC|hmac/.test(src) ||
+      /authenticateBearer/.test(src) ||
       /requireTier(?:FromRequest)?/.test(src) ||
       /assertCronAuthorized/.test(src) ||
       /FORM_ISSUE_ALLOWED_REPOS/.test(src) ||
       /request\.headers\.get\(["'](?:api|x-api)key["']\)/i.test(src);
-    // Allowlist read-only/diagnostic endpoints by filename.
-    const READ_ONLY_OK = [
+    // Narrow allowlist for intentionally unauthenticated public endpoints.
+    const UNAUTHENTICATED_OK = [
+      // Read-only public diagnostics / feeds.
       "/entitlement.ts",
+      "/entitlement.health.ts",
+      "/app-status.health.ts",
       "/analytics/auth-gate.ts",
       "/updates/atom.ts",
       "/updates/rss.ts",
+      // Bounded analytics ingests: schema-validated, no DB write, no PII.
+      "/analytics/app-suggestion.ts",
+      "/analytics/checkout-success.ts",
     ];
-    if (!hasGuard && !READ_ONLY_OK.some((s) => sourcePath.endsWith(s))) {
+    if (!hasGuard && !UNAUTHENTICATED_OK.some((s) => sourcePath.endsWith(s))) {
       findings.push({
         file: sourcePath,
         line: 1,
