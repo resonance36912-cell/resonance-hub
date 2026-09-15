@@ -87,6 +87,8 @@ async def run_anon(pw) -> tuple[bool, str]:
             return False, f"anon: 'Roadmap' admin heading is visible at {final}"
 
         return True, f"PASS anon: redirected to {final}, no CRUD UI"
+    except Exception as exc:
+        return False, f"anon exception: {type(exc).__name__}: {exc}"
     finally:
         await browser.close()
 
@@ -166,6 +168,8 @@ async def run_authed(pw) -> tuple[bool, str]:
                 return False, f"authed: CRUD UI missing '{name}' (console={console_errors})"
 
         return True, "PASS authed admin: /admin/roadmap rendered full CRUD UI"
+    except Exception as exc:
+        return False, f"authed exception: {type(exc).__name__}: {exc} (console={console_errors})"
     finally:
         await browser.close()
 
