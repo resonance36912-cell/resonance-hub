@@ -388,7 +388,7 @@ function AdminAccessPage() {
                   type="button"
                   variant="outline"
                   className="w-full"
-                  disabled={checking || submitting || requestingVerification}
+                  disabled={submitting || requestingVerification}
                   onClick={refreshStatus}
                 >
                   Refresh status
@@ -412,7 +412,7 @@ function AdminAccessPage() {
                 type="button"
                 variant="outline"
                 className="w-full"
-                disabled={switchingAccount || submitting || requestingVerification || checking}
+                disabled={switchingAccount || submitting || requestingVerification}
                 onClick={useDifferentAccount}
               >
                 {switchingAccount ? "Signing out…" : "Use a different account"}

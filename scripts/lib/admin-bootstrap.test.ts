@@ -268,7 +268,7 @@ describe("first-admin bootstrap security regressions", () => {
       "create_admin_bootstrap_challenge(uuid, text, text)",
       "cancel_admin_bootstrap_challenge(uuid, text)",
     ]) {
-      const escaped = signature.replace(/[()]/g, "\\$&");
+      const escaped = signature.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       expect(migrationSource).toMatch(
         new RegExp(`REVOKE ALL ON FUNCTION public\\.${escaped} FROM PUBLIC, anon, authenticated;`),
       );

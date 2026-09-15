@@ -109,7 +109,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
 
-
       # Cache Vite's transform cache. Restored across runs so unchanged
       # modules skip re-transformation. Safe: Vite invalidates entries
       # whose source or config hash changed.
@@ -232,10 +231,10 @@ jobs:
         run: bun run prebuild
 
       # Smoke test target resolution:
-       #   1. If `vars.SMOKE_BASE_URL` (repository/environment variable) is set, use it —
-       #      typically the deployed preview URL (e.g. https://id-preview--<id>.lovable.app
-       #      or https://project--<id>-dev.lovable.app).
-       #   2. Otherwise build locally and serve dist/server via wrangler dev on :8080.
+      #   1. If `vars.SMOKE_BASE_URL` (repository/environment variable) is set, use it —
+      #      typically the deployed preview URL (e.g. https://id-preview--<id>.lovable.app
+      #      or https://project--<id>-dev.lovable.app).
+      #   2. Otherwise build locally and serve .output/server via wrangler dev on :8080.
       - name: Resolve smoke test BASE_URL
         id: smoke_target
         env:
@@ -260,7 +259,7 @@ jobs:
       # the real production worker — closer to prod than `vite dev`.
       - name: Start production preview (wrangler dev) for smoke test
         if: steps.smoke_target.outputs.needs_local == 'true'
-        working-directory: dist/server
+        working-directory: .output/server
         run: |
           bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
@@ -326,7 +325,6 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-app-status-meta.ts
 
-
       # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
       # session with admin role is injected) renders the full CRUD surface.
       - name: E2E admin/roadmap auth + CRUD gate
@@ -344,10 +342,6 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: python3 tests/e2e/app-not-found-share-meta.py
 
-
-
-
-
       - name: Verify sitemap.xml, robots.txt, and pricing anchors
         env:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
@@ -358,7 +352,6 @@ jobs:
       # over mode=[live, mock] so a regression under either configuration
       # fails CI independently, and keeps live-mode secret handling +
       # artifact upload isolated from mock-mode's no-secret path.
-
 
       # Lighthouse: performance ≥ 0.80, accessibility ≥ 0.90 (see lighthouserc.json).
       # Only runs when we have a locally served build — skipping for remote preview
@@ -387,7 +380,6 @@ jobs:
           path: reports/lighthouse-not-found/
           if-no-files-found: ignore
           retention-days: 14
-
 
       - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
@@ -489,7 +481,7 @@ jobs:
 
       - name: Start production preview (live, wrangler dev)
         if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
-        working-directory: dist/server
+        working-directory: .output/server
         run: |
           bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
