@@ -18,8 +18,12 @@ export type ActivePolicy = {
 
 export const getActivePolicy = createServerFn({ method: "GET" }).handler(
   async (): Promise<ActivePolicy> => {
-    const url = process.env.SUPABASE_URL!;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+
+    // Public legal pages must remain renderable in sovereign/offline and CI
+    // environments where the optional Supabase policy store is not configured.
+    if (!url || !key) return null;
     const supabase = createClient<Database>(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {
