@@ -348,6 +348,8 @@ jobs:
           if [ "$rc" -ne 0 ]; then
             cat /tmp/admin-roadmap-e2e.log
             cat /tmp/preview-server.log || true
+            msg=$(tail -c 6000 /tmp/admin-roadmap-e2e.log | sed 's/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')
+            echo "::error title=admin-roadmap E2E diagnostics::$msg"
           fi
           exit "$rc"
 
