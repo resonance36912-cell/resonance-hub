@@ -219,13 +219,49 @@ jobs:
         env:
           ARTIFACT_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.upload-codeql-sarif.outputs.artifact-id }}
         run: bun run scripts/annotate-sarif.ts codeql-results --label "CodeQL" --top "$SARIF_SUMMARY_TOP_N" --artifact-url "$ARTIFACT_URL"
+      - name: Fail on high-severity CodeQL findings
+        if: always() && steps.codeql-analyze.outcome == 'success'
+        run: |
+          python3 - <<'PY'
+          import glob
+          import json
+          import sys
+
+          threshold = 7.0
+          offenders = []
+          for path in glob.glob("codeql-results/**/*.sarif", recursive=True):
+              with open(path, encoding="utf-8") as handle:
+                  sarif = json.load(handle)
+              for run in sarif.get("runs", []):
+                  severities = {}
+                  for rule in run.get("tool", {}).get("driver", {}).get("rules", []):
+                      value = (rule.get("properties") or {}).get("security-severity")
+                      try:
+                          severities[rule.get("id")] = float(value)
+                      except (TypeError, ValueError):
+                          pass
+                  for result in run.get("results", []):
+                      rule_id = result.get("ruleId") or (result.get("rule") or {}).get("id")
+                      value = (result.get("properties") or {}).get("security-severity")
+                      try:
+                          severity = float(value)
+                      except (TypeError, ValueError):
+                          severity = severities.get(rule_id)
+                      if severity is not None and severity >= threshold:
+                          offenders.append((rule_id, severity))
+          if offenders:
+              for rule_id, severity in offenders[:50]:
+                  print(f"::error::CodeQL {rule_id}: security severity {severity}")
+              sys.exit(1)
+          print(f"CodeQL: no findings at security severity >= {threshold}.")
+          PY
 
   pr-comment:
     name: SARIF artifacts PR comment
     # Only runs on pull_request events; skipped for push/schedule/manual runs
     # since there is no PR to comment on. Always runs even if scan jobs
     # failed — reviewers still want the SARIF download link for triage.
-    if: github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request'
     needs: [sast-semgrep, codeql]
     runs-on: ubuntu-latest
     timeout-minutes: 5

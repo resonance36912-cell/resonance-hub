@@ -19,8 +19,8 @@ name: Export keep-alive soak & multiworker
 
 on:
   schedule:
-    # Nightly at 02:15 UTC.
-    - cron: "15 2 * * *"
+    # Weekly on Sunday at 02:15 UTC. Relevant PRs still get a short-window run.
+    - cron: "15 2 * * 0"
   pull_request:
     # Short-window runs on PRs that touch the export or growth-guard code, so a
     # regression gets a measured-vs-limit diff table posted on the PR itself.
@@ -336,7 +336,6 @@ jobs:
             /tmp/browser/app-status-export-load-idem/growth-comment.md
           if-no-files-found: warn
           retention-days: 30
-
 
 
 

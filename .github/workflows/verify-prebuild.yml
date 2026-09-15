@@ -1,14 +1,19 @@
-name: Verify prebuild
+name: RONSAS CI
 
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
+  merge_group:
+
+concurrency:
+  group: ronsas-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
-    name: Run all prebuild verification scripts
+    name: Build, test, and verify
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -212,6 +217,16 @@ jobs:
       # smoke tests so logic regressions surface before we spin up a server.
       - name: Unit & integration tests (bun test)
         run: bun run test:ci
+
+      - name: Verify tests left manifests unchanged
+        if: always()
+        run: |
+          if ! git diff --quiet -- package.json bun.lock; then
+            echo "::error::Tests modified package.json or bun.lock."
+            git --no-pager diff -- package.json bun.lock
+            exit 1
+          fi
+          echo "package.json and bun.lock are unchanged."
 
       # Publish test results (JUnit) and coverage (lcov) for quick failure
       # triage. Runs on success and failure so red builds still surface the
