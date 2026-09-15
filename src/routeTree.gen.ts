@@ -87,6 +87,8 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiSovereignLaunchAppRouteImport } from './routes/api/sovereign/launch/$app'
+import { Route as ApiSovereignAuthActionRouteImport } from './routes/api/sovereign/auth/$action'
 import { Route as ApiPublicUsageWalletRouteImport } from './routes/api/public/usage/wallet'
 import { Route as ApiPublicUsageReserveRouteImport } from './routes/api/public/usage/reserve'
 import { Route as ApiPublicUsageReleaseRouteImport } from './routes/api/public/usage/release'
@@ -509,6 +511,16 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSovereignLaunchAppRoute = ApiSovereignLaunchAppRouteImport.update({
+  id: '/api/sovereign/launch/$app',
+  path: '/api/sovereign/launch/$app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSovereignAuthActionRoute = ApiSovereignAuthActionRouteImport.update({
+  id: '/api/sovereign/auth/$action',
+  path: '/api/sovereign/auth/$action',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicUsageWalletRoute = ApiPublicUsageWalletRouteImport.update({
   id: '/api/public/usage/wallet',
   path: '/api/public/usage/wallet',
@@ -729,6 +741,8 @@ export interface FileRoutesByFullPath {
   '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
   '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
   '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -831,6 +845,8 @@ export interface FileRoutesByTo {
   '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
   '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
   '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -934,6 +950,8 @@ export interface FileRoutesById {
   '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
   '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
   '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -1038,6 +1056,8 @@ export interface FileRouteTypes {
     | '/api/public/usage/release'
     | '/api/public/usage/reserve'
     | '/api/public/usage/wallet'
+    | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1140,6 +1160,8 @@ export interface FileRouteTypes {
     | '/api/public/usage/release'
     | '/api/public/usage/reserve'
     | '/api/public/usage/wallet'
+    | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1242,6 +1264,8 @@ export interface FileRouteTypes {
     | '/api/public/usage/release'
     | '/api/public/usage/reserve'
     | '/api/public/usage/wallet'
+    | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1340,6 +1364,8 @@ export interface RootRouteChildren {
   ApiPublicUsageReleaseRoute: typeof ApiPublicUsageReleaseRoute
   ApiPublicUsageReserveRoute: typeof ApiPublicUsageReserveRoute
   ApiPublicUsageWalletRoute: typeof ApiPublicUsageWalletRoute
+  ApiSovereignAuthActionRoute: typeof ApiSovereignAuthActionRoute
+  ApiSovereignLaunchAppRoute: typeof ApiSovereignLaunchAppRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1896,6 +1922,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/sovereign/launch/$app': {
+      id: '/api/sovereign/launch/$app'
+      path: '/api/sovereign/launch/$app'
+      fullPath: '/api/sovereign/launch/$app'
+      preLoaderRoute: typeof ApiSovereignLaunchAppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sovereign/auth/$action': {
+      id: '/api/sovereign/auth/$action'
+      path: '/api/sovereign/auth/$action'
+      fullPath: '/api/sovereign/auth/$action'
+      preLoaderRoute: typeof ApiSovereignAuthActionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/usage/wallet': {
       id: '/api/public/usage/wallet'
       path: '/api/public/usage/wallet'
@@ -2195,6 +2235,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicUsageReleaseRoute: ApiPublicUsageReleaseRoute,
   ApiPublicUsageReserveRoute: ApiPublicUsageReserveRoute,
   ApiPublicUsageWalletRoute: ApiPublicUsageWalletRoute,
+  ApiSovereignAuthActionRoute: ApiSovereignAuthActionRoute,
+  ApiSovereignLaunchAppRoute: ApiSovereignLaunchAppRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
