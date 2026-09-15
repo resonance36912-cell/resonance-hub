@@ -53,6 +53,12 @@ jobs:
           output: codeql-results
           upload: true
 
+      - name: Setup Bun (for SARIF helpers)
+        if: always()
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Upload SARIF as workflow artifact
         if: always()
         uses: actions/upload-artifact@v4
