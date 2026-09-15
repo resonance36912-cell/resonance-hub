@@ -28,7 +28,12 @@ type SarifResult = {
   locations?: SarifLocation[];
 };
 type SarifRun = {
-  tool?: { driver?: { name?: string; rules?: Array<{ id?: string; shortDescription?: { text?: string } }> } };
+  tool?: {
+    driver?: {
+      name?: string;
+      rules?: Array<{ id?: string; shortDescription?: { text?: string } }>;
+    };
+  };
   results?: SarifResult[];
 };
 type Sarif = { runs?: SarifRun[] };
@@ -130,7 +135,9 @@ function buildSummary(sarifFiles: string[], label: string, topN: number): string
   const lines: string[] = [];
   lines.push(header);
   lines.push("");
-  lines.push(`**${toolName}** — ${totalResults} finding${totalResults === 1 ? "" : "s"} across ${byRule.size} rule${byRule.size === 1 ? "" : "s"}. Top ${ranked.length}:`);
+  lines.push(
+    `**${toolName}** — ${totalResults} finding${totalResults === 1 ? "" : "s"} across ${byRule.size} rule${byRule.size === 1 ? "" : "s"}. Top ${ranked.length}:`,
+  );
   lines.push("");
   lines.push("| # | Rule | Level | Count | Top locations |");
   lines.push("| - | ---- | ----- | ----- | ------------- |");
@@ -151,7 +158,9 @@ function buildSummary(sarifFiles: string[], label: string, topN: number): string
 
   if (byRule.size > topN) {
     lines.push("");
-    lines.push(`_…and ${byRule.size - topN} more rule${byRule.size - topN === 1 ? "" : "s"}. Download the SARIF artifact for the full list._`);
+    lines.push(
+      `_…and ${byRule.size - topN} more rule${byRule.size - topN === 1 ? "" : "s"}. Download the SARIF artifact for the full list._`,
+    );
   }
   return lines.join("\n");
 }

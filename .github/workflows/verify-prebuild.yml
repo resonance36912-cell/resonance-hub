@@ -197,7 +197,7 @@ jobs:
           fi
           echo "Diffing against base: $BASE_SHA"
           # Only .ts/.tsx files that still exist (exclude deleted).
-          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB "$BASE_SHA"...HEAD -- '*.ts' '*.tsx' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts)' || true)
+          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB "$BASE_SHA"...HEAD -- '*.ts' '*.tsx' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts|src/integrations/supabase/types\.ts)' || true)
           if [ "${#CHANGED[@]}" -eq 0 ]; then
             echo "No changed .ts/.tsx files to lint."
             exit 0

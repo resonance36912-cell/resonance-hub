@@ -65,9 +65,7 @@ for (const file of files) {
       const endLine = loc?.region?.endLine ?? line;
       const rule = r.ruleId ?? "unknown-rule";
       const text = (r.message?.text ?? "").replace(/\s+/g, " ").trim().slice(0, 400);
-      const suffix = artifactUrl
-        ? ` — full context: ${artifactUrl}`
-        : "";
+      const suffix = artifactUrl ? ` — full context: ${artifactUrl}` : "";
       const message = escapeAnnotation(`[${label} · ${rule}] ${text}${suffix}`);
       const cmd = severityOverride ?? (severityRank(r.level) === 0 ? "error" : "warning");
       // Workflow command: renders as an inline annotation on the PR.
@@ -79,7 +77,9 @@ for (const file of files) {
     if (emitted >= top) break;
   }
 }
-console.log(`::notice::${label}: emitted ${emitted} annotation(s)${artifactUrl ? ` (SARIF: ${artifactUrl})` : ""}`);
+console.log(
+  `::notice::${label}: emitted ${emitted} annotation(s)${artifactUrl ? ` (SARIF: ${artifactUrl})` : ""}`,
+);
 
 function argValue(name: string): string | undefined {
   const i = args.indexOf(name);
@@ -89,20 +89,31 @@ function collectSarifFiles(path: string): string[] {
   const abs = resolve(path);
   if (!existsSync(abs)) return [];
   if (statSync(abs).isDirectory()) {
-    return readdirSync(abs).filter((f) => f.endsWith(".sarif")).map((f) => join(abs, f));
+    return readdirSync(abs)
+      .filter((f) => f.endsWith(".sarif"))
+      .map((f) => join(abs, f));
   }
   return [abs];
 }
 function severityRank(level: string | undefined): number {
   // Lower rank = more severe (sorted first).
   switch (level) {
-    case "error": return 0;
-    case "warning": return 1;
-    case "note": return 2;
-    default: return 3;
+    case "error":
+      return 0;
+    case "warning":
+      return 1;
+    case "note":
+      return 2;
+    default:
+      return 3;
   }
 }
 function escapeAnnotation(s: string): string {
   // Workflow-command escapes: %, \r, \n, :, ,
-  return s.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A").replace(/:/g, "%3A").replace(/,/g, "%2C");
+  return s
+    .replace(/%/g, "%25")
+    .replace(/\r/g, "%0D")
+    .replace(/\n/g, "%0A")
+    .replace(/:/g, "%3A")
+    .replace(/,/g, "%2C");
 }

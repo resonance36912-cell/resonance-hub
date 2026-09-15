@@ -64,11 +64,7 @@ async function serverReachable(): Promise<boolean> {
   }
 }
 
-async function callFn(
-  id: string,
-  payload: unknown,
-  auth?: string,
-): Promise<Response> {
+async function callFn(id: string, payload: unknown, auth?: string): Promise<Response> {
   const serialized = await toJSONAsync(payload);
   return fetch(`${DEV_URL}/_serverFn/${id}`, {
     method: "POST",
@@ -107,7 +103,9 @@ describe("serverFn unauthorized/forbidden → JSON envelope (no HTML)", () => {
         // Windows Vite dev resolver may reject handcrafted server-function IDs before auth middleware.
         const contentType = res.headers.get("content-type") ?? "";
         if (process.platform === "win32" && res.status === 500 && /text\/html/i.test(contentType)) {
-          console.warn(`[skip] Windows Vite dev resolver rejected ${target.name} before auth middleware`);
+          console.warn(
+            `[skip] Windows Vite dev resolver rejected ${target.name} before auth middleware`,
+          );
           return;
         }
 
@@ -126,9 +124,7 @@ describe("serverFn unauthorized/forbidden → JSON envelope (no HTML)", () => {
 
         // Envelope shape carries {result, error, context}.
         const parsed = JSON.parse(body) as { p?: { k?: string[] } };
-        expect(parsed.p?.k ?? []).toEqual(
-          expect.arrayContaining(["result", "error", "context"]),
-        );
+        expect(parsed.p?.k ?? []).toEqual(expect.arrayContaining(["result", "error", "context"]));
 
         // Error message is a known auth-rejection reason from
         // requireSupabaseAuth — not a generic "boom" or serialized HTML.
@@ -146,26 +142,18 @@ describe("serverFn unauthorized/forbidden → JSON envelope (no HTML)", () => {
         console.warn("[skip] no LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN in env");
         return;
       }
-      const res = await callFn(
-        target.id,
-        target.payload,
-        `Bearer ${ACCESS_TOKEN}`,
-      );
+      const res = await callFn(target.id, target.payload, `Bearer ${ACCESS_TOKEN}`);
       const body = await res.text();
 
       // Contract holds regardless of Forbidden vs. success vs. upstream
       // failure — the caller must always see HTTP 200 + JSON envelope.
       expect(res.status).toBe(200);
-      expect(res.headers.get("content-type") ?? "").toMatch(
-        /application\/json/i,
-      );
+      expect(res.headers.get("content-type") ?? "").toMatch(/application\/json/i);
       expect(body.startsWith("{")).toBe(true);
       expect(body).not.toMatch(/<html[\s>]/i);
 
       const parsed = JSON.parse(body) as { p?: { k?: string[] } };
-      expect(parsed.p?.k ?? []).toEqual(
-        expect.arrayContaining(["result", "error", "context"]),
-      );
+      expect(parsed.p?.k ?? []).toEqual(expect.arrayContaining(["result", "error", "context"]));
 
       // If the token is non-admin, the error must be a known rejection
       // reason — never an accidental unhandled crash.
