@@ -4,10 +4,8 @@
   "path": "/mcp",
   "auth": {
     "type": "oauth",
-    "issuer": "https://dmtbkpznxbmlkldkkzzt.supabase.co/auth/v1",
-    "accepted_audiences": [
-      "authenticated"
-    ]
+    "issuer": "https://qitzhxncffcszbpsddpm.supabase.co/auth/v1",
+    "accepted_audiences": ["authenticated"]
   },
   "mcp": {
     "server": {
@@ -35,9 +33,7 @@
               "description": "Text to echo back."
             }
           },
-          "required": [
-            "text"
-          ]
+          "required": ["text"]
         },
         "outputSchema": null
       },

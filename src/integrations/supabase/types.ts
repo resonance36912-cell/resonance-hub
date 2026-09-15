@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -311,6 +311,48 @@ export type Database = {
           updated_at?: string
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      admin_bootstrap_email_challenges: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_bootstrap_state: {
+        Row: {
+          claimed_at: string
+          claimed_by: string
+          singleton: boolean
+        }
+        Insert: {
+          claimed_at?: string
+          claimed_by: string
+          singleton?: boolean
+        }
+        Update: {
+          claimed_at?: string
+          claimed_by?: string
+          singleton?: boolean
         }
         Relationships: []
       }
@@ -2877,11 +2919,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      bootstrap_first_admin: {
+        Args: { _token_hash: string; _user_id: string; _verified_email: string }
+        Returns: string
+      }
+      cancel_admin_bootstrap_challenge: {
+        Args: { _token_hash: string; _user_id: string }
+        Returns: boolean
+      }
+      create_admin_bootstrap_challenge: {
+        Args: { _token_hash: string; _user_id: string; _verified_email: string }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
-      email_queue_dispatch: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number

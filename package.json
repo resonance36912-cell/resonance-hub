@@ -180,18 +180,24 @@
     "vitest": "4.1.10"
   },
   "overrides": {
-    "undici": "8.5.0",
+    "undici": "8.9.0",
     "ws": "8.21.0",
     "vite": "7.3.6",
-    "js-yaml": "4.2.0"
+    "js-yaml": "4.3.2",
+    "browserslist": "4.28.7",
+    "ip-address": "10.4.0",
+    "postcss": "8.5.18",
+    "sharp": "0.35.4",
+    "socket.io-parser": "4.2.7",
+    "fast-uri": "3.1.6"
   },
   "pnpm": {
     "overrides": {
       "entities": "6.0.1",
-      "undici": "8.5.0",
+      "undici": "8.9.0",
       "ws": "8.21.0",
       "vite": "7.3.6",
-      "js-yaml": "4.2.0"
+      "js-yaml": "4.3.2"
     }
   }
 }
