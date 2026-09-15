@@ -55,6 +55,8 @@ import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminReturnToCounterexamplesRouteImport } from './routes/admin.return-to-counterexamples'
 import { Route as AdminReturnToAllowlistRouteImport } from './routes/admin.return-to-allowlist'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
+import { Route as AdminPromotionCampaignsRouteImport } from './routes/admin.promotion-campaigns'
+import { Route as AdminPromotionRouteImport } from './routes/admin.promotion'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
@@ -64,6 +66,7 @@ import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminControlCenterRouteImport } from './routes/admin.control-center'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AdminAccessRouteImport } from './routes/admin.access'
@@ -339,6 +342,16 @@ const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
   path: '/admin/reconciliation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPromotionCampaignsRoute = AdminPromotionCampaignsRouteImport.update({
+  id: '/admin/promotion-campaigns',
+  path: '/admin/promotion-campaigns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPromotionRoute = AdminPromotionRouteImport.update({
+  id: '/admin/promotion',
+  path: '/admin/promotion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
   id: '/admin/payfast-audit',
   path: '/admin/payfast-audit',
@@ -383,6 +396,11 @@ const AdminCreditsRoute = AdminCreditsRouteImport.update({
 const AdminCouponsRoute = AdminCouponsRouteImport.update({
   id: '/admin/coupons',
   path: '/admin/coupons',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminControlCenterRoute = AdminControlCenterRouteImport.update({
+  id: '/admin/control-center',
+  path: '/admin/control-center',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
@@ -638,6 +656,7 @@ export interface FileRoutesByFullPath {
   '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
@@ -647,6 +666,8 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
@@ -737,6 +758,7 @@ export interface FileRoutesByTo {
   '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
@@ -746,6 +768,8 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
@@ -837,6 +861,7 @@ export interface FileRoutesById {
   '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
@@ -846,6 +871,8 @@ export interface FileRoutesById {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
@@ -938,6 +965,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/control-center'
     | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
@@ -947,6 +975,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
     | '/admin/return-to-counterexamples'
@@ -1037,6 +1067,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/control-center'
     | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
@@ -1046,6 +1077,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
     | '/admin/return-to-counterexamples'
@@ -1136,6 +1169,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/control-center'
     | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
@@ -1145,6 +1179,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
     | '/admin/return-to-counterexamples'
@@ -1236,6 +1272,7 @@ export interface RootRouteChildren {
   AdminAccessRoute: typeof AdminAccessRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
+  AdminControlCenterRoute: typeof AdminControlCenterRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
@@ -1245,6 +1282,8 @@ export interface RootRouteChildren {
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
+  AdminPromotionRoute: typeof AdminPromotionRoute
+  AdminPromotionCampaignsRoute: typeof AdminPromotionCampaignsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReturnToAllowlistRoute: typeof AdminReturnToAllowlistRoute
   AdminReturnToCounterexamplesRoute: typeof AdminReturnToCounterexamplesRoute
@@ -1633,6 +1672,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReconciliationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/promotion-campaigns': {
+      id: '/admin/promotion-campaigns'
+      path: '/admin/promotion-campaigns'
+      fullPath: '/admin/promotion-campaigns'
+      preLoaderRoute: typeof AdminPromotionCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/promotion': {
+      id: '/admin/promotion'
+      path: '/admin/promotion'
+      fullPath: '/admin/promotion'
+      preLoaderRoute: typeof AdminPromotionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/payfast-audit': {
       id: '/admin/payfast-audit'
       path: '/admin/payfast-audit'
@@ -1694,6 +1747,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/coupons'
       fullPath: '/admin/coupons'
       preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/control-center': {
+      id: '/admin/control-center'
+      path: '/admin/control-center'
+      fullPath: '/admin/control-center'
+      preLoaderRoute: typeof AdminControlCenterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/billing': {
@@ -2065,6 +2125,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAccessRoute: AdminAccessRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
+  AdminControlCenterRoute: AdminControlCenterRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
@@ -2074,6 +2135,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
+  AdminPromotionRoute: AdminPromotionRoute,
+  AdminPromotionCampaignsRoute: AdminPromotionCampaignsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReturnToAllowlistRoute: AdminReturnToAllowlistRoute,
   AdminReturnToCounterexamplesRoute: AdminReturnToCounterexamplesRoute,
