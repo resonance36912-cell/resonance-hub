@@ -28,6 +28,7 @@ import asyncio
 import json
 import os
 import sys
+import traceback
 from pathlib import Path
 
 from playwright.async_api import async_playwright, BrowserContext, Page
@@ -187,4 +188,9 @@ async def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(asyncio.run(main()))
+    try:
+        sys.exit(asyncio.run(main()))
+    except BaseException:
+        print("[FATAL] admin-roadmap E2E crashed before scenario result:", file=sys.stderr)
+        traceback.print_exc()
+        raise
