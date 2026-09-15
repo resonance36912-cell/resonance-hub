@@ -66,6 +66,8 @@ async def _restore_session(context: BrowserContext, page: Page, storage_key, ses
 
 
 async def run_anon(pw) -> tuple[bool, str]:
+    print(f"[INFO] BASE_URL={BASE_URL}")
+    print(f"[INFO] Chromium executable={pw.chromium.executable_path}")
     browser = await pw.chromium.launch(headless=True)
     context = await browser.new_context(viewport={"width": 1280, "height": 1800})
     page = await context.new_page()
@@ -132,6 +134,8 @@ async def run_authed(pw) -> tuple[bool, str]:
         return True, "SKIP authed: injected user is not an admin in public.user_roles"
 
     storage_key, session_json, cookies_json = env
+    print(f"[INFO] BASE_URL={BASE_URL}")
+    print(f"[INFO] Chromium executable={pw.chromium.executable_path}")
     browser = await pw.chromium.launch(headless=True)
     context = await browser.new_context(viewport={"width": 1280, "height": 1800})
     page = await context.new_page()

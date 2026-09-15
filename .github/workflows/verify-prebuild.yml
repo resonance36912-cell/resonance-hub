@@ -338,6 +338,8 @@ jobs:
       - name: E2E admin/roadmap auth + CRUD gate
         env:
           E2E_BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
+          DEBUG: pw:browser
+          PYTHONUNBUFFERED: "1"
         run: python3 tests/e2e/admin-roadmap-auth-gate.py
 
       # Share/SEO head tags on /apps/<unknown-slug>: required tag set, single
