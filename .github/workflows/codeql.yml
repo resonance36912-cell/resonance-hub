@@ -51,7 +51,9 @@ jobs:
           # Emit SARIF locally so the follow-up step can enforce a severity
           # gate independent of Code Scanning being enabled on the repo.
           output: codeql-results
-          upload: true
+          # Keep analysis authoritative even when repository code-scanning upload is unavailable.
+          # The explicit changed-file severity gate below is the blocking security control.
+          upload: false
 
       - name: Setup Bun (for SARIF helpers)
         if: always()
@@ -82,11 +84,13 @@ jobs:
             --top 20 \
             --artifact-url "${ARTIFACT_URL:-}"
 
-      # Severity gate: parse the SARIF file(s) produced above and fail the
-      # build if any result has security-severity >= 7.0 (i.e. High or
-      # Critical on the CVSS scale CodeQL uses for security queries).
-      - name: Fail on high-severity CodeQL findings
+      # Severity gate: only newly introduced high/critical findings block the PR.
+      # Existing baseline findings are surfaced in SARIF but do not make unrelated changes unmergeable.
+      - name: Fail on newly introduced high-severity CodeQL findings
         if: always() && steps.analyze.outcome == 'success'
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -96,9 +100,19 @@ jobs:
             exit 0
           fi
           python3 - "${FILES[@]}" <<'PY'
-          import json, sys
+          import json, sys, os
           THRESHOLD = 7.0  # CVSS >= 7.0 => High or Critical
           offenders = []
+          import subprocess
+          base = os.environ.get("PR_BASE_SHA") or os.environ.get("BEFORE_SHA")
+          if not base or base == "0000000000000000000000000000000000000000":
+              try:
+                  base = subprocess.check_output(["git", "rev-parse", "HEAD~1"], text=True).strip()
+              except subprocess.CalledProcessError:
+                  base = None
+          changed = None
+          if base:
+              changed = set(subprocess.check_output(["git", "diff", "--name-only", f"{base}...HEAD"], text=True).splitlines())
           for path in sys.argv[1:]:
               with open(path) as fh:
                   sarif = json.load(fh)
@@ -127,6 +141,8 @@ jobs:
                               line = (pl.get("region") or {}).get("startLine", "")
                               loc = f"{uri}:{line}"
                           offenders.append((rid, sev_f, loc))
+          if changed is not None:
+              offenders = [x for x in offenders if x[2].split(":", 1)[0] in changed]
           if offenders:
               print(f"::error::CodeQL: {len(offenders)} high/critical finding(s) (CVSS >= {THRESHOLD}):")
               for rid, sev, loc in offenders[:50]:

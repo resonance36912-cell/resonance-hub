@@ -254,8 +254,8 @@ jobs:
         if: steps.smoke_target.outputs.needs_local == 'true'
         run: bun run build
 
-      # The TanStack Start build emits a Cloudflare Worker at
-      # dist/server/index.mjs plus its own wrangler.json. wrangler dev serves
+      # The TanStack/Nitro Cloudflare build emits a Worker at
+      # .output/server/index.mjs plus its own wrangler.json. wrangler dev serves
       # the real production worker — closer to prod than `vite dev`.
       - name: Start production preview (wrangler dev) for smoke test
         if: steps.smoke_target.outputs.needs_local == 'true'

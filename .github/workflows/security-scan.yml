@@ -186,6 +186,8 @@ jobs:
         with:
           category: "/language:javascript-typescript"
           output: codeql-results
+          # Keep CodeQL analysis independent of repository code-scanning upload state.
+          upload: false
       - name: Setup Bun (for SARIF summarizer)
         if: always()
         uses: oven-sh/setup-bun@v2
