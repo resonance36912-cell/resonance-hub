@@ -340,7 +340,26 @@ jobs:
           E2E_BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
           DEBUG: pw:browser
           PYTHONUNBUFFERED: "1"
-        run: python3 tests/e2e/admin-roadmap-auth-gate.py
+        run: |
+          set -o pipefail
+          python3 -u tests/e2e/admin-roadmap-auth-gate.py 2>&1 | tee /tmp/admin-roadmap-e2e.log
+          rc=${PIPESTATUS[0]}
+          echo "admin-roadmap E2E exit code: $rc"
+          if [ "$rc" -ne 0 ]; then
+            cat /tmp/admin-roadmap-e2e.log
+            cat /tmp/preview-server.log || true
+          fi
+          exit "$rc"
+
+      - name: Upload admin-roadmap E2E diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-roadmap-e2e-diagnostics
+          path: |
+            /tmp/admin-roadmap-e2e.log
+            /tmp/preview-server.log
+          if-no-files-found: warn
 
       # Share/SEO head tags on /apps/<unknown-slug>: required tag set, single
       # instance of each, title ≤60 / description ≤160, og/twitter/canonical
