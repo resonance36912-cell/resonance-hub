@@ -11,6 +11,7 @@ import {
 const ROOT = resolve(import.meta.dir, "../..");
 const read = (rel: string) => readFileSync(resolve(ROOT, rel), "utf8");
 const migration = read("supabase/migrations/20260916090000_governance_workspace_core.sql");
+const hardeningMigration = read("supabase/migrations/20260916114000_harden_governance_client_grants.sql");
 const functions = read("src/lib/governance/functions.ts");
 
 describe("governance contracts", () => {
@@ -108,6 +109,9 @@ describe("governance database boundary", () => {
     expect(migration).not.toMatch(
       /GRANT\s+(?:INSERT|UPDATE|DELETE|ALL)[\s\S]{0,120}governance_[a-z_]+[\s\S]{0,80}TO authenticated/i,
     );
+    expect(hardeningMigration).toContain("FROM PUBLIC, anon, authenticated");
+    expect(hardeningMigration).toContain("TO authenticated");
+    expect(hardeningMigration).toContain("TO service_role");
     for (const fn of [
       "governance_create_proposal",
       "governance_submit_proposal",
