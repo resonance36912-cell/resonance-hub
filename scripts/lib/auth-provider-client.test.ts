@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { compareAuthShadow } from "../../src/lib/auth-provider";
+import { resolveClientAuthMode } from "../../src/lib/sovereign-auth-client";
 
 describe("RONS client auth facade", () => {
   test("compares authoritative and sovereign identity without exposing IDs", () => {
@@ -120,3 +121,18 @@ function authSourceFiles(dir: string): string[] {
     });
     expect(offenders).toEqual([]);
   });
+
+test("client auth mode is sovereign-by-default and Supabase must be explicit", () => {
+  expect(resolveClientAuthMode(undefined)).toBe("sovereign");
+  expect(resolveClientAuthMode("sovereign")).toBe("sovereign");
+  expect(resolveClientAuthMode("supabase")).toBe("supabase");
+  expect(resolveClientAuthMode("anything-else")).toBe("sovereign");
+});
+
+test("sovereign production login does not offer the Supabase Google OAuth path", () => {
+  const login = readFileSync("src/routes/login.tsx", "utf8");
+  expect(login).toContain('import { sovereignAuthEnabled } from "@/lib/sovereign-auth-client"');
+  expect(login).toContain("const sovereign = sovereignAuthEnabled();");
+  expect(login).toContain("{!sovereign && (");
+  expect(login).toContain("Sovereign sign-in uses your local Resonance account.");
+});

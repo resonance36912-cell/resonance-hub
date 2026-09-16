@@ -3,8 +3,15 @@ import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 type Listener = (event: AuthChangeEvent, session: Session | null) => void | Promise<void>;
 const listeners = new Set<Listener>();
 
+export function resolveClientAuthMode(mode: unknown): "sovereign" | "supabase" {
+  return mode === "supabase" ? "supabase" : "sovereign";
+}
+
 export function sovereignAuthEnabled(): boolean {
-  return typeof window !== "undefined" && import.meta.env.VITE_RONS_AUTH_MODE === "sovereign";
+  return (
+    typeof window !== "undefined" &&
+    resolveClientAuthMode(import.meta.env.VITE_RONS_AUTH_MODE) === "sovereign"
+  );
 }
 
 async function request(action: string, init: RequestInit = {}) {
