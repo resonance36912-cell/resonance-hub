@@ -14,7 +14,7 @@
 //   3. Input validation surfaces through the same envelope with a
 //      readable Zod message (the UI's error path relies on that).
 //
-// Auth strategy: uses `LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN` when present
+// Auth strategy: uses `RONSAS_SUPABASE_ACCESS_TOKEN` when present
 // (injected by the sandbox for the current signed-in user). If the token
 // isn't present the suite skips; if the token is present but the user is
 // not an admin, the response envelope carries "Forbidden" instead of a
@@ -28,7 +28,7 @@ import {
 } from "../../src/lib/github-ci.contract";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
-const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
 
 function fnId(file: string, exportName: string): string {
   const meta = JSON.stringify({
@@ -158,7 +158,7 @@ describe("/admin/ci-health — end-to-end HTTP + schema", () => {
   test("authenticated response body matches GetCiHealthResponseSchema (or Forbidden envelope for non-admin)", async () => {
     if (!(await serverReachable())) return;
     if (!ACCESS_TOKEN) {
-      console.warn("[skip] no LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN in env");
+      console.warn("[skip] no RONSAS_SUPABASE_ACCESS_TOKEN in env");
       return;
     }
     const res = await callGetCiHealth(

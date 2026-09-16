@@ -17,7 +17,7 @@
 //
 // Contract assumption vs. the auth suite's nonadmin mode:
 //   In live mode the auth suite (security-scan-auth.test.ts) re-uses the
-//   single LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN env var; whether the
+//   single RONSAS_SUPABASE_ACCESS_TOKEN env var; whether the
 //   caller is treated as admin or non-admin depends on the real Supabase
 //   user's role. The 403 case therefore self-skips when no token is set,
 //   and when a token is present it may still pass through to GitHub if
@@ -322,12 +322,12 @@ function installShim(): void {
 }
 
 function seedEnv(): void {
-  // Suites read LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN and skip when
+  // Suites read RONSAS_SUPABASE_ACCESS_TOKEN and skip when
   // missing. Seed the admin token by default; opt into the non-admin
   // branch via SECURITY_SCAN_MOCK_ROLE=nonadmin.
-  if (!process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN) {
+  if (!process.env.RONSAS_SUPABASE_ACCESS_TOKEN) {
     const role = process.env.SECURITY_SCAN_MOCK_ROLE ?? "admin";
-    process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN =
+    process.env.RONSAS_SUPABASE_ACCESS_TOKEN =
       role === "nonadmin" ? MOCK_NONADMIN_TOKEN : MOCK_ADMIN_TOKEN;
   }
   if (!process.env.DEV_SERVER_URL) {

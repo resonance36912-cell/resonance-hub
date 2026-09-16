@@ -10,7 +10,7 @@
 // See scripts/lib/ci-health-auth.test.ts for the wire-format writeup.
 //
 // Requires: dev server reachable. Optionally
-//   LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN — a non-admin user token used to
+//   RONSAS_SUPABASE_ACCESS_TOKEN — a non-admin user token used to
 //   assert the server-side admin-role check ("Forbidden"). When absent, the
 //   403 case self-skips instead of failing.
 
@@ -114,7 +114,7 @@ describe("getSecurityScanReport auth + validation", () => {
   });
 
   test("400: rejects missing repos field", async () => {
-    const token = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+    const token = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
     if (!token) return; // auth runs before validation; need a bearer to reach Zod
     let r;
     try {
@@ -130,7 +130,7 @@ describe("getSecurityScanReport auth + validation", () => {
   });
 
   test("400: rejects empty repos array (zod min(1))", async () => {
-    const token = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+    const token = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
     if (!token) return; // need a bearer to reach inputValidator
     let r;
     try {
@@ -152,7 +152,7 @@ describe("getSecurityScanReport auth + validation", () => {
   });
 
   test("400: rejects malformed owner/repo strings", async () => {
-    const token = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+    const token = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     let r;
     try {
@@ -176,7 +176,7 @@ describe("getSecurityScanReport auth + validation", () => {
   });
 
   test("403: rejects authenticated non-admin callers with 'Forbidden'", async () => {
-    const token = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+    const token = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
     if (!token) return; // no user token in env — skip
     let r;
     try {

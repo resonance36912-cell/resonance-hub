@@ -15,7 +15,7 @@ We aim to acknowledge within 3 business days and provide a remediation timeline 
 ## Scope
 
 - Production: https://reson8.life, https://www.reson8.life
-- Preview / staging domains under `*.lovable.app`
+- Private staging: loopback-only Ealiophin candidate unless an explicitly governed staging hostname is approved
 - Public API surface: `/api/public/*` (webhooks, ROP ingest, verify-purchase)
 
 ## Out of scope

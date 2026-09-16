@@ -85,7 +85,7 @@ Feature flags: `storyboards`, `hdRenders`, `characterPerformance`, `priorityQueu
 
 ### YouTube Optimizer â€” `youtube_optimizer`
 
-- Domain: `https://youtube.reson8.life` (fallback: `https://resonanceoptimizer.lovable.app`)
+- Domain: `https://youtube.reson8.life`)
 - Use case: Audit, optimise, and scale YouTube channels.
 
 | Tier     | SKU                                       | Min tier forâ€¦           |

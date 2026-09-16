@@ -6,7 +6,7 @@
 // exact key surface: any drift (renamed key, dropped field, extra key)
 // fails this suite.
 //
-// Auth: uses LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN when present. Without
+// Auth: uses RONSAS_SUPABASE_ACCESS_TOKEN when present. Without
 // a token or when the token is non-admin, the shape assertions self-skip
 // (auth-only paths are covered by security-scan-auth.test.ts).
 
@@ -16,7 +16,7 @@ import { fetchRpcWithRetry } from "./security-scan-retry";
 import { parseReportOrThrow } from "./security-scan-schema";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
-const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
 
 
 // Exact required key sets — asserted independently of Zod so a drift
@@ -114,7 +114,7 @@ describe("getSecurityScanReport — 200 decode + full schema coverage", () => {
       return;
     }
     if (!ACCESS_TOKEN) {
-      console.warn("[skip] no LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN in env");
+      console.warn("[skip] no RONSAS_SUPABASE_ACCESS_TOKEN in env");
       return;
     }
 

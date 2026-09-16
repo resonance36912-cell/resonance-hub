@@ -7,7 +7,7 @@
 // with a Seroval `{ result, error, context }` envelope where `result` is
 // the SecurityScanReport DTO.
 //
-// Auth strategy: uses LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN when present.
+// Auth strategy: uses RONSAS_SUPABASE_ACCESS_TOKEN when present.
 // If the token is missing, the whole suite skips. If the token belongs
 // to a non-admin, the shape-assertion tests skip (the envelope carries
 // "Forbidden" — that path is covered by security-scan-auth.test.ts).
@@ -22,7 +22,7 @@ import { fetchRpcWithRetry } from "./security-scan-retry";
 import { parseReportOrThrow } from "./security-scan-schema";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
-const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
 
 
 function fnId(file: string, exportName: string): string {
@@ -131,7 +131,7 @@ describe("getSecurityScanReport — admin success shape", () => {
   test("admin call returns a SecurityScanReport matching the DTO shape", async () => {
     if (!(await serverReachable())) return;
     if (!ACCESS_TOKEN) {
-      console.warn("[skip] no LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN in env");
+      console.warn("[skip] no RONSAS_SUPABASE_ACCESS_TOKEN in env");
       return;
     }
     const requestedRepos = ["octocat/hello-world", "octocat/spoon-knife"];

@@ -78,7 +78,7 @@ for (const path of walk(ROUTES_DIR)) {
 
   const src = readFileSync(path, "utf8");
 
-  // Skip auto-generated files (e.g. @lovable.dev/mcp-js emitted routes).
+  // Skip generated route files that are not user-facing pages.
   if (src.includes("AUTO-GENERATED")) {
     skipped.push({ file: rel, reason: "auto-generated" });
     continue;
