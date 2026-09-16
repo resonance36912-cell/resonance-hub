@@ -168,6 +168,7 @@ type App = {
   tagline: string;
   domain: string;
   href: string;
+  localPort?: number;
   subscribeHref: string;
   priceLabel: string;
   priceNote: string;
@@ -184,6 +185,7 @@ const apps: App[] = [
       "Turn topics, manuscripts, PDFs, and research into polished audiovisual eBooks.",
     domain: "resonanceonline.life",
     href: "https://www.resonanceonline.life",
+    localPort: 3101,
     subscribeHref: "/pricing#epublisher",
     priceLabel: "from R99 once-off",
     priceNote: "Once-off credit / project packs · no recurring app fees",
@@ -203,6 +205,7 @@ const apps: App[] = [
       "Design posters, ads, product visuals, brochures, and campaign media instantly.",
     domain: "creativestudio.life",
     href: "https://www.creativestudio.life",
+    localPort: 3201,
     subscribeHref: "/pricing#creative-studio",
     priceLabel: "from R149 once-off",
     priceNote: "Once-off creative credit packs · no recurring app fees",
@@ -221,6 +224,7 @@ const apps: App[] = [
       "Turn songs into cinematic storyboards, character concepts, captions, and video-generation prompts.",
     domain: "syncvision.life",
     href: "https://www.syncvision.life",
+    localPort: 3301,
     subscribeHref: "/pricing#sync-vision",
     priceLabel: "from R349 once-off",
     priceNote: "Once-off music-video packs · no recurring app fees",
@@ -275,6 +279,7 @@ const apps: App[] = [
       "Audit channels, improve thumbnails, titles, content strategy, and growth planning.",
     domain: "youtubeoptimizer.life",
     href: "https://www.youtubeoptimizer.life",
+    localPort: 3401,
     subscribeHref: "/pricing#youtube-optimizer",
     priceLabel: "from R149 once-off",
     priceNote: "Once-off audit and growth packs · no recurring app fees",
@@ -526,6 +531,27 @@ function useScrollReveal() {
   }, []);
 }
 
+function withRuntimeAppLinks(origin: string): App[] {
+  try {
+    const host = new URL(origin).hostname;
+    const isLocal =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1" ||
+      host.startsWith("10.") ||
+      host.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+    if (!isLocal) return apps;
+    return apps.map((app) =>
+      app.localPort
+        ? { ...app, href: `http://${host}:${app.localPort}/`, domain: `${host}:${app.localPort}` }
+        : app,
+    );
+  } catch {
+    return apps;
+  }
+}
+
 function Index() {
   const active = useActiveSection(NAV_LINKS.map((l) => l.id));
   useScrollReveal();
@@ -535,7 +561,9 @@ function Index() {
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  void apps[carouselIndex];
+  const { origin } = Route.useLoaderData();
+  const runtimeApps = withRuntimeAppLinks(origin);
+  void runtimeApps[carouselIndex];
 
 
   async function onJoinSubmit(e: React.FormEvent) {
@@ -922,7 +950,7 @@ function Index() {
 
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {apps.map((app, i) => {
+            {runtimeApps.map((app, i) => {
               const a = accentMap[app.accent];
               const disabled = app.status === "soon";
               return (
