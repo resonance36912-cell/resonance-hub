@@ -13,7 +13,7 @@ This is a **GitHub account-level billing block**, not a workflow or code issue. 
 Signs it is a billing block:
 - Job duration is `0s`–`2s` and shows "The job was not started…".
 - No steps ran; there is no test/build log output.
-- Multiple unrelated workflows (`Verify prebuild`, `CodeQL`, `Security scan`, `Verify ePublisher checkout`) all fail at start around the same time.
+- Both consolidated workflows (`RONSAS CI` and `Security scan`) fail at start around the same time.
 - The runner is already `ubuntu-latest` (free GitHub-hosted). Confirm in the workflow file, e.g. `.github/workflows/verify-prebuild.yml`.
 
 If a job actually started and produced logs, this runbook does **not** apply — treat that as a real test/build failure.
@@ -54,12 +54,12 @@ Check current usage at **Settings → Billing and plans → Plans and usage → 
 
 ---
 
-## 4. Re-run Verify prebuild after billing is fixed
+## 4. Re-run RONSAS CI after billing is fixed
 
 Once billing is cleared:
 
 1. Go to the repo → **Actions** tab.
-2. In the left sidebar, click **Verify prebuild**.
+2. In the left sidebar, click **RONSAS CI**.
 3. Open the most recent failed run.
 4. Top-right → **Re-run jobs** → **Re-run all jobs**.
 
@@ -67,12 +67,9 @@ Alternatively, push any commit to `main` (or open a PR) to trigger a fresh run.
 
 ### Re-running other blocked workflows
 
-Repeat step 4 for each workflow that was blocked. Common ones:
-- **Verify prebuild** (`.github/workflows/verify-prebuild.yml`)
-- **CodeQL** (`.github/workflows/security-scan.yml` → CodeQL job)
-- **Security scan** (`.github/workflows/security-scan.yml`)
-- **Verify checkout links** (`.github/workflows/verify-checkout-links.yml`)
-- **Verify ePublisher checkout** (`.github/workflows/verify-epublisher.yml`)
+Repeat step 4 for each workflow that was blocked:
+- **RONSAS CI** (`.github/workflows/verify-prebuild.yml`)
+- **Security scan** (`.github/workflows/security-scan.yml`, including CodeQL)
 
 ---
 

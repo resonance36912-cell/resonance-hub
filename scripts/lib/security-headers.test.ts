@@ -47,12 +47,13 @@ describe("CSP — redirect and navigation containment", () => {
     expect(d.get("base-uri")).toEqual(["'self'"]);
   });
 
-  it("frames only Hub domains and the Lovable editor/preview", () => {
+  it("frames only RONSAS Hub origins", () => {
     const fa = d.get("frame-ancestors")!;
     expect(fa).toContain("'self'");
     expect(fa).toContain("https://reson8.life");
-    expect(fa).toContain("https://*.lovable.app");
+    expect(fa).toContain("https://www.reson8.life");
     expect(fa).not.toContain("*");
+    expect(fa.some((v) => /lovable|lovableproject/i.test(v))).toBe(false);
     expect(fa.some((v) => v.includes("evil"))).toBe(false);
   });
 

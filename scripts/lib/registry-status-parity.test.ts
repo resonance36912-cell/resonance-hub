@@ -22,16 +22,16 @@ const SRC = `
 const apps: App[] = [
   {
     name: "Resonance ePublisher",
-    domain: "resonanceonline.life",
-    href: "https://www.resonanceonline.life",
+    domain: "epublisher.reson8.life",
+    href: "https://epublisher.reson8.life",
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
   },
   {
     name: "Sync Vision",
-    domain: "syncvision.life",
-    href: "https://www.syncvision.life",
+    domain: "sync.reson8.life",
+    href: "https://sync.reson8.life",
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
@@ -48,22 +48,22 @@ const registry = (status: string): RegistryFacts[] => [
   {
     key: "epublisher",
     label: "Resonance ePublisher",
-    url: "https://www.resonanceonline.life",
+    url: "https://epublisher.reson8.life",
     status: "live" as never,
   },
   {
     key: "sync_vision",
     label: "Resonance Sync Vision",
-    url: "https://www.syncvision.life",
+    url: "https://sync.reson8.life",
     status: status as never,
   },
 ];
 
 describe("normalisation", () => {
   test("hostOf strips scheme and www", () => {
-    expect(hostOf("https://www.syncvision.life")).toBe("syncvision.life");
-    expect(hostOf("syncvision.life")).toBe("syncvision.life");
-    expect(hostOf("WWW.SyncVision.life/")).toBe("syncvision.life");
+    expect(hostOf("https://sync.reson8.life")).toBe("sync.reson8.life");
+    expect(hostOf("sync.reson8.life")).toBe("sync.reson8.life");
+    expect(hostOf("sync.reson8.life/")).toBe("sync.reson8.life");
   });
 
   test("nameSlug strips branding prefixes", () => {
@@ -77,8 +77,8 @@ describe("normalisation", () => {
 describe("extraction", () => {
   test("parses tiles and feed rows", () => {
     expect(extractTiles(SRC)).toEqual([
-      { name: "Resonance ePublisher", domain: "resonanceonline.life", status: "live" },
-      { name: "Sync Vision", domain: "syncvision.life", status: "live" },
+      { name: "Resonance ePublisher", domain: "epublisher.reson8.life", status: "live" },
+      { name: "Sync Vision", domain: "sync.reson8.life", status: "live" },
     ]);
     expect(extractFeed(SRC)).toEqual([
       { app: "Reson8 Hub", status: "Live" },
@@ -122,11 +122,11 @@ describe("parity", () => {
         {
           key: "youtube_optimizer",
           label: "YouTube Optimizer",
-          url: "https://www.youtubeoptimizer.life",
+          url: "https://youtube.reson8.life",
           status: "pilot" as never,
         },
       ],
-      tiles: [{ name: "YouTube Optimizer", domain: "youtubeoptimizer.life", status: "live" }],
+      tiles: [{ name: "YouTube Optimizer", domain: "youtube.reson8.life", status: "live" }],
       feed: [{ app: "YouTube Optimizer", status: "Updating" }],
     });
     expect(r.violations).toEqual([]);

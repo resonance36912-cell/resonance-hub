@@ -17,9 +17,9 @@
 
 ## Apps
 
-- [Resonance ePublisher](https://www.resonanceonline.life): Turn topics, manuscripts, PDFs, and research into audiovisual eBooks. Once-off packs from R99.
-- [Creative Studio](https://www.creativestudio.life): AI-generated posters, brochures, ads and marketing videos. Once-off packs from R149.
-- [Sync Vision](https://www.syncvision.life): AI-ready music video storyboards and character performances. Once-off packs from R349.
-- [YouTube Optimizer](https://www.youtubeoptimizer.life): Channel audits, thumbnails, and growth strategy. Once-off packs from R149.
+- [Resonance ePublisher](https://epublisher.reson8.life): Turn topics, manuscripts, PDFs, and research into audiovisual eBooks. Once-off packs from R99.
+- [Creative Studio](https://creative.reson8.life): AI-generated posters, brochures, ads and marketing videos. Once-off packs from R149.
+- [Sync Vision](https://sync.reson8.life): AI-ready music video storyboards and character performances. Once-off packs from R349.
+- [YouTube Optimizer](https://youtube.reson8.life): Channel audits, thumbnails, and growth strategy. Once-off packs from R149.
 - [Career Compass](https://www.career-compass.org): Career and aptitude discovery for learners and schools. Free pilot.
 - [The Resonance Podcast](https://www.resonance-podcast.com): Free ecosystem media and conversations.

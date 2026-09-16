@@ -167,11 +167,14 @@ describe("first-admin bootstrap security regressions", () => {
     "supabase/migrations/20260821000000_secure_first_admin_bootstrap.sql",
   );
 
-  test("uses the authoritative Auth user and email confirmation timestamp", () => {
-    expect(functionsSource.match(/\.middleware\(\[requireSupabaseAuth\]\)/g)).toHaveLength(3);
-    expect(functionsSource).toMatch(/context\.supabase\.auth\.getUser\(\)/);
-    expect(functionsSource).toMatch(/result\.data\.user\.id\s*!==\s*userId/);
-    expect(functionsSource).toMatch(/emailConfirmedAt:\s*user\?\.email_confirmed_at/);
+  test("uses authoritative provider identity without browser-bundling server modules", () => {
+    expect(functionsSource).toContain("const context = await requireRonsContext();");
+    expect(functionsSource).toContain('import("@tanstack/react-start/server")');
+    expect(functionsSource).toContain('import("@/lib/rons-auth-middleware")');
+    expect(functionsSource).toContain('import("@/lib/backend-provider.server")');
+    expect(functionsSource).toMatch(/provider === "sovereign"/);
+    expect(functionsSource).not.toMatch(/^import .*node:/m);
+    expect(functionsSource).not.toMatch(/^import .*\.server["']/m);
     expect(functionsSource).not.toMatch(/context\.claims|user_metadata/);
   });
 
@@ -185,31 +188,30 @@ describe("first-admin bootstrap security regressions", () => {
     expect(functionsSource).not.toContain("VITE_ADMIN_BOOTSTRAP_EMAILS");
   });
 
-  test("rechecks eligibility inside POST before invoking the atomic RPC", () => {
+  test("rechecks eligibility inside POST before invoking the provider-specific atomic claim", () => {
     const postStart = functionsSource.indexOf(
       'export const bootstrapAdmin = createServerFn({ method: "POST" })',
     );
     expect(postStart).toBeGreaterThanOrEqual(0);
-
     const postSource = functionsSource.slice(postStart);
-    const canonicalUserCheck = postSource.indexOf(
-      "const user = requireCanonicalUser(context.userId, await context.supabase.auth.getUser())",
+    const eligibilityCheck = postSource.indexOf("await loadBootstrapAccess(");
+    const sovereignClaim = postSource.indexOf("claimSovereignFirstAdmin(");
+    const hostedClaim = postSource.indexOf('.rpc("bootstrap_first_admin"');
+    expect(eligibilityCheck).toBeGreaterThanOrEqual(0);
+    expect(postSource).toContain(
+      'if (access.status !== "eligible") return { status: access.status };',
     );
-    const eligibilityCheck = postSource.indexOf("await loadBootstrapAccess(context.userId, user)");
-    const rpcCall = postSource.indexOf('.rpc("bootstrap_first_admin"');
-
-    expect(canonicalUserCheck).toBeGreaterThanOrEqual(0);
-    expect(eligibilityCheck).toBeGreaterThan(canonicalUserCheck);
-    expect(postSource).toContain('if (status !== "eligible") return { status };');
     expect(postSource).toContain(
       'if (!data.token) return { status: "email_reverification_required"',
     );
-    expect(rpcCall).toBeGreaterThan(eligibilityCheck);
+    expect(sovereignClaim).toBeGreaterThan(eligibilityCheck);
+    expect(hostedClaim).toBeGreaterThan(eligibilityCheck);
   });
 
-  test("binds the checked email to a locked authoritative Auth row", () => {
-    expect(functionsSource).toMatch(/_verified_email:\s*verifiedEmail/);
-    expect(functionsSource).toMatch(/_token_hash:\s*tokenHash/);
+  test("binds the checked email to authoritative identity in both providers", () => {
+    expect(functionsSource).toContain("access.canonicalEmail");
+    expect(functionsSource).toMatch(/_verified_email:\s*access\.canonicalEmail/);
+    expect(functionsSource).toMatch(/claimSovereignFirstAdmin\([\s\S]*?access\.canonicalEmail/);
     expect(migrationSource).toMatch(
       /email_confirmed_at IS NOT NULL\s+AND lower\(btrim\(email\)\) = lower\(btrim\(_verified_email\)\)/,
     );
@@ -220,8 +222,10 @@ describe("first-admin bootstrap security regressions", () => {
     expect(functionsSource).toContain(
       'export const getAdminBootstrapStatus = createServerFn({ method: "POST" })',
     );
-    expect(functionsSource).toContain('label: "admin-bootstrap-email-verification"');
+    expect(functionsSource).toContain('const { sendTransactionalEmail } = await import("@/lib/email-transport.server")');
+    expect(functionsSource).toContain("await sendTransactionalEmail({");
     expect(functionsSource).toContain('subject: "Verify first-administrator setup"');
+    expect(functionsSource).toContain('idempotencyKey: `admin-bootstrap-${userId}-${tokenHash.slice(0, 16)}`');
     expect(functionsSource).toMatch(/crypto\.getRandomValues\(new Uint8Array\(32\)\)/);
     expect(functionsSource).toMatch(/crypto\.subtle\.digest\("SHA-256"/);
     expect(functionsSource).toContain('.from("admin_bootstrap_email_challenges")');

@@ -1,14 +1,19 @@
-name: Verify prebuild
+name: RONSAS CI
 
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
+  merge_group:
+
+concurrency:
+  group: ronsas-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
-    name: Run all prebuild verification scripts
+    name: Build, test, and verify
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -127,7 +132,7 @@ jobs:
       # show up first in the log.
       - name: Prettier format check
         continue-on-error: true
-        run: bunx prettier --check .
+        run: bun x prettier --check .
 
       # Cache tsc's incremental build info. Restored across runs so unchanged
       # files skip re-checking. Key includes tsconfig + lockfile hash so a
@@ -203,7 +208,7 @@ jobs:
           fi
           printf 'Linting %d changed file(s):\n' "${#CHANGED[@]}"
           printf '  %s\n' "${CHANGED[@]}"
-          bunx eslint --max-warnings=0 "${CHANGED[@]}"
+          bun x eslint --max-warnings=0 "${CHANGED[@]}"
 
       - name: Check price parity (SKU_CATALOG vs pricing UI)
         run: bun run check:prices
@@ -212,6 +217,16 @@ jobs:
       # smoke tests so logic regressions surface before we spin up a server.
       - name: Unit & integration tests (bun test)
         run: bun run test:ci
+
+      - name: Verify tests left manifests unchanged
+        if: always()
+        run: |
+          if ! git diff --quiet -- package.json bun.lock; then
+            echo "::error::Tests modified package.json or bun.lock."
+            git --no-pager diff -- package.json bun.lock
+            exit 1
+          fi
+          echo "package.json and bun.lock are unchanged."
 
       # Publish test results (JUnit) and coverage (lcov) for quick failure
       # triage. Runs on success and failure so red builds still surface the
@@ -232,8 +247,7 @@ jobs:
 
       # Smoke test target resolution:
       #   1. If `vars.SMOKE_BASE_URL` (repository/environment variable) is set, use it —
-      #      typically the deployed preview URL (e.g. https://id-preview--<id>.lovable.app
-      #      or https://project--<id>-dev.lovable.app).
+      #      typically an explicitly governed staging URL supplied by the operator.
       #   2. Otherwise build locally and serve .output/server via wrangler dev on :8080.
       - name: Resolve smoke test BASE_URL
         id: smoke_target
@@ -261,7 +275,7 @@ jobs:
         if: steps.smoke_target.outputs.needs_local == 'true'
         working-directory: .output/server
         run: |
-          bunx wrangler dev --config wrangler.json --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          bun x wrangler dev --config wrangler.json --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
           for i in {1..90}; do
             if curl -sf http://127.0.0.1:8080/ > /dev/null; then
@@ -389,7 +403,7 @@ jobs:
       # keeps LHCI from hitting arbitrary URLs the workflow doesn't own.
       - name: Lighthouse CI (performance + a11y thresholds)
         if: steps.smoke_target.outputs.needs_local == 'true'
-        run: bunx --bun @lhci/cli@0.14.x autorun --config=./lighthouserc.json
+        run: bun x --bun @lhci/cli@0.14.x autorun --config=./lighthouserc.json
 
       # Lighthouse score gate for /apps/<unknown-slug>: hard-fails when
       # performance / accessibility / best-practices / SEO fall below their
@@ -514,7 +528,7 @@ jobs:
         if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
         working-directory: .output/server
         run: |
-          bunx wrangler dev --config wrangler.json --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          bun x wrangler dev --config wrangler.json --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
           for i in {1..90}; do
             if curl -sf http://127.0.0.1:8080/ > /dev/null; then
@@ -548,11 +562,11 @@ jobs:
         id: security_scan_tests_live
         env:
           DEV_SERVER_URL: ${{ steps.smoke_target.outputs.base_url }}
-          LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
+          RONSAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
           SECURITY_SCAN_ARTIFACT_DIR: reports/security-scan/payloads
         run: |
           set -euo pipefail
-          if [ -z "${LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN:-}" ]; then
+          if [ -z "${RONSAS_SUPABASE_ACCESS_TOKEN:-}" ]; then
             echo "::error::SUPABASE_ADMIN_ACCESS_TOKEN repository secret is not set." >&2
             echo "::error::The security-scan integration tests self-skip without a bearer, which would silently mask regressions. Configure the secret and re-run." >&2
             exit 1

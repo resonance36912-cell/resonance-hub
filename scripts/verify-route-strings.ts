@@ -61,9 +61,9 @@ const ALLOWLIST_EXTERNAL_HOSTS = [
   "payfast.co.za",
   "reson8.life",
   // Ecosystem / spoke apps
-  "resonanceonline.life",
-  "creativestudio.life",
-  "syncvision.life",
+  "epublisher.reson8.life",
+  "creative.reson8.life",
+  "sync.reson8.life",
   "epublisher.life",
   "youtube-optimizer.life",
   "resonance-podcast.com",

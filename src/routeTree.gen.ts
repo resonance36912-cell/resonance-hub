@@ -13,7 +13,6 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RedeemRouteImport } from './routes/redeem'
 import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as DependencyThresholdsRouteImport } from './routes/dependency-thresholds'
@@ -55,6 +54,8 @@ import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminReturnToCounterexamplesRouteImport } from './routes/admin.return-to-counterexamples'
 import { Route as AdminReturnToAllowlistRouteImport } from './routes/admin.return-to-allowlist'
 import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
+import { Route as AdminPromotionCampaignsRouteImport } from './routes/admin.promotion-campaigns'
+import { Route as AdminPromotionRouteImport } from './routes/admin.promotion'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
@@ -64,6 +65,7 @@ import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
 import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
+import { Route as AdminControlCenterRouteImport } from './routes/admin.control-center'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AdminAccessRouteImport } from './routes/admin.access'
@@ -72,18 +74,17 @@ import { Route as AccountPrivacyRouteImport } from './routes/account.privacy'
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ToolsCodexThreadIdRouteImport } from './routes/tools.codex.$threadId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AppsSubmissionsIdRouteImport } from './routes/apps.submissions.$id'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
 import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiSovereignLaunchAppRouteImport } from './routes/api/sovereign/launch/$app'
+import { Route as ApiSovereignAuthActionRouteImport } from './routes/api/sovereign/auth/$action'
 import { Route as ApiPublicUsageWalletRouteImport } from './routes/api/public/usage/wallet'
 import { Route as ApiPublicUsageReserveRouteImport } from './routes/api/public/usage/reserve'
 import { Route as ApiPublicUsageReleaseRouteImport } from './routes/api/public/usage/release'
@@ -98,6 +99,7 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/public/entitlement.health'
+import { Route as ApiPublicEmailSuppressionRouteImport } from './routes/api/public/email/suppression'
 import { Route as ApiPublicAppStatusHealthRouteImport } from './routes/api/public/app-status.health'
 import { Route as ApiPublicAnalyticsCheckoutSuccessRouteImport } from './routes/api/public/analytics/checkout-success'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
@@ -125,11 +127,6 @@ const RcgfRoute = RcgfRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -339,6 +336,16 @@ const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
   path: '/admin/reconciliation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPromotionCampaignsRoute = AdminPromotionCampaignsRouteImport.update({
+  id: '/admin/promotion-campaigns',
+  path: '/admin/promotion-campaigns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPromotionRoute = AdminPromotionRouteImport.update({
+  id: '/admin/promotion',
+  path: '/admin/promotion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
   id: '/admin/payfast-audit',
   path: '/admin/payfast-audit',
@@ -385,6 +392,11 @@ const AdminCouponsRoute = AdminCouponsRouteImport.update({
   path: '/admin/coupons',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminControlCenterRoute = AdminControlCenterRouteImport.update({
+  id: '/admin/control-center',
+  path: '/admin/control-center',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
   id: '/admin/billing',
   path: '/admin/billing',
@@ -425,18 +437,6 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ToolsCodexThreadIdRoute = ToolsCodexThreadIdRouteImport.update({
   id: '/$threadId',
   path: '/$threadId',
@@ -462,12 +462,6 @@ const AccountInvoicesIdRoute = AccountInvoicesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AccountInvoicesRoute,
 } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -491,6 +485,16 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSovereignLaunchAppRoute = ApiSovereignLaunchAppRouteImport.update({
+  id: '/api/sovereign/launch/$app',
+  path: '/api/sovereign/launch/$app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSovereignAuthActionRoute = ApiSovereignAuthActionRouteImport.update({
+  id: '/api/sovereign/auth/$action',
+  path: '/api/sovereign/auth/$action',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicUsageWalletRoute = ApiPublicUsageWalletRouteImport.update({
   id: '/api/public/usage/wallet',
   path: '/api/public/usage/wallet',
@@ -567,6 +571,12 @@ const ApiPublicEntitlementHealthRoute =
     path: '/health',
     getParentRoute: () => ApiPublicEntitlementRoute,
   } as any)
+const ApiPublicEmailSuppressionRoute =
+  ApiPublicEmailSuppressionRouteImport.update({
+    id: '/api/public/email/suppression',
+    path: '/api/public/email/suppression',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAppStatusHealthRoute =
   ApiPublicAppStatusHealthRouteImport.update({
     id: '/api/public/app-status/health',
@@ -623,13 +633,10 @@ export interface FileRoutesByFullPath {
   '/dependency-thresholds': typeof DependencyThresholdsRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -638,6 +645,7 @@ export interface FileRoutesByFullPath {
   '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
@@ -647,6 +655,8 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
@@ -683,7 +693,6 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
@@ -694,6 +703,7 @@ export interface FileRoutesByFullPath {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/email/suppression': typeof ApiPublicEmailSuppressionRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -708,6 +718,8 @@ export interface FileRoutesByFullPath {
   '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
   '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
   '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -722,13 +734,10 @@ export interface FileRoutesByTo {
   '/dependency-thresholds': typeof DependencyThresholdsRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -737,6 +746,7 @@ export interface FileRoutesByTo {
   '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
@@ -746,6 +756,8 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
@@ -782,7 +794,6 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/legal': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
@@ -793,6 +804,7 @@ export interface FileRoutesByTo {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/email/suppression': typeof ApiPublicEmailSuppressionRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -807,6 +819,8 @@ export interface FileRoutesByTo {
   '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
   '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
   '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -822,13 +836,10 @@ export interface FileRoutesById {
   '/dependency-thresholds': typeof DependencyThresholdsRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -837,6 +848,7 @@ export interface FileRoutesById {
   '/admin/access': typeof AdminAccessRoute
   '/admin/app-submissions': typeof AdminAppSubmissionsRoute
   '/admin/billing': typeof AdminBillingRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/coupons': typeof AdminCouponsRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
@@ -846,6 +858,8 @@ export interface FileRoutesById {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/reconciliation': typeof AdminReconciliationRoute
   '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
   '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
@@ -882,7 +896,6 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
@@ -893,6 +906,7 @@ export interface FileRoutesById {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/email/suppression': typeof ApiPublicEmailSuppressionRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -907,6 +921,8 @@ export interface FileRoutesById {
   '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
   '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
   '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -923,13 +939,10 @@ export interface FileRouteTypes {
     | '/dependency-thresholds'
     | '/governance'
     | '/login'
-    | '/mcp'
     | '/pricing'
     | '/rcgf'
     | '/redeem'
     | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -938,6 +951,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/control-center'
     | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
@@ -947,6 +961,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
     | '/admin/return-to-counterexamples'
@@ -983,7 +999,6 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/legal/'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
@@ -994,6 +1009,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
+    | '/api/public/email/suppression'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1008,6 +1024,8 @@ export interface FileRouteTypes {
     | '/api/public/usage/release'
     | '/api/public/usage/reserve'
     | '/api/public/usage/wallet'
+    | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1022,13 +1040,10 @@ export interface FileRouteTypes {
     | '/dependency-thresholds'
     | '/governance'
     | '/login'
-    | '/mcp'
     | '/pricing'
     | '/rcgf'
     | '/redeem'
     | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -1037,6 +1052,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/control-center'
     | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
@@ -1046,6 +1062,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
     | '/admin/return-to-counterexamples'
@@ -1082,7 +1100,6 @@ export interface FileRouteTypes {
     | '/docs'
     | '/legal'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
@@ -1093,6 +1110,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
+    | '/api/public/email/suppression'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1107,6 +1125,8 @@ export interface FileRouteTypes {
     | '/api/public/usage/release'
     | '/api/public/usage/reserve'
     | '/api/public/usage/wallet'
+    | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1121,13 +1141,10 @@ export interface FileRouteTypes {
     | '/dependency-thresholds'
     | '/governance'
     | '/login'
-    | '/mcp'
     | '/pricing'
     | '/rcgf'
     | '/redeem'
     | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -1136,6 +1153,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/app-submissions'
     | '/admin/billing'
+    | '/admin/control-center'
     | '/admin/coupons'
     | '/admin/credits'
     | '/admin/email-domain'
@@ -1145,6 +1163,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/reconciliation'
     | '/admin/return-to-allowlist'
     | '/admin/return-to-counterexamples'
@@ -1181,7 +1201,6 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/legal/'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
@@ -1192,6 +1211,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
+    | '/api/public/email/suppression'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1206,6 +1226,8 @@ export interface FileRouteTypes {
     | '/api/public/usage/release'
     | '/api/public/usage/reserve'
     | '/api/public/usage/wallet'
+    | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -1221,13 +1243,10 @@ export interface RootRouteChildren {
   DependencyThresholdsRoute: typeof DependencyThresholdsRoute
   GovernanceRoute: typeof GovernanceRouteWithChildren
   LoginRoute: typeof LoginRoute
-  McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   RcgfRoute: typeof RcgfRoute
   RedeemRoute: typeof RedeemRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
@@ -1236,6 +1255,7 @@ export interface RootRouteChildren {
   AdminAccessRoute: typeof AdminAccessRoute
   AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
   AdminBillingRoute: typeof AdminBillingRoute
+  AdminControlCenterRoute: typeof AdminControlCenterRoute
   AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
@@ -1245,6 +1265,8 @@ export interface RootRouteChildren {
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
+  AdminPromotionRoute: typeof AdminPromotionRoute
+  AdminPromotionCampaignsRoute: typeof AdminPromotionCampaignsRoute
   AdminReconciliationRoute: typeof AdminReconciliationRoute
   AdminReturnToAllowlistRoute: typeof AdminReturnToAllowlistRoute
   AdminReturnToCounterexamplesRoute: typeof AdminReturnToCounterexamplesRoute
@@ -1280,7 +1302,6 @@ export interface RootRouteChildren {
   DocsIndexRoute: typeof DocsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
   AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -1288,6 +1309,7 @@ export interface RootRouteChildren {
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
   ApiPublicAppStatusHealthRoute: typeof ApiPublicAppStatusHealthRoute
+  ApiPublicEmailSuppressionRoute: typeof ApiPublicEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -1301,6 +1323,8 @@ export interface RootRouteChildren {
   ApiPublicUsageReleaseRoute: typeof ApiPublicUsageReleaseRoute
   ApiPublicUsageReserveRoute: typeof ApiPublicUsageReserveRoute
   ApiPublicUsageWalletRoute: typeof ApiPublicUsageWalletRoute
+  ApiSovereignAuthActionRoute: typeof ApiSovereignAuthActionRoute
+  ApiSovereignLaunchAppRoute: typeof ApiSovereignLaunchAppRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1337,13 +1361,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1633,6 +1650,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReconciliationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/promotion-campaigns': {
+      id: '/admin/promotion-campaigns'
+      path: '/admin/promotion-campaigns'
+      fullPath: '/admin/promotion-campaigns'
+      preLoaderRoute: typeof AdminPromotionCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/promotion': {
+      id: '/admin/promotion'
+      path: '/admin/promotion'
+      fullPath: '/admin/promotion'
+      preLoaderRoute: typeof AdminPromotionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/payfast-audit': {
       id: '/admin/payfast-audit'
       path: '/admin/payfast-audit'
@@ -1696,6 +1727,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCouponsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/control-center': {
+      id: '/admin/control-center'
+      path: '/admin/control-center'
+      fullPath: '/admin/control-center'
+      preLoaderRoute: typeof AdminControlCenterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/billing': {
       id: '/admin/billing'
       path: '/admin/billing'
@@ -1752,20 +1790,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/tools/codex/$threadId': {
       id: '/tools/codex/$threadId'
       path: '/$threadId'
@@ -1801,13 +1825,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountInvoicesIdRouteImport
       parentRoute: typeof AccountInvoicesRoute
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -1834,6 +1851,20 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sovereign/launch/$app': {
+      id: '/api/sovereign/launch/$app'
+      path: '/api/sovereign/launch/$app'
+      fullPath: '/api/sovereign/launch/$app'
+      preLoaderRoute: typeof ApiSovereignLaunchAppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sovereign/auth/$action': {
+      id: '/api/sovereign/auth/$action'
+      path: '/api/sovereign/auth/$action'
+      fullPath: '/api/sovereign/auth/$action'
+      preLoaderRoute: typeof ApiSovereignAuthActionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/usage/wallet': {
@@ -1933,6 +1964,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/entitlement/health'
       preLoaderRoute: typeof ApiPublicEntitlementHealthRouteImport
       parentRoute: typeof ApiPublicEntitlementRoute
+    }
+    '/api/public/email/suppression': {
+      id: '/api/public/email/suppression'
+      path: '/api/public/email/suppression'
+      fullPath: '/api/public/email/suppression'
+      preLoaderRoute: typeof ApiPublicEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/app-status/health': {
       id: '/api/public/app-status/health'
@@ -2049,14 +2087,10 @@ const rootRouteChildren: RootRouteChildren = {
   DependencyThresholdsRoute: DependencyThresholdsRoute,
   GovernanceRoute: GovernanceRouteWithChildren,
   LoginRoute: LoginRoute,
-  McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
   RedeemRoute: RedeemRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
@@ -2065,6 +2099,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAccessRoute: AdminAccessRoute,
   AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
   AdminBillingRoute: AdminBillingRoute,
+  AdminControlCenterRoute: AdminControlCenterRoute,
   AdminCouponsRoute: AdminCouponsRoute,
   AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
@@ -2074,6 +2109,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
+  AdminPromotionRoute: AdminPromotionRoute,
+  AdminPromotionCampaignsRoute: AdminPromotionCampaignsRoute,
   AdminReconciliationRoute: AdminReconciliationRoute,
   AdminReturnToAllowlistRoute: AdminReturnToAllowlistRoute,
   AdminReturnToCounterexamplesRoute: AdminReturnToCounterexamplesRoute,
@@ -2109,7 +2146,6 @@ const rootRouteChildren: RootRouteChildren = {
   DocsIndexRoute: DocsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
   AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
@@ -2118,6 +2154,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAnalyticsCheckoutSuccessRoute:
     ApiPublicAnalyticsCheckoutSuccessRoute,
   ApiPublicAppStatusHealthRoute: ApiPublicAppStatusHealthRoute,
+  ApiPublicEmailSuppressionRoute: ApiPublicEmailSuppressionRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
@@ -2132,6 +2169,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicUsageReleaseRoute: ApiPublicUsageReleaseRoute,
   ApiPublicUsageReserveRoute: ApiPublicUsageReserveRoute,
   ApiPublicUsageWalletRoute: ApiPublicUsageWalletRoute,
+  ApiSovereignAuthActionRoute: ApiSovereignAuthActionRoute,
+  ApiSovereignLaunchAppRoute: ApiSovereignLaunchAppRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

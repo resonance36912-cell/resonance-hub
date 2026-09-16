@@ -20,12 +20,12 @@
  *     }
  *
  *   Responses:
- *     200 → { ok: true, app: "creative_studio", tier, image: { mimeType, base64 } }
- *     400 → { error: "invalid_input", issues }
- *     401 → { error: "unauthorized", message }            // no/invalid JWT
- *     402 → { error: "upgrade_required", ... }            // canonical upgrade body
- *     429 → { error: "rate_limited" } | { error: "credits_exhausted" }
- *     500 → { error: "generation_failed" }
+ *     200 â†’ { ok: true, app: "creative_studio", tier, image: { mimeType, base64 } }
+ *     400 â†’ { error: "invalid_input", issues }
+ *     401 â†’ { error: "unauthorized", message }            // no/invalid JWT
+ *     402 â†’ { error: "upgrade_required", ... }            // canonical upgrade body
+ *     429 â†’ { error: "rate_limited" } | { error: "credits_exhausted" }
+ *     500 â†’ { error: "generation_failed" }
  *
  * The handler NEVER calls the AI gateway until `requireTier` resolves.
  */
@@ -58,9 +58,10 @@ const BodySchema = z.object({
 });
 
 // Creative Studio's paid "poster" workflow gates at the `creator` tier.
-// (See docs/spoke-app-registry.md → creative_studio.)
+// (See docs/spoke-app-registry.md â†’ creative_studio.)
 const APP = "creative_studio" as const;
 const REQUIRED_TIER = "creator" as const;
+const LOCAL_IMAGE_SERVICE = "http://127.0.0.1:7865/v1/images/generate";
 
 export const Route = createFileRoute("/api/public/generate/creative-studio/poster")({
   server: {
@@ -83,7 +84,7 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
           return json({ error: "invalid_input", message: "Body must be JSON" }, 400);
         }
 
-        // 2. Tier gate. Throws a Response on 401/402 — we catch and return it
+        // 2. Tier gate. Throws a Response on 401/402 â€” we catch and return it
         //    verbatim so the spoke gets the canonical upgrade body shape.
         let gate;
         try {
@@ -91,7 +92,7 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
             request,
             app: APP,
             required: REQUIRED_TIER,
-            returnTo: parsed.returnTo ?? "https://www.creativestudio.life/generate/poster",
+            returnTo: parsed.returnTo ?? "https://creative.reson8.life/generate/poster",
             responseHeaders: CORS,
           });
         } catch (err) {
@@ -100,70 +101,70 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
           return json({ error: "gate_failure" }, 500);
         }
 
-        // 3. Only now do we call the paid model. Anything that costs money
-        //    or burns AI gateway credits must live below this line.
-        const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-        if (!LOVABLE_API_KEY) {
-          console.error("[creative-studio/poster] LOVABLE_API_KEY missing");
-          return json({ error: "server_misconfigured" }, 500);
-        }
-
+        // 3. Only now do we call the sovereign loopback image service.
+        //    The provider is local to Ealiophin, so this workflow consumes no
+        //    Lovable gateway credits and does not send the prompt to a middleman.
         const stylePrefix = parsed.style ? `${parsed.style} style. ` : "";
         const aspectHint = `Aspect ratio ${parsed.aspectRatio}.`;
         const fullPrompt = `${stylePrefix}${parsed.prompt}. ${aspectHint}`;
+        const orientation =
+          parsed.aspectRatio === "1:1"
+            ? "square"
+            : parsed.aspectRatio === "16:9"
+              ? "landscape"
+              : "portrait";
 
-        let aiRes: Response;
+        let imageRes: Response;
         try {
-          aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          imageRes = await fetch(LOCAL_IMAGE_SERVICE, {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              model: "google/gemini-2.5-flash-image",
-              messages: [{ role: "user", content: fullPrompt }],
-              modalities: ["image", "text"],
+              prompt: fullPrompt,
+              aspectRatio: parsed.aspectRatio,
+              orientation,
             }),
+            signal: AbortSignal.timeout(240_000),
           });
         } catch (err) {
-          console.error("[creative-studio/poster] gateway fetch failed:", err);
-          return json({ error: "generation_failed" }, 502);
+          console.error("[creative-studio/poster] local image service unavailable:", err);
+          return json({ error: "generation_failed", provider: "rons-local" }, 502);
         }
 
-        if (aiRes.status === 429) {
-          return json({ error: "rate_limited", message: "Try again shortly." }, 429);
+        if (imageRes.status === 503) {
+          return json(
+            { error: "rate_limited", message: "Local image service is busy. Try again shortly." },
+            429,
+          );
         }
-        if (aiRes.status === 402) {
-          // Gateway credit exhaustion — surface as 429 so the spoke does not
-          // confuse it with a tier-gate 402.
-          return json({ error: "credits_exhausted", message: "AI credits exhausted on the hub." }, 429);
-        }
-        if (!aiRes.ok) {
-          const detail = await aiRes.text().catch(() => "");
-          console.error("[creative-studio/poster] gateway error", aiRes.status, detail);
-          return json({ error: "generation_failed" }, 502);
+        if (!imageRes.ok) {
+          const detail = await imageRes.text().catch(() => "");
+          console.error("[creative-studio/poster] local image error", imageRes.status, detail);
+          return json({ error: "generation_failed", provider: "rons-local" }, 502);
         }
 
-        // Lovable AI Gateway returns OpenAI-compatible chat completions. For
-        // image-capable models the image is on `message.images[0].image_url.url`
-        // as a base64 data URL.
-        type GatewayResp = {
-          choices?: Array<{
-            message?: {
-              images?: Array<{ image_url?: { url?: string } }>;
-            };
-          }>;
+        type LocalImageResponse = {
+          ok?: boolean;
+          provider?: string;
+          model?: string;
+          seed?: number;
+          width?: number;
+          height?: number;
+          imageUrl?: string;
+          error?: string;
         };
-        const payload = (await aiRes.json().catch(() => null)) as GatewayResp | null;
-        const dataUrl = payload?.choices?.[0]?.message?.images?.[0]?.image_url?.url ?? null;
-        if (!dataUrl || !dataUrl.startsWith("data:")) {
-          console.error("[creative-studio/poster] no image in gateway response");
-          return json({ error: "generation_failed" }, 502);
+        const payload = (await imageRes.json().catch(() => null)) as LocalImageResponse | null;
+        const dataUrl = payload?.imageUrl ?? null;
+        if (!dataUrl || !dataUrl.startsWith("data:image/")) {
+          console.error("[creative-studio/poster] no image in local service response");
+          return json({ error: "generation_failed", provider: "rons-local" }, 502);
         }
 
         const commaIdx = dataUrl.indexOf(",");
-        const meta = dataUrl.slice(5, commaIdx); // e.g. "image/png;base64"
+        if (commaIdx < 6) {
+          return json({ error: "generation_failed", provider: "rons-local" }, 502);
+        }
+        const meta = dataUrl.slice(5, commaIdx);
         const base64 = dataUrl.slice(commaIdx + 1);
         const mimeType = meta.split(";")[0] || "image/png";
 
@@ -172,6 +173,11 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
           app: APP,
           tier: gate.tier,
           aspectRatio: parsed.aspectRatio,
+          provider: payload?.provider ?? "rons-local",
+          model: payload?.model ?? "local-image",
+          seed: payload?.seed ?? null,
+          width: payload?.width ?? null,
+          height: payload?.height ?? null,
           image: { mimeType, base64 },
         });
       },

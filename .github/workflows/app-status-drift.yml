@@ -17,8 +17,8 @@ name: App status drift watch
 
 on:
   schedule:
-    # Every 6 hours, on the hour (UTC).
-    - cron: "0 */6 * * *"
+    # Daily at 04:10 UTC. PR path filters still catch source changes immediately.
+    - cron: "10 4 * * *"
   workflow_dispatch:
     inputs:
       base_url:

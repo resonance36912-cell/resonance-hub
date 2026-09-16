@@ -28,7 +28,7 @@ Only `active` grants access.
 
 ### ePublisher — `epublisher`
 
-- Domain: `https://www.resonanceonline.life`
+- Domain: `https://epublisher.reson8.life`
 - Use case: Turn written stories into immersive audiovisual books.
 
 | Tier     | SKU                              | Hub price (ZAR/mo) | Min tier for…                |
@@ -45,7 +45,7 @@ Feature flags:
 
 ### Creative Studio — `creative_studio`
 
-- Domain: `https://www.creativestudio.life`
+- Domain: `https://creative.reson8.life`
 - Use case: Design posters, ads, and marketing media.
 
 | Tier     | SKU                                  | Hub price (ZAR/mo) | Min tier for…           |
@@ -69,7 +69,7 @@ Endpoint → tier mapping (illustrative; spoke owns final list):
 
 ### Sync Vision — `sync_vision`
 
-- Domain: `https://www.syncvision.life`
+- Domain: `https://sync.reson8.life`
 - Use case: Plan AI-driven music videos and cinematic storyboards.
 
 | Tier     | SKU                                  | Min tier for…                          |
@@ -85,7 +85,7 @@ Feature flags: `storyboards`, `hdRenders`, `characterPerformance`, `priorityQueu
 
 ### YouTube Optimizer — `youtube_optimizer`
 
-- Domain: `https://www.youtubeoptimizer.life` (fallback: `https://resonanceoptimizer.lovable.app`)
+- Domain: `https://youtube.reson8.life`
 - Use case: Audit, optimise, and scale YouTube channels.
 
 | Tier     | SKU                                       | Min tier for…           |

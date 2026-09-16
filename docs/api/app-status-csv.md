@@ -20,7 +20,7 @@ doubled). Row 1 is always the header row, in the order below.
 | 6 | `access` | text | One-line answer to "can I use this right now?" — pairs with the badge so a badge is never read alone. | `Live access` |
 | 7 | `accessible` | `true` \| `false` | Whether the app is usable today. `true` for `live`, `beta`, and `pilot`; `false` only for `coming_soon`. A `Beta` badge is still `true`. | `true` |
 | 8 | `explanation` | sentence | Longer tooltip/legend sentence for that status. Often contains commas, so it is usually quoted in the raw file. | `Fully released and generally available. …` |
-| 9 | `url` | absolute URL | Where the product actually lives (the spoke app or ecosystem landing page). | `https://www.syncvision.life` |
+| 9 | `url` | absolute URL | Where the product actually lives (the spoke app or ecosystem landing page). | `https://sync.reson8.life` |
 | 10 | `detail_path` | relative path | Hub detail page for the row, e.g. `/apps/<key>`. Empty for `ecosystem` rows, which have no detail page. | `/apps/sync_vision` |
 
 ## Status vocabulary

@@ -1,29 +1,19 @@
-# ChatGPT Codex — Resonance Group Wiring
+﻿# Codex - RONSAS repository wiring
 
-Canonical configuration for the ChatGPT Codex CLI across the Resonance ecosystem.
-Two wiring surfaces are covered here:
+Canonical configuration for Codex across the Resonance ecosystem.
 
-1. **Hub MCP** — point Codex at the Hub's Model Context Protocol server so it
-   can call Reson8 tools (`echo`, `list_updates`, …) as an authenticated user.
-2. **Spoke repo configs** — vendor `AGENTS.md` and `.codex/config.toml` into
-   every spoke repository (Creative Studio, ePublisher, SyncVision, YouTube
-   Optimizer) so Codex follows the same rules everywhere.
+The former public Hub MCP compatibility server has been retired. RONSAS keeps tool/control interfaces local or behind explicitly approved connector and broker boundaries. Public `/mcp`, `/.mcp/*`, and the former MCP OAuth metadata endpoint are blocked at the Cloudflare edge.
 
-## Files in this folder
+## Files
 
 | File | Purpose |
 | --- | --- |
-| `mcp-connect.md` | Step-by-step: connect Codex CLI to `https://reson8.life/mcp` via Supabase OAuth. |
-| `config.toml.example` | Drop-in `~/.codex/config.toml` (or repo `.codex/config.toml`) with the Hub MCP server registered. |
-| `AGENTS.md` | Canonical repo-level agent instructions. Copy to the root of every spoke repo. |
-| `spoke-vendor.md` | One-page brief for vendoring the above into each spoke. |
+| `config.toml.example` | Minimal Codex configuration without a public Hub MCP dependency. |
+| `AGENTS.md` | Canonical repo-level agent instructions for spokes. |
+| `spoke-vendor.md` | Brief for vendoring the canonical guidance into each spoke. |
 
-## Hub MCP endpoint (source of truth)
+## Tool connectivity
 
-- URL: `https://reson8.life/mcp`
-- Auth: OAuth 2.1 via Supabase (dynamic client registration enabled)
-- Consent screen: `https://reson8.life/.lovable/oauth/consent`
-- Tools currently advertised: `echo`, `list_updates`
+Use the RONSAS control plane, approved ChatGPT/GitHub connectors and governed local services for tool access. A future RONS-owned MCP service may be introduced only after its authentication, authorization, audit logging and public-edge policy are separately validated.
 
-Do not paste session JWTs. Codex must go through the OAuth flow so tokens
-carry the `client_id` claim the MCP server requires.
+Do not point Codex or another agent at historical Lovable MCP endpoints.

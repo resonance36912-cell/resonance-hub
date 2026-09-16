@@ -38,5 +38,12 @@ supabase/.temp/
 *.sw?
 .lighthouseci/
 
+# Python test/runtime caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
 # Generated audit reports (scripts/check-outdated-pins.ts and friends)
 reports/

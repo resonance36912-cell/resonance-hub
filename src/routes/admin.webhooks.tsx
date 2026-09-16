@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { listItnLogs } from "@/lib/itn-logs.functions";
 import { ROUTES } from "@/lib/routes";
 
@@ -13,17 +13,7 @@ export const Route = createFileRoute("/admin/webhooks")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: WebhooksPage,
 });
 
@@ -63,10 +53,13 @@ function WebhooksPage() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <header className="mb-8 flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Resonance Admin</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Resonance Admin
+            </p>
             <h1 className="mt-2 text-3xl font-semibold">PayFast Webhook Audit</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Last 200 Instant Transaction Notifications received at <code>/api/public/payfast/itn</code>.
+              Last 200 Instant Transaction Notifications received at{" "}
+              <code>/api/public/payfast/itn</code>.
             </p>
           </div>
           <button
@@ -114,7 +107,9 @@ function WebhooksPage() {
                         {new Date(log.received_at).toLocaleString()}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-block rounded border px-2 py-0.5 text-xs ${outcomeColor(log.outcome, log.http_status)}`}>
+                        <span
+                          className={`inline-block rounded border px-2 py-0.5 text-xs ${outcomeColor(log.outcome, log.http_status)}`}
+                        >
                           {log.outcome} · {log.http_status}
                         </span>
                       </td>
@@ -144,7 +139,10 @@ function WebhooksPage() {
                               <strong>Error:</strong> {log.error_message}
                             </p>
                           )}
-                          <p className="mb-1 text-xs text-muted-foreground">Source IP: {log.source_ip ?? "—"} · pf_payment_id: {log.pf_payment_id ?? "—"}</p>
+                          <p className="mb-1 text-xs text-muted-foreground">
+                            Source IP: {log.source_ip ?? "—"} · pf_payment_id:{" "}
+                            {log.pf_payment_id ?? "—"}
+                          </p>
                           <pre className="overflow-x-auto rounded bg-background/60 p-3 text-xs">
                             {JSON.stringify(log.raw_payload, null, 2)}
                           </pre>

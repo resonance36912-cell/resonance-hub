@@ -49,7 +49,6 @@ import { APP_REGISTRY } from "./app-registry";
 const HUB_ORIGINS = [
   "https://reson8.life",
   "https://www.reson8.life",
-  "https://resonance-hub.lovable.app",
 ];
 
 /**

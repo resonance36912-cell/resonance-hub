@@ -34,7 +34,7 @@ bun run dev
 
 The Vite dev server prints a local URL (typically `http://localhost:8080`).
 
-The Supabase client keys (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`) are auto-managed by Lovable Cloud and injected into `.env` — **do not hand-edit these**.
+The Supabase client values (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`) are **RONSAS-managed**. Configure them in the local/production environment and never commit their values.
 
 ---
 
@@ -42,9 +42,9 @@ The Supabase client keys (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, 
 
 Variables split into three groups by where they're read.
 
-### 3.1 Client / build-time (`VITE_*`) — auto-managed
+### 3.1 Client / build-time (`VITE_*`) — RONSAS-managed
 
-Injected by Lovable Cloud; do not edit `.env` for these:
+Set through the RONSAS environment for the target runtime; never commit real values:
 
 | Variable                        | Purpose                             |
 | ------------------------------- | ----------------------------------- |
@@ -61,16 +61,16 @@ Set through Project → Secrets (never commit). Read only inside `.handler()` bo
 | `PAYFAST_MERCHANT_ID`          | `src/routes/api/public/payfast/*`                   |
 | `PAYFAST_MERCHANT_KEY`         | PayFast checkout launch                             |
 | `PAYFAST_PASSPHRASE`           | ITN signature verification                          |
-| `LOVABLE_API_KEY`              | AI gateway proxy routes                             |
+| `RONS_RESEND_WEBHOOK_SECRET`  | Resend webhook signature verification               |
 | `ROP_INGEST_TOKEN`             | ROP telemetry ingest endpoints                      |
 | `CRON_SHARED_SECRET`           | Timing-safe auth for cron endpoints                 |
 | `RESEND_API_KEY` *(optional)*  | Transactional email                                 |
 
-**Never** reference `SUPABASE_SERVICE_ROLE_KEY` or the DB password — they are not available on Lovable Cloud.
+**Never expose** `SUPABASE_SERVICE_ROLE_KEY` or the DB password to client code. If required server-side, inject them only as server/runtime secrets.
 
 ### 3.3 Build-time / workspace-level
 
-Configured in **Workspace Settings → Build Secrets**, not per-project:
+Configure these in the CI/build environment used by RONSAS:
 
 | Variable       | Purpose                                       |
 | -------------- | --------------------------------------------- |

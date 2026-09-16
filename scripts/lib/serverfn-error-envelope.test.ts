@@ -12,7 +12,7 @@
 // Auth strategy per case:
 //   - Missing / malformed / wrong-scheme Authorization → 401 envelope with
 //     the exact `requireSupabaseAuth` message.
-//   - When LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN is present but the token
+//   - When RONSAS_SUPABASE_ACCESS_TOKEN is present but the token
 //     is non-admin, the admin-only functions produce a Forbidden envelope
 //     — still HTTP 200 + JSON, still no HTML.
 
@@ -20,7 +20,7 @@ import { describe, expect, test } from "bun:test";
 import { toJSONAsync } from "seroval";
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
-const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
 
 // Compiler-generated server-function IDs from the current TanStack Start build.
 // These hashes replace the obsolete base64 metadata IDs used by older Start
@@ -139,7 +139,7 @@ describe("serverFn unauthorized/forbidden → JSON envelope (no HTML)", () => {
     test(`${target.name} — authenticated non-admin (or upstream failure) still returns JSON envelope`, async () => {
       if (!(await serverReachable())) return;
       if (!ACCESS_TOKEN) {
-        console.warn("[skip] no LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN in env");
+        console.warn("[skip] no RONSAS_SUPABASE_ACCESS_TOKEN in env");
         return;
       }
       const res = await callFn(target.id, target.payload, `Bearer ${ACCESS_TOKEN}`);

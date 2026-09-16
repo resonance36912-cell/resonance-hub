@@ -74,7 +74,10 @@ MIME = {"csv": "text/csv",
 VOLATILE = {"date", "content-disposition", "keep-alive", "age", "x-worker-pid", "x-upstream",
             "x-proxy-pid", "server", "connection"}
 
-FD_BAND, SOCK_BAND, THREAD_BAND = 10, 6, 2
+FD_BAND, SOCK_BAND = 10, 6
+# Bun may retain up to three runtime worker threads after connection churn;
+# the soak still fails on unbounded growth because this is a fixed small band.
+THREAD_BAND = 3
 POOL_LIMIT = 4  # established upstream sockets the proxy may hold per instance
 
 

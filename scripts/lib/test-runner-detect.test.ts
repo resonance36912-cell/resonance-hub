@@ -54,7 +54,8 @@ describe("runnerCommand", () => {
   it("builds bun and vitest commands", () => {
     expect(runnerCommand("bun", "a.test.ts")).toEqual(["bun", "test", "a.test.ts"]);
     expect(runnerCommand("vitest", "a.test.ts")).toEqual([
-      "bunx",
+      "bun",
+      "x",
       "vitest",
       "run",
       "--reporter=default",

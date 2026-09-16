@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import {
   listHubApps,
   listHubOutcomes,
@@ -21,17 +21,7 @@ export const Route = createFileRoute("/admin/rop")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: RopAdmin,
 });
 
@@ -59,7 +49,9 @@ function RopAdmin() {
       register({ data: vars }),
     onSuccess: (res) => {
       setMinted({ slug: res.app.slug, raw: res.raw_signing_key, hmac: res.hmac_secret });
-      setSlug(""); setName(""); setPublicUrl("");
+      setSlug("");
+      setName("");
+      setPublicUrl("");
       qc.invalidateQueries({ queryKey: ["rop-apps"] });
     },
   });
@@ -92,10 +84,13 @@ function RopAdmin() {
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-6 py-12 space-y-12">
         <header>
-          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Resonance Admin</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+            Resonance Admin
+          </p>
           <h1 className="mt-2 text-3xl font-semibold">Optimization Protocol</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Register spoke apps, mint HMAC signing keys, review cross-app suggestions, and monitor outcomes.
+            Register spoke apps, mint HMAC signing keys, review cross-app suggestions, and monitor
+            outcomes.
           </p>
         </header>
 
@@ -107,7 +102,10 @@ function RopAdmin() {
             </p>
             <div className="mt-3 space-y-2 font-mono text-xs">
               <KeyRow label="HUB_SIGNING_KEY (raw)" value={minted.raw} />
-              <KeyRow label="HMAC secret (sha256 hex — actual secret used to sign requests)" value={minted.hmac} />
+              <KeyRow
+                label="HMAC secret (sha256 hex — actual secret used to sign requests)"
+                value={minted.hmac}
+              />
             </div>
             <button
               onClick={() => setMinted(null)}
@@ -131,17 +129,22 @@ function RopAdmin() {
             }}
           >
             <input
-              required value={slug} onChange={(e) => setSlug(e.target.value)}
+              required
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
               placeholder="slug (e.g. sync_vision)"
               className="rounded border border-border bg-background px-3 py-2 text-sm"
             />
             <input
-              required value={name} onChange={(e) => setName(e.target.value)}
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="display name"
               className="rounded border border-border bg-background px-3 py-2 text-sm"
             />
             <input
-              value={publicUrl} onChange={(e) => setPublicUrl(e.target.value)}
+              value={publicUrl}
+              onChange={(e) => setPublicUrl(e.target.value)}
               placeholder="origin url (optional)"
               className="rounded border border-border bg-background px-3 py-2 text-sm"
             />
@@ -188,7 +191,10 @@ function RopAdmin() {
                         <select
                           value={a.status}
                           onChange={(e) =>
-                            statusMut.mutate({ id: a.id, status: e.target.value as "active" | "paused" | "revoked" })
+                            statusMut.mutate({
+                              id: a.id,
+                              status: e.target.value as "active" | "paused" | "revoked",
+                            })
                           }
                           className="rounded border border-border bg-background px-2 py-1 text-xs"
                         >
@@ -203,7 +209,11 @@ function RopAdmin() {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => {
-                            if (confirm(`Rotate signing key for ${a.slug}? Old key stops working immediately.`)) {
+                            if (
+                              confirm(
+                                `Rotate signing key for ${a.slug}? Old key stops working immediately.`,
+                              )
+                            ) {
                               rotateMut.mutate(a.id);
                             }
                           }}
@@ -263,7 +273,11 @@ function RopAdmin() {
                             suggestionMut.mutate({
                               id: s.id,
                               status: e.target.value as
-                                | "pending" | "approved" | "applied" | "reverted" | "rejected",
+                                | "pending"
+                                | "approved"
+                                | "applied"
+                                | "reverted"
+                                | "rejected",
                             })
                           }
                           className="rounded border border-border bg-background px-2 py-1 text-xs"

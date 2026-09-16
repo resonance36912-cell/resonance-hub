@@ -41,7 +41,7 @@ const passSku = "all_access:creator_pass:monthly";
 
 // Pick a real allowlisted spoke origin to build positive cases from.
 const allowedOrigin = ALLOWED_RETURN_TO_ORIGINS.find((o) =>
-  o.includes("resonanceonline.life"),
+  o.includes("epublisher.reson8.life"),
 )!;
 const allowedDeepLink = `${allowedOrigin}/library?ref=hub`;
 const allowedHubDeepLink = "https://reson8.life/account";
@@ -49,7 +49,7 @@ const allowedHubDeepLink = "https://reson8.life/account";
 const disallowed: readonly string[] = [
   "https://evil.example.com/phish",
   "https://reson8.life.evil.com/", // suffix trick
-  "https://sub.resonanceonline.life.attacker.io/", // origin lookalike
+  "https://sub.epublisher.reson8.life.attacker.io/", // origin lookalike
   "http://reson8.life/account", // wrong scheme (http vs https)
   "javascript:alert(1)", // not http(s)
   "//reson8.life/account", // protocol-relative — not absolute
