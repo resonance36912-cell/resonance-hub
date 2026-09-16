@@ -1,6 +1,7 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ronsAuth } from "@/lib/auth-provider";
+import { sovereignAuthEnabled } from "@/lib/sovereign-auth-client";
 
 // Validate `next` as a same-origin relative path so we can't be redirected to
 // an external site after login.
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const { next } = Route.useSearch();
+  const sovereign = sovereignAuthEnabled();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -89,19 +91,29 @@ function LoginPage() {
             : "Create a Resonance account to continue."}
         </p>
 
-        <button
-          type="button"
-          onClick={signInWithGoogle}
-          className="mt-6 w-full rounded-lg border border-white/15 bg-white/[0.05] py-2.5 text-sm hover:bg-white/[0.08]"
-        >
-          Continue with Google
-        </button>
+        {!sovereign && (
+          <>
+            <button
+              type="button"
+              onClick={signInWithGoogle}
+              className="mt-6 w-full rounded-lg border border-white/15 bg-white/[0.05] py-2.5 text-sm hover:bg-white/[0.08]"
+            >
+              Continue with Google
+            </button>
 
-        <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-widest text-white/40">
-          <div className="h-px flex-1 bg-white/10" />
-          or
-          <div className="h-px flex-1 bg-white/10" />
-        </div>
+            <div className="my-6 flex items-center gap-3 text-[11px] uppercase tracking-widest text-white/40">
+              <div className="h-px flex-1 bg-white/10" />
+              or
+              <div className="h-px flex-1 bg-white/10" />
+            </div>
+          </>
+        )}
+
+        {sovereign && (
+          <p className="mt-6 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-white/55">
+            Sovereign sign-in uses your local Resonance account.
+          </p>
+        )}
 
         <form onSubmit={submit} className="space-y-4">
           <div>
