@@ -1,7 +1,19 @@
+import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
 import { sendLovableEmail } from "@lovable.dev/email-js";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  cancelSovereignBootstrapChallenge,
+  checkSovereignBootstrapChallenge,
+  claimSovereignFirstAdmin,
+  createSovereignBootstrapChallenge,
+  readSovereignBootstrapState,
+  type BackendProvider,
+  type BackendUser,
+} from "@/lib/backend-provider.server";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
+import { getRonsRuntimePath } from "@/lib/rons-runtime-paths.server";
 import {
   determineAdminBootstrapStatus,
   isAdminBootstrapToken,
@@ -13,62 +25,70 @@ import {
 const BOOTSTRAP_FROM = "Resonance Hub <noreply@www.reson8.life>";
 const BOOTSTRAP_SENDER_DOMAIN = "notify.www.reson8.life";
 const DEFAULT_BOOTSTRAP_BASE_URL = "https://reson8.life";
-
-type CanonicalUser = {
-  id: string;
-  email?: string;
-  email_confirmed_at?: string;
-};
-
 type CheckedBootstrapAccess = {
   status: AdminBootstrapStatus;
-  verifiedEmail: string | null;
+  canonicalEmail: string | null;
 };
 
-function requireCanonicalUser(
-  userId: string,
-  result: { data: { user: CanonicalUser | null }; error: unknown },
-): CanonicalUser {
-  if (result.error || !result.data.user || result.data.user.id !== userId) {
-    throw new Error("Unable to verify your session. Please sign in again.");
-  }
-  return result.data.user;
-}
+type BootstrapDelivery = "email" | "local_file";
+const LOCAL_BOOTSTRAP_FILE = "admin-bootstrap-verification.url";
 
 async function loadBootstrapAccess(
   userId: string,
-  user: CanonicalUser,
+  user: BackendUser,
+  provider: BackendProvider,
+  credential: string,
 ): Promise<CheckedBootstrapAccess> {
-  const [ownRoleResult, anyAdminResult, claimResult] = await Promise.all([
-    supabaseAdmin
-      .from("user_roles")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .limit(1),
-    supabaseAdmin.from("user_roles").select("id").eq("role", "admin").limit(1),
-    supabaseAdmin.from("admin_bootstrap_state").select("singleton").limit(1),
-  ]);
+  let isAdmin = false;
+  let adminExists = false;
+  let bootstrapClaimed = false;
 
-  const firstError = ownRoleResult.error ?? anyAdminResult.error ?? claimResult.error;
-  if (firstError) {
-    console.error("[Admin bootstrap] Status check failed");
-    throw new Error("Unable to check first-admin access. Please try again.");
+  if (provider === "sovereign") {
+    const state = await readSovereignBootstrapState(credential, userId);
+    isAdmin = state.callerIsAdmin;
+    adminExists = state.closed && !state.callerIsAdmin;
+    bootstrapClaimed = state.closed;
+  } else {
+    const [ownRoleResult, anyAdminResult, claimResult] = await Promise.all([
+      supabaseAdmin
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .limit(1),
+      supabaseAdmin.from("user_roles").select("id").eq("role", "admin").limit(1),
+      supabaseAdmin.from("admin_bootstrap_state").select("singleton").limit(1),
+    ]);
+    const firstError = ownRoleResult.error ?? anyAdminResult.error ?? claimResult.error;
+    if (firstError) {
+      console.error("[Admin bootstrap] Status check failed");
+      throw new Error("Unable to check first-admin access. Please try again.");
+    }
+    isAdmin = Boolean(ownRoleResult.data?.length);
+    adminExists = Boolean(anyAdminResult.data?.length);
+    bootstrapClaimed = Boolean(claimResult.data?.length);
   }
 
+  const canonicalEmail = user.email?.trim().toLowerCase() ?? null;
+  const emailConfirmedAt =
+    provider === "sovereign"
+      ? canonicalEmail
+        ? "local-owner-verification"
+        : null
+      : user.emailConfirmedAt;
   const status = determineAdminBootstrapStatus({
-    email: user?.email,
-    emailConfirmedAt: user?.email_confirmed_at,
-    isAdmin: Boolean(ownRoleResult.data?.length),
-    adminExists: Boolean(anyAdminResult.data?.length),
-    bootstrapClaimed: Boolean(claimResult.data?.length),
-    // This value is deliberately read only inside this server-function module.
+    email: canonicalEmail,
+    emailConfirmedAt,
+    isAdmin,
+    adminExists,
+    bootstrapClaimed,
     allowlistRaw: process.env.ADMIN_BOOTSTRAP_EMAILS,
   });
 
   return {
     status,
-    verifiedEmail: user.email && user.email_confirmed_at ? user.email.trim().toLowerCase() : null,
+    canonicalEmail:
+      status === "eligible" && canonicalEmail && emailConfirmedAt ? canonicalEmail : null,
   };
 }
 
@@ -82,16 +102,14 @@ async function hashBootstrapToken(token: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-
-function bootstrapVerificationUrl(token: string): string {
-  const configuredBase =
-    process.env.ADMIN_BOOTSTRAP_BASE_URL ?? process.env.HUB_URL ?? DEFAULT_BOOTSTRAP_BASE_URL;
+function bootstrapVerificationUrl(token: string, provider: BackendProvider): string {
+  const fallback = provider === "sovereign" ? "http://127.0.0.1:4173" : DEFAULT_BOOTSTRAP_BASE_URL;
+  const configuredBase = process.env.ADMIN_BOOTSTRAP_BASE_URL ?? process.env.HUB_URL ?? fallback;
   const url = new URL(configuredBase);
-  const isLocalDevelopment = url.hostname === "localhost" || url.hostname === "127.0.0.1";
-  if (url.protocol !== "https:" && !(isLocalDevelopment && url.protocol === "http:")) {
-    throw new Error("First-admin verification URL must use HTTPS.");
+  const local = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+  if (url.protocol !== "https:" && !(local && url.protocol === "http:")) {
+    throw new Error("First-admin verification URL must use HTTPS or loopback HTTP.");
   }
-
   url.pathname = "/admin/access";
   url.search = "";
   url.hash = "";
@@ -99,21 +117,48 @@ function bootstrapVerificationUrl(token: string): string {
   return url.toString();
 }
 
-async function sendBootstrapVerificationEmail({
+function localBootstrapPath(): string {
+  return getRonsRuntimePath(LOCAL_BOOTSTRAP_FILE);
+}
+
+async function writeLocalBootstrapLink(token: string): Promise<void> {
+  const path = localBootstrapPath();
+  await mkdir(dirname(path), { recursive: true });
+  const url = bootstrapVerificationUrl(token, "sovereign");
+  await writeFile(path, `[InternetShortcut]\r\nURL=${url}\r\n`, { encoding: "utf8" });
+}
+async function removeLocalBootstrapLink(): Promise<void> {
+  try {
+    await unlink(localBootstrapPath());
+  } catch (error) {
+    const code =
+      typeof error === "object" && error !== null && "code" in error
+        ? (error as { code?: unknown }).code
+        : null;
+    if (code !== "ENOENT") throw error;
+  }
+}
+
+async function deliverBootstrapVerification({
   email,
   token,
   tokenHash,
   userId,
+  provider,
 }: {
   email: string;
   token: string;
   tokenHash: string;
   userId: string;
-}): Promise<void> {
+  provider: BackendProvider;
+}): Promise<BootstrapDelivery> {
+  if (provider === "sovereign") {
+    await writeLocalBootstrapLink(token);
+    return "local_file";
+  }
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) throw new Error("First-admin verification email is not configured.");
-
-  const verificationUrl = bootstrapVerificationUrl(token);
+  const verificationUrl = bootstrapVerificationUrl(token, provider);
   const htmlUrl = verificationUrl.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
   const messageId = crypto.randomUUID();
 
@@ -132,10 +177,10 @@ async function sendBootstrapVerificationEmail({
     },
     { apiKey, sendUrl: process.env.LOVABLE_SEND_URL },
   );
+  return "email";
 }
-
 export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input: unknown) => {
     const token =
       input && typeof input === "object" && "token" in input
@@ -144,12 +189,24 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
     return { token: isAdminBootstrapToken(token) ? token : null };
   })
   .handler(async ({ context, data }) => {
-    const user = requireCanonicalUser(context.userId, await context.supabase.auth.getUser());
-    const { status } = await loadBootstrapAccess(context.userId, user);
-    if (status !== "eligible") return { status };
+    const access = await loadBootstrapAccess(
+      context.userId,
+      context.user,
+      context.authProvider,
+      context.credential,
+    );
+    if (access.status !== "eligible") return { status: access.status };
     if (!data.token) return { status: "email_reverification_required" as const };
 
     const tokenHash = await hashBootstrapToken(data.token);
+    if (context.authProvider === "sovereign") {
+      const valid = await checkSovereignBootstrapChallenge(
+        context.credential,
+        context.userId,
+        tokenHash,
+      );
+      return { status: valid ? ("eligible" as const) : ("email_reverification_required" as const) };
+    }
     const { data: challenge, error } = await supabaseAdmin
       .from("admin_bootstrap_email_challenges")
       .select("user_id")
@@ -158,12 +215,10 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
       .is("consumed_at", null)
       .gt("expires_at", new Date().toISOString())
       .limit(1);
-
     if (error) {
       console.error("[Admin bootstrap] Verification challenge check failed");
       throw new Error("Unable to check first-admin access. Please try again.");
     }
-
     return {
       status: challenge?.length
         ? ("eligible" as const)
@@ -171,63 +226,78 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
     };
   });
 
-/** Send a short-lived proof link only after every base eligibility check passes. */
 export const requestAdminBootstrapVerification = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
-    const user = requireCanonicalUser(context.userId, await context.supabase.auth.getUser());
-    const { status, verifiedEmail } = await loadBootstrapAccess(context.userId, user);
-    if (status !== "eligible") return { status };
-    if (!verifiedEmail) return { status: "email_unverified" as const };
+    const access = await loadBootstrapAccess(
+      context.userId,
+      context.user,
+      context.authProvider,
+      context.credential,
+    );
+    if (access.status !== "eligible") return { status: access.status };
+    if (!access.canonicalEmail) return { status: "email_unverified" as const };
 
     const token = generateBootstrapToken();
     const tokenHash = await hashBootstrapToken(token);
-    const { data, error } = await supabaseAdmin.rpc("create_admin_bootstrap_challenge", {
-      _user_id: context.userId,
-      _verified_email: verifiedEmail,
-      _token_hash: tokenHash,
-    });
-
-    if (error) {
-      console.error("[Admin bootstrap] Verification challenge creation failed");
-      throw new Error("Unable to send the verification link. Please try again.");
+    let rawChallenge: unknown;
+    if (context.authProvider === "sovereign") {
+      rawChallenge = await createSovereignBootstrapChallenge(
+        context.credential,
+        context.userId,
+        access.canonicalEmail,
+        tokenHash,
+      );
+    } else {
+      const { data, error } = await supabaseAdmin.rpc("create_admin_bootstrap_challenge", {
+        _user_id: context.userId,
+        _verified_email: access.canonicalEmail,
+        _token_hash: tokenHash,
+      });
+      if (error) {
+        console.error("[Admin bootstrap] Verification challenge creation failed");
+        throw new Error("Unable to prepare the verification link. Please try again.");
+      }
+      rawChallenge = data;
     }
 
-    const challengeResult = parseAdminBootstrapChallengeResult(data);
+    const challengeResult = parseAdminBootstrapChallengeResult(rawChallenge);
     if (challengeResult === "verification_recently_sent") {
       return { status: "verification_recently_sent" as const };
     }
     if (challengeResult !== "verification_created") return { status: challengeResult };
 
+    let delivery: BootstrapDelivery;
     try {
-      await sendBootstrapVerificationEmail({
-        email: verifiedEmail,
+      delivery = await deliverBootstrapVerification({
+        email: access.canonicalEmail,
         token,
         tokenHash,
         userId: context.userId,
+        provider: context.authProvider,
       });
     } catch {
-      const cleanup = await supabaseAdmin.rpc("cancel_admin_bootstrap_challenge", {
-        _user_id: context.userId,
-        _token_hash: tokenHash,
-      });
-      if (cleanup.error) {
+      try {
+        if (context.authProvider === "sovereign") {
+          await cancelSovereignBootstrapChallenge(context.credential, context.userId, tokenHash);
+        } else {
+          await supabaseAdmin.rpc("cancel_admin_bootstrap_challenge", {
+            _user_id: context.userId,
+            _token_hash: tokenHash,
+          });
+        }
+      } catch {
         console.error("[Admin bootstrap] Verification challenge cleanup failed");
       }
-      console.error("[Admin bootstrap] Verification email send failed");
-      throw new Error("Unable to send the verification link. Please try again.");
+      console.error("[Admin bootstrap] Verification delivery failed");
+      throw new Error("Unable to prepare the verification link. Please try again.");
     }
 
-    return { status: "verification_sent" as const };
+    return { status: "verification_sent" as const, delivery };
   });
 
-/**
- * Explicitly claim the one-time first-admin slot. Every eligibility predicate
- * is checked again here; the database RPC serializes contenders and records a
- * permanent claim so deleting every admin cannot re-open bootstrap access.
- */
 export const bootstrapAdmin = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .validator((input: unknown) => {
     const token =
       input && typeof input === "object" && "token" in input
@@ -236,24 +306,41 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
     return { token: isAdminBootstrapToken(token) ? token : null };
   })
   .handler(async ({ context, data }) => {
-    const user = requireCanonicalUser(context.userId, await context.supabase.auth.getUser());
-    const { status, verifiedEmail } = await loadBootstrapAccess(context.userId, user);
-    if (status !== "eligible") return { status };
-    if (!verifiedEmail) return { status: "email_unverified" as const };
+    const access = await loadBootstrapAccess(
+      context.userId,
+      context.user,
+      context.authProvider,
+      context.credential,
+    );
+    if (access.status !== "eligible") return { status: access.status };
+    if (!access.canonicalEmail) return { status: "email_unverified" as const };
     if (!data.token) return { status: "email_reverification_required" as const };
 
     const tokenHash = await hashBootstrapToken(data.token);
-
-    const { data: rpcResult, error } = await supabaseAdmin.rpc("bootstrap_first_admin", {
-      _user_id: context.userId,
-      _verified_email: verifiedEmail,
-      _token_hash: tokenHash,
-    });
-
-    if (error) {
-      console.error("[Admin bootstrap] Atomic claim failed");
-      throw new Error("Unable to create the first admin. Please try again.");
+    let rawResult: unknown;
+    if (context.authProvider === "sovereign") {
+      rawResult = await claimSovereignFirstAdmin(
+        context.credential,
+        context.userId,
+        access.canonicalEmail,
+        tokenHash,
+      );
+    } else {
+      const { data: rpcResult, error } = await supabaseAdmin.rpc("bootstrap_first_admin", {
+        _user_id: context.userId,
+        _verified_email: access.canonicalEmail,
+        _token_hash: tokenHash,
+      });
+      if (error) {
+        console.error("[Admin bootstrap] Atomic claim failed");
+        throw new Error("Unable to create the first admin. Please try again.");
+      }
+      rawResult = rpcResult;
     }
 
-    return { status: parseAdminBootstrapResult(rpcResult) };
+    const status = parseAdminBootstrapResult(rawResult);
+    if (context.authProvider === "sovereign" && status !== "email_reverification_required") {
+      await removeLocalBootstrapLink();
+    }
+    return { status };
   });

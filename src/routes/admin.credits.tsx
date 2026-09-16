@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import {
   lookupCreditUser,
   adjustCredits,
@@ -25,17 +25,7 @@ export const Route = createFileRoute("/admin/credits")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminCreditsPage,
 });
 
@@ -67,13 +57,17 @@ function AdminCreditsPage() {
           <div>
             <h1 className="text-3xl font-bold">Credit adjustments</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Add or subtract subscription credits. Every change is written to the
-              credit ledger with the acting admin, reason, and optional PayFast reference.
+              Add or subtract subscription credits. Every change is written to the credit ledger
+              with the acting admin, reason, and optional PayFast reference.
             </p>
           </div>
           <div className="flex gap-3 text-sm">
-            <AppLink to={ROUTES.adminBilling} className="text-primary underline">Billing overview</AppLink>
-            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">Invoices</AppLink>
+            <AppLink to={ROUTES.adminBilling} className="text-primary underline">
+              Billing overview
+            </AppLink>
+            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">
+              Invoices
+            </AppLink>
           </div>
         </header>
 
@@ -112,7 +106,9 @@ function AdminCreditsPage() {
         )}
 
         {submittedQuery && lookupQ.data && !lookupQ.data.user && (
-          <div className="rounded border bg-muted/30 p-4 text-sm">No user found for “{submittedQuery}”.</div>
+          <div className="rounded border bg-muted/30 p-4 text-sm">
+            No user found for “{submittedQuery}”.
+          </div>
         )}
 
         {lookupQ.data?.user && (
@@ -128,13 +124,7 @@ function AdminCreditsPage() {
   );
 }
 
-function UserPanel({
-  data,
-  onAdjusted,
-}: {
-  data: CreditUserLookup;
-  onAdjusted: () => void;
-}) {
+function UserPanel({ data, onAdjusted }: { data: CreditUserLookup; onAdjusted: () => void }) {
   const user = data.user!;
   return (
     <div className="space-y-8">
@@ -148,7 +138,9 @@ function UserPanel({
       <section className="rounded-lg border bg-card p-6">
         <h2 className="text-lg font-semibold mb-4">Current wallets</h2>
         {data.wallets.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No wallets yet. Add credits above to create one.</p>
+          <p className="text-sm text-muted-foreground">
+            No wallets yet. Add credits above to create one.
+          </p>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -195,7 +187,10 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
   const [reverseError, setReverseError] = useState<string | null>(null);
 
   const [applied, setApplied] = useState<{
-    app: string; pf: string; from: string; to: string;
+    app: string;
+    pf: string;
+    from: string;
+    to: string;
   }>({ app: "", pf: "", from: "", to: "" });
 
   const toIso = (d: string, endOfDay = false) => {
@@ -273,7 +268,9 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
           `Export capped at ${res.cap.toLocaleString()} rows. Narrow the date range or filters to export the rest.`,
         );
       } else {
-        setExportNotice(`Exported ${res.rows.length.toLocaleString()} row${res.rows.length === 1 ? "" : "s"}.`);
+        setExportNotice(
+          `Exported ${res.rows.length.toLocaleString()} row${res.rows.length === 1 ? "" : "s"}.`,
+        );
       }
     } catch (e) {
       setExportError((e as Error).message);
@@ -288,7 +285,9 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
         <h2 className="text-lg font-semibold">Ledger</h2>
         <div className="flex items-center gap-3">
           <p className="text-xs text-muted-foreground">
-            {ledgerQ.isFetching ? "Loading…" : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
+            {ledgerQ.isFetching
+              ? "Loading…"
+              : `${total.toLocaleString()} row${total === 1 ? "" : "s"}`}
           </p>
           <button
             type="button"
@@ -303,7 +302,9 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
       </div>
 
       {exportError && (
-        <div className="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs">{exportError}</div>
+        <div className="rounded border border-destructive/40 bg-destructive/10 p-2 text-xs">
+          {exportError}
+        </div>
       )}
       {exportNotice && (
         <div className="rounded border border-border/60 bg-muted p-2 text-xs">{exportNotice}</div>
@@ -318,7 +319,9 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
         }}
       >
         <div>
-          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">App</label>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">
+            App
+          </label>
           <select
             value={appFilter}
             onChange={(e) => setAppFilter(e.target.value)}
@@ -326,12 +329,16 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
           >
             <option value="">All apps</option>
             {walletApps.map((a) => (
-              <option key={a} value={a}>{labelForApp(a)} ({a})</option>
+              <option key={a} value={a}>
+                {labelForApp(a)} ({a})
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">PF payment id</label>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">
+            PF payment id
+          </label>
           <input
             type="text"
             value={pfFilter}
@@ -341,7 +348,9 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
           />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">From</label>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">
+            From
+          </label>
           <input
             type="date"
             value={fromDate}
@@ -350,7 +359,9 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
           />
         </div>
         <div>
-          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">To</label>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">
+            To
+          </label>
           <input
             type="date"
             value={toDate}
@@ -368,7 +379,10 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
           <button
             type="button"
             onClick={() => {
-              setAppFilter(""); setPfFilter(""); setFromDate(""); setToDate("");
+              setAppFilter("");
+              setPfFilter("");
+              setFromDate("");
+              setToDate("");
               setApplied({ app: "", pf: "", from: "", to: "" });
               setPage(1);
             }}
@@ -421,15 +435,22 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                 const pending = reverseM.isPending && reverseM.variables === row.id;
                 return (
                   <tr key={row.id} className="border-b last:border-0 align-top">
-                    <td className="py-2 pr-3 whitespace-nowrap">{new Date(row.created_at).toLocaleString()}</td>
+                    <td className="py-2 pr-3 whitespace-nowrap">
+                      {new Date(row.created_at).toLocaleString()}
+                    </td>
                     <td className="py-2 pr-3">{labelForApp(row.app)}</td>
-                    <td className={`py-2 pr-3 font-mono ${row.delta >= 0 ? "text-emerald-500" : "text-destructive"}`}>
-                      {row.delta > 0 ? "+" : ""}{row.delta}
+                    <td
+                      className={`py-2 pr-3 font-mono ${row.delta >= 0 ? "text-emerald-500" : "text-destructive"}`}
+                    >
+                      {row.delta > 0 ? "+" : ""}
+                      {row.delta}
                     </td>
                     <td className="py-2 pr-3 font-mono">{row.balance_after}</td>
                     <td className="py-2 pr-3">
                       <div>{row.reason}</div>
-                      {meta.note && <div className="text-xs text-muted-foreground">{meta.note}</div>}
+                      {meta.note && (
+                        <div className="text-xs text-muted-foreground">{meta.note}</div>
+                      )}
                     </td>
                     <td className="py-2 pr-3 text-xs font-mono">
                       {row.pf_payment_id ? (
@@ -487,11 +508,16 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
           <label className="text-xs uppercase tracking-wide text-muted-foreground">Per page</label>
           <select
             value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
             className="rounded border bg-background px-2 py-1 text-sm"
           >
             {[10, 25, 50, 100, 200].map((n) => (
-              <option key={n} value={n}>{n}</option>
+              <option key={n} value={n}>
+                {n}
+              </option>
             ))}
           </select>
         </div>
@@ -550,7 +576,9 @@ function AdjustForm({
   const mutation = useMutation({
     mutationFn: (input: AdjustInput) => adjustFn({ data: input }),
     onSuccess: (res) => {
-      setOk(`Updated ${labelForApp(res.wallet.app)} → balance ${res.wallet.balance.toLocaleString()}`);
+      setOk(
+        `Updated ${labelForApp(res.wallet.app)} → balance ${res.wallet.balance.toLocaleString()}`,
+      );
       setDelta("");
       setReason("");
       setPfPaymentId("");
@@ -585,14 +613,18 @@ function AdjustForm({
         }}
       >
         <div>
-          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">App</label>
+          <label className="block text-xs uppercase tracking-wide text-muted-foreground mb-1">
+            App
+          </label>
           <select
             value={app}
             onChange={(e) => setApp(e.target.value)}
             className="w-full rounded border bg-background px-3 py-2 text-sm"
           >
             {appOptions.map((a) => (
-              <option key={a} value={a}>{labelForApp(a)} ({a})</option>
+              <option key={a} value={a}>
+                {labelForApp(a)} ({a})
+              </option>
             ))}
             <option value="__custom__">Other…</option>
           </select>
@@ -673,9 +705,7 @@ function AdjustForm({
           </button>
           {ok && <span className="text-sm text-emerald-500">{ok}</span>}
           {mutation.error && (
-            <span className="text-sm text-destructive">
-              {(mutation.error as Error).message}
-            </span>
+            <span className="text-sm text-destructive">{(mutation.error as Error).message}</span>
           )}
         </div>
       </form>

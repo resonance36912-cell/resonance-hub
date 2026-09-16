@@ -1,7 +1,7 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { getRonsControlState } from "@/lib/rons-control.functions";
 import {
   compareAiCouncil,
@@ -19,17 +19,7 @@ export const Route = createFileRoute("/admin/control-center")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/admin/login" });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: "/admin/login" });
-  },
+  beforeLoad: requireAdminRoute,
   component: ControlCenter,
 });
 

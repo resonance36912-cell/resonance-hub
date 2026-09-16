@@ -1,7 +1,7 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import {
   getAdminBilling,
   labelForApp,
@@ -17,17 +17,7 @@ export const Route = createFileRoute("/admin/billing")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminBillingPage,
 });
 
@@ -50,10 +40,18 @@ function AdminBillingPage() {
             </p>
           </div>
           <div className="flex gap-3 text-sm">
-            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">Invoices</AppLink>
-            <AppLink to={ROUTES.adminCredits} className="text-primary underline">Credit adjustments</AppLink>
-            <AppLink to={ROUTES.adminRevenue} className="text-primary underline">Revenue & profit</AppLink>
-            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</AppLink>
+            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">
+              Invoices
+            </AppLink>
+            <AppLink to={ROUTES.adminCredits} className="text-primary underline">
+              Credit adjustments
+            </AppLink>
+            <AppLink to={ROUTES.adminRevenue} className="text-primary underline">
+              Revenue & profit
+            </AppLink>
+            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">
+              PayFast audit
+            </AppLink>
           </div>
         </header>
 
@@ -61,7 +59,9 @@ function AdminBillingPage() {
         {error && (
           <div className="rounded border border-destructive/40 bg-destructive/10 p-4 text-sm">
             <p>Could not load billing overview: {(error as Error).message}</p>
-            <button onClick={() => refetch()} className="mt-2 underline">Retry</button>
+            <button onClick={() => refetch()} className="mt-2 underline">
+              Retry
+            </button>
           </div>
         )}
 
@@ -70,7 +70,10 @@ function AdminBillingPage() {
             <section className="grid gap-4 sm:grid-cols-3">
               <Stat label="Active subscriptions" value={data.totalActiveSubs.toLocaleString()} />
               <Stat label="Credit wallets" value={data.totalWallets.toLocaleString()} />
-              <Stat label="Total credits outstanding" value={data.totalCreditBalance.toLocaleString()} />
+              <Stat
+                label="Total credits outstanding"
+                value={data.totalCreditBalance.toLocaleString()}
+              />
             </section>
 
             <div className="grid gap-6 lg:grid-cols-2">
@@ -80,7 +83,10 @@ function AdminBillingPage() {
                 ) : (
                   <ul className="space-y-2 text-sm">
                     {data.subsByApp.map((row) => (
-                      <li key={row.app} className="flex justify-between border-b pb-2 last:border-0">
+                      <li
+                        key={row.app}
+                        className="flex justify-between border-b pb-2 last:border-0"
+                      >
                         <span>{labelForApp(row.app)}</span>
                         <span className="font-mono">{row.count}</span>
                       </li>
@@ -95,10 +101,14 @@ function AdminBillingPage() {
                 ) : (
                   <ul className="space-y-2 text-sm">
                     {data.walletsByApp.map((row) => (
-                      <li key={row.app} className="flex justify-between border-b pb-2 last:border-0">
+                      <li
+                        key={row.app}
+                        className="flex justify-between border-b pb-2 last:border-0"
+                      >
                         <span>{labelForApp(row.app)}</span>
                         <span className="font-mono">
-                          {row.balance.toLocaleString()} · {row.wallets} wallet{row.wallets === 1 ? "" : "s"}
+                          {row.balance.toLocaleString()} · {row.wallets} wallet
+                          {row.wallets === 1 ? "" : "s"}
                         </span>
                       </li>
                     ))}
@@ -128,10 +138,15 @@ function AdminBillingPage() {
                       {data.recentLedger.map((row) => (
                         <tr key={row.id} className="border-b last:border-0">
                           <td className="py-2 pr-3">{new Date(row.created_at).toLocaleString()}</td>
-                          <td className="py-2 pr-3 font-mono text-xs">{row.user_id.slice(0, 8)}…</td>
+                          <td className="py-2 pr-3 font-mono text-xs">
+                            {row.user_id.slice(0, 8)}…
+                          </td>
                           <td className="py-2 pr-3">{labelForApp(row.app)}</td>
-                          <td className={`py-2 pr-3 font-mono ${row.delta >= 0 ? "text-emerald-500" : "text-destructive"}`}>
-                            {row.delta > 0 ? "+" : ""}{row.delta}
+                          <td
+                            className={`py-2 pr-3 font-mono ${row.delta >= 0 ? "text-emerald-500" : "text-destructive"}`}
+                          >
+                            {row.delta > 0 ? "+" : ""}
+                            {row.delta}
                           </td>
                           <td className="py-2 pr-3 font-mono">{row.balance_after}</td>
                           <td className="py-2 pr-3">{row.reason}</td>

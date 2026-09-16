@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { listPayfastAudit, type AuditTrace } from "@/lib/payfast-audit.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
@@ -14,17 +14,7 @@ export const Route = createFileRoute("/admin/payfast-audit")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AuditPage,
 });
 
@@ -57,9 +47,7 @@ function AuditPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | AuditTrace["match"]>("all");
 
-  const traces = (data?.traces ?? []).filter((t) =>
-    filter === "all" ? true : t.match === filter,
-  );
+  const traces = (data?.traces ?? []).filter((t) => (filter === "all" ? true : t.match === filter));
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -71,9 +59,8 @@ function AuditPage() {
             </p>
             <h1 className="mt-2 text-3xl font-semibold">PayFast Audit Trail</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Launches matched to ITN returns by{" "}
-              <code>m_payment_id</code>. Confirms the amount sent equals the
-              amount accepted.
+              Launches matched to ITN returns by <code>m_payment_id</code>. Confirms the amount sent
+              equals the amount accepted.
             </p>
             <div className="mt-2 text-xs text-muted-foreground">
               <AppLink to={ROUTES.adminWebhooks} className="hover:underline text-primary">
@@ -134,8 +121,7 @@ function AuditPage() {
               </thead>
               <tbody>
                 {traces.map((t) => {
-                  const time =
-                    t.launch?.created_at ?? t.itns[0]?.received_at ?? "";
+                  const time = t.launch?.created_at ?? t.itns[0]?.received_at ?? "";
                   const sku = t.launch?.sku ?? t.itns[0]?.sku ?? "—";
                   const uid = t.launch?.user_id ?? t.itns[0]?.user_id ?? null;
                   const isOpen = expanded === t.m_payment_id;
@@ -156,9 +142,7 @@ function AuditPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 font-mono text-xs">{sku}</td>
-                        <td className="px-4 py-3 font-mono text-xs">
-                          {zar(t.sent_amount_cents)}
-                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">{zar(t.sent_amount_cents)}</td>
                         <td className="px-4 py-3 font-mono text-xs">
                           {zar(t.accepted_amount_cents)}
                           {t.sent_amount_cents != null &&
@@ -178,9 +162,7 @@ function AuditPage() {
                         <td className="px-4 py-3 text-right">
                           <button
                             className="text-xs text-primary hover:underline"
-                            onClick={() =>
-                              setExpanded(isOpen ? null : t.m_payment_id)
-                            }
+                            onClick={() => setExpanded(isOpen ? null : t.m_payment_id)}
                           >
                             {isOpen ? "Hide" : "Details"}
                           </button>
@@ -199,8 +181,7 @@ function AuditPage() {
                                 </pre>
                               ) : (
                                 <p className="text-xs text-muted-foreground">
-                                  No launch log recorded (ITN received without a
-                                  matching launch).
+                                  No launch log recorded (ITN received without a matching launch).
                                 </p>
                               )}
                             </section>
@@ -210,8 +191,7 @@ function AuditPage() {
                               </h3>
                               {t.itns.length === 0 ? (
                                 <p className="text-xs text-muted-foreground">
-                                  No ITN received yet — checkout pending or
-                                  abandoned.
+                                  No ITN received yet — checkout pending or abandoned.
                                 </p>
                               ) : (
                                 <div className="space-y-2">
@@ -222,28 +202,22 @@ function AuditPage() {
                                     >
                                       <div className="mb-1 flex items-center gap-2">
                                         <span className="font-mono">
-                                          {new Date(
-                                            it.received_at,
-                                          ).toLocaleString()}
+                                          {new Date(it.received_at).toLocaleString()}
                                         </span>
                                         <span className="rounded bg-muted px-1.5 py-0.5">
                                           {it.outcome} · {it.http_status}
                                         </span>
                                         <span>
-                                          sig {it.signature_valid ? "✓" : "✗"} /
-                                          validated{" "}
+                                          sig {it.signature_valid ? "✓" : "✗"} / validated{" "}
                                           {it.server_validated ? "✓" : "✗"}
                                         </span>
                                       </div>
                                       <div className="font-mono">
                                         amount {zar(it.amount_cents)} · status{" "}
-                                        {it.payment_status ?? "—"} · pf_id{" "}
-                                        {it.pf_payment_id ?? "—"}
+                                        {it.payment_status ?? "—"} · pf_id {it.pf_payment_id ?? "—"}
                                       </div>
                                       {it.error_message && (
-                                        <div className="mt-1 text-red-300">
-                                          {it.error_message}
-                                        </div>
+                                        <div className="mt-1 text-red-300">{it.error_message}</div>
                                       )}
                                     </div>
                                   ))}

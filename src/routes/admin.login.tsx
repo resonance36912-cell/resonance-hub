@@ -1,24 +1,14 @@
-import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getCurrentAdminAccess } from "@/lib/admin-access.functions";
+import { redirectAuthenticatedAdmin } from "@/lib/admin-auth-client";
+import { ronsAuth } from "@/lib/auth-provider";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
     meta: [{ title: "Admin Login — Resonance" }, { name: "robots", content: "noindex, nofollow" }],
   }),
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
-    if (data.user) {
-      const { data: role } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (role) throw redirect({ to: "/admin" });
-      throw redirect({ to: "/admin/access" });
-    }
-  },
+  beforeLoad: redirectAuthenticatedAdmin,
   component: AdminLoginPage,
 });
 
@@ -35,30 +25,21 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  async function routeSignedInUser(userId: string) {
-    const { data: role, error: roleError } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (roleError) throw roleError;
-
-    if (role) {
-      await navigate({ to: "/admin" });
-    } else {
-      await navigate({ to: "/admin/access" });
-    }
+  async function routeSignedInUser() {
+    const access = await getCurrentAdminAccess();
+    if (!access.authenticated)
+      throw new Error("Signed-in session was not available to the admin guard");
+    if (access.isAdmin) await navigate({ to: "/admin" });
+    else await navigate({ to: "/admin/access" });
   }
 
   useEffect(() => {
     // Handle case where user lands on this page already signed in
     // (e.g. after email confirmation link, or returning after sign-in).
     let cancelled = false;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (cancelled || !data.user) return;
-      void routeSignedInUser(data.user.id).catch(() => {
+      void routeSignedInUser().catch(() => {
         if (!cancelled) {
           setError("We couldn't check admin access. Please try signing in again.");
         }
@@ -77,10 +58,10 @@ function AdminLoginPage() {
     setNotice(null);
     try {
       if (mode === "signin") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await ronsAuth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
-          await routeSignedInUser(data.user.id);
+          await routeSignedInUser();
         }
       } else {
         if (!signupAllowed) {
@@ -88,10 +69,10 @@ function AdminLoginPage() {
             "Account creation is disabled. Contact an existing admin for an invite link.",
           );
         }
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await ronsAuth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/admin/login` },
+          redirectTo: `${window.location.origin}/admin/login`,
         });
         if (error) throw error;
         if (!data.session) {
@@ -99,7 +80,7 @@ function AdminLoginPage() {
             "Check your email to confirm your account, then return here to sign in and review admin access.",
           );
         } else if (data.user) {
-          await routeSignedInUser(data.user.id);
+          await routeSignedInUser();
         }
       }
     } catch (e) {

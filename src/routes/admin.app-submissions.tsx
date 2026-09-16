@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import {
   listAppSubmissions,
   reviewAppSubmission,
@@ -18,22 +18,9 @@ import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/app-submissions")({
   head: () => ({
-    meta: [
-      { title: "App Submissions — Admin" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "App Submissions — Admin" }, { name: "robots", content: "noindex, nofollow" }],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminAppSubmissions,
 });
 
@@ -72,10 +59,15 @@ function AdminAppSubmissions() {
           <h1 className="text-3xl font-semibold tracking-tight">App submissions</h1>
           <p className="mt-1 text-muted-foreground">
             Review community-submitted apps. Publish to add them to the{" "}
-            <AppLink to={ROUTES.apps} className="underline">catalog</AppLink>.
+            <AppLink to={ROUTES.apps} className="underline">
+              catalog
+            </AppLink>
+            .
           </p>
         </div>
-        <AppLink to={ROUTES.admin} className="text-sm underline">← Admin home</AppLink>
+        <AppLink to={ROUTES.admin} className="text-sm underline">
+          ← Admin home
+        </AppLink>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -141,13 +133,11 @@ function AuditLogPanel() {
     <section className="mt-12">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-xl font-semibold tracking-tight">Audit log</h2>
-        <p className="text-xs text-muted-foreground">
-          Last {entries.length} review actions
-        </p>
+        <p className="text-xs text-muted-foreground">Last {entries.length} review actions</p>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Every approve, reject, publish, unpublish, and delete action is recorded here
-        with the reviewer identity and note.
+        Every approve, reject, publish, unpublish, and delete action is recorded here with the
+        reviewer identity and note.
       </p>
 
       {isLoading ? (
@@ -181,16 +171,16 @@ function AuditLogPanel() {
                   </td>
                   <td className="px-3 py-2 font-medium">{e.submission_name}</td>
                   <td className="px-3 py-2">
-                    <span className={`rounded-full border px-2 py-0.5 text-xs capitalize ${AUDIT_ACTION_STYLES[e.action]}`}>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-xs capitalize ${AUDIT_ACTION_STYLES[e.action]}`}
+                    >
                       {e.action}
                     </span>
                   </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">
                     {e.status_before ?? "—"} → {e.status_after ?? "deleted"}
                   </td>
-                  <td className="px-3 py-2 text-xs">
-                    {e.reviewer_email ?? e.reviewer_user_id}
-                  </td>
+                  <td className="px-3 py-2 text-xs">{e.reviewer_email ?? e.reviewer_user_id}</td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">
                     {e.note ? <span className="whitespace-pre-wrap">{e.note}</span> : "—"}
                   </td>
@@ -266,11 +256,23 @@ function SubmissionCard({
             </p>
           ) : null}
           <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2">
-            <div><dt className="inline font-medium">Use case: </dt><dd className="inline">{s.use_case ?? "—"}</dd></div>
-            <div><dt className="inline font-medium">Contact: </dt><dd className="inline">{s.contact_email}</dd></div>
-            <div><dt className="inline font-medium">Submitted: </dt><dd className="inline">{new Date(s.created_at).toLocaleString()}</dd></div>
+            <div>
+              <dt className="inline font-medium">Use case: </dt>
+              <dd className="inline">{s.use_case ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium">Contact: </dt>
+              <dd className="inline">{s.contact_email}</dd>
+            </div>
+            <div>
+              <dt className="inline font-medium">Submitted: </dt>
+              <dd className="inline">{new Date(s.created_at).toLocaleString()}</dd>
+            </div>
             {s.reviewed_at ? (
-              <div><dt className="inline font-medium">Reviewed: </dt><dd className="inline">{new Date(s.reviewed_at).toLocaleString()}</dd></div>
+              <div>
+                <dt className="inline font-medium">Reviewed: </dt>
+                <dd className="inline">{new Date(s.reviewed_at).toLocaleString()}</dd>
+              </div>
             ) : null}
           </dl>
         </div>
@@ -296,7 +298,6 @@ function SubmissionCard({
       </div>
 
       <div className="mt-4">
-
         <label className="block text-xs font-medium text-muted-foreground">
           Review notes (optional, saved with the action)
         </label>

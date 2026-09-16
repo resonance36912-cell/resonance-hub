@@ -1,7 +1,7 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { checkEmailDomain, type RecordCheck } from "@/lib/email-domain.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
@@ -13,17 +13,7 @@ export const Route = createFileRoute("/admin/email-domain")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: EmailDomainPage,
 });
 
@@ -54,8 +44,8 @@ function EmailDomainPage() {
               <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
                 notify.www.reson8.life
               </code>
-              . These records prove that PayFast subscription emails are
-              authorized to be sent from your domain.{" "}
+              . These records prove that PayFast subscription emails are authorized to be sent from
+              your domain.{" "}
               <AppLink to={ROUTES.adminEmails} className="text-primary hover:underline">
                 Back to delivery log →
               </AppLink>
@@ -111,24 +101,24 @@ function EmailDomainPage() {
                 Setup steps
               </p>
               <li>
-                <strong className="text-foreground">1. Delegate the subdomain.</strong>{" "}
-                At your DNS provider, add <code className="font-mono text-xs">NS</code> records
-                for <code className="font-mono text-xs">notify.www.reson8.life</code> pointing
-                to <code className="font-mono text-xs">ns5.lovable.cloud</code> and{" "}
+                <strong className="text-foreground">1. Delegate the subdomain.</strong> At your DNS
+                provider, add <code className="font-mono text-xs">NS</code> records for{" "}
+                <code className="font-mono text-xs">notify.www.reson8.life</code> pointing to{" "}
+                <code className="font-mono text-xs">ns5.lovable.cloud</code> and{" "}
                 <code className="font-mono text-xs">ns6.lovable.cloud</code>.
               </li>
               <li>
-                <strong className="text-foreground">2. Wait for propagation.</strong>{" "}
-                DNS can take up to 72 hours. Most providers update within minutes.
+                <strong className="text-foreground">2. Wait for propagation.</strong> DNS can take
+                up to 72 hours. Most providers update within minutes.
               </li>
               <li>
-                <strong className="text-foreground">3. SPF, DKIM, DMARC.</strong>{" "}
-                Once NS delegation is live, the SPF, DKIM, and DMARC records below
-                are provisioned automatically on the delegated subdomain.
+                <strong className="text-foreground">3. SPF, DKIM, DMARC.</strong> Once NS delegation
+                is live, the SPF, DKIM, and DMARC records below are provisioned automatically on the
+                delegated subdomain.
               </li>
               <li>
-                <strong className="text-foreground">4. Recheck.</strong>{" "}
-                Click <em>Recheck verification</em> above until every record turns green.
+                <strong className="text-foreground">4. Recheck.</strong> Click{" "}
+                <em>Recheck verification</em> above until every record turns green.
               </li>
             </ol>
 
@@ -160,9 +150,7 @@ function CheckRow({ check }: { check: RecordCheck }) {
           <div className="flex items-center gap-3">
             <span
               className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                check.ok
-                  ? "bg-emerald-500/15 text-emerald-300"
-                  : "bg-amber-500/15 text-amber-300"
+                check.ok ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"
               }`}
             >
               {check.ok ? "✓ Verified" : "⏳ Pending"}

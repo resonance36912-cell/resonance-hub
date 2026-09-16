@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
 import { listReturnToOrigins } from "@/lib/return-to-allowlist.functions";
@@ -30,23 +30,11 @@ export const Route = createFileRoute("/admin/return-to-counterexamples")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminReturnToCounterexamples,
 });
 
-const CATEGORIES = Object.keys(
-  COUNTEREXAMPLE_CATEGORY_LABELS,
-) as CounterexampleCategory[];
+const CATEGORIES = Object.keys(COUNTEREXAMPLE_CATEGORY_LABELS) as CounterexampleCategory[];
 
 function AdminReturnToCounterexamples() {
   const listFn = useServerFn(listReturnToOrigins);
@@ -57,9 +45,7 @@ function AdminReturnToCounterexamples() {
 
   const { input: inspectedInput, suite: inspectedSuite } = Route.useSearch();
 
-  const [category, setCategory] = useState<"all" | CounterexampleCategory>(
-    "all",
-  );
+  const [category, setCategory] = useState<"all" | CounterexampleCategory>("all");
 
   const extras = useMemo(
     () => (originRows ?? []).filter((r) => r.enabled).map((r) => r.origin),
@@ -68,9 +54,7 @@ function AdminReturnToCounterexamples() {
 
   const rows = useMemo(() => {
     const all = sanitizeCounterexamples(extras);
-    return category === "all"
-      ? all
-      : all.filter((r) => r.category === category);
+    return category === "all" ? all : all.filter((r) => r.category === category);
   }, [extras, category]);
 
   const inspected = useMemo(
@@ -95,16 +79,12 @@ function AdminReturnToCounterexamples() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        return_to counterexamples
-      </h1>
+      <h1 className="text-3xl font-semibold tracking-tight">return_to counterexamples</h1>
       <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-        Every synthetic candidate below is expected to be refused — either by
-        the structural check that runs before a PayFast{" "}
-        <code>return_url</code> is signed, or by the origin allowlist. Fields
-        are sanitized: paths, queries and fragments are shown as a structure
-        only. Verdicts reflect the live effective policy, including the enabled
-        entries on{" "}
+        Every synthetic candidate below is expected to be refused — either by the structural check
+        that runs before a PayFast <code>return_url</code> is signed, or by the origin allowlist.
+        Fields are sanitized: paths, queries and fragments are shown as a structure only. Verdicts
+        reflect the live effective policy, including the enabled entries on{" "}
         <AppLink to={ROUTES.adminReturnToAllowlist} className="underline">
           the allowlist page
         </AppLink>
@@ -114,13 +94,13 @@ function AdminReturnToCounterexamples() {
       {unexpectedlyAllowed.length > 0 ? (
         <p className="mt-6 rounded-md border border-destructive bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {unexpectedlyAllowed.length} counterexample
-          {unexpectedlyAllowed.length === 1 ? "" : "s"} currently ACCEPTED — an
-          admin-managed origin is likely too broad. Review the allowlist.
+          {unexpectedlyAllowed.length === 1 ? "" : "s"} currently ACCEPTED — an admin-managed origin
+          is likely too broad. Review the allowlist.
         </p>
       ) : (
         <p className="mt-6 rounded-md border border-border bg-muted px-4 py-3 text-sm">
-          All {RETURN_TO_COUNTEREXAMPLES.length} counterexamples are refused
-          under the current policy.
+          All {RETURN_TO_COUNTEREXAMPLES.length} counterexamples are refused under the current
+          policy.
         </p>
       )}
 
@@ -203,40 +183,24 @@ function AdminReturnToCounterexamples() {
                     {COUNTEREXAMPLE_CATEGORY_LABELS[r.category]} · {r.attack}
                   </span>
                 </td>
-                <td className="py-3 pr-4 font-mono text-xs">
-                  {r.scheme ?? "—"}
-                </td>
+                <td className="py-3 pr-4 font-mono text-xs">{r.scheme ?? "—"}</td>
                 <td className="py-3 pr-4 font-mono text-xs">{r.host ?? "—"}</td>
                 <td className="py-3 pr-4 font-mono text-xs">{r.port ?? "—"}</td>
-                <td className="py-3 pr-4 text-xs">
-                  {r.hasUserinfo ? "present" : "—"}
-                </td>
-                <td className="py-3 pr-4 text-xs text-muted-foreground">
-                  {r.shape}
-                </td>
-                <td className="py-3 pr-4 font-mono text-xs">
-                  {r.origin ?? "—"}
-                </td>
+                <td className="py-3 pr-4 text-xs">{r.hasUserinfo ? "present" : "—"}</td>
+                <td className="py-3 pr-4 text-xs text-muted-foreground">{r.shape}</td>
+                <td className="py-3 pr-4 font-mono text-xs">{r.origin ?? "—"}</td>
                 <td className="py-3 pr-4 text-xs">
                   {r.failsAt === "signing" ? (
-                    <span className="font-medium text-destructive">
-                      signing
-                    </span>
+                    <span className="font-medium text-destructive">signing</span>
                   ) : r.failsAt === "allowlist" ? (
-                    <span className="font-medium text-destructive">
-                      allowlist
-                    </span>
+                    <span className="font-medium text-destructive">allowlist</span>
                   ) : (
-                    <span className="font-medium text-primary">
-                      not refused
-                    </span>
+                    <span className="font-medium text-primary">not refused</span>
                   )}
                 </td>
                 <td className="py-3 text-xs">
                   <span className="block font-mono">{r.verdict.code}</span>
-                  <span className="block text-muted-foreground">
-                    {r.verdict.reason}
-                  </span>
+                  <span className="block text-muted-foreground">{r.verdict.reason}</span>
                 </td>
               </tr>
             ))}

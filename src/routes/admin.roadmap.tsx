@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
 import {
@@ -16,22 +16,9 @@ import {
 
 export const Route = createFileRoute("/admin/roadmap")({
   head: () => ({
-    meta: [
-      { title: "Roadmap — Admin" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "Roadmap — Admin" }, { name: "robots", content: "noindex, nofollow" }],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminRoadmap,
 });
 
@@ -121,7 +108,9 @@ function AdminRoadmap() {
             Manage the homepage &ldquo;What&apos;s coming next&rdquo; section.
           </p>
         </div>
-        <AppLink to={ROUTES.admin} className="text-sm underline">← Admin home</AppLink>
+        <AppLink to={ROUTES.admin} className="text-sm underline">
+          ← Admin home
+        </AppLink>
       </div>
 
       {message ? (
@@ -129,9 +118,7 @@ function AdminRoadmap() {
       ) : null}
 
       <section className="mt-6 rounded-lg border border-border p-4">
-        <h2 className="text-lg font-semibold">
-          {editingId ? `Edit “${editingId}”` : "New item"}
-        </h2>
+        <h2 className="text-lg font-semibold">{editingId ? `Edit “${editingId}”` : "New item"}</h2>
         <form
           className="mt-3 grid gap-3"
           onSubmit={(e) => {
@@ -181,7 +168,9 @@ function AdminRoadmap() {
                 onChange={(e) => setDraft({ ...draft, status: e.target.value as RoadmapStatus })}
               >
                 {ROADMAP_STATUSES.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
                 ))}
               </select>
             </label>
@@ -250,7 +239,9 @@ function AdminRoadmap() {
                       {r.status}
                     </span>
                     <h3 className="font-medium">{r.title}</h3>
-                    <span className="text-xs text-muted-foreground">#{r.sortOrder} · {r.id}</span>
+                    <span className="text-xs text-muted-foreground">
+                      #{r.sortOrder} · {r.id}
+                    </span>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{r.description}</p>
                   {r.publicNote ? (
