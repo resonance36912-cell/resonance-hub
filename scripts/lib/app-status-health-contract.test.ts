@@ -1,10 +1,18 @@
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
 import {
   APP_STATUS_SCHEMA_VERSION,
   buildAppStatusHealthPayload,
 } from "../../src/routes/api/public/app-status.health";
 
 describe("RONSAS app-status health contract", () => {
+  test("remains GET/OPTIONS-only for unauthenticated public access", () => {
+    const source = readFileSync(new URL("../../src/routes/api/public/app-status.health.ts", import.meta.url), "utf8");
+    expect(source).toContain("OPTIONS:");
+    expect(source).toContain("GET:");
+    expect(source).not.toMatch(/\b(?:POST|PUT|PATCH|DELETE)\s*:/);
+  });
+
   test("matches the drift schema and exposes all five paid apps", () => {
     const payload = buildAppStatusHealthPayload();
     expect(payload.ok).toBe(true);
