@@ -16,7 +16,7 @@ const HUB = "https://reson8.life";
 const SECRET_PATH = "/account?token=SUPERSECRET#frag";
 
 const allowedSpoke = ALLOWED_RETURN_TO_ORIGINS.find((o) =>
-  o.includes("resonanceonline.life"),
+  o.includes("epublisher.reson8.life"),
 )!;
 
 const hostile: readonly string[] = [

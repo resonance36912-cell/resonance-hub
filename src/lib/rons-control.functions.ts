@@ -118,9 +118,9 @@ export const getRonsControlState = createServerFn({ method: "GET" })
       localHealth,
       promotionSites: [
         { name: "Resonance Hub", url: "https://www.reson8.life", email: "" },
-        { name: "Resonance Online", url: "https://www.resonanceonline.life", email: "" },
-        { name: "Creative Studio", url: "https://www.creativestudio.life", email: "" },
-        { name: "Sync Vision", url: "https://www.syncvision.life", email: "" },
+        { name: "Resonance Online", url: "https://epublisher.reson8.life", email: "" },
+        { name: "Creative Studio", url: "https://creative.reson8.life", email: "" },
+        { name: "Sync Vision", url: "https://sync.reson8.life", email: "" },
         {
           name: "Resonance Naturals",
           url: "https://www.resonance-products.com/products",

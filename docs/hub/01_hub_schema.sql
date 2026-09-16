@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS public.hub_apps (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   slug            text NOT NULL UNIQUE,            -- e.g. 'syncvision'
   name            text NOT NULL,
-  origin_url      text,                            -- e.g. https://syncvision.life
+  origin_url      text,                            -- e.g. https://sync.reson8.life
   signing_key_hash text NOT NULL,                  -- sha256(hex) of HMAC secret
   signing_key_prefix text NOT NULL,                -- first 8 chars for display
   status          text NOT NULL DEFAULT 'active',  -- active | paused | revoked

@@ -45,7 +45,7 @@ const passCtx = resolveCheckoutContext({
 const packCtx = resolveCheckoutContext({ pack: "epublisher_starter_pack" });
 const returnToCtx = resolveCheckoutContext({
   sku: "all_access:creator_pass:monthly",
-  return_to: "https://www.resonanceonline.life/dashboard",
+  return_to: "https://epublisher.reson8.life/dashboard",
 });
 
 describe("checkout.success auto-redirect — only `succeeded` navigates", () => {
@@ -89,7 +89,7 @@ describe("checkout.success auto-redirect — target matches derived primary CTA"
     expect(target).toEqual(primary.target);
     expect(target).toEqual({
       kind: "external",
-      href: "https://www.resonanceonline.life/dashboard",
+      href: "https://epublisher.reson8.life/dashboard",
     });
   });
 });

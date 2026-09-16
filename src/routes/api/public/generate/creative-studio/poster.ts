@@ -91,7 +91,7 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
             request,
             app: APP,
             required: REQUIRED_TIER,
-            returnTo: parsed.returnTo ?? "https://www.creativestudio.life/generate/poster",
+            returnTo: parsed.returnTo ?? "https://creative.reson8.life/generate/poster",
             responseHeaders: CORS,
           });
         } catch (err) {

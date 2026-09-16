@@ -36,7 +36,7 @@ REDIRECT_MS = 1800
 POST_REDIRECT_SETTLE_MS = 1500
 SEROVAL_HELPER = REPO_ROOT / "scripts" / "e2e" / "checkout-success-seroval.mjs"
 
-ALLOWED_RETURN_TO = "https://www.creativestudio.life/welcome"
+ALLOWED_RETURN_TO = "https://creative.reson8.life/welcome"
 EVIL_RETURN_TO = "https://evil.example/phish"
 
 
@@ -89,7 +89,7 @@ async def _run_allowed(pw) -> bool:
     async def spoke_stub(route: Route):
         await route.fulfill(status=200, content_type="text/html", body="<html><body>ok</body></html>")
 
-    await page.route("https://www.creativestudio.life/**", spoke_stub)
+    await page.route("https://creative.reson8.life/**", spoke_stub)
 
     url = (
         f"{BASE_URL}/checkout/success"
@@ -99,7 +99,7 @@ async def _run_allowed(pw) -> bool:
 
     try:
         await page.wait_for_url(
-            lambda u: u.startswith("https://www.creativestudio.life/"),
+            lambda u: u.startswith("https://creative.reson8.life/"),
             timeout=REDIRECT_MS + 5000,
         )
     except Exception:
