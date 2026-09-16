@@ -1,9 +1,13 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { listAllSubscriptions, upsertSkuCost, type AdminSubRow } from "@/lib/admin-revenue.functions";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
+import {
+  listAllSubscriptions,
+  upsertSkuCost,
+  type AdminSubRow,
+} from "@/lib/admin-revenue.functions";
 import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/revenue")({
@@ -13,17 +17,7 @@ export const Route = createFileRoute("/admin/revenue")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: RevenuePage,
 });
 
@@ -82,7 +76,9 @@ function RevenuePage() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <header className="mb-8 flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Resonance Admin</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Resonance Admin
+            </p>
             <h1 className="mt-2 text-3xl font-semibold">Revenue, Costs & Profit</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               All subscriptions across every Resonance app. Edit per-SKU costs to compute profit.
@@ -127,7 +123,9 @@ function RevenuePage() {
               >
                 <option value="all">All apps</option>
                 {apps.map((a) => (
-                  <option key={a} value={a}>{a}</option>
+                  <option key={a} value={a}>
+                    {a}
+                  </option>
                 ))}
               </select>
               <select
@@ -201,17 +199,23 @@ function RevenuePage() {
                           {new Date(r.created_at).toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-xs">
-                          {r.user_email ?? <span className="font-mono">{r.user_id.slice(0, 8)}…</span>}
+                          {r.user_email ?? (
+                            <span className="font-mono">{r.user_id.slice(0, 8)}…</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">{r.app}</td>
                         <td className="px-4 py-3">{r.tier}</td>
                         <td className="px-4 py-3">{r.billing_cycle}</td>
                         <td className="px-4 py-3">
-                          <span className={`inline-block rounded border px-2 py-0.5 text-xs ${statusColor(r.status)}`}>
+                          <span
+                            className={`inline-block rounded border px-2 py-0.5 text-xs ${statusColor(r.status)}`}
+                          >
                             {r.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono">{money(r.amount_cents, r.currency)}</td>
+                        <td className="px-4 py-3 text-right font-mono">
+                          {money(r.amount_cents, r.currency)}
+                        </td>
                         <td className="px-4 py-3 text-right font-mono text-muted-foreground">
                           {money(r.cost_cents, r.currency)}
                         </td>

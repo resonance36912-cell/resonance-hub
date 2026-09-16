@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
 import { DocsLink } from "@/components/DocsLink";
@@ -14,37 +14,21 @@ import {
   pushConfigToAll,
   pushConfigToApp,
 } from "@/lib/hub-control.functions";
-import {
-  registerHubApp,
-  rotateHubAppKey,
-  setHubAppStatus,
-} from "@/lib/rop-admin.functions";
+import { registerHubApp, rotateHubAppKey, setHubAppStatus } from "@/lib/rop-admin.functions";
 
 export const Route = createFileRoute("/admin/spoke-health")({
   head: () => ({
-    meta: [
-      { title: "Spoke Health — Resonance" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "Spoke Health — Resonance" }, { name: "robots", content: "noindex, nofollow" }],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: SpokeHealth,
 });
 
 function statusColor(s: string | null) {
   if (!s) return "text-muted-foreground";
   if (s === "healthy" || s === "ok") return "text-green-600";
-  if (s.startsWith("unhealthy") || s === "unreachable" || s.startsWith("http_")) return "text-red-600";
+  if (s.startsWith("unhealthy") || s === "unreachable" || s.startsWith("http_"))
+    return "text-red-600";
   return "text-yellow-600";
 }
 
@@ -81,15 +65,23 @@ function SpokeHealth() {
     qc.invalidateQueries({ queryKey: ["admin-spokes"] });
     qc.invalidateQueries({ queryKey: ["admin-spoke-deliveries"] });
   };
-  const probeOneMut = useMutation({ mutationFn: (id: string) => probeOne({ data: { appId: id } }), onSettled: invalidate });
-  const pushOneMut = useMutation({ mutationFn: (id: string) => pushOne({ data: { appId: id } }), onSettled: invalidate });
+  const probeOneMut = useMutation({
+    mutationFn: (id: string) => probeOne({ data: { appId: id } }),
+    onSettled: invalidate,
+  });
+  const pushOneMut = useMutation({
+    mutationFn: (id: string) => pushOne({ data: { appId: id } }),
+    onSettled: invalidate,
+  });
   const probeAllMut = useMutation({ mutationFn: () => probeAll(), onSettled: invalidate });
   const pushAllMut = useMutation({ mutationFn: () => pushAll(), onSettled: invalidate });
   const registerMut = useMutation({
     mutationFn: (v: { slug: string; name: string; origin_url: string }) => register({ data: v }),
     onSuccess: (res) => {
       setMinted({ slug: res.app.slug, raw: res.raw_signing_key, hmac: res.hmac_secret });
-      setSlug(""); setName(""); setOriginUrl("");
+      setSlug("");
+      setName("");
+      setOriginUrl("");
       invalidate();
     },
   });
@@ -102,23 +94,35 @@ function SpokeHealth() {
     },
   });
   const statusMut = useMutation({
-    mutationFn: (v: { id: string; status: "active" | "paused" | "revoked" }) => setStatus({ data: v }),
+    mutationFn: (v: { id: string; status: "active" | "paused" | "revoked" }) =>
+      setStatus({ data: v }),
     onSettled: invalidate,
   });
 
   const copy = async (label: string, val: string) => {
-    try { await navigator.clipboard.writeText(val); setCopied(label); setTimeout(() => setCopied(null), 1500); } catch { /* noop */ }
+    try {
+      await navigator.clipboard.writeText(val);
+      setCopied(label);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      /* noop */
+    }
   };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>
-          <AppLink to={ROUTES.admin} className="text-sm text-muted-foreground hover:underline">← Admin</AppLink>
+          <AppLink to={ROUTES.admin} className="text-sm text-muted-foreground hover:underline">
+            ← Admin
+          </AppLink>
           <h1 className="mt-1 text-2xl font-semibold">Spoke Health & Control</h1>
           <p className="text-sm text-muted-foreground">
             Push config bundles and probe every registered spoke. See{" "}
-            <DocsLink to={ROUTES.docsSpokeHubControlContract} className="underline">the contract</DocsLink> for the endpoints spokes expose.
+            <DocsLink to={ROUTES.docsSpokeHubControlContract} className="underline">
+              the contract
+            </DocsLink>{" "}
+            for the endpoints spokes expose.
           </p>
         </div>
         <div className="flex gap-2">
@@ -143,9 +147,13 @@ function SpokeHealth() {
         <section className="mb-6 rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4">
           <div className="flex items-start justify-between gap-4">
             <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-              New signing material for <span className="font-mono">{minted.slug}</span> — copy it now. It will NOT be shown again.
+              New signing material for <span className="font-mono">{minted.slug}</span> — copy it
+              now. It will NOT be shown again.
             </p>
-            <button onClick={() => setMinted(null)} className="rounded border border-emerald-500/40 px-2 py-1 text-xs hover:bg-emerald-500/20">
+            <button
+              onClick={() => setMinted(null)}
+              className="rounded border border-emerald-500/40 px-2 py-1 text-xs hover:bg-emerald-500/20"
+            >
               I've stored it
             </button>
           </div>
@@ -156,11 +164,15 @@ function SpokeHealth() {
             ].map(({ k, v }) => (
               <div key={k} className="flex items-center gap-2">
                 <span className="min-w-[220px] text-xs text-muted-foreground">{k}</span>
-                <code className="flex-1 truncate rounded bg-background px-2 py-1 font-mono text-xs">{v}</code>
+                <code className="flex-1 truncate rounded bg-background px-2 py-1 font-mono text-xs">
+                  {v}
+                </code>
                 <button
                   onClick={() => copy(k, v)}
                   className="rounded border px-2 py-1 text-xs hover:bg-accent"
-                >{copied === k ? "Copied" : "Copy"}</button>
+                >
+                  {copied === k ? "Copied" : "Copy"}
+                </button>
               </div>
             ))}
           </div>
@@ -168,7 +180,9 @@ function SpokeHealth() {
       )}
 
       <section className="mb-8 rounded-lg border p-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Register a spoke</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Register a spoke
+        </h2>
         <form
           className="mt-3 grid gap-2 sm:grid-cols-4"
           onSubmit={(e) => {
@@ -176,14 +190,36 @@ function SpokeHealth() {
             registerMut.mutate({ slug, name, origin_url: originUrl });
           }}
         >
-          <input required value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="slug (e.g. sync_vision)" className="rounded border bg-background px-3 py-2 text-sm" />
-          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="display name" className="rounded border bg-background px-3 py-2 text-sm" />
-          <input value={originUrl} onChange={(e) => setOriginUrl(e.target.value)} placeholder="origin url (optional)" className="rounded border bg-background px-3 py-2 text-sm" />
-          <button disabled={registerMut.isPending} className="rounded bg-primary-surface px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
+          <input
+            required
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="slug (e.g. sync_vision)"
+            className="rounded border bg-background px-3 py-2 text-sm"
+          />
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="display name"
+            className="rounded border bg-background px-3 py-2 text-sm"
+          />
+          <input
+            value={originUrl}
+            onChange={(e) => setOriginUrl(e.target.value)}
+            placeholder="origin url (optional)"
+            className="rounded border bg-background px-3 py-2 text-sm"
+          />
+          <button
+            disabled={registerMut.isPending}
+            className="rounded bg-primary-surface px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+          >
             {registerMut.isPending ? "Minting…" : "Register & mint key"}
           </button>
         </form>
-        {registerMut.error && <p className="mt-2 text-xs text-red-500">{(registerMut.error as Error).message}</p>}
+        {registerMut.error && (
+          <p className="mt-2 text-xs text-red-500">{(registerMut.error as Error).message}</p>
+        )}
       </section>
 
       <section className="mb-8 overflow-x-auto rounded-lg border">
@@ -200,7 +236,11 @@ function SpokeHealth() {
           </thead>
           <tbody>
             {spokesQ.isLoading && (
-              <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Loading…</td></tr>
+              <tr>
+                <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                  Loading…
+                </td>
+              </tr>
             )}
             {(spokesQ.data ?? []).map((s) => {
               const revoked = s.status === "revoked";
@@ -211,13 +251,19 @@ function SpokeHealth() {
                     <div className="text-xs text-muted-foreground">{s.slug}</div>
                     <div className="mt-1 font-mono text-[10px] text-muted-foreground">{s.id}</div>
                   </td>
-                  <td className="px-3 py-2 text-xs">{s.origin_url ?? <span className="text-muted-foreground">not set</span>}</td>
+                  <td className="px-3 py-2 text-xs">
+                    {s.origin_url ?? <span className="text-muted-foreground">not set</span>}
+                  </td>
                   <td className="px-3 py-2 text-xs">
                     <select
                       value={s.status}
                       onChange={(e) => {
                         const next = e.target.value as "active" | "paused" | "revoked";
-                        if (next === "revoked" && !confirm(`Revoke ${s.slug}? Its HMAC key will stop working immediately.`)) return;
+                        if (
+                          next === "revoked" &&
+                          !confirm(`Revoke ${s.slug}? Its HMAC key will stop working immediately.`)
+                        )
+                          return;
                         statusMut.mutate({ id: s.id, status: next });
                       }}
                       className="rounded border bg-background px-2 py-1 text-xs"
@@ -226,15 +272,25 @@ function SpokeHealth() {
                       <option value="paused">paused</option>
                       <option value="revoked">revoked</option>
                     </select>
-                    <div className="mt-1 text-muted-foreground">{s.control_enabled ? "control on" : "control off"}</div>
+                    <div className="mt-1 text-muted-foreground">
+                      {s.control_enabled ? "control on" : "control off"}
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-xs">
-                    <div className={statusColor(s.last_push_status)}>{s.last_push_status ?? "—"}</div>
-                    <div className="text-muted-foreground">{s.last_push_at ? new Date(s.last_push_at).toLocaleString() : ""}</div>
+                    <div className={statusColor(s.last_push_status)}>
+                      {s.last_push_status ?? "—"}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {s.last_push_at ? new Date(s.last_push_at).toLocaleString() : ""}
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-xs">
-                    <div className={statusColor(s.last_health_status)}>{s.last_health_status ?? "—"}</div>
-                    <div className="text-muted-foreground">{s.last_health_at ? new Date(s.last_health_at).toLocaleString() : ""}</div>
+                    <div className={statusColor(s.last_health_status)}>
+                      {s.last_health_status ?? "—"}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {s.last_health_at ? new Date(s.last_health_at).toLocaleString() : ""}
+                    </div>
                   </td>
                   <td className="px-3 py-2 text-right">
                     <div className="flex flex-wrap justify-end gap-2">
@@ -242,28 +298,42 @@ function SpokeHealth() {
                         className="rounded border px-2 py-1 text-xs hover:bg-accent"
                         onClick={() => probeOneMut.mutate(s.id)}
                         disabled={probeOneMut.isPending || revoked}
-                      >Probe</button>
+                      >
+                        Probe
+                      </button>
                       <button
                         className="rounded border px-2 py-1 text-xs hover:bg-accent"
                         onClick={() => pushOneMut.mutate(s.id)}
                         disabled={pushOneMut.isPending || !s.control_enabled || revoked}
-                      >Push</button>
+                      >
+                        Push
+                      </button>
                       <button
                         className="rounded border border-amber-500/50 px-2 py-1 text-xs text-amber-700 hover:bg-amber-500/10 dark:text-amber-300"
                         onClick={() => {
-                          if (confirm(`Rotate HMAC key for ${s.slug}? Old key stops working immediately.`)) {
+                          if (
+                            confirm(
+                              `Rotate HMAC key for ${s.slug}? Old key stops working immediately.`,
+                            )
+                          ) {
                             rotateMut.mutate(s.id);
                           }
                         }}
                         disabled={rotateMut.isPending}
-                      >Rotate key</button>
+                      >
+                        Rotate key
+                      </button>
                     </div>
                   </td>
                 </tr>
               );
             })}
             {(spokesQ.data ?? []).length === 0 && !spokesQ.isLoading && (
-              <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">No spokes registered.</td></tr>
+              <tr>
+                <td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">
+                  No spokes registered.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -286,7 +356,9 @@ function SpokeHealth() {
             <tbody>
               {(delivQ.data ?? []).map((d) => (
                 <tr key={d.id} className="border-t">
-                  <td className="px-3 py-1.5">{new Date(d.created_at as string).toLocaleString()}</td>
+                  <td className="px-3 py-1.5">
+                    {new Date(d.created_at as string).toLocaleString()}
+                  </td>
                   <td className="px-3 py-1.5">{d.kind}</td>
                   <td className={`px-3 py-1.5 ${statusColor(d.status as string)}`}>{d.status}</td>
                   <td className="px-3 py-1.5">{d.http_status ?? "—"}</td>
@@ -295,7 +367,11 @@ function SpokeHealth() {
                 </tr>
               ))}
               {(delivQ.data ?? []).length === 0 && (
-                <tr><td colSpan={6} className="px-3 py-4 text-center text-muted-foreground">No deliveries yet.</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-3 py-4 text-center text-muted-foreground">
+                    No deliveries yet.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

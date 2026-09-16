@@ -1,8 +1,8 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute, signOutAdmin } from "@/lib/admin-auth-client";
 import { listAllSubscriptions, type AdminSubRow } from "@/lib/admin-revenue.functions";
 import { getVisitStats } from "@/lib/visits.functions";
 import { listPayfastAudit } from "@/lib/payfast-audit.functions";
@@ -13,17 +13,7 @@ export const Route = createFileRoute("/admin/")({
   head: () => ({
     meta: [{ title: "Admin — Resonance" }, { name: "robots", content: "noindex, nofollow" }],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminHome,
 });
 
@@ -83,7 +73,7 @@ function AdminHome() {
   }, [rows]);
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await signOutAdmin();
     navigate({ to: ROUTES.adminLogin });
   }
 

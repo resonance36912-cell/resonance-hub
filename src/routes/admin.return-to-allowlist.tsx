@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { ROUTES } from "@/lib/routes";
 import {
   listReturnToOrigins,
@@ -11,15 +11,9 @@ import {
   deleteReturnToOrigin,
   type ReturnToOrigin,
 } from "@/lib/return-to-allowlist.functions";
-import {
-  listReturnToAuditLog,
-  type ReturnToAuditEntry,
-} from "@/lib/return-to-audit.functions";
+import { listReturnToAuditLog, type ReturnToAuditEntry } from "@/lib/return-to-audit.functions";
 
-import {
-  ALLOWED_RETURN_TO_ORIGINS,
-  explainReturnTo,
-} from "@/lib/return-to-allowlist";
+import { ALLOWED_RETURN_TO_ORIGINS, explainReturnTo } from "@/lib/return-to-allowlist";
 import { validateAdminOrigin } from "@/lib/admin-origin-validation";
 
 export const Route = createFileRoute("/admin/return-to-allowlist")({
@@ -29,17 +23,7 @@ export const Route = createFileRoute("/admin/return-to-allowlist")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminReturnToAllowlist,
 });
 
@@ -70,8 +54,7 @@ function AdminReturnToAllowlist() {
   const [message, setMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState(DEFAULT_PREVIEW);
 
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ["admin-return-to-origins"] });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["admin-return-to-origins"] });
 
   const add = useMutation({
     mutationFn: () =>
@@ -90,23 +73,19 @@ function AdminReturnToAllowlist() {
       setNotes("");
       void invalidate();
     },
-    onError: (e: unknown) =>
-      setMessage(e instanceof Error ? e.message : "Failed to save entry."),
+    onError: (e: unknown) => setMessage(e instanceof Error ? e.message : "Failed to save entry."),
   });
 
   const toggle = useMutation({
-    mutationFn: (vars: { id: string; enabled: boolean }) =>
-      toggleFn({ data: vars }),
+    mutationFn: (vars: { id: string; enabled: boolean }) => toggleFn({ data: vars }),
     onSuccess: () => void invalidate(),
-    onError: (e: unknown) =>
-      setMessage(e instanceof Error ? e.message : "Failed to update entry."),
+    onError: (e: unknown) => setMessage(e instanceof Error ? e.message : "Failed to update entry."),
   });
 
   const remove = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
     onSuccess: () => void invalidate(),
-    onError: (e: unknown) =>
-      setMessage(e instanceof Error ? e.message : "Failed to delete entry."),
+    onError: (e: unknown) => setMessage(e instanceof Error ? e.message : "Failed to delete entry."),
   });
 
   const enabledExtras = useMemo(
@@ -117,13 +96,9 @@ function AdminReturnToAllowlist() {
   // Live validation of the value being typed into the "add" field. This uses
   // the same helper the server function enforces on save, so what the UI shows
   // is exactly what will (or will not) be stored.
-  const draft = useMemo(
-    () => (origin.trim() ? validateAdminOrigin(origin) : null),
-    [origin],
-  );
+  const draft = useMemo(() => (origin.trim() ? validateAdminOrigin(origin) : null), [origin]);
   const draftAlreadyAllowed = useMemo(
-    () =>
-      draft?.ok ? explainReturnTo(draft.origin, enabledExtras).allowed : false,
+    () => (draft?.ok ? explainReturnTo(draft.origin, enabledExtras).allowed : false),
     [draft, enabledExtras],
   );
 
@@ -140,20 +115,15 @@ function AdminReturnToAllowlist() {
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <h1 className="text-3xl font-semibold tracking-tight">
-        return_to allowlist
-      </h1>
+      <h1 className="text-3xl font-semibold tracking-tight">return_to allowlist</h1>
       <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-        Post-checkout <code>return_to</code> URLs are accepted only when their
-        normalized origin is allowlisted. Built-in Hub and spoke origins are
-        defined in code and cannot be removed here — entries below only widen
-        the allowlist.
+        Post-checkout <code>return_to</code> URLs are accepted only when their normalized origin is
+        allowlisted. Built-in Hub and spoke origins are defined in code and cannot be removed here —
+        entries below only widen the allowlist.
       </p>
 
       {message ? (
-        <p className="mt-4 rounded-md border border-border bg-muted px-4 py-2 text-sm">
-          {message}
-        </p>
+        <p className="mt-4 rounded-md border border-border bg-muted px-4 py-2 text-sm">{message}</p>
       ) : null}
 
       <section className="mt-10">
@@ -184,9 +154,7 @@ function AdminReturnToAllowlist() {
         {draft ? (
           <p
             data-testid="draft-origin-verdict"
-            className={`mt-3 text-sm ${
-              draft.ok ? "text-muted-foreground" : "text-destructive"
-            }`}
+            className={`mt-3 text-sm ${draft.ok ? "text-muted-foreground" : "text-destructive"}`}
           >
             {draft.ok
               ? `Will be stored as ${draft.origin}${
@@ -232,15 +200,11 @@ function AdminReturnToAllowlist() {
                 <tr key={row.id} className="border-t border-border">
                   <td className="py-2 font-mono text-xs">{row.origin}</td>
                   <td className="py-2">{row.label ?? "—"}</td>
-                  <td className="py-2">
-                    {row.enabled ? "Enabled" : "Disabled"}
-                  </td>
+                  <td className="py-2">{row.enabled ? "Enabled" : "Disabled"}</td>
                   <td className="py-2 text-right">
                     <button
                       type="button"
-                      onClick={() =>
-                        toggle.mutate({ id: row.id, enabled: !row.enabled })
-                      }
+                      onClick={() => toggle.mutate({ id: row.id, enabled: !row.enabled })}
                       className="mr-3 text-xs underline"
                     >
                       {row.enabled ? "Disable" : "Enable"}
@@ -263,8 +227,8 @@ function AdminReturnToAllowlist() {
       <section className="mt-12">
         <h2 className="text-lg font-medium">Live preview</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          One candidate URL per line. Each is checked against the built-in
-          origins plus the enabled entries above.
+          One candidate URL per line. Each is checked against the built-in origins plus the enabled
+          entries above.
         </p>
         <textarea
           value={preview}
@@ -280,11 +244,7 @@ function AdminReturnToAllowlist() {
               className="rounded-md border border-border px-3 py-2 text-xs"
             >
               <span
-                className={
-                  v.allowed
-                    ? "font-medium text-primary"
-                    : "font-medium text-destructive"
-                }
+                className={v.allowed ? "font-medium text-primary" : "font-medium text-destructive"}
               >
                 {v.allowed ? "ACCEPT" : "REJECT"}
               </span>{" "}
@@ -331,9 +291,9 @@ function RedirectAuditLog() {
         <div>
           <h2 className="text-lg font-medium">Redirect audit log</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Origin-only records of every <code>return_to</code> verdict and the
-            canonical target that was used. Paths, query strings and fragments
-            of caller-supplied URLs are never stored.
+            Origin-only records of every <code>return_to</code> verdict and the canonical target
+            that was used. Paths, query strings and fragments of caller-supplied URLs are never
+            stored.
           </p>
         </div>
         <div className="flex gap-2">
@@ -354,19 +314,11 @@ function RedirectAuditLog() {
         </div>
       </div>
 
-      {isLoading && (
-        <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
-      )}
-      {error && (
-        <p className="mt-4 text-sm text-destructive">
-          {(error as Error).message}
-        </p>
-      )}
+      {isLoading && <p className="mt-4 text-sm text-muted-foreground">Loading…</p>}
+      {error && <p className="mt-4 text-sm text-destructive">{(error as Error).message}</p>}
 
       {data && data.length === 0 && (
-        <p className="mt-4 text-sm text-muted-foreground">
-          No redirect decisions recorded yet.
-        </p>
+        <p className="mt-4 text-sm text-muted-foreground">No redirect decisions recorded yet.</p>
       )}
 
       {data && data.length > 0 && (
@@ -402,12 +354,9 @@ function RedirectAuditLog() {
                     </span>
                   </td>
                   <td className="px-3 py-2 font-mono">
-                    {row.candidateOrigin ??
-                      (row.candidatePresent ? "—" : "(none supplied)")}
+                    {row.candidateOrigin ?? (row.candidatePresent ? "—" : "(none supplied)")}
                   </td>
-                  <td className="px-3 py-2 font-mono text-muted-foreground">
-                    {row.reasonCode}
-                  </td>
+                  <td className="px-3 py-2 font-mono text-muted-foreground">{row.reasonCode}</td>
                   <td className="px-3 py-2 font-mono">
                     {row.targetKind === "external"
                       ? `${row.targetOrigin ?? ""}${row.targetPath ?? ""}`
@@ -425,4 +374,3 @@ function RedirectAuditLog() {
     </section>
   );
 }
-

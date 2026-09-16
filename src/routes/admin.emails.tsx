@@ -1,13 +1,12 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import { listEmailSends } from "@/lib/email-sends.functions";
 import { sendTestSubscriptionEmail } from "@/lib/test-email.functions";
 import { ROUTES } from "@/lib/routes";
 import { AppLink } from "@/components/AppLink";
-
 
 export const Route = createFileRoute("/admin/emails")({
   head: () => ({
@@ -16,17 +15,7 @@ export const Route = createFileRoute("/admin/emails")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: EmailsAdminPage,
 });
 
@@ -102,7 +91,9 @@ function EmailsAdminPage() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Resonance Admin</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Resonance Admin
+            </p>
             <h1 className="mt-2 text-3xl font-semibold">Email Delivery</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Subscription confirmation email attempts, deduped by <code>pf_payment_id</code>.{" "}
@@ -114,7 +105,6 @@ function EmailsAdminPage() {
                 Sender domain verification →
               </AppLink>
             </p>
-
           </div>
           <button
             onClick={() => refetch()}
@@ -157,17 +147,12 @@ function EmailsAdminPage() {
             </button>
           </form>
           {testResult && (
-            <p
-              className={`mt-3 text-sm ${
-                testResult.ok ? "text-emerald-400" : "text-red-400"
-              }`}
-            >
+            <p className={`mt-3 text-sm ${testResult.ok ? "text-emerald-400" : "text-red-400"}`}>
               {testResult.ok ? "✓ " : "✗ "}
               {testResult.msg}
             </p>
           )}
         </section>
-
 
         {data && (
           <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-6">
@@ -243,16 +228,16 @@ function EmailsAdminPage() {
                       <td className="px-4 py-3 font-mono text-xs">
                         {s.app} · {s.tier}
                       </td>
-                      <td className="px-4 py-3 font-mono text-xs">
-                        {s.attempt_count} / 5
-                      </td>
+                      <td className="px-4 py-3 font-mono text-xs">{s.attempt_count} / 5</td>
                       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                         {retriable && s.next_attempt_at
                           ? new Date(s.next_attempt_at).toLocaleTimeString()
                           : "—"}
                       </td>
                       <td className="px-4 py-3 font-mono text-xs">{s.pf_payment_id}</td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{isOpen ? "▾" : "▸"}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {isOpen ? "▾" : "▸"}
+                      </td>
                     </tr>,
                   ];
                   if (isOpen) {
@@ -273,7 +258,9 @@ function EmailsAdminPage() {
                             Delivery attempts
                           </p>
                           {attempts.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">No attempts recorded yet.</p>
+                            <p className="text-xs text-muted-foreground">
+                              No attempts recorded yet.
+                            </p>
                           ) : (
                             <table className="w-full text-xs">
                               <thead className="text-muted-foreground">
@@ -315,7 +302,6 @@ function EmailsAdminPage() {
                   }
                   return rows;
                 })}
-
               </tbody>
             </table>
           </div>

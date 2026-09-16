@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { isSovereignClientAuth, ronsAuth } from "@/lib/auth-provider";
 import {
   bootstrapAdmin,
   getAdminBootstrapStatus,
@@ -139,6 +139,33 @@ const STATUS_COPY: Record<
   },
 };
 
+const LOCAL_STATUS_COPY: Partial<
+  Record<PageStatus, { title: string; description: string; tone: "default" | "success" }>
+> = {
+  email_unverified: {
+    title: "Account email required",
+    description: "Use an approved local account with an email address before continuing.",
+    tone: "default",
+  },
+  email_reverification_required: {
+    title: "Fresh local verification required",
+    description:
+      "Prepare a fresh local verification link on Ealiophin, then return through that link.",
+    tone: "default",
+  },
+  verification_sent: {
+    title: "Local verification link prepared",
+    description: "Open the RONS admin-bootstrap verification shortcut on Ealiophin to continue.",
+    tone: "success",
+  },
+  verification_recently_sent: {
+    title: "Local verification link already prepared",
+    description:
+      "Use the existing RONS verification shortcut or wait before preparing another link.",
+    tone: "default",
+  },
+};
+
 export const Route = createFileRoute("/admin/access")({
   head: () => ({
     meta: [
@@ -152,6 +179,7 @@ export const Route = createFileRoute("/admin/access")({
 
 function AdminAccessPage() {
   const navigate = useNavigate();
+  const sovereignMode = isSovereignClientAuth();
   const getStatus = useServerFn(getAdminBootstrapStatus);
   const runBootstrap = useServerFn(bootstrapAdmin);
   const requestVerification = useServerFn(requestAdminBootstrapVerification);
@@ -181,7 +209,7 @@ function AdminAccessPage() {
     setError(null);
 
     try {
-      const { data, error: authError } = await supabase.auth.getUser();
+      const { data, error: authError } = await ronsAuth.getUser();
       if (authError) throw authError;
       if (!data.user) {
         setStatus("signed_out");
@@ -251,8 +279,12 @@ function AdminAccessPage() {
       setStatus(readOutcome(response));
     } catch {
       setError({
-        title: "Verification email not sent",
-        description: "We couldn't send a verification link. Please try again.",
+        title: sovereignMode
+          ? "Local verification link not prepared"
+          : "Verification email not sent",
+        description: sovereignMode
+          ? "We couldn't prepare the local verification link. Please try again."
+          : "We couldn't send a verification link. Please try again.",
       });
     } finally {
       requestingVerificationRef.current = false;
@@ -267,7 +299,7 @@ function AdminAccessPage() {
     setError(null);
     discardBootstrapToken();
     try {
-      const { error: signOutError } = await supabase.auth.signOut();
+      const { error: signOutError } = await ronsAuth.signOut();
       if (signOutError) throw signOutError;
       await navigate({ to: "/admin/login" });
     } catch {
@@ -280,7 +312,11 @@ function AdminAccessPage() {
     }
   }
 
-  const copy = status ? STATUS_COPY[status] : null;
+  const copy = status
+    ? sovereignMode
+      ? (LOCAL_STATUS_COPY[status] ?? STATUS_COPY[status])
+      : STATUS_COPY[status]
+    : null;
   const canSwitchAccount =
     status === "closed" ||
     status === "email_unverified" ||
@@ -375,7 +411,13 @@ function AdminAccessPage() {
                 aria-busy={requestingVerification}
                 onClick={sendVerificationLink}
               >
-                {requestingVerification ? "Sending verification link…" : "Send verification link"}
+                {requestingVerification
+                  ? sovereignMode
+                    ? "Preparing local verification link..."
+                    : "Sending verification link..."
+                  : sovereignMode
+                    ? "Prepare local verification link"
+                    : "Send verification link"}
               </Button>
             )}
 

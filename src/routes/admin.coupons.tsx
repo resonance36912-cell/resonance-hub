@@ -1,8 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
 import {
   listCoupons,
   upsertCoupon,
@@ -13,15 +13,10 @@ import {
   type CouponImportOutcome,
 } from "@/lib/coupons.functions";
 import { describeCoupon, type CouponKind, type CouponRow } from "@/lib/coupons";
-import {
-  COUPON_CSV_TEMPLATE,
-  MAX_COUPON_CSV_ROWS,
-  parseCouponCsv,
-} from "@/lib/coupon-csv";
+import { COUPON_CSV_TEMPLATE, MAX_COUPON_CSV_ROWS, parseCouponCsv } from "@/lib/coupon-csv";
 import { BackToHubHeader } from "@/components/BackToHubHeader";
 import { AppLink } from "@/components/AppLink";
 import { ROUTES } from "@/lib/routes";
-
 
 export const Route = createFileRoute("/admin/coupons")({
   head: () => ({
@@ -30,21 +25,17 @@ export const Route = createFileRoute("/admin/coupons")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: role } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminCouponsPage,
 });
 
-const APP_OPTIONS = ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer", "all_access"];
+const APP_OPTIONS = [
+  "epublisher",
+  "creative_studio",
+  "sync_vision",
+  "youtube_optimizer",
+  "all_access",
+];
 
 type FormState = {
   code: string;
@@ -106,10 +97,7 @@ function AdminCouponsPage() {
   const [importResults, setImportResults] = useState<CouponImportOutcome[] | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
 
-  const parsed = useMemo(
-    () => (csvText.trim() ? parseCouponCsv(csvText) : null),
-    [csvText],
-  );
+  const parsed = useMemo(() => (csvText.trim() ? parseCouponCsv(csvText) : null), [csvText]);
 
   const couponsQ = useQuery({
     queryKey: ["admin-coupons"],
@@ -156,7 +144,6 @@ function AdminCouponsPage() {
     a.click();
     URL.revokeObjectURL(url);
   }
-
 
   const save = useMutation({
     mutationFn: async () => {
@@ -253,9 +240,8 @@ function AdminCouponsPage() {
           <div>
             <h1 className="text-3xl font-bold">Coupons</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Checkout discounts, free credit grants, and free access codes. Every
-              redemption is recorded against the user and, for paid checkouts, the
-              PayFast payment id.
+              Checkout discounts, free credit grants, and free access codes. Every redemption is
+              recorded against the user and, for paid checkouts, the PayFast payment id.
             </p>
           </div>
           <BackToHubHeader
@@ -276,7 +262,9 @@ function AdminCouponsPage() {
           <h2 className="font-bold">{editingId ? "Edit coupon" : "New coupon"}</h2>
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <label className={labelCls} htmlFor="c-code">Code</label>
+              <label className={labelCls} htmlFor="c-code">
+                Code
+              </label>
               <input
                 id="c-code"
                 className={`${field} font-mono uppercase`}
@@ -286,7 +274,9 @@ function AdminCouponsPage() {
               />
             </div>
             <div>
-              <label className={labelCls} htmlFor="c-kind">Kind</label>
+              <label className={labelCls} htmlFor="c-kind">
+                Kind
+              </label>
               <select
                 id="c-kind"
                 className={field}
@@ -299,7 +289,9 @@ function AdminCouponsPage() {
               </select>
             </div>
             <div>
-              <label className={labelCls} htmlFor="c-desc">Description</label>
+              <label className={labelCls} htmlFor="c-desc">
+                Description
+              </label>
               <input
                 id="c-desc"
                 className={field}
@@ -312,7 +304,9 @@ function AdminCouponsPage() {
             {form.kind === "discount" && (
               <>
                 <div>
-                  <label className={labelCls} htmlFor="c-dtype">Discount type</label>
+                  <label className={labelCls} htmlFor="c-dtype">
+                    Discount type
+                  </label>
                   <select
                     id="c-dtype"
                     className={field}
@@ -327,7 +321,9 @@ function AdminCouponsPage() {
                 </div>
                 {form.discountType === "percent" ? (
                   <div>
-                    <label className={labelCls} htmlFor="c-pct">Percent (1–100)</label>
+                    <label className={labelCls} htmlFor="c-pct">
+                      Percent (1–100)
+                    </label>
                     <input
                       id="c-pct"
                       type="number"
@@ -340,7 +336,9 @@ function AdminCouponsPage() {
                   </div>
                 ) : (
                   <div>
-                    <label className={labelCls} htmlFor="c-rands">Rands off</label>
+                    <label className={labelCls} htmlFor="c-rands">
+                      Rands off
+                    </label>
                     <input
                       id="c-rands"
                       type="number"
@@ -357,7 +355,9 @@ function AdminCouponsPage() {
             {form.kind === "credits" && (
               <>
                 <div>
-                  <label className={labelCls} htmlFor="c-credits">Credits</label>
+                  <label className={labelCls} htmlFor="c-credits">
+                    Credits
+                  </label>
                   <input
                     id="c-credits"
                     type="number"
@@ -368,7 +368,9 @@ function AdminCouponsPage() {
                   />
                 </div>
                 <div>
-                  <label className={labelCls} htmlFor="c-capp">Credit wallet app</label>
+                  <label className={labelCls} htmlFor="c-capp">
+                    Credit wallet app
+                  </label>
                   <select
                     id="c-capp"
                     className={field}
@@ -376,7 +378,9 @@ function AdminCouponsPage() {
                     onChange={(e) => setForm({ ...form, creditsApp: e.target.value })}
                   >
                     {APP_OPTIONS.map((a) => (
-                      <option key={a} value={a}>{a.replace(/_/g, " ")}</option>
+                      <option key={a} value={a}>
+                        {a.replace(/_/g, " ")}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -386,7 +390,9 @@ function AdminCouponsPage() {
             {form.kind === "entitlement" && (
               <>
                 <div>
-                  <label className={labelCls} htmlFor="c-eapp">App key</label>
+                  <label className={labelCls} htmlFor="c-eapp">
+                    App key
+                  </label>
                   <select
                     id="c-eapp"
                     className={field}
@@ -394,12 +400,16 @@ function AdminCouponsPage() {
                     onChange={(e) => setForm({ ...form, entitlementAppKey: e.target.value })}
                   >
                     {APP_OPTIONS.map((a) => (
-                      <option key={a} value={a}>{a.replace(/_/g, " ")}</option>
+                      <option key={a} value={a}>
+                        {a.replace(/_/g, " ")}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className={labelCls} htmlFor="c-etier">Tier</label>
+                  <label className={labelCls} htmlFor="c-etier">
+                    Tier
+                  </label>
                   <input
                     id="c-etier"
                     className={field}
@@ -408,7 +418,9 @@ function AdminCouponsPage() {
                   />
                 </div>
                 <div>
-                  <label className={labelCls} htmlFor="c-edays">Days (blank = no expiry)</label>
+                  <label className={labelCls} htmlFor="c-edays">
+                    Days (blank = no expiry)
+                  </label>
                   <input
                     id="c-edays"
                     type="number"
@@ -422,7 +434,9 @@ function AdminCouponsPage() {
             )}
 
             <div>
-              <label className={labelCls} htmlFor="c-apps">Restrict to apps (comma separated)</label>
+              <label className={labelCls} htmlFor="c-apps">
+                Restrict to apps (comma separated)
+              </label>
               <input
                 id="c-apps"
                 className={field}
@@ -432,7 +446,9 @@ function AdminCouponsPage() {
               />
             </div>
             <div>
-              <label className={labelCls} htmlFor="c-skus">Restrict to SKUs (comma separated)</label>
+              <label className={labelCls} htmlFor="c-skus">
+                Restrict to SKUs (comma separated)
+              </label>
               <input
                 id="c-skus"
                 className={field}
@@ -442,7 +458,9 @@ function AdminCouponsPage() {
               />
             </div>
             <div>
-              <label className={labelCls} htmlFor="c-until">Expires (date)</label>
+              <label className={labelCls} htmlFor="c-until">
+                Expires (date)
+              </label>
               <input
                 id="c-until"
                 type="date"
@@ -452,7 +470,9 @@ function AdminCouponsPage() {
               />
             </div>
             <div>
-              <label className={labelCls} htmlFor="c-max">Max total uses (blank = unlimited)</label>
+              <label className={labelCls} htmlFor="c-max">
+                Max total uses (blank = unlimited)
+              </label>
               <input
                 id="c-max"
                 type="number"
@@ -463,7 +483,9 @@ function AdminCouponsPage() {
               />
             </div>
             <div>
-              <label className={labelCls} htmlFor="c-peruser">Max per user</label>
+              <label className={labelCls} htmlFor="c-peruser">
+                Max per user
+              </label>
               <input
                 id="c-peruser"
                 type="number"
@@ -484,7 +506,9 @@ function AdminCouponsPage() {
           </div>
 
           {formError && (
-            <p className="text-sm text-destructive" role="alert">{formError}</p>
+            <p className="text-sm text-destructive" role="alert">
+              {formError}
+            </p>
           )}
 
           <div className="flex gap-3">
@@ -515,9 +539,9 @@ function AdminCouponsPage() {
             <div>
               <h2 className="font-bold">Bulk import from CSV</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Upload or paste a CSV to create up to {MAX_COUPON_CSV_ROWS} coupons at
-                once. Rows are validated in the browser first — nothing is written
-                until you confirm the import.
+                Upload or paste a CSV to create up to {MAX_COUPON_CSV_ROWS} coupons at once. Rows
+                are validated in the browser first — nothing is written until you confirm the
+                import.
               </p>
             </div>
             <button onClick={downloadTemplate} className="px-4 py-2 rounded-full border text-sm">
@@ -527,7 +551,9 @@ function AdminCouponsPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className={labelCls} htmlFor="csv-file">CSV file</label>
+              <label className={labelCls} htmlFor="csv-file">
+                CSV file
+              </label>
               <input
                 id="csv-file"
                 type="file"
@@ -540,7 +566,9 @@ function AdminCouponsPage() {
               )}
             </div>
             <div>
-              <label className={labelCls} htmlFor="csv-text">Or paste CSV</label>
+              <label className={labelCls} htmlFor="csv-text">
+                Or paste CSV
+              </label>
               <textarea
                 id="csv-text"
                 rows={6}
@@ -564,8 +592,8 @@ function AdminCouponsPage() {
                 {parsed.issues.length > 0 && (
                   <>
                     {" · "}
-                    <span className="text-destructive font-bold">{parsed.issues.length}</span>{" "}
-                    row{parsed.issues.length === 1 ? "" : "s"} with problems
+                    <span className="text-destructive font-bold">{parsed.issues.length}</span> row
+                    {parsed.issues.length === 1 ? "" : "s"} with problems
                   </>
                 )}
               </p>
@@ -578,9 +606,7 @@ function AdminCouponsPage() {
                       {iss.code ? ` (${iss.code})` : ""}: {iss.message}
                     </li>
                   ))}
-                  {parsed.issues.length > 25 && (
-                    <li>…and {parsed.issues.length - 25} more</li>
-                  )}
+                  {parsed.issues.length > 25 && <li>…and {parsed.issues.length - 25} more</li>}
                 </ul>
               )}
 
@@ -648,7 +674,9 @@ function AdminCouponsPage() {
           </label>
 
           {importError && (
-            <p className="text-sm text-destructive" role="alert">{importError}</p>
+            <p className="text-sm text-destructive" role="alert">
+              {importError}
+            </p>
           )}
 
           <button
@@ -686,8 +714,6 @@ function AdminCouponsPage() {
             </div>
           )}
         </section>
-
-
 
         <section className="rounded-lg border bg-card p-5">
           <h2 className="font-bold mb-4">All coupons</h2>
@@ -733,7 +759,9 @@ function AdminCouponsPage() {
                         </span>
                       </td>
                       <td className="py-2 text-right space-x-3 whitespace-nowrap">
-                        <button className="underline text-xs" onClick={() => startEdit(c)}>Edit</button>
+                        <button className="underline text-xs" onClick={() => startEdit(c)}>
+                          Edit
+                        </button>
                         <button
                           className="underline text-xs"
                           onClick={() => toggle.mutate({ id: c.id, enabled: !c.enabled })}

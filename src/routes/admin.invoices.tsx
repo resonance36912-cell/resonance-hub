@@ -1,13 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  listAllInvoices,
-  formatMoney,
-  type InvoiceRow,
-} from "@/lib/invoices.functions";
+import { requireAdminRoute } from "@/lib/admin-auth-client";
+import { listAllInvoices, formatMoney, type InvoiceRow } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { StatusPill } from "./account.invoices";
 import { ROUTES } from "@/lib/routes";
@@ -20,17 +16,7 @@ export const Route = createFileRoute("/admin/invoices")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
-  },
+  beforeLoad: requireAdminRoute,
   component: AdminInvoicesPage,
 });
 
@@ -75,8 +61,12 @@ function AdminInvoicesPage() {
             </p>
           </div>
           <nav className="flex gap-3 text-sm">
-            <AppLink to={ROUTES.adminBilling} className="text-primary underline">Billing</AppLink>
-            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</AppLink>
+            <AppLink to={ROUTES.adminBilling} className="text-primary underline">
+              Billing
+            </AppLink>
+            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">
+              PayFast audit
+            </AppLink>
           </nav>
         </header>
 
@@ -100,7 +90,9 @@ function AdminInvoicesPage() {
           >
             <option value="">All statuses</option>
             {["paid", "pending", "refunded", "failed", "cancelled"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>
+                {s}
+              </option>
             ))}
           </select>
           <select
@@ -109,8 +101,16 @@ function AdminInvoicesPage() {
             className="rounded border bg-background px-3 py-2 text-sm"
           >
             <option value="">All apps</option>
-            {["all_access", "creative_studio", "epublisher", "sync_vision", "youtube_optimizer"].map((a) => (
-              <option key={a} value={a}>{labelForApp(a)}</option>
+            {[
+              "all_access",
+              "creative_studio",
+              "epublisher",
+              "sync_vision",
+              "youtube_optimizer",
+            ].map((a) => (
+              <option key={a} value={a}>
+                {labelForApp(a)}
+              </option>
             ))}
           </select>
           <input
@@ -120,12 +120,20 @@ function AdminInvoicesPage() {
             className="rounded border bg-background px-3 py-2 text-sm sm:col-span-1"
           />
           <div className="flex gap-2">
-            <button type="submit" className="rounded bg-primary-surface px-4 py-2 text-sm text-primary-foreground">
+            <button
+              type="submit"
+              className="rounded bg-primary-surface px-4 py-2 text-sm text-primary-foreground"
+            >
               Apply
             </button>
             <button
               type="button"
-              onClick={() => { setStatus(""); setApp(""); setQ(""); setCommitted({ status: "", app: "", q: "" }); }}
+              onClick={() => {
+                setStatus("");
+                setApp("");
+                setQ("");
+                setCommitted({ status: "", app: "", q: "" });
+              }}
               className="rounded border px-4 py-2 text-sm"
             >
               Reset
@@ -137,7 +145,9 @@ function AdminInvoicesPage() {
         {error && (
           <div className="rounded border border-destructive/40 bg-destructive/10 p-4 text-sm">
             <p>Could not load invoices: {(error as Error).message}</p>
-            <button onClick={() => refetch()} className="mt-2 underline">Retry</button>
+            <button onClick={() => refetch()} className="mt-2 underline">
+              Retry
+            </button>
           </div>
         )}
         {data && data.length === 0 && (
@@ -165,17 +175,27 @@ function AdminInvoicesPage() {
                     <td className="py-2 px-3">{new Date(row.issued_at).toLocaleString()}</td>
                     <td className="py-2 px-3">
                       <div className="text-xs">{row.recipient_email ?? "—"}</div>
-                      <div className="font-mono text-[10px] text-muted-foreground">{row.user_id.slice(0, 8)}…</div>
+                      <div className="font-mono text-[10px] text-muted-foreground">
+                        {row.user_id.slice(0, 8)}…
+                      </div>
                     </td>
                     <td className="py-2 px-3">
                       <div>{labelForApp(row.app ?? "")}</div>
                       <div className="text-xs text-muted-foreground">{row.tier ?? "—"}</div>
                     </td>
-                    <td className="py-2 px-3 font-mono">{formatMoney(row.amount_cents, row.currency)}</td>
-                    <td className="py-2 px-3"><StatusPill status={row.status} /></td>
+                    <td className="py-2 px-3 font-mono">
+                      {formatMoney(row.amount_cents, row.currency)}
+                    </td>
+                    <td className="py-2 px-3">
+                      <StatusPill status={row.status} />
+                    </td>
                     <td className="py-2 px-3 font-mono text-xs">{row.pf_payment_id ?? "—"}</td>
                     <td className="py-2 px-3">
-                      <AppLink to="/account/invoices/$id" params={{ id: row.id }} className="text-primary underline">
+                      <AppLink
+                        to="/account/invoices/$id"
+                        params={{ id: row.id }}
+                        className="text-primary underline"
+                      >
                         View
                       </AppLink>
                     </td>
