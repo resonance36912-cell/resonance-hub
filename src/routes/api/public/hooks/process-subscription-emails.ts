@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { sendLovableEmail } from "@lovable.dev/email-js";
+import { sendTransactionalEmail } from "@/lib/email-transport.server";
 import { render } from "@react-email/render";
 import * as React from "react";
 import { TEMPLATES } from "@/lib/email-templates/registry";
@@ -17,9 +17,8 @@ import { TEMPLATES } from "@/lib/email-templates/registry";
 
 const MAX_ATTEMPTS = 5;
 const BATCH_SIZE = 25;
-const SENDER_DOMAIN = "notify.www.reson8.life";
-const FROM_DOMAIN = "www.reson8.life";
-const SITE_NAME = "resonance-hub";
+const FROM_DOMAIN = "reson8.life";
+const SITE_NAME = "RONSAS";
 const TEMPLATE_NAME = "subscription-confirmed";
 
 function backoffSeconds(attemptNumber: number): number {
@@ -39,21 +38,20 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-        if (!apiKey || !supabaseUrl || !serviceKey) {
+        if (!supabaseUrl || !serviceKey) {
           return Response.json({ error: "Server configuration error" }, { status: 500 });
         }
 
-        // Caller auth: only accept the server-side LOVABLE_API_KEY or the
-        // service role key. The Supabase publishable/anon key is exposed in
-        // the browser bundle and must NOT be accepted here. pg_cron should
-        // be configured to send LOVABLE_API_KEY (or the service role key)
-        // in the `apikey` header.
+        // Caller auth: accept only the server-side service role key. The
+        // publishable/anon key is browser-visible and must never authorize this worker.
         const callerKey = request.headers.get("apikey") ?? "";
-        if (callerKey !== apiKey && callerKey !== serviceKey) {
+        const { timingSafeEqual } = await import("node:crypto");
+        const callerBuf = Buffer.from(callerKey, "utf8");
+        const serviceBuf = Buffer.from(serviceKey, "utf8");
+        if (callerBuf.length !== serviceBuf.length || !timingSafeEqual(callerBuf, serviceBuf)) {
           return Response.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -136,21 +134,14 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
                 ? template.subject({ app: row.app, tier: row.tier })
                 : template.subject;
 
-            await sendLovableEmail(
-              {
-                to: row.recipient_email,
-                from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-                sender_domain: SENDER_DOMAIN,
-                subject,
-                html,
-                text,
-                purpose: "transactional",
-                label: TEMPLATE_NAME,
-                idempotency_key: `sub-confirm-${row.pf_payment_id}-${attemptNumber}`,
-                message_id: messageId,
-              },
-              { apiKey, sendUrl: process.env.LOVABLE_SEND_URL },
-            );
+            await sendTransactionalEmail({
+              to: row.recipient_email,
+              from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+              subject,
+              html,
+              text,
+              idempotencyKey: `sub-confirm-${row.pf_payment_id}-${attemptNumber}`,
+            });
 
             await supabase.from("subscription_email_attempts").insert({
               send_id: row.id,
@@ -197,29 +188,8 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
               })
               .eq("id", row.id);
 
-            // Auto-suppress on terminal failures so we don't keep retrying a
-            // permanently bad address across future subscription events.
-            if (terminal) {
-              const reason = permanent ? "hard_bounce" : "max_retries_exceeded";
-              const recipient = row.recipient_email.toLowerCase();
-              const [{ error: listErr }, { error: globalErr }] = await Promise.all([
-                supabase
-                  .from("email_suppression_list")
-                  .insert({ email: recipient, reason }),
-                supabase
-                  .from("suppressed_emails")
-                  .upsert(
-                    { email: recipient, reason, metadata: { source: "subscription_retry", last_error: errMsg } },
-                    { onConflict: "email" },
-                  ),
-              ]);
-              if (listErr && listErr.code !== "23505") {
-                console.warn("Failed to add to email_suppression_list", listErr);
-              }
-              if (globalErr) {
-                console.warn("Failed to upsert suppressed_emails", globalErr);
-              }
-            }
+            // Delivery API failures are queue/retry concerns, not evidence that the recipient bounced.
+            // Recipient suppression is driven only by verified provider webhooks.
 
             if (terminal) dlq++;
             else failed++;

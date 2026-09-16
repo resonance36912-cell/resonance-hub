@@ -7,8 +7,7 @@ import {
   type AdminBootstrapStatus,
 } from "@/lib/admin-bootstrap.core";
 
-const BOOTSTRAP_FROM = "Resonance Hub <noreply@www.reson8.life>";
-const BOOTSTRAP_SENDER_DOMAIN = "notify.www.reson8.life";
+const BOOTSTRAP_FROM = "RONSAS <noreply@reson8.life>";
 const DEFAULT_BOOTSTRAP_BASE_URL = "https://reson8.life";
 type CheckedBootstrapAccess = {
   status: AdminBootstrapStatus;
@@ -173,28 +172,17 @@ async function deliverBootstrapVerification({
     await writeLocalBootstrapLink(token);
     return "local_file";
   }
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) throw new Error("First-admin verification email is not configured.");
   const verificationUrl = bootstrapVerificationUrl(token, provider);
   const htmlUrl = verificationUrl.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
-  const messageId = crypto.randomUUID();
-
-  const { sendLovableEmail } = await import("@lovable.dev/email-js");
-  await sendLovableEmail(
-    {
-      to: email,
-      from: BOOTSTRAP_FROM,
-      sender_domain: BOOTSTRAP_SENDER_DOMAIN,
-      subject: "Verify first-administrator setup",
-      html: `<p>A request was made to create the first Resonance Hub administrator.</p><p><a href="${htmlUrl}">Verify this email and continue</a></p><p>This single-use link expires in 15 minutes. If you did not request it, ignore this message.</p>`,
-      text: `A request was made to create the first Resonance Hub administrator.\n\nVerify this email and continue: ${verificationUrl}\n\nThis single-use link expires in 15 minutes. If you did not request it, ignore this message.`,
-      purpose: "transactional",
-      label: "admin-bootstrap-email-verification",
-      idempotency_key: `admin-bootstrap-${userId}-${tokenHash.slice(0, 16)}`,
-      message_id: messageId,
-    },
-    { apiKey, sendUrl: process.env.LOVABLE_SEND_URL },
-  );
+  const { sendTransactionalEmail } = await import("@/lib/email-transport.server");
+  await sendTransactionalEmail({
+    to: email,
+    from: BOOTSTRAP_FROM,
+    subject: "Verify first-administrator setup",
+    html: `<p>A request was made to create the first Resonance Hub administrator.</p><p><a href="${htmlUrl}">Verify this email and continue</a></p><p>This single-use link expires in 15 minutes. If you did not request it, ignore this message.</p>`,
+    text: `A request was made to create the first Resonance Hub administrator.\n\nVerify this email and continue: ${verificationUrl}\n\nThis single-use link expires in 15 minutes. If you did not request it, ignore this message.`,
+    idempotencyKey: `admin-bootstrap-${userId}-${tokenHash.slice(0, 16)}`,
+  });
   return "email";
 }
 export const getAdminBootstrapStatus = createServerFn({ method: "POST" })

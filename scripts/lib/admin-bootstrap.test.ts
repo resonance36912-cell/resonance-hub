@@ -222,8 +222,10 @@ describe("first-admin bootstrap security regressions", () => {
     expect(functionsSource).toContain(
       'export const getAdminBootstrapStatus = createServerFn({ method: "POST" })',
     );
-    expect(functionsSource).toContain('label: "admin-bootstrap-email-verification"');
+    expect(functionsSource).toContain('const { sendTransactionalEmail } = await import("@/lib/email-transport.server")');
+    expect(functionsSource).toContain("await sendTransactionalEmail({");
     expect(functionsSource).toContain('subject: "Verify first-administrator setup"');
+    expect(functionsSource).toContain('idempotencyKey: `admin-bootstrap-${userId}-${tokenHash.slice(0, 16)}`');
     expect(functionsSource).toMatch(/crypto\.getRandomValues\(new Uint8Array\(32\)\)/);
     expect(functionsSource).toMatch(/crypto\.subtle\.digest\("SHA-256"/);
     expect(functionsSource).toContain('.from("admin_bootstrap_email_challenges")');
