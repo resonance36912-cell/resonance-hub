@@ -24,10 +24,10 @@ export type SubscriptionRow = {
 };
 
 export const APP_META: Record<AppKey, { label: string; accent: string; url: string }> = {
-  epublisher:        { label: "Resonance ePublisher",      accent: "#c026d3", url: "https://resonanceonline.life" },
-  creative_studio:   { label: "Resonance Creative Studio", accent: "#a855f7", url: "https://www.creativestudio.life" },
-  sync_vision:       { label: "Resonance Sync Vision",     accent: "#ec4899", url: "https://www.syncvision.life" },
-  youtube_optimizer: { label: "YouTube Optimizer",         accent: "#06b6d4", url: "https://resonanceoptimizer.lovable.app" },
+  epublisher:        { label: "Resonance ePublisher",      accent: "#c026d3", url: "https://epublisher.reson8.life" },
+  creative_studio:   { label: "Resonance Creative Studio", accent: "#a855f7", url: "https://creative.reson8.life" },
+  sync_vision:       { label: "Resonance Sync Vision",     accent: "#ec4899", url: "https://sync.reson8.life" },
+  youtube_optimizer: { label: "YouTube Optimizer",         accent: "#06b6d4", url: "https://youtube.reson8.life" },
   all_access:        { label: "All-Access Bundle",         accent: "#f59e0b", url: "/pricing" },
 };
 

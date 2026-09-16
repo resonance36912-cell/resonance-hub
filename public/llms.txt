@@ -1,6 +1,6 @@
 # The Resonance Hub
 
-> Reson8.life is the source of truth for the full Resonance ecosystem — every app, update, pricing plan, checkout, and ecosystem package. Individual apps use once-off credits and project packs. Optional monthly ecosystem passes (Creator Pass, Studio Pass, Business Pass) are available from the Hub for creators and teams using multiple tools.
+> Reson8.life is the source of truth for the full Resonance ecosystem â€” every app, update, pricing plan, checkout, and ecosystem package. Individual apps use once-off credits and project packs. Optional monthly ecosystem passes (Creator Pass, Studio Pass, Business Pass) are available from the Hub for creators and teams using multiple tools.
 
 ## Purchase model
 
@@ -11,15 +11,15 @@
 
 ## Pages
 
-- [Home](/): The Resonance Hub — apps, updates, pricing, bundles, roadmap, governance.
+- [Home](/): The Resonance Hub â€” apps, updates, pricing, bundles, roadmap, governance.
 - [Pricing](/pricing): Once-off app packs and optional ecosystem passes.
 - [Governance](/governance): The Resonance Constitutional Governance Framework (RCGF) v1.0.
 
 ## Apps
 
-- [Resonance ePublisher](https://www.resonanceonline.life): Turn topics, manuscripts, PDFs, and research into audiovisual eBooks. Once-off packs from R99.
-- [Creative Studio](https://www.creativestudio.life): AI-generated posters, brochures, ads and marketing videos. Once-off packs from R149.
-- [Sync Vision](https://www.syncvision.life): AI-ready music video storyboards and character performances. Once-off packs from R349.
-- [YouTube Optimizer](https://www.youtubeoptimizer.life): Channel audits, thumbnails, and growth strategy. Once-off packs from R149.
+- [Resonance ePublisher](https://epublisher.reson8.life): Turn topics, manuscripts, PDFs, and research into audiovisual eBooks. Once-off packs from R99.
+- [Creative Studio](https://creative.reson8.life): AI-generated posters, brochures, ads and marketing videos. Once-off packs from R149.
+- [Sync Vision](https://sync.reson8.life): AI-ready music video storyboards and character performances. Once-off packs from R349.
+- [YouTube Optimizer](https://youtube.reson8.life): Channel audits, thumbnails, and growth strategy. Once-off packs from R149.
 - [Career Compass](https://www.career-compass.org): Career and aptitude discovery for learners and schools. Free pilot.
 - [The Resonance Podcast](https://www.resonance-podcast.com): Free ecosystem media and conversations.

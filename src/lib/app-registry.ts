@@ -1,5 +1,5 @@
 /**
- * Canonical Resonance App Suite registry — v2.2 alignment.
+ * Canonical Resonance App Suite registry â€” v2.2 alignment.
  *
  * Source of truth for every PAID spoke in the Resonance ecosystem. The
  * canonical schema (per the v2.2 spec) uses the following fields:
@@ -10,8 +10,8 @@
  * existing consumers (sitemap, verify scripts) keep working without churn.
  *
  * Excluded by design (do NOT add to APP_REGISTRY):
- *   - Career Compass — informational pilot, no paid tier
- *   - The Resonance Podcast — media surface, no paid tier
+ *   - Career Compass â€” informational pilot, no paid tier
+ *   - The Resonance Podcast â€” media surface, no paid tier
  * These live in ECOSYSTEM_REGISTRY below and must never appear in paid
  * pricing tables, checkout, entitlement, SKU catalog, or All-Access copy.
  */
@@ -30,7 +30,7 @@ const PRICING_PATH = `${HUB_URL}/pricing`;
 const MANAGE_BILLING_PATH = `${HUB_URL}/account/subscriptions`;
 
 export type AppRegistryEntry = {
-  /** Canonical app key — matches SKU_CATALOG `app` field. */
+  /** Canonical app key â€” matches SKU_CATALOG `app` field. */
   key: ResonanceAppKey;
   /** Human label used in copy and JSON-LD. */
   label: string;
@@ -38,16 +38,16 @@ export type AppRegistryEntry = {
   url: string;
   /** Optional fallback / legacy URL kept reachable for transition. */
   fallbackUrl?: string;
-  /** Lifecycle status — drives badges on the homepage. */
+  /** Lifecycle status â€” drives badges on the homepage. */
   status: AppStatus;
-  /** Accent color (hex) — one per app. */
+  /** Accent color (hex) â€” one per app. */
   accentColor: string;
   /** True for every entry in APP_REGISTRY (all paid suite members). */
   includedInSuite: true;
   pricingPath: string;
   manageBillingPath: string;
   backToHubPath: string;
-  /** App key used when calling /api/public/entitlement?app=… */
+  /** App key used when calling /api/public/entitlement?app=â€¦ */
   entitlementAppKey: ResonanceAppKey;
   /** One-line tagline. */
   tagline: string;
@@ -82,7 +82,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   epublisher: entry({
     key: "epublisher",
     label: "Resonance ePublisher",
-    url: "https://www.resonanceonline.life",
+    url: "https://epublisher.reson8.life",
     status: "live",
     accentColor: "#8B5CF6",
     entitlementAppKey: "epublisher",
@@ -92,7 +92,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   creative_studio: entry({
     key: "creative_studio",
     label: "Resonance Creative Studio",
-    url: "https://www.creativestudio.life",
+    url: "https://creative.reson8.life",
     status: "live",
     accentColor: "#EC4899",
     entitlementAppKey: "creative_studio",
@@ -102,7 +102,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   sync_vision: entry({
     key: "sync_vision",
     label: "Resonance Sync Vision",
-    url: "https://www.syncvision.life",
+    url: "https://sync.reson8.life",
     status: "beta",
     accentColor: "#06B6D4",
     entitlementAppKey: "sync_vision",
@@ -112,8 +112,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   youtube_optimizer: entry({
     key: "youtube_optimizer",
     label: "YouTube Optimizer",
-    url: "https://www.youtubeoptimizer.life",
-    fallbackUrl: "https://resonanceoptimizer.lovable.app",
+    url: "https://youtube.reson8.life",
     status: "pilot",
     accentColor: "#F97316",
     entitlementAppKey: "youtube_optimizer",
@@ -141,7 +140,7 @@ export function getAppEntry(key: string): AppRegistryEntry | null {
 }
 
 /**
- * Wider ecosystem — informational/media only. NEVER reference these from
+ * Wider ecosystem â€” informational/media only. NEVER reference these from
  * pricing, checkout, entitlement, SKU catalog, or All-Access copy.
  */
 export type EcosystemEntry = {
@@ -150,7 +149,7 @@ export type EcosystemEntry = {
   url: string;
   status: AppStatus;
   tagline: string;
-  /** Always false — these are not in the paid suite. */
+  /** Always false â€” these are not in the paid suite. */
   includedInSuite: false;
 };
 
@@ -160,7 +159,7 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     label: "The Resonance Podcast",
     url: "https://www.resonance-podcast.com",
     status: "live",
-    tagline: "Listen, watch, and shop — deep conversations on AI and growth.",
+    tagline: "Listen, watch, and shop â€” deep conversations on AI and growth.",
     includedInSuite: false,
   },
   career_compass: {
@@ -174,11 +173,11 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
 };
 
 /**
- * All-Access grant summary — what an active all_access subscription
+ * All-Access grant summary â€” what an active all_access subscription
  * displays as unlocked per app. This is DISPLAY-ONLY copy; runtime
  * entitlement checks MUST use the subscriptions table and TIER_RANK,
  * never this static map. Per-workflow minimum tiers live in spoke
- * registries and route handlers (e.g. generate-poster → creator).
+ * registries and route handlers (e.g. generate-poster â†’ creator).
  */
 export const ALL_ACCESS_GRANTS = {
   epublisher: { tier: "pro", source: "all_access" },

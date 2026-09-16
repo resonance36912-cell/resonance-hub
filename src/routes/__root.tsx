@@ -76,12 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "The Resonance" },
+      { property: "og:site_name", content: "RONSAS" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "google-site-verification", content: "cyauvD1JwPPom3ad_AbEip05fQr_BpFJF_Xfkcvblpw" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", type: "image/png", href: "/favicon-64.png", sizes: "64x64" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -140,7 +143,7 @@ function LocalDemoLauncher() {
   }, []);
   if (!host) return null;
   const apps = [
-    ["ePublisher", 3101], ["Creative Studio", 3201], ["Sync Vision", 3301],
+    ["ePublisher", 3101], ["Creative Studio", 3201], ["Sync Vision", 3301], ["YouTube Optimizer", 3401],
   ] as const;
   return (
     <aside className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur">

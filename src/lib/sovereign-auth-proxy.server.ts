@@ -59,8 +59,18 @@ function readCookie(request: Request): string | null {
   return null;
 }
 
+function productionOrigin(): string | null {
+  const raw = process.env.RONS_PRODUCTION_ORIGIN?.trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" ? url.origin : null;
+  } catch { return null; }
+}
+
 function cookieHeader(request: Request, value: string, maxAge: number): string {
-  const secure = new URL(request.url).protocol === "https:" ? "; Secure" : "";
+  const production = process.env.RONS_PRODUCTION_AUTH_COOKIE === "1";
+  const secure = production || new URL(request.url).protocol === "https:" ? "; Secure" : "";
   return `${COOKIE_NAME}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secure}`;
 }
 
@@ -77,8 +87,17 @@ function json(body: unknown, status: number, headers: HeadersInit = {}): Respons
 
 function sameOriginPost(request: Request): boolean {
   const origin = request.headers.get("origin");
-  if (!origin) return true;
-  return origin === new URL(request.url).origin;
+  const production = process.env.RONS_PRODUCTION_AUTH_COOKIE === "1";
+  if (!production) {
+    if (!origin) return true;
+    return origin === new URL(request.url).origin;
+  }
+  const expected = productionOrigin();
+  if (!expected || !origin || origin !== expected) return false;
+  const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim() || request.headers.get("host")?.trim();
+  const expectedUrl = new URL(expected);
+  return proto === "https" && host === expectedUrl.host;
 }
 
 function redactSessionToken(payload: unknown): unknown {

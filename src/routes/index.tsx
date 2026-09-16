@@ -3,6 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
+
+const CANONICAL_ORIGIN = "https://reson8.life";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import logoEpublisher from "@/assets/logo-epublisher.png";
@@ -25,38 +27,38 @@ export const Route = createFileRoute("/")({
     return { origin };
   },
   head: ({ loaderData }) => {
-    const origin = loaderData?.origin ?? "https://resonance-hub-life.lovable.app";
+    const origin = CANONICAL_ORIGIN;
     return {
       meta: [
-        { title: "The Resonance — One ecosystem for the aligned mind" },
+        { title: "RONSAS | Resonance Open Nova Sovereign Application Suite" },
         {
           name: "description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
         },
         {
           property: "og:title",
-          content: "The Resonance — One ecosystem for the aligned mind",
+          content: "RONSAS | Resonance Open Nova Sovereign Application Suite",
         },
         {
           property: "og:description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
         },
         { property: "og:type", content: "website" },
         { property: "og:url", content: `${origin}/` },
         { property: "og:image", content: `${origin}/og-logo.png` },
         { property: "og:image:alt", content: "The Resonance logo" },
-        { property: "og:site_name", content: "The Resonance" },
+        { property: "og:site_name", content: "RONSAS" },
         { name: "twitter:card", content: "summary_large_image" },
         {
           name: "twitter:title",
-          content: "The Resonance — One ecosystem for the aligned mind",
+          content: "RONSAS | Resonance Open Nova Sovereign Application Suite",
         },
         {
           name: "twitter:description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
         },
         { name: "twitter:image", content: `${origin}/og-logo.png` },
         { name: "twitter:image:alt", content: "The Resonance logo" },
@@ -66,13 +68,13 @@ export const Route = createFileRoute("/")({
         {
           rel: "alternate",
           type: "application/rss+xml",
-          title: "Resonance — Latest Updates (RSS)",
+          title: "RONSAS | Latest Updates (RSS)",
           href: `${origin}/api/public/updates/rss`,
         },
         {
           rel: "alternate",
           type: "application/atom+xml",
-          title: "Resonance — Latest Updates (Atom)",
+          title: "RONSAS | Latest Updates (Atom)",
           href: `${origin}/api/public/updates/atom`,
         },
 
@@ -85,20 +87,22 @@ export const Route = createFileRoute("/")({
             "@graph": [
               {
                 "@type": "Organization",
-                name: "The Resonance",
+                name: "RONSAS",
+                alternateName: "The Resonance",
                 url: `${origin}/`,
                 logo: `${origin}/og-logo.png`,
                 sameAs: [
-                  "https://www.resonanceonline.life",
-                  "https://www.creativestudio.life",
-                  "https://www.syncvision.life",
+                  "https://epublisher.reson8.life",
+                  "https://creative.reson8.life",
+                  "https://sync.reson8.life",
                   "https://www.resonance-podcast.com",
                   "https://www.career-compass.org",
                 ],
               },
               {
                 "@type": "WebSite",
-                name: "The Resonance",
+                name: "RONSAS",
+                alternateName: "The Resonance",
                 url: `${origin}/`,
               },
               {
@@ -106,7 +110,7 @@ export const Route = createFileRoute("/")({
                 name: "Resonance ePublisher",
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
-                url: "https://www.resonanceonline.life",
+                url: "https://epublisher.reson8.life",
                 offers: { "@type": "Offer", price: "99", priceCurrency: "ZAR" },
               },
               {
@@ -114,7 +118,7 @@ export const Route = createFileRoute("/")({
                 name: "Creative Studio",
                 applicationCategory: "DesignApplication",
                 operatingSystem: "Web",
-                url: "https://www.creativestudio.life",
+                url: "https://creative.reson8.life",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
               {
@@ -122,7 +126,7 @@ export const Route = createFileRoute("/")({
                 name: "Sync Vision",
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
-                url: "https://www.syncvision.life",
+                url: "https://sync.reson8.life",
                 offers: { "@type": "Offer", price: "549", priceCurrency: "ZAR" },
               },
               {
@@ -130,7 +134,7 @@ export const Route = createFileRoute("/")({
                 name: "YouTube Optimizer",
                 applicationCategory: "BusinessApplication",
                 operatingSystem: "Web",
-                url: "https://www.youtubeoptimizer.life",
+                url: "https://youtube.reson8.life",
                 offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
               },
               {
@@ -138,13 +142,13 @@ export const Route = createFileRoute("/")({
                 mainEntity: [
                   ["Do individual apps have monthly subscriptions?", "No. Individual Resonance apps use once-off credits and project packs. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps."],
                   ["Can I use Resonance tools for free?", "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits."],
-                  ["Is there a single login across every app?", "One Hub billing account today — packs and ecosystem passes live in one place. Unified app login is on the roadmap."],
+                  ["Is there a single login across every app?", "One Hub billing account today â€” packs and ecosystem passes live in one place. Unified app login is on the roadmap."],
                   ["Can I cancel an ecosystem pass anytime?", "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases."],
                   ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT)."],
-                  ["Can schools use Career Compass?", "Yes — schools can join the free pilot."],
+                  ["Can schools use Career Compass?", "Yes â€” schools can join the free pilot."],
 
                   ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
-                  ["Can Creative Studio create ads and product visuals?", "Yes — posters, brochures, social ads, product mockups, and short marketing videos."],
+                  ["Can Creative Studio create ads and product visuals?", "Yes â€” posters, brochures, social ads, product mockups, and short marketing videos."],
                 ].map(([q, a]) => ({
                   "@type": "Question",
                   name: q,
@@ -165,6 +169,7 @@ type App = {
   tagline: string;
   domain: string;
   href: string;
+  localPort?: number;
   subscribeHref: string;
   priceLabel: string;
   priceNote: string;
@@ -179,17 +184,18 @@ const apps: App[] = [
     name: "Resonance ePublisher",
     tagline:
       "Turn topics, manuscripts, PDFs, and research into polished audiovisual eBooks.",
-    domain: "resonanceonline.life",
-    href: "https://www.resonanceonline.life",
+    domain: "epublisher.reson8.life",
+    href: "https://epublisher.reson8.life",
+    localPort: 3101,
     subscribeHref: "/pricing#epublisher",
     priceLabel: "from R99 once-off",
-    priceNote: "Once-off credit / project packs · no recurring app fees",
+    priceNote: "Once-off credit / project packs Â· no recurring app fees",
 
     logo: logoEpublisher,
     accent: "magenta",
     status: "live",
     attribute: {
-      icon: "🧠",
+      icon: "ðŸ§ ",
       label: "Authors, educators & publishers",
       body: "Structuring knowledge, automated publishing workflows, and literary preservation.",
     },
@@ -198,16 +204,17 @@ const apps: App[] = [
     name: "Creative Studio",
     tagline:
       "Design posters, ads, product visuals, brochures, and campaign media instantly.",
-    domain: "creativestudio.life",
-    href: "https://www.creativestudio.life",
+    domain: "creative.reson8.life",
+    href: "https://creative.reson8.life",
+    localPort: 3201,
     subscribeHref: "/pricing#creative-studio",
     priceLabel: "from R149 once-off",
-    priceNote: "Once-off creative credit packs · no recurring app fees",
+    priceNote: "Once-off creative credit packs Â· no recurring app fees",
     logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
     attribute: {
-      icon: "❤",
+      icon: "â¤",
       label: "Small businesses, creators & agencies",
       body: "Visual storytelling, emotional design, and brand identity mapping.",
     },
@@ -216,16 +223,17 @@ const apps: App[] = [
     name: "Sync Vision",
     tagline:
       "Turn songs into cinematic storyboards, character concepts, captions, and video-generation prompts.",
-    domain: "syncvision.life",
-    href: "https://www.syncvision.life",
+    domain: "sync.reson8.life",
+    href: "https://sync.reson8.life",
+    localPort: 3301,
     subscribeHref: "/pricing#sync-vision",
     priceLabel: "from R349 once-off",
-    priceNote: "Once-off music-video packs · no recurring app fees",
+    priceNote: "Once-off music-video packs Â· no recurring app fees",
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
     attribute: {
-      icon: "🏃",
+      icon: "ðŸƒ",
       label: "Musicians, labels & video creators",
       body: "High-fidelity video generation, precise character consistency, and frame-by-frame production.",
     },
@@ -238,12 +246,12 @@ const apps: App[] = [
     href: "https://www.resonance-podcast.com",
     subscribeHref: "https://www.resonance-podcast.com",
     priceLabel: "Free",
-    priceNote: "Listen and watch — not a SaaS subscription",
+    priceNote: "Listen and watch â€” not a SaaS subscription",
     logo: logoPodcast,
     accent: "cyan",
     status: "free",
     attribute: {
-      icon: "∞",
+      icon: "âˆž",
       label: "Listeners & ecosystem followers",
       body: "Conversational exploration of Mind, Body, and Soul.",
     },
@@ -256,12 +264,12 @@ const apps: App[] = [
     href: "https://www.career-compass.org",
     subscribeHref: "https://www.career-compass.org/#how",
     priceLabel: "Free pilot",
-    priceNote: "Free pilot now · per-report and school packages later",
+    priceNote: "Free pilot now Â· per-report and school packages later",
     logo: logoCareerCompass,
     accent: "emerald",
     status: "free",
     attribute: {
-      icon: "🎯",
+      icon: "ðŸŽ¯",
       label: "Students, schools & parents",
       body: "Aligning vocational execution with universal growth principles.",
     },
@@ -270,16 +278,17 @@ const apps: App[] = [
     name: "YouTube Optimizer",
     tagline:
       "Audit channels, improve thumbnails, titles, content strategy, and growth planning.",
-    domain: "youtubeoptimizer.life",
-    href: "https://www.youtubeoptimizer.life",
+    domain: "youtube.reson8.life",
+    href: "https://youtube.reson8.life",
+    localPort: 3401,
     subscribeHref: "/pricing#youtube-optimizer",
     priceLabel: "from R149 once-off",
-    priceNote: "Once-off audit and growth packs · no recurring app fees",
+    priceNote: "Once-off audit and growth packs Â· no recurring app fees",
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "live",
     attribute: {
-      icon: "🚀",
+      icon: "ðŸš€",
       label: "YouTubers, creators & agencies",
       body: "Algorithmic mastery met with content authenticity.",
     },
@@ -437,12 +446,12 @@ function HeroCarousel({
             rel="noopener noreferrer"
             className="shrink-0 text-[10px] font-bold uppercase tracking-[0.18em] px-3 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
           >
-            Open →
+            Open â†’
           </a>
         </div>
       </div>
 
-      {/* Dots — visual stays small, tap target is 32×32 for mobile */}
+      {/* Dots â€” visual stays small, tap target is 32Ã—32 for mobile */}
       <div className="absolute -bottom-14 left-0 right-0 flex justify-center gap-1">
         {items.map((it, idx) => (
           <button
@@ -523,6 +532,19 @@ function useScrollReveal() {
   }, []);
 }
 
+function withRuntimeAppLinks(origin: string): App[] {
+  try {
+    const host = new URL(origin).hostname;
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "::1" ||
+      host.startsWith("10.") || host.startsWith("192.168.") || /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+    if (!isLocal) return apps;
+    return apps.map((app) => app.localPort
+      ? { ...app, href: `http://${host}:${app.localPort}/`, domain: `${host}:${app.localPort}` }
+      : app);
+  } catch {
+    return apps;
+  }
+}
 function Index() {
   const active = useActiveSection(NAV_LINKS.map((l) => l.id));
   useScrollReveal();
@@ -532,7 +554,9 @@ function Index() {
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  void apps[carouselIndex];
+  const { origin } = Route.useLoaderData();
+  const runtimeApps = withRuntimeAppLinks(origin);
+  void runtimeApps[carouselIndex];
 
 
   async function onJoinSubmit(e: React.FormEvent) {
@@ -555,7 +579,7 @@ function Index() {
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
       <nav className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
         <div className="flex justify-between items-center gap-3">
-          <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
+          <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance â€” Home">
             <img
               src={resonanceLockup}
               alt="The Resonance"
@@ -589,7 +613,7 @@ function Index() {
           </div>
           <div className="flex items-center gap-2">
             <a
-              href="https://www.resonanceonline.life"
+              href="https://epublisher.reson8.life"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex text-[10px] sm:text-[11px] font-bold tracking-[0.15em] uppercase px-3 sm:px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -604,7 +628,7 @@ function Index() {
               onClick={() => setMobileMenuOpen((v) => !v)}
               className="md:hidden grid place-items-center h-10 w-10 rounded-full border border-white/15 hover:border-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
             >
-              <span aria-hidden className="text-lg leading-none">{mobileMenuOpen ? "✕" : "☰"}</span>
+              <span aria-hidden className="text-lg leading-none">{mobileMenuOpen ? "âœ•" : "â˜°"}</span>
             </button>
           </div>
         </div>
@@ -641,14 +665,14 @@ function Index() {
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              Reson8.life · Source of truth
+              Reson8.life Â· Source of truth
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
-              The Resonance{" "}
+              RONSAS{" "}
               <span className="text-gradient-brand">Hub</span>
             </h1>
             <p className="text-base md:text-lg text-white/75 leading-[1.65] text-pretty max-w-[58ch] mb-6">
-              The source of truth for every Resonance app, update, pricing plan, checkout, and
+              Resonance Open Nova Sovereign Application Suite — the source of truth for every Resonance app, update, pricing plan, checkout, governance control, and
               ecosystem package.
             </p>
             <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-4">
@@ -675,7 +699,7 @@ function Index() {
             </div>
           </div>
           <div className="md:pl-4">
-            <HeroCarousel items={apps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
+            <HeroCarousel items={runtimeApps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
           </div>
         </section>
 
@@ -685,7 +709,7 @@ function Index() {
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/65">
 
             {[
-              "🇿🇦 Built in South Africa",
+              "ðŸ‡¿ðŸ‡¦ Built in South Africa",
               "ZAR pricing",
               "PayFast secure checkout",
               "Cancel anytime",
@@ -712,7 +736,7 @@ function Index() {
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
               <div className="min-w-0">
                 <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-2">
-                  ✦ Featured · Partners & Channels
+                  âœ¦ Featured Â· Partners & Channels
                 </div>
                 <h2 className="font-display text-xl md:text-2xl font-bold tracking-[-0.02em] text-white">
                   Explore the wider Resonance network
@@ -729,7 +753,7 @@ function Index() {
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(150_80%_55%/0.4)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(150_80%_55%/0.15)] border border-[hsl(150_80%_55%/0.3)] text-base">
-                    🩺
+                    ðŸ©º
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-[hsl(150_80%_65%)]">
@@ -739,7 +763,7 @@ function Index() {
                       medi-tech.co.za
                     </span>
                   </span>
-                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">â†—</span>
                 </a>
                 <a
                   href="https://www.resonance-podcast.com"
@@ -748,7 +772,7 @@ function Index() {
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(190_90%_60%/0.4)] px-3.5 py-3 transition-all"
                 >
                   <span className="grid place-items-center size-9 rounded-lg bg-[hsl(190_90%_60%/0.15)] border border-[hsl(190_90%_60%/0.3)] text-base">
-                    🎙️
+                    ðŸŽ™ï¸
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-[10px] font-mono uppercase tracking-[0.18em] text-[hsl(190_90%_70%)]">
@@ -758,7 +782,7 @@ function Index() {
                       resonance-podcast.com
                     </span>
                   </span>
-                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">â†—</span>
                 </a>
                 <a
                   href="https://www.youtube.com/@resonance36912"
@@ -779,7 +803,7 @@ function Index() {
                       @resonance36912
                     </span>
                   </span>
-                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">â†—</span>
                 </a>
                 <a
                   href="https://www.youtube.com/@theresonancefrequencies"
@@ -800,7 +824,7 @@ function Index() {
                       @theresonancefrequencies
                     </span>
                   </span>
-                  <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
+                  <span className="text-white/65 group-hover:text-white transition-colors">â†—</span>
                 </a>
               </div>
             </div>
@@ -825,19 +849,22 @@ function Index() {
               {
                 title: "Authors & Publishers",
                 body: "Turn manuscripts, PDFs, and stories into polished audiovisual books.",
-                href: "https://www.resonanceonline.life",
+                href: "https://epublisher.reson8.life",
+    localPort: 3101,
                 cta: "Open ePublisher",
               },
               {
                 title: "Creators & Small Businesses",
                 body: "Generate posters, ads, brochures, videos, and product campaigns.",
-                href: "https://www.creativestudio.life",
+                href: "https://creative.reson8.life",
+    localPort: 3201,
                 cta: "Open Creative Studio",
               },
               {
                 title: "Musicians & Artists",
                 body: "Build music-video storyboards, character concepts, and AI-ready scene prompts.",
-                href: "https://www.syncvision.life",
+                href: "https://sync.reson8.life",
+    localPort: 3301,
                 cta: "Open Sync Vision",
               },
               {
@@ -859,7 +886,7 @@ function Index() {
                   rel="noopener noreferrer"
                   className="text-[11px] font-bold uppercase tracking-widest text-white/80 hover:text-white border-t border-white/10 pt-4"
                 >
-                  {p.cta} →
+                  {p.cta} â†’
                 </a>
               </article>
             ))}
@@ -886,14 +913,14 @@ function Index() {
                   className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
                   aria-label="Subscribe to Resonance updates via RSS"
                 >
-                  <span aria-hidden>📡</span> Subscribe · RSS
+                  <span aria-hidden>ðŸ“¡</span> Subscribe Â· RSS
                 </a>
                 <a
                   href="/api/public/updates/atom"
                   className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
                   aria-label="Subscribe to Resonance updates via Atom"
                 >
-                  <span aria-hidden>⚛️</span> Subscribe · Atom
+                  <span aria-hidden>âš›ï¸</span> Subscribe Â· Atom
                 </a>
               </div>
 
@@ -913,13 +940,13 @@ function Index() {
             </div>
             <p className="text-white/60 max-w-md text-sm leading-relaxed">
               Each app is independently deployed. Individual apps use once-off credits and project
-              packs — optional ecosystem passes live on the Hub for teams using multiple tools every month.
+              packs â€” optional ecosystem passes live on the Hub for teams using multiple tools every month.
             </p>
           </div>
 
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {apps.map((app, i) => {
+            {runtimeApps.map((app, i) => {
               const a = accentMap[app.accent];
               const disabled = app.status === "soon";
               return (
@@ -1019,7 +1046,7 @@ function Index() {
               Once-off packs. Optional passes.
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto text-sm leading-relaxed mb-8">
-              Individual apps use once-off credits and project packs — no recurring app fees. The Hub
+              Individual apps use once-off credits and project packs â€” no recurring app fees. The Hub
               offers optional monthly ecosystem passes for creators and teams using multiple Resonance
               tools every month.
             </p>
@@ -1028,7 +1055,7 @@ function Index() {
                 to="/pricing"
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-xs uppercase tracking-widest shadow-[0_0_40px_-10px_hsl(295_90%_60%/0.8)]"
               >
-                View full pricing →
+                View full pricing â†’
               </Link>
               <a href="#bundles" className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest">
                 See ecosystem passes
@@ -1111,7 +1138,7 @@ function Index() {
             ))}
           </div>
           <p className="text-center text-xs text-white/60 mt-6">
-            Ecosystem passes are optional and billed monthly via PayFast — cancel anytime. Individual
+            Ecosystem passes are optional and billed monthly via PayFast â€” cancel anytime. Individual
             apps remain available as once-off credit and project packs with no recurring app fees.
           </p>
         </section>
@@ -1160,7 +1187,7 @@ function Index() {
             </h2>
             <div className="space-y-5 text-white/70 leading-relaxed">
               <p>
-                Technology shouldn't fragment our attention — it should align it. Every Resonance
+                Technology shouldn't fragment our attention â€” it should align it. Every Resonance
                 app is built on{" "}
                 <span className="text-white">Harmonic UX</span>: tools that respond to human
                 intuition the way a tuned instrument responds to breath.
@@ -1186,7 +1213,7 @@ function Index() {
             {[
               {
                 q: "Do individual apps have monthly subscriptions?",
-                a: "No. Individual Resonance apps use once-off credits and project packs — no recurring app fees. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps.",
+                a: "No. Individual Resonance apps use once-off credits and project packs â€” no recurring app fees. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps.",
               },
               {
                 q: "Can I use Resonance tools for free?",
@@ -1194,7 +1221,7 @@ function Index() {
               },
               {
                 q: "Is there a single login across every app?",
-                a: "One Hub billing account today — packs and passes live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
+                a: "One Hub billing account today â€” packs and passes live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
               },
               {
                 q: "Can I cancel an ecosystem pass anytime?",
@@ -1207,7 +1234,7 @@ function Index() {
 
               {
                 q: "Can schools use Career Compass?",
-                a: "Yes — schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
+                a: "Yes â€” schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
               },
               {
                 q: "Can publishers test ePublisher with one title first?",
@@ -1215,11 +1242,11 @@ function Index() {
               },
               {
                 q: "Does Sync Vision generate final videos or AI-ready storyboards?",
-                a: "Sync Vision produces AI-ready music-video storyboards, character performances, and scene prompts — ready to feed into your video generation pipeline.",
+                a: "Sync Vision produces AI-ready music-video storyboards, character performances, and scene prompts â€” ready to feed into your video generation pipeline.",
               },
               {
                 q: "Can Creative Studio create ads and product visuals?",
-                a: "Yes — posters, brochures, social ads, product mockups, and short marketing videos from a single prompt or upload.",
+                a: "Yes â€” posters, brochures, social ads, product mockups, and short marketing videos from a single prompt or upload.",
               },
             ].map((item) => (
               <details key={item.q} className="group p-6">
@@ -1271,7 +1298,7 @@ function Index() {
                 disabled={joinStatus === "loading" || joinStatus === "ok"}
                 className="px-8 py-3 bg-gradient-brand text-white rounded-full font-bold text-sm shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.8)] disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                {joinStatus === "loading" ? "Subscribing…" : joinStatus === "ok" ? "Subscribed ✓" : "Subscribe"}
+                {joinStatus === "loading" ? "Subscribingâ€¦" : joinStatus === "ok" ? "Subscribed âœ“" : "Subscribe"}
               </button>
             </form>
             <p className="mt-4 text-[11px] text-white/65 max-w-md mx-auto">
@@ -1308,7 +1335,7 @@ function Index() {
               className="h-6 w-auto opacity-60 brightness-0 invert"
             />
             <div className="text-[10px] font-mono uppercase tracking-widest text-white/65">
-              © {new Date().getFullYear()} The Resonance · Ecosystem Hub
+              Â© {new Date().getFullYear()} The Resonance Â· Ecosystem Hub
             </div>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
@@ -1327,13 +1354,13 @@ function Index() {
             <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
-            <a href="https://www.resonanceonline.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://epublisher.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               ePublisher
             </a>
-            <a href="https://www.creativestudio.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://creative.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Studio
             </a>
-            <a href="https://www.syncvision.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://sync.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               SyncVision
             </a>
           </div>
@@ -1360,17 +1387,17 @@ type UpdateItem = {
 };
 
 // Fallback in case /content/updates.json can't be fetched (offline, 404).
-// Source of truth for editing lives in public/content/updates.json — no code
+// Source of truth for editing lives in public/content/updates.json â€” no code
 // changes required to add / edit / reorder cards.
 const FALLBACK_UPDATES: UpdateItem[] = [
-  { app: "Reson8 Hub", status: "Live", tone: "live", change: "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.", date: "Jun 2026", href: "/pricing#passes", cta: "See passes" },
+  { app: "Reson8 Hub", status: "Live", tone: "live", change: "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans â€” individual apps moved to once-off packs.", date: "Jun 2026", href: "/pricing#passes", cta: "See passes" },
   { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.", date: "May 2026", href: "/pricing#epublisher", cta: "View packs" },
   { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.", date: "Apr 2026", href: "/pricing#creative-studio", cta: "View packs" },
   { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.", date: "Mar 2026", href: "/pricing#sync-vision", cta: "View packs" },
-  { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.", date: "Jun 2026", href: "/pricing#youtube-optimizer", cta: "View packs" },
+  { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Migrating to youtube.reson8.life with new audit, thumbnail, and growth packs. Existing users keep access.", date: "Jun 2026", href: "/pricing#youtube-optimizer", cta: "View packs" },
   { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
-  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live — free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com", cta: "Listen" },
-  { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
+  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live â€” free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com", cta: "Listen" },
+  { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published â€” how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
 ];
 
 const TONE_BADGE: Record<string, string> = {
@@ -1486,9 +1513,9 @@ function UpdatesGrid() {
                 <p className="text-xs text-white/70 leading-relaxed mb-4 flex-1">{u.change}</p>
                 <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
                   {external ? (
-                    <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
+                    <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} â†’</a>
                   ) : (
-                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
+                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} â†’</Link>
                   )}
                   {hasMore && (
                     <button
@@ -1544,11 +1571,11 @@ function UpdatesGrid() {
                         <li key={idx}>
                           {ext ? (
                             <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
-                              {l.label} ↗
+                              {l.label} â†—
                             </a>
                           ) : (
                             <Link to={l.href} onClick={() => setOpenIndex(null)} className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
-                              {l.label} →
+                              {l.label} â†’
                             </Link>
                           )}
                         </li>
@@ -1566,7 +1593,7 @@ function UpdatesGrid() {
                     rel="noopener noreferrer"
                     className="px-4 py-2 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
                   >
-                    {active.cta} ↗
+                    {active.cta} â†—
                   </a>
                 ) : (
                   <Link
@@ -1574,7 +1601,7 @@ function UpdatesGrid() {
                     onClick={() => setOpenIndex(null)}
                     className="px-4 py-2 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
                   >
-                    {active.cta} →
+                    {active.cta} â†’
                   </Link>
                 )}
               </div>
@@ -1585,6 +1612,3 @@ function UpdatesGrid() {
     </>
   );
 }
-
-
-

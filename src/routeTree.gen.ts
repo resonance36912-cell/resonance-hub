@@ -35,6 +35,8 @@ import { Route as AdminSecurityScanRouteImport } from './routes/admin.security-s
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
 import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
+import { Route as AdminPromotionCampaignsRouteImport } from './routes/admin.promotion-campaigns'
+import { Route as AdminPromotionRouteImport } from './routes/admin.promotion'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
@@ -42,6 +44,7 @@ import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
+import { Route as AdminControlCenterRouteImport } from './routes/admin.control-center'
 import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
 import { Route as AdminAccessRouteImport } from './routes/admin.access'
@@ -59,6 +62,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiSovereignLaunchAppRouteImport } from './routes/api/sovereign/launch/$app'
 import { Route as ApiSovereignAuthActionRouteImport } from './routes/api/sovereign/auth/$action'
 import { Route as ApiPublicUpdatesRssRouteImport } from './routes/api/public/updates/rss'
 import { Route as ApiPublicUpdatesAtomRouteImport } from './routes/api/public/updates/atom'
@@ -206,6 +210,16 @@ const AdminRepoHealthRoute = AdminRepoHealthRouteImport.update({
   path: '/admin/repo-health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPromotionCampaignsRoute = AdminPromotionCampaignsRouteImport.update({
+  id: '/admin/promotion-campaigns',
+  path: '/admin/promotion-campaigns',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPromotionRoute = AdminPromotionRouteImport.update({
+  id: '/admin/promotion',
+  path: '/admin/promotion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
   id: '/admin/payfast-audit',
   path: '/admin/payfast-audit',
@@ -240,6 +254,11 @@ const AdminEmailDomainRoute = AdminEmailDomainRouteImport.update({
 const AdminCreditsRoute = AdminCreditsRouteImport.update({
   id: '/admin/credits',
   path: '/admin/credits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminControlCenterRoute = AdminControlCenterRouteImport.update({
+  id: '/admin/control-center',
+  path: '/admin/control-center',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
@@ -333,6 +352,11 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSovereignLaunchAppRoute = ApiSovereignLaunchAppRouteImport.update({
+  id: '/api/sovereign/launch/$app',
+  path: '/api/sovereign/launch/$app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSovereignAuthActionRoute = ApiSovereignAuthActionRouteImport.update({
   id: '/api/sovereign/auth/$action',
   path: '/api/sovereign/auth/$action',
@@ -443,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/admin/access': typeof AdminAccessRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -450,6 +475,8 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
@@ -486,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
   '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -511,6 +539,7 @@ export interface FileRoutesByTo {
   '/admin/access': typeof AdminAccessRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -518,6 +547,8 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
@@ -554,6 +585,7 @@ export interface FileRoutesByTo {
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
   '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -580,6 +612,7 @@ export interface FileRoutesById {
   '/admin/access': typeof AdminAccessRoute
   '/admin/billing': typeof AdminBillingRoute
   '/admin/ci-health': typeof AdminCiHealthRoute
+  '/admin/control-center': typeof AdminControlCenterRoute
   '/admin/credits': typeof AdminCreditsRoute
   '/admin/email-domain': typeof AdminEmailDomainRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -587,6 +620,8 @@ export interface FileRoutesById {
   '/admin/invoices': typeof AdminInvoicesRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/promotion': typeof AdminPromotionRoute
+  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
   '/admin/repo-health': typeof AdminRepoHealthRoute
   '/admin/revenue': typeof AdminRevenueRoute
   '/admin/rop': typeof AdminRopRoute
@@ -623,6 +658,7 @@ export interface FileRoutesById {
   '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
   '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
   '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
+  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -650,6 +686,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/billing'
     | '/admin/ci-health'
+    | '/admin/control-center'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -657,6 +694,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
@@ -693,6 +732,7 @@ export interface FileRouteTypes {
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
     | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -718,6 +758,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/billing'
     | '/admin/ci-health'
+    | '/admin/control-center'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -725,6 +766,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
@@ -761,6 +804,7 @@ export interface FileRouteTypes {
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
     | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -786,6 +830,7 @@ export interface FileRouteTypes {
     | '/admin/access'
     | '/admin/billing'
     | '/admin/ci-health'
+    | '/admin/control-center'
     | '/admin/credits'
     | '/admin/email-domain'
     | '/admin/emails'
@@ -793,6 +838,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/login'
     | '/admin/payfast-audit'
+    | '/admin/promotion'
+    | '/admin/promotion-campaigns'
     | '/admin/repo-health'
     | '/admin/revenue'
     | '/admin/rop'
@@ -829,6 +876,7 @@ export interface FileRouteTypes {
     | '/api/public/updates/atom'
     | '/api/public/updates/rss'
     | '/api/sovereign/auth/$action'
+    | '/api/sovereign/launch/$app'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -855,6 +903,7 @@ export interface RootRouteChildren {
   AdminAccessRoute: typeof AdminAccessRoute
   AdminBillingRoute: typeof AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
+  AdminControlCenterRoute: typeof AdminControlCenterRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -862,6 +911,8 @@ export interface RootRouteChildren {
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
+  AdminPromotionRoute: typeof AdminPromotionRoute
+  AdminPromotionCampaignsRoute: typeof AdminPromotionCampaignsRoute
   AdminRepoHealthRoute: typeof AdminRepoHealthRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
   AdminRopRoute: typeof AdminRopRoute
@@ -894,6 +945,7 @@ export interface RootRouteChildren {
   ApiPublicUpdatesAtomRoute: typeof ApiPublicUpdatesAtomRoute
   ApiPublicUpdatesRssRoute: typeof ApiPublicUpdatesRssRoute
   ApiSovereignAuthActionRoute: typeof ApiSovereignAuthActionRoute
+  ApiSovereignLaunchAppRoute: typeof ApiSovereignLaunchAppRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1086,6 +1138,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRepoHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/promotion-campaigns': {
+      id: '/admin/promotion-campaigns'
+      path: '/admin/promotion-campaigns'
+      fullPath: '/admin/promotion-campaigns'
+      preLoaderRoute: typeof AdminPromotionCampaignsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/promotion': {
+      id: '/admin/promotion'
+      path: '/admin/promotion'
+      fullPath: '/admin/promotion'
+      preLoaderRoute: typeof AdminPromotionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/payfast-audit': {
       id: '/admin/payfast-audit'
       path: '/admin/payfast-audit'
@@ -1133,6 +1199,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/credits'
       fullPath: '/admin/credits'
       preLoaderRoute: typeof AdminCreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/control-center': {
+      id: '/admin/control-center'
+      path: '/admin/control-center'
+      fullPath: '/admin/control-center'
+      preLoaderRoute: typeof AdminControlCenterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/ci-health': {
@@ -1252,6 +1325,13 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sovereign/launch/$app': {
+      id: '/api/sovereign/launch/$app'
+      path: '/api/sovereign/launch/$app'
+      fullPath: '/api/sovereign/launch/$app'
+      preLoaderRoute: typeof ApiSovereignLaunchAppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sovereign/auth/$action': {
@@ -1416,6 +1496,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAccessRoute: AdminAccessRoute,
   AdminBillingRoute: AdminBillingRoute,
   AdminCiHealthRoute: AdminCiHealthRoute,
+  AdminControlCenterRoute: AdminControlCenterRoute,
   AdminCreditsRoute: AdminCreditsRoute,
   AdminEmailDomainRoute: AdminEmailDomainRoute,
   AdminEmailsRoute: AdminEmailsRoute,
@@ -1423,6 +1504,8 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInvoicesRoute: AdminInvoicesRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminPayfastAuditRoute: AdminPayfastAuditRoute,
+  AdminPromotionRoute: AdminPromotionRoute,
+  AdminPromotionCampaignsRoute: AdminPromotionCampaignsRoute,
   AdminRepoHealthRoute: AdminRepoHealthRoute,
   AdminRevenueRoute: AdminRevenueRoute,
   AdminRopRoute: AdminRopRoute,
@@ -1456,6 +1539,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicUpdatesAtomRoute: ApiPublicUpdatesAtomRoute,
   ApiPublicUpdatesRssRoute: ApiPublicUpdatesRssRoute,
   ApiSovereignAuthActionRoute: ApiSovereignAuthActionRoute,
+  ApiSovereignLaunchAppRoute: ApiSovereignLaunchAppRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

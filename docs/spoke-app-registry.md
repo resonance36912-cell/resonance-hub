@@ -4,10 +4,10 @@ Authoritative table of every paid app the hub recognises, the tiers each
 exposes, the SKU keys, and the feature flags returned by
 `/api/public/entitlement`. Every spoke MUST mirror these values exactly.
 The hub's source of truth is `src/lib/app-registry.ts` and
-`src/lib/entitlement.functions.ts` — this doc reflects them.
+`src/lib/entitlement.functions.ts` â€” this doc reflects them.
 
 > Companion: [`spoke-payment-gate-brief.md`](./spoke-payment-gate-brief.md)
-> — the rules every spoke implements against this registry.
+> â€” the rules every spoke implements against this registry.
 
 ---
 
@@ -26,14 +26,14 @@ Only `active` grants access.
 
 ## Apps
 
-### ePublisher — `epublisher`
+### ePublisher â€” `epublisher`
 
-- Domain: `https://www.resonanceonline.life`
+- Domain: `https://epublisher.reson8.life`
 - Use case: Turn written stories into immersive audiovisual books.
 
-| Tier     | SKU                              | Hub price (ZAR/mo) | Min tier for…                |
+| Tier     | SKU                              | Hub price (ZAR/mo) | Min tier forâ€¦                |
 | -------- | -------------------------------- | ------------------ | ---------------------------- |
-| Free     | —                                | R0                 | watermarked previews only    |
+| Free     | â€”                                | R0                 | watermarked previews only    |
 | Creator  | `epublisher:creator:monthly`     | (see hub pricing)  | audioNarration               |
 | Pro      | `epublisher:pro:monthly`         | (see hub pricing)  | unlimitedProjects, customVoices |
 | Business | `epublisher:business:monthly`    | (see hub pricing)  | teamSeats                    |
@@ -43,21 +43,21 @@ Feature flags:
 
 ---
 
-### Creative Studio — `creative_studio`
+### Creative Studio â€” `creative_studio`
 
-- Domain: `https://www.creativestudio.life`
+- Domain: `https://creative.reson8.life`
 - Use case: Design posters, ads, and marketing media.
 
-| Tier     | SKU                                  | Hub price (ZAR/mo) | Min tier for…           |
+| Tier     | SKU                                  | Hub price (ZAR/mo) | Min tier forâ€¦           |
 | -------- | ------------------------------------ | ------------------ | ----------------------- |
-| Free     | —                                    | R0                 | preview only            |
+| Free     | â€”                                    | R0                 | preview only            |
 | Creator  | `creative_studio:creator:monthly`    | R149               | posters                 |
 | Pro      | `creative_studio:pro:monthly`        | R299               | videos                  |
 | Business | `creative_studio:business:monthly`   | R699               | teamSeats, whiteLabel   |
 
 Feature flags: `posters`, `videos`, `teamSeats`, `whiteLabel`
 
-Endpoint → tier mapping (illustrative; spoke owns final list):
+Endpoint â†’ tier mapping (illustrative; spoke owns final list):
 
 | Endpoint                                   | Required tier |
 | ------------------------------------------ | ------------- |
@@ -67,14 +67,14 @@ Endpoint → tier mapping (illustrative; spoke owns final list):
 
 ---
 
-### Sync Vision — `sync_vision`
+### Sync Vision â€” `sync_vision`
 
-- Domain: `https://www.syncvision.life`
+- Domain: `https://sync.reson8.life`
 - Use case: Plan AI-driven music videos and cinematic storyboards.
 
-| Tier     | SKU                                  | Min tier for…                          |
+| Tier     | SKU                                  | Min tier forâ€¦                          |
 | -------- | ------------------------------------ | -------------------------------------- |
-| Free     | —                                    | preview only                           |
+| Free     | â€”                                    | preview only                           |
 | Creator  | `sync_vision:creator:monthly`        | storyboards                            |
 | Pro      | `sync_vision:pro:monthly`            | hdRenders, characterPerformance        |
 | Business | `sync_vision:business:monthly`       | priorityQueue                          |
@@ -83,14 +83,14 @@ Feature flags: `storyboards`, `hdRenders`, `characterPerformance`, `priorityQueu
 
 ---
 
-### YouTube Optimizer — `youtube_optimizer`
+### YouTube Optimizer â€” `youtube_optimizer`
 
-- Domain: `https://www.youtubeoptimizer.life` (fallback: `https://resonanceoptimizer.lovable.app`)
+- Domain: `https://youtube.reson8.life` (fallback: `https://resonanceoptimizer.lovable.app`)
 - Use case: Audit, optimise, and scale YouTube channels.
 
-| Tier     | SKU                                       | Min tier for…           |
+| Tier     | SKU                                       | Min tier forâ€¦           |
 | -------- | ----------------------------------------- | ----------------------- |
-| Free     | —                                         | channelAudits           |
+| Free     | â€”                                         | channelAudits           |
 | Creator  | `youtube_optimizer:creator:monthly`       | thumbnails              |
 | Pro      | `youtube_optimizer:pro:monthly`           | growthRoadmap           |
 | Business | `youtube_optimizer:business:monthly`      | teamSeats               |
@@ -99,13 +99,13 @@ Feature flags: `channelAudits`, `thumbnails`, `growthRoadmap`, `teamSeats`
 
 ---
 
-### All-Access bundle — `all_access`
+### All-Access bundle â€” `all_access`
 
 - SKU: `all_access:all_access:monthly` (R1,499/mo)
 - Grants `pro` tier in every per-app gate (see
   `ALL_ACCESS_GRANTS` in `src/lib/app-registry.ts`).
 - Spokes treat `source === "all_access"` exactly like a direct `pro`
-  subscription — no special UI, just an "All-Access" badge if desired.
+  subscription â€” no special UI, just an "All-Access" badge if desired.
 
 ---
 
@@ -115,8 +115,8 @@ These ship under the wider Resonance umbrella but have **no paid tier** and
 MUST NEVER appear in pricing, checkout, entitlement, SKU catalogs, or
 All-Access copy:
 
-- **The Resonance Podcast** — media surface only.
-- **Career Compass** — informational pilot.
+- **The Resonance Podcast** â€” media surface only.
+- **Career Compass** â€” informational pilot.
 
 ---
 
@@ -128,8 +128,8 @@ All-Access copy:
 2. Extend `deriveFeatures()` with the new feature flags.
 3. Add SKU rows + prices in the hub pricing route and `sku_costs` table.
 4. Append a new section to this registry with: domain, tiers + SKUs,
-   feature flags, endpoint→tier mapping.
+   feature flags, endpointâ†’tier mapping.
 5. Update [`spoke-payment-gate-brief.md`](./spoke-payment-gate-brief.md) if
    any shared rule changes (it usually doesn't).
-6. Implement the spoke strictly against the brief — no payment SDKs, no
+6. Implement the spoke strictly against the brief â€” no payment SDKs, no
    client-side gates, no exceptions.

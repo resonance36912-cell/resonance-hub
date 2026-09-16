@@ -20,12 +20,12 @@
  *     }
  *
  *   Responses:
- *     200 → { ok: true, app: "creative_studio", tier, image: { mimeType, base64 } }
- *     400 → { error: "invalid_input", issues }
- *     401 → { error: "unauthorized", message }            // no/invalid JWT
- *     402 → { error: "upgrade_required", ... }            // canonical upgrade body
- *     429 → { error: "rate_limited" } | { error: "credits_exhausted" }
- *     500 → { error: "generation_failed" }
+ *     200 â†’ { ok: true, app: "creative_studio", tier, image: { mimeType, base64 } }
+ *     400 â†’ { error: "invalid_input", issues }
+ *     401 â†’ { error: "unauthorized", message }            // no/invalid JWT
+ *     402 â†’ { error: "upgrade_required", ... }            // canonical upgrade body
+ *     429 â†’ { error: "rate_limited" } | { error: "credits_exhausted" }
+ *     500 â†’ { error: "generation_failed" }
  *
  * The handler NEVER calls the AI gateway until `requireTier` resolves.
  */
@@ -58,7 +58,7 @@ const BodySchema = z.object({
 });
 
 // Creative Studio's paid "poster" workflow gates at the `creator` tier.
-// (See docs/spoke-app-registry.md → creative_studio.)
+// (See docs/spoke-app-registry.md â†’ creative_studio.)
 const APP = "creative_studio" as const;
 const REQUIRED_TIER = "creator" as const;
 
@@ -83,7 +83,7 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
           return json({ error: "invalid_input", message: "Body must be JSON" }, 400);
         }
 
-        // 2. Tier gate. Throws a Response on 401/402 — we catch and return it
+        // 2. Tier gate. Throws a Response on 401/402 â€” we catch and return it
         //    verbatim so the spoke gets the canonical upgrade body shape.
         let gate;
         try {
@@ -91,7 +91,7 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
             request,
             app: APP,
             required: REQUIRED_TIER,
-            returnTo: parsed.returnTo ?? "https://www.creativestudio.life/generate/poster",
+            returnTo: parsed.returnTo ?? "https://creative.reson8.life/generate/poster",
             responseHeaders: CORS,
           });
         } catch (err) {
@@ -135,7 +135,7 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
           return json({ error: "rate_limited", message: "Try again shortly." }, 429);
         }
         if (aiRes.status === 402) {
-          // Gateway credit exhaustion — surface as 429 so the spoke does not
+          // Gateway credit exhaustion â€” surface as 429 so the spoke does not
           // confuse it with a tier-gate 402.
           return json({ error: "credits_exhausted", message: "AI credits exhausted on the hub." }, 429);
         }

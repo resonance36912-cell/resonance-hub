@@ -115,4 +115,32 @@ describe("sovereign auth same-origin proxy", () => {
     expect(setCookie).toContain("Max-Age=0");
     expect(setCookie).toContain("Secure");
   });
+  test("production mode requires configured HTTPS origin and trusted forwarded HTTPS host", async () => {
+    process.env.RONS_SOVEREIGN_PROXY_ENABLED = "1";
+    process.env.RONS_PRODUCTION_AUTH_COOKIE = "1";
+    process.env.RONS_PRODUCTION_ORIGIN = "https://hub.example.invalid";
+    let calls = 0;
+    const mockFetch = (async () => { calls += 1; return Response.json({}); }) as typeof fetch;
+    const bad = new Request("http://127.0.0.1:4173/api/sovereign/auth/sign-up", {
+      method: "POST", headers: { Origin: "https://hub.example.invalid", "X-Forwarded-Proto": "http", "X-Forwarded-Host": "hub.example.invalid" },
+      body: JSON.stringify({ email: "test@example.invalid", password: "test-password-123" }),
+    });
+    expect((await handleSovereignAuthProxy(bad, "sign-up", mockFetch)).status).toBe(403);
+    expect(calls).toBe(0);
+  });
+
+  test("production mode sets Secure cookie behind trusted HTTPS proxy metadata", async () => {
+    process.env.RONS_SOVEREIGN_PROXY_ENABLED = "1";
+    process.env.RONS_PRODUCTION_AUTH_COOKIE = "1";
+    process.env.RONS_PRODUCTION_ORIGIN = "https://hub.example.invalid";
+    const mockFetch = (async () => Response.json({ user: { id: "user-1" }, session: { access_token: "s".repeat(64) } })) as typeof fetch;
+    const request = new Request("http://127.0.0.1:4173/api/sovereign/auth/sign-in", {
+      method: "POST", headers: { "Content-Type": "application/json", Origin: "https://hub.example.invalid", "X-Forwarded-Proto": "https", "X-Forwarded-Host": "hub.example.invalid" },
+      body: JSON.stringify({ email: "test@example.invalid", password: "test-password-123" }),
+    });
+    const response = await handleSovereignAuthProxy(request, "sign-in", mockFetch);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie") ?? "").toContain("Secure");
+  });
+
 });

@@ -5,13 +5,13 @@ import resonanceLockup from "@/assets/resonance-lockup.png";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — The Resonance Hub" },
+      { title: "Pricing â€” The Resonance Hub" },
       {
         name: "description",
         content:
-          "Individual Resonance apps use once-off credit and project packs. Optional monthly ecosystem passes bundle multiple tools for creators and teams. ZAR · PayFast.",
+          "Individual Resonance apps use once-off credit and project packs. Optional monthly ecosystem passes bundle multiple tools for creators and teams. ZAR Â· PayFast.",
       },
-      { property: "og:title", content: "Pricing — The Resonance Hub" },
+      { property: "og:title", content: "Pricing â€” The Resonance Hub" },
       {
         property: "og:description",
         content:
@@ -27,28 +27,28 @@ export const APP_META: Record<string, { name: string; accent: string; anchor: st
     name: "Resonance ePublisher",
     accent: "295 90% 60%",
     anchor: "epublisher",
-    visit: "https://www.resonanceonline.life",
+    visit: "https://epublisher.reson8.life",
     visitLabel: "Visit ePublisher",
   },
   creative_studio: {
     name: "Creative Studio",
     accent: "265 85% 65%",
     anchor: "creative-studio",
-    visit: "https://www.creativestudio.life",
+    visit: "https://creative.reson8.life",
     visitLabel: "Visit Creative Studio",
   },
   sync_vision: {
     name: "Sync Vision",
     accent: "325 90% 65%",
     anchor: "sync-vision",
-    visit: "https://www.syncvision.life",
+    visit: "https://sync.reson8.life",
     visitLabel: "Visit Sync Vision",
   },
   youtube_optimizer: {
     name: "YouTube Optimizer",
     accent: "10 90% 60%",
     anchor: "youtube-optimizer",
-    visit: "https://www.youtubeoptimizer.life",
+    visit: "https://youtube.reson8.life",
     visitLabel: "Visit YouTube Optimizer",
   },
 };
@@ -122,7 +122,7 @@ function PricingPage() {
           to="/"
           className="text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
         >
-          ← Back to Hub
+          â† Back to Hub
         </Link>
       </nav>
 
@@ -131,7 +131,7 @@ function PricingPage() {
         <section className="text-center mb-14 animate-reveal">
           <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-6">
             <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-            ZAR · PayFast · no recurring app fees
+            ZAR Â· PayFast Â· no recurring app fees
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95] mb-6">
             Pay only for what you{" "}
@@ -156,18 +156,18 @@ function PricingPage() {
           </div>
         </section>
 
-        {/* SECTION 1 — Once-off app packs */}
+        {/* SECTION 1 â€” Once-off app packs */}
         <section id="packs" className="mb-24 scroll-mt-24">
           <header className="mb-10 max-w-3xl">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-3">
-              Section 1 · Once-off app packs
+              Section 1 Â· Once-off app packs
             </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               Buy only what you need
             </h2>
             <p className="text-white/70 leading-relaxed">
               Resonance apps use once-off credits, project packs, or pilots. No individual app
-              subscriptions. Purchase once, use whenever — top up when you need more.
+              subscriptions. Purchase once, use whenever â€” top up when you need more.
             </p>
           </header>
 
@@ -186,7 +186,7 @@ function PricingPage() {
                   />
                   <h3 className="text-2xl font-bold tracking-tight">{meta.name}</h3>
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/50">
-                    Once-off · no recurring fees
+                    Once-off Â· no recurring fees
                   </span>
                   <a
                     href={meta.visit}
@@ -194,7 +194,7 @@ function PricingPage() {
                     rel="noreferrer"
                     className="ml-auto text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white underline underline-offset-4"
                   >
-                    {meta.visitLabel} →
+                    {meta.visitLabel} â†’
                   </a>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
@@ -214,7 +214,7 @@ function PricingPage() {
                       <ul className="space-y-1.5 text-xs text-white/75 mb-5 flex-1">
                         {p.includes.map((f) => (
                           <li key={f} className="flex gap-2">
-                            <span className="text-[hsl(295_90%_70%)]">✓</span>
+                            <span className="text-[hsl(295_90%_70%)]">âœ“</span>
                             {f}
                           </li>
                         ))}
@@ -232,7 +232,7 @@ function PricingPage() {
             );
           })}
 
-          {/* Career Compass + Podcast — free */}
+          {/* Career Compass + Podcast â€” free */}
           <div className="grid gap-4 md:grid-cols-2 mt-10">
             <article className="rounded-2xl border border-[hsl(150_80%_55%/0.3)] bg-[hsl(150_80%_55%/0.05)] p-6">
               <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[hsl(150_80%_65%)] mb-2">
@@ -249,7 +249,7 @@ function PricingPage() {
                 rel="noreferrer"
                 className="text-[11px] font-bold uppercase tracking-widest border border-white/15 hover:border-white/40 px-4 py-2 rounded-full inline-block"
               >
-                Join pilot →
+                Join pilot â†’
               </a>
             </article>
             <article className="rounded-2xl border border-[hsl(190_90%_60%/0.3)] bg-[hsl(190_90%_60%/0.05)] p-6">
@@ -258,7 +258,7 @@ function PricingPage() {
               </div>
               <h3 className="text-xl font-bold mb-2">The Resonance Podcast</h3>
               <p className="text-sm text-white/65 mb-4">
-                Free episodes, clips, and community content. No subscription — the shop is a
+                Free episodes, clips, and community content. No subscription â€” the shop is a
                 bonus, not the product.
               </p>
               <a
@@ -267,17 +267,17 @@ function PricingPage() {
                 rel="noreferrer"
                 className="text-[11px] font-bold uppercase tracking-widest border border-white/15 hover:border-white/40 px-4 py-2 rounded-full inline-block"
               >
-                Listen / Watch →
+                Listen / Watch â†’
               </a>
             </article>
           </div>
         </section>
 
-        {/* SECTION 2 — Optional ecosystem passes */}
+        {/* SECTION 2 â€” Optional ecosystem passes */}
         <section id="passes" className="mb-20 scroll-mt-24">
           <header className="mb-10 max-w-3xl">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 mb-3">
-              Section 2 · Optional ecosystem passes
+              Section 2 Â· Optional ecosystem passes
             </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               For creators & teams using multiple tools every month
@@ -285,7 +285,7 @@ function PricingPage() {
             <p className="text-white/70 leading-relaxed">
               The Hub offers optional monthly ecosystem passes with shared allowances across
               apps. These are the <span className="text-white">only</span> Resonance
-              subscriptions — individual apps stay once-off.
+              subscriptions â€” individual apps stay once-off.
             </p>
           </header>
 
@@ -316,7 +316,7 @@ function PricingPage() {
                 <ul className="space-y-1.5 text-sm text-white/80 mb-6 flex-1">
                   {pass.includes.map((f) => (
                     <li key={f} className="flex gap-2">
-                      <span className="text-[hsl(295_90%_70%)]">✓</span>
+                      <span className="text-[hsl(295_90%_70%)]">âœ“</span>
                       {f}
                     </li>
                   ))}
