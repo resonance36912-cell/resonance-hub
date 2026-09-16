@@ -23,7 +23,7 @@ import { parseReportOrThrow } from "./security-scan-schema";
 
 
 const DEV_URL = process.env.DEV_SERVER_URL ?? "http://localhost:8080";
-const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
+const ACCESS_TOKEN = process.env.RONSAS_SUPABASE_ACCESS_TOKEN;
 
 const ID = Buffer.from(
   JSON.stringify({
@@ -99,7 +99,7 @@ describe("getSecurityScanReport — multi-repo grouping & order", () => {
       return;
     }
     if (!ACCESS_TOKEN) {
-      console.warn("[skip] no LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN in env");
+      console.warn("[skip] no RONSAS_SUPABASE_ACCESS_TOKEN in env");
       return;
     }
 

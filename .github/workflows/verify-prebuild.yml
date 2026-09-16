@@ -128,10 +128,10 @@ jobs:
       # show up first in the log.
       - name: Prettier format check
         continue-on-error: true
-        run: bunx prettier --check .
+        run: bun x prettier --check .
 
       - name: TypeScript typecheck
-        run: bunx tsgo --noEmit
+        run: bun x tsgo --noEmit
 
       # Lint has ~2400 preexisting issues in this repo — surface them without
       # blocking the pipeline until the backlog is cleaned up. Flip
@@ -171,7 +171,7 @@ jobs:
           fi
           printf 'Linting %d changed file(s):\n' "${#CHANGED[@]}"
           printf '  %s\n' "${CHANGED[@]}"
-          bunx eslint --max-warnings=0 "${CHANGED[@]}"
+          bun x eslint --max-warnings=0 "${CHANGED[@]}"
 
       - name: Check price parity (SKU_CATALOG vs pricing UI)
         run: bun run check:prices
@@ -229,7 +229,7 @@ jobs:
         if: steps.smoke_target.outputs.needs_local == 'true'
         working-directory: dist/server
         run: |
-          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          bun x wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
           for i in {1..90}; do
             if curl -sf http://127.0.0.1:8080/ > /dev/null; then
@@ -279,7 +279,7 @@ jobs:
       # keeps LHCI from hitting arbitrary URLs the workflow doesn't own.
       - name: Lighthouse CI (performance + a11y thresholds)
         if: steps.smoke_target.outputs.needs_local == 'true'
-        run: bunx --bun @lhci/cli@0.14.x autorun --config=./lighthouserc.json
+        run: bun x --bun @lhci/cli@0.14.x autorun --config=./lighthouserc.json
 
       - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
@@ -383,7 +383,7 @@ jobs:
         if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
         working-directory: dist/server
         run: |
-          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          bun x wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
           for i in {1..90}; do
             if curl -sf http://127.0.0.1:8080/ > /dev/null; then
@@ -417,11 +417,11 @@ jobs:
         id: security_scan_tests_live
         env:
           DEV_SERVER_URL: ${{ steps.smoke_target.outputs.base_url }}
-          LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
+          RONSAS_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
           SECURITY_SCAN_ARTIFACT_DIR: reports/security-scan/payloads
         run: |
           set -euo pipefail
-          if [ -z "${LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN:-}" ]; then
+          if [ -z "${RONSAS_SUPABASE_ACCESS_TOKEN:-}" ]; then
             echo "::error::SUPABASE_ADMIN_ACCESS_TOKEN repository secret is not set." >&2
             echo "::error::The security-scan integration tests self-skip without a bearer, which would silently mask regressions. Configure the secret and re-run." >&2
             exit 1
