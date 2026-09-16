@@ -144,7 +144,26 @@ for (const file of walk("src")) {
 
   // 6. Public API routes must show an auth/integrity check
   if (sourcePath.includes("src/routes/api/public/")) {
+    // A thin public route may delegate verification to a shared server-only handler.
+    // Recognize only the specific email-suppression boundary after confirming that
+    // the handler itself enforces the RONS-owned webhook secret and signature check.
+    let hasVerifiedEmailSuppressionHandler = false;
+    if (
+      /from ["']@\/lib\/email-suppression\.server["']/.test(src) &&
+      /handleEmailSuppressionWebhook\(request\)/.test(src)
+    ) {
+      try {
+        const handlerSource = readFileSync("src/lib/email-suppression.server.ts", "utf8");
+        hasVerifiedEmailSuppressionHandler =
+          /RONS_RESEND_WEBHOOK_SECRET/.test(handlerSource) &&
+          /verifyResendWebhookSignature\(body, request\.headers, webhookSecret\)/.test(handlerSource);
+      } catch {
+        hasVerifiedEmailSuppressionHandler = false;
+      }
+    }
+
     const hasGuard =
+      hasVerifiedEmailSuppressionHandler ||
       /signature/i.test(src) ||
       /requireSupabaseAuth/.test(src) ||
       /has_role/.test(src) ||

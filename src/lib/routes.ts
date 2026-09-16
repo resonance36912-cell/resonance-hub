@@ -68,7 +68,6 @@ export const ROUTES = {
   legalCookies: routePath("/legal/cookies"),
   legalGovernance: routePath("/legal/governance"),
   login: routePath("/login"),
-  mcp: routePath("/mcp"),
   pricing: routePath("/pricing"),
   redeem: routePath("/redeem"),
   rcgf: routePath("/rcgf"),

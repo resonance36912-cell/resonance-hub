@@ -16,7 +16,7 @@
  *   5. Invalid keys respond 404 (or the SSR notFoundComponent marker).
  *
  * Runs against `BASE_URL` (default http://localhost:8080). CI serves the
- * built Worker via `bunx wrangler dev` before invoking this script — see
+ * built Worker via `bun x wrangler dev` before invoking this script — see
  * .github/workflows/verify-prebuild.yml.
  *
  * Exits non-zero on any failure so it can gate the pipeline.

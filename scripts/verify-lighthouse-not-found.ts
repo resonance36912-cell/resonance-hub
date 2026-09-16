@@ -93,7 +93,7 @@ function collect(): Record<string, CategoryScores> {
         `--settings.preset=desktop`,
         `--settings.chromeFlags=--no-sandbox --headless=new --disable-gpu`,
       ];
-      const res = spawnSync("bunx", args, {
+      const res = spawnSync("bun", ["x", ...args], {
         stdio: ["ignore", "inherit", "inherit"],
         env: { ...process.env, ...(chrome ? { CHROME_PATH: chrome } : {}) },
       });

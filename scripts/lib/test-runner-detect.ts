@@ -53,7 +53,7 @@ export function detectRunner(file: string, source?: string): RunnerDetection {
 /** Command line used to execute a single suite with the detected runner. */
 export function runnerCommand(runner: TestRunner, file: string): string[] {
   return runner === "vitest"
-    ? ["bunx", "vitest", "run", "--reporter=default", file]
+    ? ["bun", "x", "vitest", "run", "--reporter=default", file]
     : ["bun", "test", file];
 }
 

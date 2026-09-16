@@ -26,7 +26,7 @@ info:
     `public.user_roles`; unauthenticated or non-admin callers receive a 401 or
     a generic `Forbidden` error.
 servers:
-  - url: https://resonance-hub.lovable.app
+  - url: https://reson8.life
     description: Production (Lovable Cloud)
   - url: http://localhost:8080
     description: Local dev server

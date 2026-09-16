@@ -38,16 +38,11 @@
  *    for Vite HMR.
  */
 
-/** Origins allowed to frame the Hub (own domains + Lovable editor/preview). */
+/** Origins allowed to frame the Hub. Vendor editor/preview origins are intentionally excluded. */
 const FRAME_ANCESTORS = [
   "'self'",
   "https://reson8.life",
   "https://www.reson8.life",
-  "https://*.lovable.app",
-  "https://lovable.dev",
-  "https://*.lovable.dev",
-  "https://lovableproject.com",
-  "https://*.lovableproject.com",
 ] as const;
 
 /** Where the browser may submit a form: the Hub itself and PayFast. */

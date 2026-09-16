@@ -23,8 +23,7 @@ account was created.
    The migration backfills existing installations and installs a database
    trigger that rejects the legacy direct first-admin insert, so the migration
    can safely precede the application deployment.
-3. Deploy the application code and verify the existing `LOVABLE_API_KEY` email
-   delivery secret is available. If the canonical Hub URL is not
+3. Deploy the application code and verify the RONS-owned `RESEND_API_KEY` and`r`n   `RONS_RESEND_WEBHOOK_SECRET` server/runtime secrets are available. If the canonical Hub URL is not
    `https://reson8.life`, configure `ADMIN_BOOTSTRAP_BASE_URL` as an HTTPS
    server/runtime value.
 4. Configure `ADMIN_BOOTSTRAP_EMAILS` as an encrypted server/runtime secret.
