@@ -1,4 +1,4 @@
-// Cron: scan recent perf telemetry across apps, ask Lovable AI for cross-app suggestions.
+// Cron: scan recent perf telemetry across apps and ask the local RONS AI broker for cross-app suggestions.
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { assertCronAuthorized } from "@/lib/rop/cron-auth.server";
@@ -57,8 +57,7 @@ async function authorSuggestionsWithAI(
   buckets: Bucket[],
   apps: { id: string; slug: string; name: string }[],
 ) {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key || buckets.length === 0) return [];
+  if (buckets.length === 0) return [];
 
   const slugMap = new Map(apps.map((a) => [a.id, a.slug] as const));
   const compact = buckets.map((b) => ({
@@ -82,28 +81,32 @@ Rules:
 - Never invent metrics that are not in the input. If evidence is thin, return {"suggestions":[]}.
 - Max 5 suggestions. Return only valid JSON, no prose.`;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: JSON.stringify({ buckets: compact }) },
-      ],
-    }),
-  });
-
-  if (!res.ok) {
-    console.error("[rop] AI gateway error", res.status, await res.text());
+  let res: Response;
+  try {
+    res = await fetch("http://127.0.0.1:7868/v1/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: "rons-local",
+        system: systemPrompt,
+        prompt: JSON.stringify({ buckets: compact }),
+        human_approved_external: false,
+      }),
+      signal: AbortSignal.timeout(240_000),
+    });
+  } catch (error) {
+    console.error("[rop] local RONS AI broker unavailable", error);
     return [];
   }
-  const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const text = json.choices?.[0]?.message?.content ?? "";
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    console.error("[rop] local RONS AI broker error", res.status, detail);
+    return [];
+  }
+  const json = (await res.json().catch(() => null)) as { text?: unknown } | null;
+  const text = typeof json?.text === "string" ? json.text.trim() : "";
+  if (!text) return [];
   try {
     const parsed = JSON.parse(text) as {
       suggestions?: Array<{
@@ -117,11 +120,10 @@ Rules:
     };
     return (parsed.suggestions ?? []).slice(0, 5);
   } catch (e) {
-    console.error("[rop] AI JSON parse failed", e, text);
+    console.error("[rop] local AI JSON parse failed", e, text);
     return [];
   }
 }
-
 export const Route = createFileRoute("/api/public/rop/cron/cross-app-scan")({
   server: {
     handlers: {
