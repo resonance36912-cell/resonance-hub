@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "The Resonance" },
+      { property: "og:site_name", content: "RONSAS" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "google-site-verification", content: "cyauvD1JwPPom3ad_AbEip05fQr_BpFJF_Xfkcvblpw" },
     ],

@@ -3,6 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
+const CANONICAL_ORIGIN = "https://reson8.life";
+
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import logoEpublisher from "@/assets/logo-epublisher.png";
@@ -28,38 +30,38 @@ export const Route = createFileRoute("/")({
     return { origin };
   },
   head: ({ loaderData }) => {
-    const origin = loaderData?.origin ?? "https://resonance-hub-life.lovable.app";
+    const origin = CANONICAL_ORIGIN;
     return {
       meta: [
-        { title: "The Resonance — One ecosystem for the aligned mind" },
+        { title: "RONSAS | Resonance Open Nova Sovereign Application Suite" },
         {
           name: "description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
         },
         {
           property: "og:title",
-          content: "The Resonance — One ecosystem for the aligned mind",
+          content: "RONSAS | Resonance Open Nova Sovereign Application Suite",
         },
         {
           property: "og:description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
         },
         { property: "og:type", content: "website" },
         { property: "og:url", content: `${origin}/` },
         { property: "og:image", content: `${origin}/og-logo.png` },
         { property: "og:image:alt", content: "The Resonance logo" },
-        { property: "og:site_name", content: "The Resonance" },
+        { property: "og:site_name", content: "RONSAS" },
         { name: "twitter:card", content: "summary_large_image" },
         {
           name: "twitter:title",
-          content: "The Resonance — One ecosystem for the aligned mind",
+          content: "RONSAS | Resonance Open Nova Sovereign Application Suite",
         },
         {
           name: "twitter:description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
         },
         { name: "twitter:image", content: `${origin}/og-logo.png` },
         { name: "twitter:image:alt", content: "The Resonance logo" },
@@ -69,13 +71,13 @@ export const Route = createFileRoute("/")({
         {
           rel: "alternate",
           type: "application/rss+xml",
-          title: "Resonance — Latest Updates (RSS)",
+          title: "RONSAS | Latest Updates (RSS)",
           href: `${origin}/api/public/updates/rss`,
         },
         {
           rel: "alternate",
           type: "application/atom+xml",
-          title: "Resonance — Latest Updates (Atom)",
+          title: "RONSAS | Latest Updates (Atom)",
           href: `${origin}/api/public/updates/atom`,
         },
 
@@ -88,7 +90,8 @@ export const Route = createFileRoute("/")({
             "@graph": [
               {
                 "@type": "Organization",
-                name: "The Resonance",
+                name: "RONSAS",
+                alternateName: "The Resonance",
                 url: `${origin}/`,
                 logo: `${origin}/og-logo.png`,
                 sameAs: [
@@ -101,7 +104,8 @@ export const Route = createFileRoute("/")({
               },
               {
                 "@type": "WebSite",
-                name: "The Resonance",
+                name: "RONSAS",
+                alternateName: "The Resonance",
                 url: `${origin}/`,
               },
               {
