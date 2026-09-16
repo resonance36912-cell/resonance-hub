@@ -1,7 +1,7 @@
 # Creative Studio — Wiring to the Hub Payment Gate
 
 This is the implementation brief for **Resonance Creative Studio**
-(`www.creativestudio.life`) so it routes all paid upgrades through the hub
+(`creative.reson8.life`) so it routes all paid upgrades through the hub
 (`https://reson8.life`) and refuses to generate content until the signed-in
 user holds the matching paid tier.
 

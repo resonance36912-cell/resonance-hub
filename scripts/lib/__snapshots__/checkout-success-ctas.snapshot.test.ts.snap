@@ -71,7 +71,7 @@ exports[`checkout success CTA row snapshots pack · pending 1`] = `
 exports[`checkout success CTA row snapshots pack · succeeded 1`] = `
 "<!-- phase=succeeded kind=pack count=2 -->
 <div class="cta-row">
-  <a class="btn-gradient" href="https://www.resonanceonline.life">Continue to Resonance ePublisher →</a>
+  <a class="btn-gradient" href="https://epublisher.reson8.life">Continue to Resonance ePublisher →</a>
   <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
 </div>"
 `;
@@ -79,7 +79,7 @@ exports[`checkout success CTA row snapshots pack · succeeded 1`] = `
 exports[`checkout success CTA row snapshots pack · skip 1`] = `
 "<!-- phase=skip kind=pack count=2 -->
 <div class="cta-row">
-  <a class="btn-gradient" href="https://www.resonanceonline.life">Continue to Resonance ePublisher →</a>
+  <a class="btn-gradient" href="https://epublisher.reson8.life">Continue to Resonance ePublisher →</a>
   <AppLink class="btn-outline" to="/pricing#packs">See more packs</AppLink>
 </div>"
 `;

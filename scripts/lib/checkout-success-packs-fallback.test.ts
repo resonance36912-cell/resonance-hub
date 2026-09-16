@@ -43,7 +43,7 @@ function expectedDefault(packId: string): CtaTarget {
 const DISALLOWED: readonly string[] = [
   "https://evil.example.com/phish",
   "https://reson8.life.evil.com/",
-  "https://sub.resonanceonline.life.attacker.io/",
+  "https://sub.epublisher.reson8.life.attacker.io/",
   "http://reson8.life/account", // wrong scheme
   "javascript:alert(1)",
   "//reson8.life/account",
@@ -51,8 +51,8 @@ const DISALLOWED: readonly string[] = [
   "not a url",
   "",
   // Attacker path grafts that historically tricked naive fallbacks:
-  "https://evil.example/?next=https://www.creativestudio.life/welcome",
-  "https://www.creativestudio.life.evil.io/welcome",
+  "https://evil.example/?next=https://creative.reson8.life/welcome",
+  "https://creative.reson8.life.evil.io/welcome",
 ];
 
 const PACK_IDS = Object.keys(PACK_CATALOG);

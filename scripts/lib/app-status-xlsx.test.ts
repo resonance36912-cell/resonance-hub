@@ -19,7 +19,7 @@ const rows: AppStatusCsvRow[] = [
     access: "Live access",
     accessible: true,
     explanation: "Fully released & generally available.",
-    url: "https://www.syncvision.life",
+    url: "https://sync.reson8.life",
     detailPath: "/apps/sync_vision",
   },
   {

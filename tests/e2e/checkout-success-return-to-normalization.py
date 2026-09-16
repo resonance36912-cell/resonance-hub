@@ -19,9 +19,9 @@ Allow cases (must auto-redirect to the caller-provided href, verbatim):
 
 Block cases (route MUST reject via .refine → no cross-origin navigation):
   • trailing-dot host (`reson8.life./…`)
-  • userinfo smuggling (`https://evil.com@www.creativestudio.life/…`)
+  • userinfo smuggling (`https://evil.com@creative.reson8.life/…`)
   • homoglyph host (Cyrillic `а` in `www.creаtivestudio.life`)
-  • subdomain lookalike (`sub.creativestudio.life.attacker.io`)
+  • subdomain lookalike (`sub.creative.reson8.life.attacker.io`)
 
 Run:
   python3 tests/e2e/checkout-success-return-to-normalization.py
@@ -93,10 +93,10 @@ async def _stub_route(page, glob: str):
 # host (browsers lowercase/decode hosts on their own).
 # ─────────────────────────────────────────────────────────────────────────────
 ALLOW_CASES = [
-    ("trailing-slash",       "https://www.creativestudio.life/",                    "www.creativestudio.life"),
-    ("uppercase-host",       "https://WWW.CREATIVESTUDIO.LIFE/welcome",             "www.creativestudio.life"),
-    ("mixed-case-host",      "https://Www.CreativeStudio.Life/welcome?ref=hub",     "www.creativestudio.life"),
-    ("default-port-443",     "https://www.creativestudio.life:443/welcome",         "www.creativestudio.life"),
+    ("trailing-slash",       "https://creative.reson8.life/",                    "creative.reson8.life"),
+    ("uppercase-host",       "https://creative.reson8.life/welcome",             "creative.reson8.life"),
+    ("mixed-case-host",      "https://creative.reson8.life/welcome?ref=hub",     "creative.reson8.life"),
+    ("default-port-443",     "https://creative.reson8.life:443/welcome",         "creative.reson8.life"),
     ("percent-encoded-host", "https://reson%38.life/account",                       "reson8.life"),
 ]
 
@@ -104,11 +104,11 @@ ALLOW_CASES = [
 # Block cases — route's Zod refine must reject; browser must never leave hub.
 # ─────────────────────────────────────────────────────────────────────────────
 BLOCK_CASES = [
-    ("trailing-dot-host",   "https://www.creativestudio.life./welcome",              "www.creativestudio.life."),
-    ("userinfo-smuggle",    "https://evil.com@www.creativestudio.life/welcome",      "www.creativestudio.life"),
+    ("trailing-dot-host",   "https://creative.reson8.life./welcome",              "creative.reson8.life."),
+    ("userinfo-smuggle",    "https://evil.com@creative.reson8.life/welcome",      "creative.reson8.life"),
     ("homoglyph-cyrillic",  "https://www.cre\u0430tivestudio.life/welcome",          None),  # IDN — host varies
-    ("subdomain-lookalike", "https://sub.creativestudio.life.attacker.io/welcome",   "sub.creativestudio.life.attacker.io"),
-    ("http-scheme",         "http://www.creativestudio.life/welcome",                "www.creativestudio.life"),
+    ("subdomain-lookalike", "https://sub.creative.reson8.life.attacker.io/welcome",   "sub.creative.reson8.life.attacker.io"),
+    ("http-scheme",         "http://creative.reson8.life/welcome",                "creative.reson8.life"),
 ]
 
 
@@ -122,8 +122,8 @@ async def _run_allow(pw, label: str, return_to: str, expected_host: str) -> bool
     # Stub every possible allowlisted spoke/hub host we might land on so the
     # test never actually hits the network.
     for host_glob in (
-        "https://www.creativestudio.life/**",
-        "https://creativestudio.life/**",
+        "https://creative.reson8.life/**",
+        "https://creative.reson8.life/**",
         "https://reson8.life/**",
         "https://www.reson8.life/**",
     ):

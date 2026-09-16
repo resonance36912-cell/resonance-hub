@@ -23,7 +23,7 @@
     "cta": "View packs",
     "details": "ePublisher moved from a per-month plan to project- and credit-based packs. A new R149 starter pack lets first-time authors publish one short-form title end-to-end without committing to a subscription.\n\nExisting subscribers keep their unused monthly allowance and can top up with packs at any time.",
     "links": [
-      { "label": "Open ePublisher", "href": "https://www.resonanceonline.life" },
+      { "label": "Open ePublisher", "href": "https://epublisher.reson8.life" },
       { "label": "Starter pack details", "href": "/pricing#epublisher" }
     ]
   },
@@ -37,7 +37,7 @@
     "cta": "View packs",
     "details": "Creative Studio now routes paid generation through the Hub proxy, which enforces tier checks server-side and improves render times for posters and full social kits. Credit packs replace the old monthly plan; unused credits never expire.",
     "links": [
-      { "label": "Open Creative Studio", "href": "https://www.creativestudio.life" },
+      { "label": "Open Creative Studio", "href": "https://creative.reson8.life" },
       { "label": "Credit packs", "href": "/pricing#creative-studio" }
     ]
   },
@@ -51,7 +51,7 @@
     "cta": "View packs",
     "details": "Sync Vision's music-video packs are live with a redesigned storyboard flow: shot lists, character sheets, and scene prompts are generated in one pass. Checkout runs through the Hub in ZAR via PayFast — no separate provider account needed.",
     "links": [
-      { "label": "Open Sync Vision", "href": "https://www.syncvision.life" },
+      { "label": "Open Sync Vision", "href": "https://sync.reson8.life" },
       { "label": "Music-video packs", "href": "/pricing#sync-vision" }
     ]
   },
@@ -59,13 +59,13 @@
     "app": "YouTube Optimizer",
     "status": "Updating",
     "tone": "updating",
-    "change": "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.",
+    "change": "Migrating to youtube.reson8.life with new audit, thumbnail, and growth packs. Existing users keep access.",
     "date": "Jun 2026",
     "href": "/pricing#youtube-optimizer",
     "cta": "View packs",
-    "details": "The app is moving to its canonical domain, youtubeoptimizer.life, with three new pack families: channel audits, thumbnail generation, and growth playbooks. Existing users keep their access and history — no re-signup needed. Some workflows may briefly show 'Updating' badges during the rollout.",
+    "details": "The app is moving to its canonical domain, youtube.reson8.life, with three new pack families: channel audits, thumbnail generation, and growth playbooks. Existing users keep their access and history — no re-signup needed. Some workflows may briefly show 'Updating' badges during the rollout.",
     "links": [
-      { "label": "New home", "href": "https://www.youtubeoptimizer.life" },
+      { "label": "New home", "href": "https://youtube.reson8.life" },
       { "label": "Packs", "href": "/pricing#youtube-optimizer" }
     ]
   },

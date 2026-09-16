@@ -117,7 +117,7 @@ describe("sovereign launch handoff", () => {
       "http://127.0.0.1:4450/prepare",
     ]);
     expect(response.headers.get("location")).toBe(
-      "https://www.resonanceonline.life/_rons/launch?code=launch-code-123",
+      "https://epublisher.reson8.life/_rons/launch?code=launch-code-123",
     );
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("cache-control")).toBe("no-store");

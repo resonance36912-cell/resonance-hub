@@ -22,12 +22,12 @@ describe("RONS local demo UI", () => {
   });
   test("canonical public URLs remain authoritative in registry and metadata", () => {
     expect(registry).toContain('const HUB_URL = "https://reson8.life"');
-    expect(registry).toContain('url: "https://www.resonanceonline.life"');
-    expect(registry).toContain('url: "https://www.creativestudio.life"');
-    expect(registry).toContain('url: "https://www.syncvision.life"');
-    expect(index).toContain('href: "https://www.resonanceonline.life"');
-    expect(index).toContain('href: "https://www.creativestudio.life"');
-    expect(index).toContain('href: "https://www.syncvision.life"');
+    expect(registry).toContain('url: "https://epublisher.reson8.life"');
+    expect(registry).toContain('url: "https://creative.reson8.life"');
+    expect(registry).toContain('url: "https://sync.reson8.life"');
+    expect(index).toContain('href: "https://epublisher.reson8.life"');
+    expect(index).toContain('href: "https://creative.reson8.life"');
+    expect(index).toContain('href: "https://sync.reson8.life"');
     expect(registry).not.toContain("http://192.168.1.50");
     expect(index).not.toContain("http://192.168.1.50");
   });

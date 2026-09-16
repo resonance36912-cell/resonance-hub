@@ -4,10 +4,10 @@ const SESSION_COOKIE = "rons_sovereign_session";
 const GATEWAY = "http://127.0.0.1:58600";
 const BROKER = "http://127.0.0.1:4450";
 const TARGETS = {
-  epublisher: "https://www.resonanceonline.life",
-  creative_studio: "https://www.creativestudio.life",
-  sync_vision: "https://www.syncvision.life",
-  youtube_optimizer: "https://www.youtubeoptimizer.life",
+  epublisher: "https://epublisher.reson8.life",
+  creative_studio: "https://creative.reson8.life",
+  sync_vision: "https://sync.reson8.life",
+  youtube_optimizer: "https://youtube.reson8.life",
 } as const;
 
 export type LaunchApp = keyof typeof TARGETS;

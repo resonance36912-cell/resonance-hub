@@ -13,7 +13,7 @@ Unlike `checkout-success-return-to.py` (which jumps straight to
        `succeeded` and assert the auto-redirect verdict.
 
 Cases:
-  A. ALLOWED  return_to = https://www.creativestudio.life/welcome
+  A. ALLOWED  return_to = https://creative.reson8.life/welcome
        - checkout page shows the "Returns to" host row
        - server-issued return_url carries the same return_to
        - success page auto-redirects to exactly that URL
@@ -52,7 +52,7 @@ SEROVAL_HELPER = REPO_ROOT / "scripts" / "e2e" / "checkout-success-seroval.mjs"
 
 SKU = "all_access:creator_pass:monthly"
 CHECKOUT_QS = "app=all_access&plan=creator_pass"
-ALLOWED_RETURN_TO = "https://www.creativestudio.life/welcome"
+ALLOWED_RETURN_TO = "https://creative.reson8.life/welcome"
 EVIL_RETURN_TO = "https://evil.example/phish"
 
 REDIRECT_MS = 1800
@@ -196,7 +196,7 @@ async def case_allowed(pw, session) -> list[str]:
     # 2. Preflight shows where the buyer will be returned to.
     if not await page.locator("text=Returns to").count():
         errors.append("allowed: checkout preflight missing 'Returns to' row")
-    if not await page.locator("text=www.creativestudio.life").count():
+    if not await page.locator("text=creative.reson8.life").count():
         errors.append("allowed: checkout preflight did not show the return host")
 
     # 3. Real launch server fn signs the payload; capture the PayFast form.
@@ -236,13 +236,13 @@ async def case_allowed(pw, session) -> list[str]:
     async def spoke_stub(route: Route):
         await route.fulfill(status=200, content_type="text/html", body="<html>ok</html>")
 
-    await success_page.route("https://www.creativestudio.life/**", spoke_stub)
+    await success_page.route("https://creative.reson8.life/**", spoke_stub)
 
     success_url = BASE_URL + parsed.path + ("?" + parsed.query if parsed.query else "")
     await success_page.goto(success_url, wait_until="domcontentloaded")
     try:
         await success_page.wait_for_url(
-            lambda u: u.startswith("https://www.creativestudio.life/"),
+            lambda u: u.startswith("https://creative.reson8.life/"),
             timeout=REDIRECT_MS + 6000,
         )
     except Exception:

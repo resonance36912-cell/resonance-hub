@@ -109,7 +109,7 @@ export const generatePoster = createServerFn({ method: "POST" })
       context,
       app: "creative_studio",
       required: "creator",
-      returnTo: "https://creativestudio.life/generate/poster",
+      returnTo: "https://creative.reson8.life/generate/poster",
     });
     // …actual generation work…
   });
