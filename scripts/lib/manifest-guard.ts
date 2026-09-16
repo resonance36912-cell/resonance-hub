@@ -1,6 +1,6 @@
 /**
  * Manifest guard: detects unexpected mutations of package.json / bun.lock
- * caused by running tests or prebuild steps (e.g. `bunx` fetching a missing
+ * caused by running tests or prebuild steps (e.g. `bun x` fetching a missing
  * dependency and rewriting the lockfile).
  */
 import { createHash } from "node:crypto";

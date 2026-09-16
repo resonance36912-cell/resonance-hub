@@ -73,7 +73,7 @@ jobs:
       # A bug in the comparison logic would silently report "all up to date",
       # so the unit tests gate the audit rather than trailing it.
       - name: Unit-test the outdated-pin logic
-        run: bunx vitest run scripts/lib/outdated-pins.test.ts scripts/lib/outdated-pins-config.test.ts
+        run: bun x vitest run scripts/lib/outdated-pins.test.ts scripts/lib/outdated-pins-config.test.ts
 
       - name: Check pins against the npm registry (read-only)
         id: audit
