@@ -44,12 +44,13 @@ describe("governance workspace security boundaries", () => {
     expect(workspace).toMatch(/They do not hold final\s+decision authority\./);
   });
 
-  test("participant reads use the authenticated server boundary", () => {
+  test("participant reads use the provider-neutral authenticated server boundary", () => {
     const participantFn = functions.match(
       /export const listGovernanceParticipants[\s\S]*?export const listGovernanceProposals/,
     );
     expect(participantFn).not.toBeNull();
-    expect(participantFn![0]).toContain(".middleware([requireSupabaseAuth])");
+    expect(participantFn![0]).toContain(".middleware([requireRonsAuth])");
+    expect(participantFn![0]).toContain("callSovereignGovernanceProcedure");
     expect(participantFn![0]).toContain('.from("governance_participants")');
   });
 
