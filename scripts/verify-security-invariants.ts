@@ -157,6 +157,7 @@ for (const file of walk("src")) {
     const READ_ONLY_OK = [
       "/entitlement.ts",
       "/analytics/auth-gate.ts",
+      "/app-status.health.ts", // GET/OPTIONS only; static public registry/status payload
       "/updates/atom.ts",
       "/updates/rss.ts",
     ];
