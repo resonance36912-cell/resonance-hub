@@ -13,6 +13,7 @@ const read = (rel: string) => readFileSync(resolve(ROOT, rel), "utf8");
 const migration = read("supabase/migrations/20260916090000_governance_workspace_core.sql");
 const hardeningMigration = read("supabase/migrations/20260916114000_harden_governance_client_grants.sql");
 const functions = read("src/lib/governance/functions.ts");
+const backendProvider = read("src/lib/backend-provider.server.ts");
 
 describe("governance contracts", () => {
   test("proposal input is bounded and strict", () => {
@@ -137,5 +138,14 @@ describe("governance database boundary", () => {
   test("final decision and agent registration remain admin-gated at the server boundary", () => {
     expect(functions).toMatch(/recordGovernanceDecision[\s\S]*await assertAdmin\(context\)/);
     expect(functions).toMatch(/registerGovernanceAgent[\s\S]*await assertAdmin\(context\)/);
+  });
+
+  test("production governance uses provider-neutral RONS auth and keyed sovereign procedures", () => {
+    expect(functions).toContain(".middleware([requireRonsAuth])");
+    expect(functions).not.toContain("requireSupabaseAuth");
+    expect(functions).toContain("callSovereignGovernanceProcedure");
+    expect(backendProvider).toContain("export type GovernanceProcedureName");
+    expect(backendProvider).toContain("RONS_GATEWAY_PROCEDURE_KEY_FILE");
+    expect(backendProvider).toContain("Sovereign procedure gateway must be loopback HTTP");
   });
 });

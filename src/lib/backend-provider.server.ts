@@ -176,6 +176,16 @@ async function sovereignDbQuery<T>(body: Record<string, unknown>): Promise<T> {
   return (await response.json()) as T;
 }
 
+export async function callSovereignGovernanceProcedure<T>(
+  name: GovernanceProcedureName,
+  args: Record<string, unknown>,
+): Promise<T> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Sovereign governance procedure requires sovereign backend mode");
+  }
+  return sovereignProcedure<T>(name, args);
+}
+
 export async function fetchCiAlertConfigRow(accessToken: string): Promise<CiAlertConfigBackendRow | null> {
   const columns = "recipient_email,repos,enabled,default_branch_only,slack_webhook_url,updated_at";
   if (getBackendProvider() === "sovereign") {
@@ -308,6 +318,17 @@ export async function deleteCiRepoPresetRow(
   const { error } = await client.from("ci_repo_presets").delete().eq("user_id", userId).eq("id", id);
   if (error) throw new Error(error.message);
 }
+
+export type GovernanceProcedureName =
+  | "governance_list_participants"
+  | "governance_list_proposals"
+  | "governance_get_proposal"
+  | "governance_create_proposal"
+  | "governance_submit_proposal"
+  | "governance_add_evidence"
+  | "governance_add_review"
+  | "governance_record_decision"
+  | "governance_register_agent";
 
 async function sovereignProcedure<T>(name: string, args: Record<string, unknown>): Promise<T> {
   const path = process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE?.trim();
