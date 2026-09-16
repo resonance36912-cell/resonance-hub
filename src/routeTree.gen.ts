@@ -103,6 +103,7 @@ import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/pay
 import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
 import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/public/entitlement.health'
+import { Route as ApiPublicEmailSuppressionRouteImport } from './routes/api/public/email/suppression'
 import { Route as ApiPublicAppStatusHealthRouteImport } from './routes/api/public/app-status.health'
 import { Route as ApiPublicAnalyticsCheckoutSuccessRouteImport } from './routes/api/public/analytics/checkout-success'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
@@ -597,6 +598,12 @@ const ApiPublicEntitlementHealthRoute =
     path: '/health',
     getParentRoute: () => ApiPublicEntitlementRoute,
   } as any)
+const ApiPublicEmailSuppressionRoute =
+  ApiPublicEmailSuppressionRouteImport.update({
+    id: '/api/public/email/suppression',
+    path: '/api/public/email/suppression',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAppStatusHealthRoute =
   ApiPublicAppStatusHealthRouteImport.update({
     id: '/api/public/app-status/health',
@@ -727,6 +734,7 @@ export interface FileRoutesByFullPath {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/email/suppression': typeof ApiPublicEmailSuppressionRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -831,6 +839,7 @@ export interface FileRoutesByTo {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/email/suppression': typeof ApiPublicEmailSuppressionRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -936,6 +945,7 @@ export interface FileRoutesById {
   '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
   '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
   '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/email/suppression': typeof ApiPublicEmailSuppressionRoute
   '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
   '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
@@ -1042,6 +1052,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
+    | '/api/public/email/suppression'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1146,6 +1157,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
+    | '/api/public/email/suppression'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1250,6 +1262,7 @@ export interface FileRouteTypes {
     | '/api/public/analytics/auth-gate'
     | '/api/public/analytics/checkout-success'
     | '/api/public/app-status/health'
+    | '/api/public/email/suppression'
     | '/api/public/entitlement/health'
     | '/api/public/hooks/process-subscription-emails'
     | '/api/public/hub-control/pull-config'
@@ -1351,6 +1364,7 @@ export interface RootRouteChildren {
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
   ApiPublicAppStatusHealthRoute: typeof ApiPublicAppStatusHealthRoute
+  ApiPublicEmailSuppressionRoute: typeof ApiPublicEmailSuppressionRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
   ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
@@ -2034,6 +2048,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEntitlementHealthRouteImport
       parentRoute: typeof ApiPublicEntitlementRoute
     }
+    '/api/public/email/suppression': {
+      id: '/api/public/email/suppression'
+      path: '/api/public/email/suppression'
+      fullPath: '/api/public/email/suppression'
+      preLoaderRoute: typeof ApiPublicEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/app-status/health': {
       id: '/api/public/app-status/health'
       path: '/api/public/app-status/health'
@@ -2221,6 +2242,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAnalyticsCheckoutSuccessRoute:
     ApiPublicAnalyticsCheckoutSuccessRoute,
   ApiPublicAppStatusHealthRoute: ApiPublicAppStatusHealthRoute,
+  ApiPublicEmailSuppressionRoute: ApiPublicEmailSuppressionRoute,
   ApiPublicHooksProcessSubscriptionEmailsRoute:
     ApiPublicHooksProcessSubscriptionEmailsRoute,
   ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
