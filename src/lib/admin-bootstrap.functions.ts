@@ -1,19 +1,4 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import { createServerFn } from "@tanstack/react-start";
-import { sendLovableEmail } from "@lovable.dev/email-js";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import {
-  cancelSovereignBootstrapChallenge,
-  checkSovereignBootstrapChallenge,
-  claimSovereignFirstAdmin,
-  createSovereignBootstrapChallenge,
-  readSovereignBootstrapState,
-  type BackendProvider,
-  type BackendUser,
-} from "@/lib/backend-provider.server";
-import { requireRonsAuth } from "@/lib/rons-auth-middleware";
-import { getRonsRuntimePath } from "@/lib/rons-runtime-paths.server";
 import {
   determineAdminBootstrapStatus,
   isAdminBootstrapToken,
@@ -33,6 +18,30 @@ type CheckedBootstrapAccess = {
 type BootstrapDelivery = "email" | "local_file";
 const LOCAL_BOOTSTRAP_FILE = "admin-bootstrap-verification.url";
 
+type BackendProvider = "supabase" | "sovereign";
+type BackendUser = { id: string; email: string | null; emailConfirmedAt: string | null };
+type RonsContext = {
+  userId: string;
+  user: BackendUser;
+  credential: string;
+  authProvider: BackendProvider;
+};
+
+async function requireRonsContext(): Promise<RonsContext> {
+  const [{ getRequest }, middleware, backend] = await Promise.all([
+    import("@tanstack/react-start/server"),
+    import("@/lib/rons-auth-middleware"),
+    import("@/lib/backend-provider.server"),
+  ]);
+  const request = getRequest();
+  if (!request?.headers) throw new Error("Unauthorized: No request headers available");
+  const credential = middleware.resolveRonsRequestCredential(request);
+  if (!credential) throw new Error("Unauthorized: Invalid or missing session");
+  const user = await middleware.resolveRonsRequestUser(request);
+  if (!user) throw new Error("Unauthorized: Invalid or missing session");
+  return { userId: user.id, user, credential, authProvider: backend.getBackendProvider() };
+}
+
 async function loadBootstrapAccess(
   userId: string,
   user: BackendUser,
@@ -44,11 +53,13 @@ async function loadBootstrapAccess(
   let bootstrapClaimed = false;
 
   if (provider === "sovereign") {
+    const { readSovereignBootstrapState } = await import("@/lib/backend-provider.server");
     const state = await readSovereignBootstrapState(credential, userId);
     isAdmin = state.callerIsAdmin;
     adminExists = state.closed && !state.callerIsAdmin;
     bootstrapClaimed = state.closed;
   } else {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [ownRoleResult, anyAdminResult, claimResult] = await Promise.all([
       supabaseAdmin
         .from("user_roles")
@@ -117,19 +128,25 @@ function bootstrapVerificationUrl(token: string, provider: BackendProvider): str
   return url.toString();
 }
 
-function localBootstrapPath(): string {
+async function localBootstrapPath(): Promise<string> {
+  const { getRonsRuntimePath } = await import("@/lib/rons-runtime-paths.server");
   return getRonsRuntimePath(LOCAL_BOOTSTRAP_FILE);
 }
 
 async function writeLocalBootstrapLink(token: string): Promise<void> {
-  const path = localBootstrapPath();
+  const [{ mkdir, writeFile }, { dirname }] = await Promise.all([
+    import("node:fs/promises"),
+    import("node:path"),
+  ]);
+  const path = await localBootstrapPath();
   await mkdir(dirname(path), { recursive: true });
   const url = bootstrapVerificationUrl(token, "sovereign");
   await writeFile(path, `[InternetShortcut]\r\nURL=${url}\r\n`, { encoding: "utf8" });
 }
 async function removeLocalBootstrapLink(): Promise<void> {
+  const { unlink } = await import("node:fs/promises");
   try {
-    await unlink(localBootstrapPath());
+    await unlink(await localBootstrapPath());
   } catch (error) {
     const code =
       typeof error === "object" && error !== null && "code" in error
@@ -162,6 +179,7 @@ async function deliverBootstrapVerification({
   const htmlUrl = verificationUrl.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
   const messageId = crypto.randomUUID();
 
+  const { sendLovableEmail } = await import("@lovable.dev/email-js");
   await sendLovableEmail(
     {
       to: email,
@@ -180,7 +198,6 @@ async function deliverBootstrapVerification({
   return "email";
 }
 export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
   .validator((input: unknown) => {
     const token =
       input && typeof input === "object" && "token" in input
@@ -188,7 +205,8 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
         : null;
     return { token: isAdminBootstrapToken(token) ? token : null };
   })
-  .handler(async ({ context, data }) => {
+  .handler(async ({ data }) => {
+    const context = await requireRonsContext();
     const access = await loadBootstrapAccess(
       context.userId,
       context.user,
@@ -200,6 +218,7 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
 
     const tokenHash = await hashBootstrapToken(data.token);
     if (context.authProvider === "sovereign") {
+      const { checkSovereignBootstrapChallenge } = await import("@/lib/backend-provider.server");
       const valid = await checkSovereignBootstrapChallenge(
         context.credential,
         context.userId,
@@ -207,6 +226,7 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
       );
       return { status: valid ? ("eligible" as const) : ("email_reverification_required" as const) };
     }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: challenge, error } = await supabaseAdmin
       .from("admin_bootstrap_email_challenges")
       .select("user_id")
@@ -226,9 +246,9 @@ export const getAdminBootstrapStatus = createServerFn({ method: "POST" })
     };
   });
 
-export const requestAdminBootstrapVerification = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
-  .handler(async ({ context }) => {
+export const requestAdminBootstrapVerification = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const context = await requireRonsContext();
     const access = await loadBootstrapAccess(
       context.userId,
       context.user,
@@ -242,6 +262,7 @@ export const requestAdminBootstrapVerification = createServerFn({ method: "POST"
     const tokenHash = await hashBootstrapToken(token);
     let rawChallenge: unknown;
     if (context.authProvider === "sovereign") {
+      const { createSovereignBootstrapChallenge } = await import("@/lib/backend-provider.server");
       rawChallenge = await createSovereignBootstrapChallenge(
         context.credential,
         context.userId,
@@ -249,6 +270,7 @@ export const requestAdminBootstrapVerification = createServerFn({ method: "POST"
         tokenHash,
       );
     } else {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data, error } = await supabaseAdmin.rpc("create_admin_bootstrap_challenge", {
         _user_id: context.userId,
         _verified_email: access.canonicalEmail,
@@ -279,8 +301,11 @@ export const requestAdminBootstrapVerification = createServerFn({ method: "POST"
     } catch {
       try {
         if (context.authProvider === "sovereign") {
+          const { cancelSovereignBootstrapChallenge } =
+            await import("@/lib/backend-provider.server");
           await cancelSovereignBootstrapChallenge(context.credential, context.userId, tokenHash);
         } else {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           await supabaseAdmin.rpc("cancel_admin_bootstrap_challenge", {
             _user_id: context.userId,
             _token_hash: tokenHash,
@@ -294,10 +319,10 @@ export const requestAdminBootstrapVerification = createServerFn({ method: "POST"
     }
 
     return { status: "verification_sent" as const, delivery };
-  });
+  },
+);
 
 export const bootstrapAdmin = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
   .validator((input: unknown) => {
     const token =
       input && typeof input === "object" && "token" in input
@@ -305,7 +330,8 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
         : null;
     return { token: isAdminBootstrapToken(token) ? token : null };
   })
-  .handler(async ({ context, data }) => {
+  .handler(async ({ data }) => {
+    const context = await requireRonsContext();
     const access = await loadBootstrapAccess(
       context.userId,
       context.user,
@@ -319,6 +345,7 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
     const tokenHash = await hashBootstrapToken(data.token);
     let rawResult: unknown;
     if (context.authProvider === "sovereign") {
+      const { claimSovereignFirstAdmin } = await import("@/lib/backend-provider.server");
       rawResult = await claimSovereignFirstAdmin(
         context.credential,
         context.userId,
@@ -326,6 +353,7 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
         tokenHash,
       );
     } else {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: rpcResult, error } = await supabaseAdmin.rpc("bootstrap_first_admin", {
         _user_id: context.userId,
         _verified_email: access.canonicalEmail,

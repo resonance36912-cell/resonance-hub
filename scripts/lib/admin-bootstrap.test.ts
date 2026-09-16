@@ -167,13 +167,14 @@ describe("first-admin bootstrap security regressions", () => {
     "supabase/migrations/20260821000000_secure_first_admin_bootstrap.sql",
   );
 
-  test("uses the authoritative provider user and confirmation state", () => {
-    expect(functionsSource.match(/\.middleware\(\[requireRonsAuth\]\)/g)).toHaveLength(3);
-    expect(functionsSource).toContain("context.userId");
-    expect(functionsSource).toContain("context.user");
-    expect(functionsSource).toContain("context.authProvider");
-    expect(functionsSource).toContain("context.credential");
+  test("uses authoritative provider identity without browser-bundling server modules", () => {
+    expect(functionsSource).toContain("const context = await requireRonsContext();");
+    expect(functionsSource).toContain('import("@tanstack/react-start/server")');
+    expect(functionsSource).toContain('import("@/lib/rons-auth-middleware")');
+    expect(functionsSource).toContain('import("@/lib/backend-provider.server")');
     expect(functionsSource).toMatch(/provider === "sovereign"/);
+    expect(functionsSource).not.toMatch(/^import .*node:/m);
+    expect(functionsSource).not.toMatch(/^import .*\.server["']/m);
     expect(functionsSource).not.toMatch(/context\.claims|user_metadata/);
   });
 
