@@ -103,7 +103,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
     key: "sync_vision",
     label: "Resonance Sync Vision",
     url: "https://sync.reson8.life",
-    status: "beta",
+    status: "live",
     accentColor: "#06B6D4",
     entitlementAppKey: "sync_vision",
     tagline: "Plan AI-driven music videos and cinematic storyboards.",
@@ -168,6 +168,14 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     url: "https://www.career-compass.org",
     status: "pilot",
     tagline: "Discover your career path with a rewards-based pilot.",
+    includedInSuite: false,
+  },
+  resonance_app_dev: {
+    key: "resonance_app_dev",
+    label: "The Resonance App Dev",
+    url: "https://reson8.life",
+    status: "live",
+    tagline: "The in-house dev team building every app in the Resonance ecosystem.",
     includedInSuite: false,
   },
 };
