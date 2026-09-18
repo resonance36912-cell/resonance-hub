@@ -35,7 +35,7 @@ export default defineConfig({
         client: { files: ["**/server/**"], specifiers: ["server-only"] },
       },
     }),
-    nitro({ preset: "node-server", output: { dir: ".output-local" } }),
+    nitro({ preset: "node-server", output: { dir: process.env.RONS_LOCAL_OUTPUT_DIR || ".output-local" } }),
     react(),
   ],
 });
