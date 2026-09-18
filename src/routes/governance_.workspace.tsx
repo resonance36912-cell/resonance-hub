@@ -304,40 +304,66 @@ function GovernanceWorkspace() {
     agentMutation.error;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-[1500px] px-4 py-8 md:px-6">
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="workspace-shell bg-background text-foreground">
+      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+        <header className="workspace-panel mb-6 flex flex-wrap items-start justify-between gap-5 p-5 sm:p-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Resonance · Governed Workspace
-            </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Governance Workspace</h1>
+            <p className="workspace-kicker">Resonance · Governed Workspace</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Governance Workspace
+            </h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
               Proposals, evidence, human review, advisory AI/service participants, canonical
               decisions, and an append-only audit timeline.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Link to="/governance" className="text-primary hover:underline">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <Link to="/governance" className="workspace-nav-link">
               Constitution
             </Link>
-            <Link to="/" className="text-primary hover:underline">
+            <Link to="/" className="workspace-nav-link">
               Back to Hub
             </Link>
-            <span className="rounded-full border px-3 py-1 text-xs text-muted-foreground">
+            <span className="rounded-full border border-primary/25 bg-primary/5 px-3 py-2 text-xs font-medium text-primary">
               {isAdmin ? "Admin decision authority" : "Authenticated participant"}
             </span>
           </div>
         </header>
 
+        <section className="mb-6 grid gap-3 sm:grid-cols-3" aria-label="Workspace summary">
+          <div className="workspace-panel-soft p-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Proposals
+            </p>
+            <p className="mt-2 text-2xl font-semibold">{proposalsQ.data?.length ?? 0}</p>
+          </div>
+          <div className="workspace-panel-soft p-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Advisory agents
+            </p>
+            <p className="mt-2 text-2xl font-semibold">{board.length}</p>
+          </div>
+          <div className="workspace-panel-soft p-4">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Authority
+            </p>
+            <p className="mt-2 text-sm font-semibold text-primary">
+              {isAdmin ? "Admin decision authority" : "Participant review access"}
+            </p>
+          </div>
+        </section>
+
         {error && (
-          <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            role="alert"
+            className="mb-5 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+          >
             {error instanceof Error ? error.message : "Governance action failed"}
           </div>
         )}
 
-        <div className="grid gap-5 xl:grid-cols-[300px_minmax(0,1fr)_330px]">
-          <aside className="space-y-4">
+        <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
+          <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
             <section className="rounded-xl border bg-card p-4">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="font-semibold">Proposal Registry</h2>
@@ -699,7 +725,7 @@ function GovernanceWorkspace() {
             )}
           </main>
 
-          <aside className="space-y-4">
+          <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
             <section className="rounded-xl border bg-card p-4">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="font-semibold">Advisory Board</h2>
@@ -793,8 +819,20 @@ function GovernanceWorkspace() {
 }
 
 function Status({ status }: { status: string }) {
+  const normalized = status.toLowerCase();
+  const tone = ["approved", "active", "complete", "completed"].includes(normalized)
+    ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+    : ["declined", "rejected", "failed"].includes(normalized)
+      ? "border-destructive/35 bg-destructive/10 text-red-200"
+      : ["submitted", "under_review", "decision_ready"].includes(normalized)
+        ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-200"
+        : ["draft", "deferred", "pending"].includes(normalized)
+          ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
+          : "border-border bg-background/50 text-muted-foreground";
   return (
-    <span className="whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    <span
+      className={`whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${tone}`}
+    >
       {status.replaceAll("_", " ")}
     </span>
   );
@@ -802,9 +840,7 @@ function Status({ status }: { status: string }) {
 
 function EmptyCard({ text }: { text: string }) {
   return (
-    <div className="rounded-xl border bg-card p-8 text-center text-sm text-muted-foreground">
-      {text}
-    </div>
+    <div className="workspace-panel p-10 text-center text-sm text-muted-foreground">{text}</div>
   );
 }
 

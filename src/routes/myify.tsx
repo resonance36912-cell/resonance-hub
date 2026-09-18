@@ -228,14 +228,12 @@ function MyifyWorkspace() {
     releaseMutation.error;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-[1500px] px-4 py-8 md:px-6">
-        <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div className="workspace-shell bg-background text-foreground">
+      <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+        <header className="workspace-panel mb-6 flex flex-wrap items-start justify-between gap-5 p-5 sm:p-6">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              RONSAS · MYIFY
-            </p>
-            <h1 className="mt-2 text-4xl font-semibold tracking-tight">MYIFY</h1>
+            <p className="workspace-kicker">RONSAS · MYIFY</p>
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">MYIFY</h1>
             <p className="mt-1 text-sm font-medium text-primary">May Your Intentions Find You</p>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
               DataNest preserves the accountable value of eligible unused data on a canonical UTC
@@ -243,17 +241,17 @@ function MyifyWorkspace() {
               records settlement, and credits participation only after verification.
             </p>
           </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Link to="/governance/workspace" className="text-primary hover:underline">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <Link to="/governance/workspace" className="workspace-nav-link">
               Governance
             </Link>
-            <Link to="/" className="text-primary hover:underline">
+            <Link to="/" className="workspace-nav-link">
               Back to Hub
             </Link>
           </div>
         </header>
 
-        <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm leading-6">
+        <div className="workspace-panel-soft mb-6 border-amber-500/30 bg-amber-500/5 p-4 text-sm leading-6">
           <strong>DataNest accounting boundary:</strong> data bundles remain carrier entitlements.
           MYIFY does not extend expiry or create transferable data outside operator rules. DataNest
           Participation Units (DPU) are an internal contribution measure, not shares, cash,
@@ -261,20 +259,23 @@ function MyifyWorkspace() {
         </div>
 
         {mutationError && (
-          <div className="mb-5 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+          <div
+            role="alert"
+            className="mb-5 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+          >
             {mutationError instanceof Error ? mutationError.message : "MYIFY action failed"}
           </div>
         )}
 
         {dashboardQ.isLoading && (
-          <section className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
+          <section className="workspace-panel p-6 text-sm text-muted-foreground">
             Opening DataNest…
           </section>
         )}
 
         {dashboard && (
           <>
-            <section className="mb-6 grid gap-4 md:grid-cols-5">
+            <section className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <Metric label="Settled contribution" value={formatGb(dashboard.nest.settled_mb)} />
               <Metric
                 label="Participation units"
@@ -295,8 +296,8 @@ function MyifyWorkspace() {
               />
             </section>
 
-            <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)_360px]">
-              <aside className="space-y-5">
+            <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)_340px]">
+              <aside className="space-y-5 xl:sticky xl:top-6 xl:self-start">
                 <section className="rounded-xl border bg-card p-5">
                   <h2 className="font-semibold">Add data package</h2>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -474,7 +475,7 @@ function MyifyWorkspace() {
                             </div>
                             <Status value={band} />
                           </div>
-                          <div className="mt-3 grid grid-cols-4 gap-2 text-xs">
+                          <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
                             <Mini label="Remaining" value={formatGb(item.remaining_mb)} />
                             <Mini label="Reserved" value={formatGb(item.reserved_mb)} />
                             <Mini label="Available" value={formatGb(available)} />
@@ -593,7 +594,7 @@ function MyifyWorkspace() {
                 </section>
               </main>
 
-              <aside className="space-y-5">
+              <aside className="space-y-5 xl:sticky xl:top-6 xl:self-start">
                 <section className="rounded-xl border bg-card p-5">
                   <h2 className="font-semibold">UTC reallocation queue</h2>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -718,18 +719,22 @@ function Check({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border bg-card p-4">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    <div className="workspace-panel p-4">
+      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
     </div>
   );
 }
 
 function Mini({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-muted/50 p-2">
-      <p className="text-[10px] uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 font-medium">{value}</p>
+    <div className="workspace-panel-soft p-2.5">
+      <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 font-semibold">{value}</p>
     </div>
   );
 }
@@ -747,8 +752,22 @@ function Tag({ ok, children }: { ok: boolean; children: ReactNode }) {
 }
 
 function Status({ value }: { value: string }) {
+  const normalized = value.toLowerCase();
+  const tone = ["ready", "active", "settled", "verified", "complete", "completed"].includes(
+    normalized,
+  )
+    ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+    : ["urgent", "failed", "expired", "cancelled"].includes(normalized)
+      ? "border-destructive/35 bg-destructive/10 text-red-200"
+      : ["soon", "queued", "claimed", "reserved", "partially_settled"].includes(normalized)
+        ? "border-amber-400/30 bg-amber-400/10 text-amber-200"
+        : ["simulation", "pending"].includes(normalized)
+          ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-200"
+          : "border-border bg-background/50 text-muted-foreground";
   return (
-    <span className="rounded-full border px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+    <span
+      className={`rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${tone}`}
+    >
       {value.replaceAll("_", " ")}
     </span>
   );
