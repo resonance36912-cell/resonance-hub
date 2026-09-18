@@ -34,6 +34,11 @@ export type Entitlement = {
   currentPeriodEnd: string | null;
 };
 
+const ENTITLEMENT_CACHE_TTL_MS = 60_000;
+const entitlementCache = new Map<string, { rows: Awaited<ReturnType<typeof fetchSubscriptionRows>>; expiresAt: number }>();
+const entitlementInflight = new Map<string, Promise<Awaited<ReturnType<typeof fetchSubscriptionRows>>>>();
+const entitlementCacheKey = (userId: string, app: AppKey) => `${userId}:${app}`;
+
 export function deriveFeatures(app: AppKey, tier: Tier): EntitlementFeatures {
   const isPro = tier === "pro" || tier === "business" || tier === "all_access";
   const isBusiness = tier === "business";
@@ -114,12 +119,24 @@ export const getEntitlement = createServerFn({ method: "POST" })
     const sourceIp = req?.headers.get("x-forwarded-for") ?? null;
     const userAgent = req?.headers.get("user-agent") ?? null;
 
+    const cacheKey = entitlementCacheKey(userId, data.app);
+    const cached = entitlementCache.get(cacheKey);
     let rows: Awaited<ReturnType<typeof fetchSubscriptionRows>>;
-    try {
-      const credential = req ? resolveRonsRequestCredential(req) : null;
-      if (!credential) throw new Error("Authenticated request credential unavailable");
-      rows = await fetchSubscriptionRows(credential, userId, [data.app, "all_access"]);
-    } catch (error) {
+    if (cached && cached.expiresAt > Date.now()) {
+      rows = cached.rows;
+    } else {
+      const inflight = entitlementInflight.get(cacheKey);
+      const lookup = inflight ?? (async () => {
+        const credential = req ? resolveRonsRequestCredential(req) : null;
+        if (!credential) throw new Error("Authenticated request credential unavailable");
+        const fetched = await fetchSubscriptionRows(credential, userId, [data.app, "all_access"]);
+        entitlementCache.set(cacheKey, { rows: fetched, expiresAt: Date.now() + ENTITLEMENT_CACHE_TTL_MS });
+        return fetched;
+      })();
+      if (!inflight) entitlementInflight.set(cacheKey, lookup);
+      try {
+        rows = await lookup;
+      } catch (error) {
       const message = error instanceof Error ? error.message : "provider lookup failed";
       console.error("getEntitlement query failed:", message);
       void logEntitlementCheck({
@@ -145,6 +162,9 @@ export const getEntitlement = createServerFn({ method: "POST" })
         hasAccess: false,
         currentPeriodEnd: null,
       };
+      } finally {
+        if (!inflight && entitlementInflight.get(cacheKey) === lookup) entitlementInflight.delete(cacheKey);
+      }
     }
 
     const active = (rows ?? []).filter((r) => r.status === "active");
