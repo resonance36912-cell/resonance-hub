@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
+import { PACK_CHECKOUT_AVAILABLE } from "@/lib/checkout.functions";
 
 const CANONICAL_ORIGIN = "https://reson8.life";
 import resonanceLogo from "@/assets/resonance-logo.png";
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/")({
         {
           name: "description",
           content:
-            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, PayFast checkout, once-off packs, and optional ecosystem passes.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, published once-off pack offers, pack launch waitlists, and optional PayFast ecosystem passes.",
         },
         {
           property: "og:title",
@@ -43,7 +44,7 @@ export const Route = createFileRoute("/")({
         {
           property: "og:description",
           content:
-            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, PayFast checkout, once-off packs, and optional ecosystem passes.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, published once-off pack offers, pack launch waitlists, and optional PayFast ecosystem passes.",
         },
         { property: "og:type", content: "website" },
         { property: "og:url", content: `${origin}/` },
@@ -58,7 +59,7 @@ export const Route = createFileRoute("/")({
         {
           name: "twitter:description",
           content:
-            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, PayFast checkout, once-off packs, and optional ecosystem passes.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, published once-off pack offers, pack launch waitlists, and optional PayFast ecosystem passes.",
         },
         { name: "twitter:image", content: `${origin}/og-logo.png` },
         { name: "twitter:image:alt", content: "The Resonance logo" },
@@ -111,7 +112,7 @@ export const Route = createFileRoute("/")({
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
                 url: "https://epublisher.reson8.life",
-                offers: { "@type": "Offer", price: "99", priceCurrency: "ZAR" },
+                offers: { "@type": "Offer", price: "99", priceCurrency: "ZAR", availability: "https://schema.org/PreOrder" },
               },
               {
                 "@type": "SoftwareApplication",
@@ -119,7 +120,7 @@ export const Route = createFileRoute("/")({
                 applicationCategory: "DesignApplication",
                 operatingSystem: "Web",
                 url: "https://creative.reson8.life",
-                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
+                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR", availability: "https://schema.org/PreOrder" },
               },
               {
                 "@type": "SoftwareApplication",
@@ -127,7 +128,7 @@ export const Route = createFileRoute("/")({
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
                 url: "https://sync.reson8.life",
-                offers: { "@type": "Offer", price: "549", priceCurrency: "ZAR" },
+                offers: { "@type": "Offer", price: "349", priceCurrency: "ZAR", availability: "https://schema.org/PreOrder" },
               },
               {
                 "@type": "SoftwareApplication",
@@ -135,16 +136,16 @@ export const Route = createFileRoute("/")({
                 applicationCategory: "BusinessApplication",
                 operatingSystem: "Web",
                 url: "https://youtube.reson8.life",
-                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
+                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR", availability: "https://schema.org/PreOrder" },
               },
               {
                 "@type": "FAQPage",
                 mainEntity: [
-                  ["Do individual apps have monthly subscriptions?", "No. Individual Resonance apps use once-off credits and project packs. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps."],
+                  ["Do individual apps have monthly subscriptions?", "No. Individual Resonance apps are moving to once-off credit and project packs rather than recurring app subscriptions. Pack prices are published with a launch waitlist while one-time fulfillment is completed. Only the Hub offers optional monthly ecosystem passes."],
                   ["Can I use Resonance tools for free?", "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits."],
-                  ["Is there a single login across every app?", "One Hub billing account today — packs and ecosystem passes live in one place. Unified app login is on the roadmap."],
-                  ["Can I cancel an ecosystem pass anytime?", "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases."],
-                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT)."],
+                  ["Is there a single login across every app?", "One Hub billing account today. Ecosystem-pass checkout is live on the Hub; once-off pack prices are published with a launch waitlist until one-time fulfillment is enabled. Unified app login is on the roadmap."],
+                  ["Can I cancel an ecosystem pass anytime?", "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are intended as one-time purchases and are clearly labeled as a waitlist while checkout is unavailable."],
+                  ["Are prices in South African Rand?", "Yes. Published prices are in ZAR. Active ecosystem-pass checkout uses PayFast; once-off pack checkout remains on the launch waitlist until one-time fulfillment is enabled."],
                   ["Can schools use Career Compass?", "Yes — schools can join the free pilot."],
 
                   ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
@@ -189,7 +190,7 @@ const apps: App[] = [
     localPort: 3101,
     subscribeHref: "/pricing#epublisher",
     priceLabel: "from R99 once-off",
-    priceNote: "Once-off credit / project packs · no recurring app fees",
+    priceNote: "Pack pricing published · checkout waitlist open · no recurring app fees",
 
     logo: logoEpublisher,
     accent: "magenta",
@@ -209,7 +210,7 @@ const apps: App[] = [
     localPort: 3201,
     subscribeHref: "/pricing#creative-studio",
     priceLabel: "from R149 once-off",
-    priceNote: "Once-off creative credit packs · no recurring app fees",
+    priceNote: "Pack pricing published · checkout waitlist open · no recurring app fees",
     logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
@@ -228,14 +229,14 @@ const apps: App[] = [
     localPort: 3301,
     subscribeHref: "/pricing#sync-vision",
     priceLabel: "from R349 once-off",
-    priceNote: "Once-off music-video packs · no recurring app fees",
+    priceNote: "Storyboard-pack pricing published · checkout waitlist open",
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
     attribute: {
       icon: "🏃",
       label: "Musicians, labels & video creators",
-      body: "High-fidelity video generation, precise character consistency, and frame-by-frame production.",
+      body: "Cinematic story planning, character continuity, and AI-ready scene direction.",
     },
   },
   {
@@ -243,8 +244,8 @@ const apps: App[] = [
     tagline:
       "Free ecosystem media, thought leadership, conversations, and community content.",
     domain: "resonance-podcast.com",
-    href: "https://www.resonance-podcast.com",
-    subscribeHref: "https://www.resonance-podcast.com",
+    href: "https://www.resonance-podcast.com/episodes",
+    subscribeHref: "https://www.resonance-podcast.com/episodes",
     priceLabel: "Free",
     priceNote: "Listen and watch — not a SaaS subscription",
     logo: logoPodcast,
@@ -283,7 +284,7 @@ const apps: App[] = [
     localPort: 3401,
     subscribeHref: "/pricing#youtube-optimizer",
     priceLabel: "from R149 once-off",
-    priceNote: "Once-off audit and growth packs · no recurring app fees",
+    priceNote: "Pack pricing published · checkout waitlist open · no recurring app fees",
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "live",
@@ -761,7 +762,7 @@ function Index() {
                   <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
-                  href="https://www.resonance-podcast.com"
+                  href="https://www.resonance-podcast.com/episodes"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(190_90%_60%/0.4)] px-3.5 py-3 transition-all"
@@ -989,7 +990,7 @@ function Index() {
                           {app.status === "free"
                             ? "Learn more"
                             : app.subscribeHref.startsWith("/pricing")
-                              ? "Buy pack"
+                              ? PACK_CHECKOUT_AVAILABLE ? "Buy pack" : "View pack waitlist"
                               : "Learn more"}
                         </a>
 
@@ -1013,9 +1014,9 @@ function Index() {
               Once-off packs. Optional passes.
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto text-sm leading-relaxed mb-5">
-              Individual apps use once-off credits and project packs — no recurring app fees. The Hub
-              offers optional monthly ecosystem passes for creators and teams using multiple Resonance
-              tools every month.
+              Individual-app pack prices are published with a launch waitlist while one-time fulfillment
+              is completed. The Hub's optional monthly ecosystem passes are available for creators and teams
+              using multiple Resonance tools every month.
             </p>
             <div className="flex flex-wrap justify-center gap-2 mb-8 text-[11px] font-mono uppercase tracking-wider text-white/70">
               <span className="px-3 py-1.5 rounded-full border border-white/10">ePublisher from R99</span>
@@ -1351,13 +1352,14 @@ function Index() {
             <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
             <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
             <Link to="/governance" className="hover:text-white transition-colors">Governance</Link>
-            <Link to="/governance" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
-            <Link to="/governance" className="hover:text-white transition-colors">Terms</Link>
-            <Link to="/governance" className="hover:text-white transition-colors">Refunds</Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/refunds" className="hover:text-white transition-colors">Refunds</Link>
+            <Link to="/changelog" className="hover:text-white transition-colors">Changelog</Link>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Support</a>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Contact</a>
 
-            <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://www.resonance-podcast.com/episodes" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
             <a href="https://epublisher.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
@@ -1397,12 +1399,12 @@ type UpdateItem = {
 // changes required to add / edit / reorder cards.
 const FALLBACK_UPDATES: UpdateItem[] = [
   { app: "Reson8 Hub", status: "Live", tone: "live", change: "Ecosystem passes (Creator, Studio, Business) are now the only recurring plans — individual apps moved to once-off packs.", date: "Jun 2026", href: "/pricing#passes", cta: "See passes" },
-  { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.", date: "May 2026", href: "/pricing#epublisher", cta: "View packs" },
+  { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off pack pricing is published. The Starter Pack is R99; pack checkout remains on the launch waitlist while one-time fulfillment is completed.", date: "Sep 2026", href: "/pricing#epublisher", cta: "View pack waitlist" },
   { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.", date: "Apr 2026", href: "/pricing#creative-studio", cta: "View packs" },
-  { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.", date: "Mar 2026", href: "/pricing#sync-vision", cta: "View packs" },
+  { app: "Sync Vision", status: "Live", tone: "live", change: "The storyboard workflow is live. Pack pricing is published, while one-time PayFast checkout remains on the launch waitlist.", date: "Sep 2026", href: "/pricing#sync-vision", cta: "View pack waitlist" },
   { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Migrating to youtube.reson8.life with new audit, thumbnail, and growth packs. Existing users keep access.", date: "Jun 2026", href: "/pricing#youtube-optimizer", cta: "View packs" },
   { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
-  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live — free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com", cta: "Listen" },
+  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live — free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com/episodes", cta: "Listen" },
   { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
 ];
 

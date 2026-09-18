@@ -6,6 +6,7 @@ import { ronsAuth } from "@/lib/auth-provider";
 import {
   SKU_CATALOG,
   PACK_CATALOG,
+  PACK_CHECKOUT_AVAILABLE,
   createPayfastLaunch,
   resolveSku,
   type PayfastLaunch,
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Checkout — The Resonance Hub" },
-      { name: "description", content: "Secure Hub checkout for Resonance app packs and ecosystem passes via PayFast." },
+      { name: "description", content: "Hub availability for Resonance app packs and secure PayFast checkout for active ecosystem passes." },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -69,13 +70,13 @@ function CheckoutPage() {
     };
   }, []);
 
-  // Once-off pack: waitlist stub (not wired to PayFast one-time yet).
+  // Once-off pack: one-time settlement/fulfillment is not live yet.
   if (pack) {
     return (
       <Shell>
         <div className="mb-6">
           <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/55 mb-2">
-            Checkout · Once-off pack · ZAR · PayFast
+            Pack availability · Once-off pricing · ZAR
           </p>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{pack.name}</h1>
           <p className="text-white/65 mt-2">
@@ -91,36 +92,47 @@ function CheckoutPage() {
         </div>
 
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-200/90 mb-6 leading-relaxed">
-          Once-off pack checkout is opening in Q1 2027. Join the waitlist below and we'll email
-          you the moment PayFast one-time checkout is live for {pack.name}.
+          {PACK_CHECKOUT_AVAILABLE ? (
+            <>One-time checkout is available for this pack.</>
+          ) : (
+            <>
+              This pack is not yet available for payment. The published price and inclusions are
+              for launch planning; no payment will be taken on this page. Join the email waitlist
+              to be notified when one-time PayFast settlement and automatic fulfillment are live.
+            </>
+          )}
         </div>
 
         {authReady && email ? (
           <p className="text-sm text-white/70 mb-6">
-            You're signed in as <span className="text-white">{email}</span> — we'll notify this
-            account when the pack goes live.
+            Signed in as <span className="text-white">{email}</span>. The waitlist link below opens
+            an email from this account; joining is not automatic.
           </p>
         ) : (
           <p className="text-sm text-white/70 mb-6">
-            Sign in from the{" "}
-            <Link to="/" className="underline hover:text-white">
-              Hub home
-            </Link>{" "}
-            to join the pack waitlist automatically.
+            You can join the launch waitlist by email without signing in.
           </p>
         )}
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             to="/pricing"
             className="px-5 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
           >
             ← Back to packs
           </Link>
+          {!PACK_CHECKOUT_AVAILABLE && (
+            <a
+              href={`mailto:hello@reson8.life?subject=${encodeURIComponent(`Pack waitlist: ${pack.app} / ${pack.name}`)}`}
+              className="px-5 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest"
+            >
+              Join email waitlist →
+            </a>
+          )}
           <Link
             to="/pricing"
             hash="passes"
-            className="px-5 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest"
+            className="px-5 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
           >
             See ecosystem passes →
           </Link>

@@ -61,10 +61,12 @@ export const SKU_CATALOG: Record<string, SkuDef> = {
 };
 
 /**
- * Once-off app packs (UI/marketing catalog). NOT wired to PayFast yet —
- * checkout renders a waitlist stub. Prices and included allowances are
- * scaffolded defaults; edit freely.
+ * Once-off app packs (UI/marketing catalog). One-time payment settlement and
+ * automatic credit/entitlement fulfillment are not live yet, so every public
+ * pack route must present a waitlist/availability notice rather than a
+ * purchasable checkout.
  */
+export const PACK_CHECKOUT_AVAILABLE = false as const;
 export type PackDef = {
   id: string;
   app: "epublisher" | "creative_studio" | "sync_vision" | "youtube_optimizer";
@@ -82,9 +84,9 @@ export const PACK_CATALOG: Record<string, PackDef> = {
   "creative_studio_starter":  { id: "creative_studio_starter",  app: "creative_studio",  name: "Starter Pack",  zar: "R149", amountCents: 14900,  blurb: "Small campaigns",      includes: ["30 image credits", "5 short videos", "HD exports"] },
   "creative_studio_pro":      { id: "creative_studio_pro",      app: "creative_studio",  name: "Pro Pack",      zar: "R399", amountCents: 39900,  blurb: "Full campaigns",       includes: ["100 image credits", "20 videos", "Brand kit slot"] },
   "creative_studio_agency":   { id: "creative_studio_agency",   app: "creative_studio",  name: "Agency Pack",   zar: "R899", amountCents: 89900,  blurb: "Multi-client output",  includes: ["300 image credits", "60 videos", "White-label option"] },
-  "sync_vision_single":       { id: "sync_vision_single",       app: "sync_vision",      name: "Single Track",  zar: "R349", amountCents: 34900,  blurb: "One music video",      includes: ["1 track storyboard", "Character concepts", "Scene prompts"] },
-  "sync_vision_ep":           { id: "sync_vision_ep",           app: "sync_vision",      name: "EP Pack",       zar: "R999", amountCents: 99900,  blurb: "Four-track EP",        includes: ["4 track storyboards", "Character consistency", "Priority render"] },
-  "sync_vision_album":        { id: "sync_vision_album",        app: "sync_vision",      name: "Album Pack",    zar: "R2,499", amountCents: 249900, blurb: "Album/tour ready",    includes: ["12 track storyboards", "Tour visuals", "Studio support"] },
+  "sync_vision_single":       { id: "sync_vision_single",       app: "sync_vision",      name: "Single Track",  zar: "R349", amountCents: 34900,  blurb: "One-track storyboard pack", includes: ["1 track storyboard", "Character concepts", "Scene prompts"] },
+  "sync_vision_ep":           { id: "sync_vision_ep",           app: "sync_vision",      name: "EP Pack",       zar: "R999", amountCents: 99900,  blurb: "Four-track storyboard pack", includes: ["4 track storyboards", "Character consistency", "Priority processing"] },
+  "sync_vision_album":        { id: "sync_vision_album",        app: "sync_vision",      name: "Album Pack",    zar: "R2,499", amountCents: 249900, blurb: "12-track storyboard package", includes: ["12 track storyboards", "Tour visual concepts", "Studio support"] },
   "yto_channel_audit":        { id: "yto_channel_audit",        app: "youtube_optimizer",name: "Channel Audit", zar: "R149", amountCents: 14900,  blurb: "First deep audit",     includes: ["1 channel audit", "10 AI thumbnails", "Title/tag report"] },
   "yto_growth_pack":          { id: "yto_growth_pack",          app: "youtube_optimizer",name: "Growth Pack",   zar: "R599", amountCents: 59900,  blurb: "Ongoing optimisation", includes: ["5 audits", "50 thumbnails", "90-day growth roadmap"] },
   "yto_agency_pack":          { id: "yto_agency_pack",          app: "youtube_optimizer",name: "Agency Pack",   zar: "R2,499", amountCents: 249900, blurb: "Multi-channel teams", includes: ["25 audits", "250 thumbnails", "Team seats"] },

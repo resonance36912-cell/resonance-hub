@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { PACK_CATALOG } from "@/lib/checkout.functions";
+import { PACK_CATALOG, PACK_CHECKOUT_AVAILABLE } from "@/lib/checkout.functions";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/pricing")({
@@ -131,15 +131,16 @@ function PricingPage() {
         <section className="text-center mb-14 animate-reveal">
           <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/60 border border-white/10 rounded-full px-4 py-1.5 mb-6">
             <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-            ZAR · PayFast · no recurring app fees
+            ZAR · PayFast passes · pack waitlist
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95] mb-6">
             Pay only for what you{" "}
             <span className="font-serif italic font-normal text-white/80">actually use.</span>
           </h1>
           <p className="text-lg text-white/70 max-w-3xl mx-auto leading-relaxed">
-            Individual apps use once-off credits and project packs. Optional ecosystem passes are
-            available for creators and teams using multiple tools every month.
+            Individual-app pack prices are published with a launch waitlist while one-time
+            fulfillment is completed. Optional ecosystem passes are available via PayFast for
+            creators and teams using multiple tools every month.
           </p>
 
           {/* Section switcher */}
@@ -163,13 +164,22 @@ function PricingPage() {
               Section 1 · Once-off app packs
             </div>
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
-              Buy only what you need
+              Plan only what you need
             </h2>
             <p className="text-white/70 leading-relaxed">
               Resonance apps use once-off credits, project packs, or pilots. No individual app
-              subscriptions. Purchase once, use whenever - top up when you need more.
+              subscriptions. Pack prices and intended allowances are shown before launch.
             </p>
           </header>
+
+          {!PACK_CHECKOUT_AVAILABLE && (
+            <div className="mb-8 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm text-amber-100/90 leading-relaxed">
+              <strong className="text-amber-100">Pack checkout waitlist:</strong> prices and included
+              allowances are published for planning, but one-time PayFast settlement and automatic
+              credit/entitlement fulfillment are not live yet. Pack buttons below join the launch
+              waitlist; no pack payment is taken.
+            </div>
+          )}
 
           {Object.entries(APP_META).map(([appKey, meta]) => {
             const packs = packsByApp[appKey] ?? [];
@@ -223,7 +233,7 @@ function PricingPage() {
                         href={`/checkout?pack=${p.id}`}
                         className="text-center px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest border border-white/15 hover:border-white/40 transition-colors"
                       >
-                        Buy pack
+                        {PACK_CHECKOUT_AVAILABLE ? "Buy pack" : "Join waitlist"}
                       </a>
                     </article>
                   ))}
@@ -262,7 +272,7 @@ function PricingPage() {
                 bonus, not the product.
               </p>
               <a
-                href="https://www.resonance-podcast.com"
+                href="https://www.resonance-podcast.com/episodes"
                 target="_blank"
                 rel="noreferrer"
                 className="text-[11px] font-bold uppercase tracking-widest border border-white/15 hover:border-white/40 px-4 py-2 rounded-full inline-block"
