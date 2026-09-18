@@ -30,20 +30,20 @@ export const Route = createFileRoute("/")({
     const origin = CANONICAL_ORIGIN;
     return {
       meta: [
-        { title: "RONSAS | Resonance Open Nova Sovereign Application Suite" },
+        { title: "Reson8.life | South African AI Apps for Creators, Publishers & Schools" },
         {
           name: "description",
           content:
-            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, PayFast checkout, once-off packs, and optional ecosystem passes.",
         },
         {
           property: "og:title",
-          content: "RONSAS | Resonance Open Nova Sovereign Application Suite",
+          content: "Reson8.life | South African AI Apps for Creators, Publishers & Schools",
         },
         {
           property: "og:description",
           content:
-            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, PayFast checkout, once-off packs, and optional ecosystem passes.",
         },
         { property: "og:type", content: "website" },
         { property: "og:url", content: `${origin}/` },
@@ -53,12 +53,12 @@ export const Route = createFileRoute("/")({
         { name: "twitter:card", content: "summary_large_image" },
         {
           name: "twitter:title",
-          content: "RONSAS | Resonance Open Nova Sovereign Application Suite",
+          content: "Reson8.life | South African AI Apps for Creators, Publishers & Schools",
         },
         {
           name: "twitter:description",
           content:
-            "RONSAS is the Resonance Open Nova Sovereign Application Suite: one sovereign hub for ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, governance, billing, and ecosystem access.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. ZAR pricing, PayFast checkout, once-off packs, and optional ecosystem passes.",
         },
         { name: "twitter:image", content: `${origin}/og-logo.png` },
         { name: "twitter:image:alt", content: "The Resonance logo" },
@@ -665,19 +665,16 @@ function Index() {
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              Reson8.life Â· Source of truth
+              Reson8.life · South African AI app hub
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
-              RONSAS{" "}
-              <span className="text-gradient-brand">Hub</span>
+              AI tools for South African creators, publishers, schools, and small businesses.
             </h1>
             <p className="text-base md:text-lg text-white/75 leading-[1.65] text-pretty max-w-[58ch] mb-6">
-              Resonance Open Nova Sovereign Application Suite — the source of truth for every Resonance app, update, pricing plan, checkout, governance control, and
-              ecosystem package.
+              Create eBooks, posters, campaigns, music-video storyboards, YouTube audits, and career reports from one Resonance hub.
             </p>
             <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-4">
-              Buy once-off app credits, discover new tools, follow product updates, and manage
-              ecosystem bundles from one South African-built AI hub.
+              Buy once-off credits, launch apps, manage bundles, and follow product updates from one South African-built hub.
             </p>
             <p className="text-[13px] text-white/60 leading-relaxed max-w-[58ch] mb-10">
               Individual apps use once-off credits and project packs. Optional ecosystem passes
@@ -688,13 +685,13 @@ function Index() {
                 href="#apps"
                 className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                Explore apps
+                Start creating
               </a>
               <Link
                 to="/pricing"
                 className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
-                View pricing
+                Compare pricing
               </Link>
             </div>
           </div>
@@ -709,7 +706,7 @@ function Index() {
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/65">
 
             {[
-              "ðŸ‡¿ðŸ‡¦ Built in South Africa",
+              "Built in South Africa",
               "ZAR pricing",
               "PayFast secure checkout",
               "Cancel anytime",
@@ -841,7 +838,7 @@ function Index() {
               Find your pathway
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-              Four kinds of creators meet the Resonance ecosystem first. Pick the one that sounds like you.
+              Choose what you want to create and go directly to the right Resonance tool.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -905,7 +902,7 @@ function Index() {
             </div>
             <div className="flex flex-col items-start md:items-end gap-3 max-w-md">
               <p className="text-white/60 text-sm leading-relaxed">
-                The Hub is the source of truth for every product change, status update, and rollout.
+                See what has shipped, what is changing, and what is coming next across the Resonance ecosystem.
               </p>
               <div className="flex items-center gap-2 flex-wrap">
                 <a
