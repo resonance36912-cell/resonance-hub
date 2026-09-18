@@ -17,11 +17,11 @@
     "app": "Resonance ePublisher",
     "status": "Live",
     "tone": "live",
-    "change": "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.",
+    "change": "Once-off pack pricing is published. The Starter Pack is R99; pack checkout remains on the launch waitlist while one-time fulfillment is completed.",
     "date": "May 2026",
     "href": "/pricing#epublisher",
     "cta": "View packs",
-    "details": "ePublisher moved from a per-month plan to project- and credit-based packs. A new R149 starter pack lets first-time authors publish one short-form title end-to-end without committing to a subscription.\n\nExisting subscribers keep their unused monthly allowance and can top up with packs at any time.",
+    "details": "ePublisher moved from a per-month plan to project- and credit-based packs. A new R99 starter pack shows the intended first-book allowance without committing to a subscription. One-time pack payment and automatic fulfillment are not live yet, so this route remains a waitlist.\n\nExisting subscribers keep their unused monthly allowance and can top up with packs at any time.",
     "links": [
       { "label": "Open ePublisher", "href": "https://epublisher.reson8.life" },
       { "label": "Starter pack details", "href": "/pricing#epublisher" }
@@ -45,11 +45,11 @@
     "app": "Sync Vision",
     "status": "Live",
     "tone": "live",
-    "change": "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.",
+    "change": "The Sync Vision storyboard workflow is live. Pack pricing is published, while one-time PayFast checkout remains on the launch waitlist.",
     "date": "Mar 2026",
     "href": "/pricing#sync-vision",
     "cta": "View packs",
-    "details": "Sync Vision's music-video packs are live with a redesigned storyboard flow: shot lists, character sheets, and scene prompts are generated in one pass. Checkout runs through the Hub in ZAR via PayFast — no separate provider account needed.",
+    "details": "Sync Vision's redesigned storyboard workflow is live: shot lists, character sheets, and scene prompts are generated in one pass. Pack prices are published in ZAR; one-time PayFast settlement and automatic fulfillment are still being wired and tested.",
     "links": [
       { "label": "Open Sync Vision", "href": "https://sync.reson8.life" },
       { "label": "Music-video packs", "href": "/pricing#sync-vision" }
@@ -89,12 +89,12 @@
     "tone": "live",
     "change": "New season live — free episodes, media kits, and shop. Never a subscription.",
     "date": "Jun 2026",
-    "href": "https://www.resonance-podcast.com",
+    "href": "https://www.resonance-podcast.com/episodes",
     "cta": "Listen",
     "details": "The new season is streaming on the podcast site with free episodes, downloadable media kits, and a merch shop. The podcast is intentionally never gated behind a subscription.",
     "links": [
-      { "label": "Listen now", "href": "https://www.resonance-podcast.com" },
-      { "label": "Media kits", "href": "https://www.resonance-podcast.com/#media" }
+      { "label": "Listen now", "href": "https://www.resonance-podcast.com/episodes" },
+      { "label": "Media kits", "href": "https://www.resonance-podcast.com/episodes" }
     ]
   },
   {

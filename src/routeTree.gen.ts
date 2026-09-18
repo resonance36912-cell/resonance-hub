@@ -9,13 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as RcgfRouteImport } from './routes/rcgf'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MyifyRouteImport } from './routes/myify'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
@@ -79,14 +83,29 @@ import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/ap
 import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
 import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RefundsRoute = RefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RcgfRoute = RcgfRouteImport.update({
   id: '/rcgf',
   path: '/rcgf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -112,6 +131,11 @@ const GovernanceRoute = GovernanceRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -443,13 +467,17 @@ const ApiPublicGenerateCreativeStudioPosterRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
   '/login': typeof LoginRoute
   '/myify': typeof MyifyRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/rcgf': typeof RcgfRoute
+  '/refunds': typeof RefundsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -514,13 +542,17 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
   '/login': typeof LoginRoute
   '/myify': typeof MyifyRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/rcgf': typeof RcgfRoute
+  '/refunds': typeof RefundsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -586,13 +618,17 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
   '/login': typeof LoginRoute
   '/myify': typeof MyifyRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/rcgf': typeof RcgfRoute
+  '/refunds': typeof RefundsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -659,13 +695,17 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/changelog'
     | '/checkout'
     | '/governance'
     | '/login'
     | '/myify'
     | '/pricing'
+    | '/privacy'
     | '/rcgf'
+    | '/refunds'
     | '/sitemap.xml'
+    | '/terms'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -730,13 +770,17 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/changelog'
     | '/checkout'
     | '/governance'
     | '/login'
     | '/myify'
     | '/pricing'
+    | '/privacy'
     | '/rcgf'
+    | '/refunds'
     | '/sitemap.xml'
+    | '/terms'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -801,13 +845,17 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/changelog'
     | '/checkout'
     | '/governance'
     | '/login'
     | '/myify'
     | '/pricing'
+    | '/privacy'
     | '/rcgf'
+    | '/refunds'
     | '/sitemap.xml'
+    | '/terms'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -873,13 +921,17 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   GovernanceRoute: typeof GovernanceRoute
   LoginRoute: typeof LoginRoute
   MyifyRoute: typeof MyifyRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   RcgfRoute: typeof RcgfRoute
+  RefundsRoute: typeof RefundsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
@@ -941,6 +993,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -948,11 +1007,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/refunds': {
+      id: '/refunds'
+      path: '/refunds'
+      fullPath: '/refunds'
+      preLoaderRoute: typeof RefundsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rcgf': {
       id: '/rcgf'
       path: '/rcgf'
       fullPath: '/rcgf'
       preLoaderRoute: typeof RcgfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -988,6 +1061,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1457,13 +1537,17 @@ const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   GovernanceRoute: GovernanceRoute,
   LoginRoute: LoginRoute,
   MyifyRoute: MyifyRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   RcgfRoute: RcgfRoute,
+  RefundsRoute: RefundsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
