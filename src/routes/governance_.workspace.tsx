@@ -19,7 +19,7 @@ import {
 export const Route = createFileRoute("/governance_/workspace")({
   head: () => ({
     meta: [
-      { title: "Governance Workspace â€” The Resonance" },
+      { title: "Governance Workspace — The Resonance" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -309,7 +309,7 @@ function GovernanceWorkspace() {
         <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Resonance Â· Governed Workspace
+              Resonance · Governed Workspace
             </p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Governance Workspace</h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -387,13 +387,13 @@ function GovernanceWorkspace() {
                     disabled={createMutation.isPending}
                     className="w-full rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground disabled:opacity-50"
                   >
-                    {createMutation.isPending ? "Creatingâ€¦" : "Create draft"}
+                    {createMutation.isPending ? "Creating…" : "Create draft"}
                   </button>
                 </form>
               )}
               <div className="space-y-2">
                 {proposalsQ.isLoading && (
-                  <p className="text-sm text-muted-foreground">Loading proposalsâ€¦</p>
+                  <p className="text-sm text-muted-foreground">Loading proposals…</p>
                 )}
                 {(proposalsQ.data ?? []).map((proposal) => (
                   <button
@@ -409,7 +409,7 @@ function GovernanceWorkspace() {
                       {proposal.summary}
                     </p>
                     <p className="mt-2 text-[11px] text-muted-foreground">
-                      v{proposal.version} Â· {formatDate(proposal.updated_at)}
+                      v{proposal.version} · {formatDate(proposal.updated_at)}
                     </p>
                   </button>
                 ))}
@@ -422,7 +422,7 @@ function GovernanceWorkspace() {
 
           <main className="min-w-0 space-y-4">
             {!selectedId && <EmptyCard text="Create or select a proposal to begin." />}
-            {selectedId && detailQ.isLoading && <EmptyCard text="Loading proposalâ€¦" />}
+            {selectedId && detailQ.isLoading && <EmptyCard text="Loading proposal…" />}
             {detail && (
               <>
                 <section className="rounded-xl border bg-card p-5">
@@ -447,7 +447,7 @@ function GovernanceWorkspace() {
                         onClick={() => submitMutation.mutate()}
                         className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
                       >
-                        {submitMutation.isPending ? "Submittingâ€¦" : "Submit for review"}
+                        {submitMutation.isPending ? "Submitting…" : "Submit for review"}
                       </button>
                     )}
                   </div>
@@ -598,7 +598,7 @@ function GovernanceWorkspace() {
                             <span className="text-xs uppercase text-muted-foreground">
                               {review.stance}
                               {review.confidence !== null
-                                ? ` Â· ${Math.round(review.confidence * 100)}%`
+                                ? ` · ${Math.round(review.confidence * 100)}%`
                                 : ""}
                             </span>
                           </div>
@@ -809,5 +809,5 @@ function EmptyCard({ text }: { text: string }) {
 }
 
 function formatDate(value: string | null | undefined) {
-  return value ? new Date(value).toLocaleString() : "â€”";
+  return value ? new Date(value).toLocaleString() : "—";
 }

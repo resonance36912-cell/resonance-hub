@@ -1,6 +1,6 @@
 # The Resonance Hub
 
-> Reson8.life is the source of truth for the full Resonance ecosystem â€” every app, update, pricing plan, checkout, and ecosystem package. Individual apps use once-off credits and project packs. Optional monthly ecosystem passes (Creator Pass, Studio Pass, Business Pass) are available from the Hub for creators and teams using multiple tools.
+> Reson8.life is the source of truth for the full Resonance ecosystem — every app, update, pricing plan, checkout, and ecosystem package. Individual apps use once-off credits and project packs. Optional monthly ecosystem passes (Creator Pass, Studio Pass, Business Pass) are available from the Hub for creators and teams using multiple tools.
 
 ## Purchase model
 
@@ -11,7 +11,7 @@
 
 ## Pages
 
-- [Home](/): The Resonance Hub â€” apps, updates, pricing, bundles, roadmap, governance.
+- [Home](/): The Resonance Hub — apps, updates, pricing, bundles, roadmap, governance.
 - [Pricing](/pricing): Once-off app packs and optional ecosystem passes.
 - [Governance](/governance): The Resonance Constitutional Governance Framework (RCGF) v1.0.
 
