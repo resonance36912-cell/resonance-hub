@@ -5,7 +5,7 @@
  * "Continue to your app" CTA on /checkout/success and /checkout/cancel,
  * and is also passed to PayFast as `return_url` / `cancel_url`.
  *
- * Without an allowlist this is an open-redirect vector â€” an attacker can
+ * Without an allowlist this is an open-redirect vector — an attacker can
  * craft `/checkout?sku=...&return_to=https://evil.com` and the branded
  * post-payment CTA points to a phishing page.
  *
