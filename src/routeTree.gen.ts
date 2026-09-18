@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as MyifyRouteImport } from './routes/myify'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -91,6 +92,11 @@ const RcgfRoute = RcgfRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyifyRoute = MyifyRouteImport.update({
+  id: '/myify',
+  path: '/myify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -440,6 +446,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
   '/login': typeof LoginRoute
+  '/myify': typeof MyifyRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -510,6 +517,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
   '/login': typeof LoginRoute
+  '/myify': typeof MyifyRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -581,6 +589,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/governance': typeof GovernanceRoute
   '/login': typeof LoginRoute
+  '/myify': typeof MyifyRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -653,6 +662,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/governance'
     | '/login'
+    | '/myify'
     | '/pricing'
     | '/rcgf'
     | '/sitemap.xml'
@@ -723,6 +733,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/governance'
     | '/login'
+    | '/myify'
     | '/pricing'
     | '/rcgf'
     | '/sitemap.xml'
@@ -793,6 +804,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/governance'
     | '/login'
+    | '/myify'
     | '/pricing'
     | '/rcgf'
     | '/sitemap.xml'
@@ -864,6 +876,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   GovernanceRoute: typeof GovernanceRoute
   LoginRoute: typeof LoginRoute
+  MyifyRoute: typeof MyifyRoute
   PricingRoute: typeof PricingRoute
   RcgfRoute: typeof RcgfRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -947,6 +960,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/myify': {
+      id: '/myify'
+      path: '/myify'
+      fullPath: '/myify'
+      preLoaderRoute: typeof MyifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1440,6 +1460,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   GovernanceRoute: GovernanceRoute,
   LoginRoute: LoginRoute,
+  MyifyRoute: MyifyRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

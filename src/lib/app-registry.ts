@@ -170,6 +170,14 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     tagline: "Discover your career path with a rewards-based pilot.",
     includedInSuite: false,
   },
+  myify: {
+    key: "myify",
+    label: "MYIFY · DataNest",
+    url: `${HUB_URL}/myify`,
+    status: "pilot",
+    tagline: "May Your Intentions Find You — preserve eligible unused data value through DataNest.",
+    includedInSuite: false,
+  },
   resonance_app_dev: {
     key: "resonance_app_dev",
     label: "The Resonance App Dev",
