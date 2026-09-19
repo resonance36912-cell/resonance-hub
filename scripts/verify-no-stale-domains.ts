@@ -30,7 +30,8 @@ function* walk(dir: string): Generator<string> {
 const failures: string[] = [];
 for (const root of ROOTS) {
   for (const file of walk(root)) {
-    if (SKIP_FILES.has(file)) continue;
+    const normalizedFile = file.replaceAll("\\", "/");
+    if (SKIP_FILES.has(normalizedFile)) continue;
     const src = readFileSync(file, "utf8");
     for (const banned of BANNED_LEGACY_URLS) {
       if (src.includes(banned)) {
