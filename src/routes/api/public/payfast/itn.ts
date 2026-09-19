@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getBackendProvider, recordPayfastItnAttempt, settlePayfastItn } from "@/lib/backend-provider.server";
 import { createHash } from "crypto";
 
 /**
@@ -73,11 +74,43 @@ async function logAttempt(row: {
   payment_status?: string | null;
   pf_payment_id?: string | null;
   source_ip?: string | null;
+  payload_hash: string;
   raw_payload: Record<string, string>;
   error_message?: string | null;
 }) {
   try {
-    await supabaseAdmin.from("payfast_itn_logs").insert(row);
+    if (getBackendProvider() === "sovereign") {
+      await recordPayfastItnAttempt({
+        signature_valid: row.signature_valid,
+        server_validated: row.server_validated,
+        outcome: row.outcome,
+        http_status: row.http_status,
+        sku: row.sku ?? null,
+        user_id: row.user_id ?? null,
+        amount_cents: row.amount_cents ?? null,
+        payment_status: row.payment_status ?? null,
+        pf_payment_id: row.pf_payment_id ?? null,
+        source_ip: row.source_ip ?? null,
+        payload_hash: row.payload_hash,
+        error_message: row.error_message ?? null,
+      });
+      return;
+    }
+    const hostedRow = {
+      signature_valid: row.signature_valid,
+      server_validated: row.server_validated,
+      outcome: row.outcome,
+      http_status: row.http_status,
+      sku: row.sku ?? null,
+      user_id: row.user_id ?? null,
+      amount_cents: row.amount_cents ?? null,
+      payment_status: row.payment_status ?? null,
+      pf_payment_id: row.pf_payment_id ?? null,
+      source_ip: row.source_ip ?? null,
+      raw_payload: row.raw_payload,
+      error_message: row.error_message ?? null,
+    };
+    await supabaseAdmin.from("payfast_itn_logs").insert(hostedRow);
   } catch (err) {
     console.error("Failed to write ITN log:", err);
   }
@@ -93,6 +126,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         const sourceIp = request.headers.get("x-forwarded-for") ?? null;
 
         const rawBody = await request.text();
+        const payloadHash = createHash("sha256").update(rawBody).digest("hex");
         const params = Object.fromEntries(new URLSearchParams(rawBody).entries());
         const sku = params.item_name ?? params.custom_str2 ?? null;
         const userId = params.custom_str1 || null;
@@ -120,7 +154,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         const baseLog = {
           sku, user_id: userId, amount_cents: grossCents,
           payment_status: paymentStatus, pf_payment_id: pfPaymentId,
-          source_ip: sourceIp, raw_payload: params,
+          source_ip: sourceIp, payload_hash: payloadHash, raw_payload: params,
         };
 
         // 1. Signature
@@ -151,8 +185,56 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // (provider, event_id) fail is race-safe: only one concurrent worker
         // wins, all replays return the cached response without re-running the
         // subscription upsert or email enqueue.
-        const payloadHash = createHash("sha256").update(rawBody).digest("hex");
         const eventId = pfPaymentId || mPaymentId || `hash:${payloadHash}`;
+        const def = sku ? SKU_CATALOG[sku] : undefined;
+
+        // Sovereign mode terminates here: validated provider data crosses the
+        // keyed gateway procedure boundary and never enters direct Supabase
+        // settlement writes. Hosted mode falls through to the legacy path.
+        if (getBackendProvider() === "sovereign") {
+          if (!def) {
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
+            return new Response("unknown sku", { status: 400 });
+          }
+          if (!userId) {
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
+            return new Response("missing user", { status: 400 });
+          }
+          if (grossCents !== def.amountCents) {
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "amount_mismatch", http_status: 400,
+              error_message: `Got ${grossCents}, expected ${def.amountCents}` });
+            return new Response("amount mismatch", { status: 400 });
+          }
+
+          try {
+            const settled = await settlePayfastItn({
+              event_id: eventId,
+              payload_hash: payloadHash,
+              sku,
+              user_id: userId,
+              app: def.app,
+              tier: def.tier,
+              amount_cents: def.amountCents,
+              currency: "ZAR",
+              billing_cycle: def.cycle,
+              payment_status: paymentStatus ?? "PENDING",
+              pf_payment_id: pfPaymentId,
+              m_payment_id: mPaymentId,
+              payfast_token: params.token ?? null,
+              recipient_email: params.email_address ?? null,
+              source_ip: sourceIp,
+            });
+            return new Response(settled.response_body, { status: settled.http_status });
+          } catch (err) {
+            const message = err instanceof Error ? err.message.slice(0, 1000) : "Sovereign ITN settlement failed";
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "db_error", http_status: 500, error_message: message });
+            return new Response("db error", { status: 500 });
+          }
+        }
 
         const { data: claimed, error: claimErr } = await supabaseAdmin
           .from("webhook_events")
@@ -214,7 +296,6 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           }
         };
 
-        const def = sku ? SKU_CATALOG[sku] : undefined;
         if (!def) {
           await finalize("unknown_sku", 400, "unknown sku");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,

@@ -495,6 +495,65 @@ export type PayfastLaunchAuditRow = {
   action_url: string; sandbox: boolean; source_ip: string | null; user_agent: string | null; return_to: string | null;
 };
 
+export type PayfastItnAttemptRow = {
+  signature_valid: boolean;
+  server_validated: boolean;
+  outcome: string;
+  http_status: number;
+  sku: string | null;
+  user_id: string | null;
+  amount_cents: number | null;
+  payment_status: string | null;
+  pf_payment_id: string | null;
+  source_ip: string | null;
+  payload_hash: string;
+  error_message: string | null;
+};
+
+export type PayfastItnSettlementEvent = {
+  event_id: string;
+  payload_hash: string;
+  sku: string;
+  user_id: string;
+  app: string;
+  tier: string;
+  amount_cents: number;
+  currency: "ZAR";
+  billing_cycle: "monthly";
+  payment_status: string;
+  pf_payment_id: string | null;
+  m_payment_id: string | null;
+  payfast_token: string | null;
+  recipient_email: string | null;
+  source_ip: string | null;
+};
+
+export type PayfastItnSettlementResult = {
+  procedure: "settle_payfast_itn";
+  duplicate: boolean;
+  outcome: string;
+  http_status: number;
+  response_body: string;
+  subscription_id: string | null;
+};
+
+export async function recordPayfastItnAttempt(row: PayfastItnAttemptRow): Promise<void> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Sovereign PayFast ITN audit is only available with the sovereign backend");
+  }
+  await sovereignProcedure<{ procedure: "record_payfast_itn_attempt"; id: string; received_at: string }>(
+    "record_payfast_itn_attempt",
+    { row },
+  );
+}
+
+export async function settlePayfastItn(event: PayfastItnSettlementEvent): Promise<PayfastItnSettlementResult> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Sovereign PayFast ITN settlement is only available with the sovereign backend");
+  }
+  return sovereignProcedure<PayfastItnSettlementResult>("settle_payfast_itn", { event });
+}
+
 export async function recordPayfastLaunchAudit(row: PayfastLaunchAuditRow): Promise<void> {
   if (getBackendProvider() === "sovereign") {
     await sovereignProcedure<{ id: string; created_at: string }>("record_payfast_launch", { row });
