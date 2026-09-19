@@ -1,7 +1,7 @@
 /**
  * Canonical Resonance App Suite registry — v2.2 alignment.
  *
- * Source of truth for every PAID spoke in the Resonance ecosystem. The
+ * Source of truth for every core spoke in the Resonance ecosystem. The
  * canonical schema (per the v2.2 spec) uses the following fields:
  *   - key, label, url, fallbackUrl?, status, accentColor, includedInSuite
  *   - pricingPath, manageBillingPath, backToHubPath, entitlementAppKey
@@ -44,7 +44,7 @@ export type AppRegistryEntry = {
   status: AppStatus;
   /** Accent color (hex) — one per app. */
   accentColor: string;
-  /** True for every entry in APP_REGISTRY (all paid suite members). */
+  /** True for every entry in APP_REGISTRY (all governed suite members). */
   includedInSuite: true;
   pricingPath: string;
   manageBillingPath: string;
@@ -72,7 +72,7 @@ function entry(
     ...e,
     includedInSuite: true,
     pricingPath: PRICING_PATH,
-    manageBillingPath: MANAGE_BILLING_PATH,
+    manageBillingPath: FREE_PROMOTION_ACTIVE ? PRICING_PATH : MANAGE_BILLING_PATH,
     backToHubPath: HUB_URL,
     publicUrl: e.url,
     appUrl: e.url,
