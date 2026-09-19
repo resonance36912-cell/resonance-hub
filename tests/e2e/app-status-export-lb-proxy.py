@@ -489,8 +489,21 @@ def run_mode(mode: str, upstreams: list, sizes: dict, t: Tally) -> dict:
             finally:
                 c.close()
 
-        time.sleep(2.5)
-        settled_proxy = fd_stats(proxy.pid)
+        # Runtime worker pools can release lazily after the churn sweep. Poll
+        # for bounded cleanup rather than relaxing the leak thresholds.
+        deadline = time.monotonic() + 10.0
+        while True:
+            settled_proxy = fd_stats(proxy.pid)
+            proxy_settled = (
+                established(proxy.pid, PROXY_PORT) == 0
+                and settled_proxy["fds"] <= baseline_proxy["fds"] + FD_BAND
+                and settled_proxy["sockets"] <= baseline_proxy["sockets"] + SOCK_BAND
+                and settled_proxy["threads"] <= baseline_proxy["threads"] + THREAD_BAND
+            )
+            if proxy_settled or time.monotonic() >= deadline:
+                break
+            time.sleep(0.5)
+
         t.check(established(proxy.pid, PROXY_PORT) == 0,
                 f"[{mode}] no client sockets linger on the proxy after churn")
         t.check(settled_proxy["fds"] <= baseline_proxy["fds"] + FD_BAND,
