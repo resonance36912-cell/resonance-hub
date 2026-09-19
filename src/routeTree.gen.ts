@@ -59,6 +59,7 @@ import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
+import { Route as ApiBillingCatalogRouteImport } from './routes/api/billing/catalog'
 import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -334,6 +335,11 @@ const ApiPublicEntitlementRoute = ApiPublicEntitlementRouteImport.update({
   path: '/api/public/entitlement',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBillingCatalogRoute = ApiBillingCatalogRouteImport.update({
+  id: '/api/billing/catalog',
+  path: '/api/billing/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountInvoicesIdRoute = AccountInvoicesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -516,6 +522,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
+  '/api/billing/catalog': typeof ApiBillingCatalogRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
@@ -591,6 +598,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
+  '/api/billing/catalog': typeof ApiBillingCatalogRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
@@ -667,6 +675,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
+  '/api/billing/catalog': typeof ApiBillingCatalogRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
@@ -744,6 +753,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/account/invoices/$id'
+    | '/api/billing/catalog'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
@@ -819,6 +829,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/.lovable/oauth/consent'
     | '/account/invoices/$id'
+    | '/api/billing/catalog'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
@@ -894,6 +905,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/.lovable/oauth/consent'
     | '/account/invoices/$id'
+    | '/api/billing/catalog'
     | '/api/public/entitlement'
     | '/lovable/email/suppression'
     | '/account/invoices/by-payment/$pf'
@@ -967,6 +979,7 @@ export interface RootRouteChildren {
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  ApiBillingCatalogRoute: typeof ApiBillingCatalogRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
@@ -1343,6 +1356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEntitlementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/billing/catalog': {
+      id: '/api/billing/catalog'
+      path: '/api/billing/catalog'
+      fullPath: '/api/billing/catalog'
+      preLoaderRoute: typeof ApiBillingCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/invoices/$id': {
       id: '/account/invoices/$id'
       path: '/$id'
@@ -1583,6 +1603,7 @@ const rootRouteChildren: RootRouteChildren = {
   YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
   AdminIndexRoute: AdminIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiBillingCatalogRoute: ApiBillingCatalogRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
