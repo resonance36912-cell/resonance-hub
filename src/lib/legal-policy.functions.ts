@@ -18,8 +18,14 @@ export type ActivePolicy = {
 
 export const getActivePolicy = createServerFn({ method: "GET" }).handler(
   async (): Promise<ActivePolicy> => {
-    const url = process.env.SUPABASE_URL!;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+
+    // The public privacy policy is static and must remain available even when
+    // optional policy-version metadata cannot be loaded (for example in CI,
+    // a degraded backend, or a fresh disaster-recovery deployment).
+    if (!url || !key) return null;
+
     const supabase = createClient<Database>(url, key, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: {
@@ -38,7 +44,10 @@ export const getActivePolicy = createServerFn({ method: "GET" }).handler(
       .select("version, effective_at, summary, url")
       .order("effective_at", { ascending: false })
       .limit(1);
-    if (error) throw new Error(error.message);
+    if (error) {
+      console.warn("Active privacy-policy metadata unavailable:", error.message);
+      return null;
+    }
     return (data?.[0] ?? null) as ActivePolicy;
   },
 );
