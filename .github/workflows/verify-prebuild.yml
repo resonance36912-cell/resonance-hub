@@ -235,7 +235,7 @@ jobs:
        #   1. If `vars.SMOKE_BASE_URL` (repository/environment variable) is set, use it —
        #      typically the deployed preview URL (e.g. https://id-preview--<id>.lovable.app
        #      or https://project--<id>-dev.lovable.app).
-       #   2. Otherwise build locally and serve dist/server via wrangler dev on :8080.
+       #   2. Otherwise build locally and serve .output/server via wrangler dev on :8080.
       - name: Resolve smoke test BASE_URL
         id: smoke_target
         env:
@@ -253,16 +253,26 @@ jobs:
 
       - name: Build production bundle
         if: steps.smoke_target.outputs.needs_local == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: bun run build
 
       # The TanStack Start build emits a Cloudflare Worker at
-      # dist/server/index.mjs plus its own wrangler.json. wrangler dev serves
+      # .output/server/index.mjs plus its own wrangler.json. wrangler dev serves
       # the real production worker — closer to prod than `vite dev`.
       - name: Start production preview (wrangler dev) for smoke test
         if: steps.smoke_target.outputs.needs_local == 'true'
-        working-directory: dist/server
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
-          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          bunx wrangler dev \
+            --var "SUPABASE_URL:$SUPABASE_URL" \
+            --var "SUPABASE_PUBLISHABLE_KEY:$SUPABASE_PUBLISHABLE_KEY" \
+            --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
           for i in {1..90}; do
             if curl -sf http://127.0.0.1:8080/ > /dev/null; then
@@ -485,13 +495,23 @@ jobs:
 
       - name: Build production bundle (live)
         if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: bun run build
 
       - name: Start production preview (live, wrangler dev)
         if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
-        working-directory: dist/server
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
         run: |
-          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
+          bunx wrangler dev \
+            --var "SUPABASE_URL:$SUPABASE_URL" \
+            --var "SUPABASE_PUBLISHABLE_KEY:$SUPABASE_PUBLISHABLE_KEY" \
+            --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
           for i in {1..90}; do
             if curl -sf http://127.0.0.1:8080/ > /dev/null; then
