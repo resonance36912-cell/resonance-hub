@@ -102,14 +102,17 @@ jobs:
         with:
           bun-version: latest
 
-      # A bug in the audit core would turn this gate into a silent no-op that
-      # passes on drifted pins, so its unit tests run first.
-      - name: Test the pin-audit core
-        run: bunx vitest run scripts/lib/pinned-deps.test.ts
-
-      # Stale lockfile fails here first, with bun's own error.
+      # Install the repository before invoking Vitest. Without this, Vitest loads
+      # vite.config.ts before project dependencies exist and fails on the
+      # @lovable.dev Vite plugins instead of testing the pin-audit core.
+      # A stale lockfile still fails here first, with bun's own error.
       - name: Install with the frozen lockfile
         run: bun install --frozen-lockfile
+
+      # A bug in the audit core would turn this gate into a silent no-op that
+      # passes on drifted pins, so its unit tests still gate the audit.
+      - name: Test the pin-audit core
+        run: bunx vitest run scripts/lib/pinned-deps.test.ts
 
       - name: Audit pins against bun.lock
         id: drift
