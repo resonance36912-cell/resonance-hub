@@ -62,6 +62,12 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Setup Bun for SARIF helpers
+        if: always()
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
       - name: Summarize CodeQL findings
         if: always()
         run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL (${{ matrix.language }})" --top 15

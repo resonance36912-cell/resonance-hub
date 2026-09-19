@@ -29,11 +29,7 @@ import { basename, join, relative } from "node:path";
 
 const ROUTES_DIR = "src/routes";
 
-const SKIP_FILENAMES = new Set<string>([
-  "__root.tsx",
-  "index.tsx",
-  "sitemap[.]xml.ts",
-]);
+const SKIP_FILENAMES = new Set<string>(["__root.tsx", "index.tsx", "sitemap[.]xml.ts"]);
 
 const SKIP_PREFIXES = ["admin."];
 const SKIP_DIRS = new Set(["api", "email", "lovable"]);
@@ -66,7 +62,10 @@ for (const path of walk(ROUTES_DIR)) {
   const name = basename(path);
 
   if (!/\.(t|j)sx?$/.test(name)) continue;
-  if (SKIP_FILENAMES.has(name)) { skipped.push({ file: rel, reason: "infra" }); continue; }
+  if (SKIP_FILENAMES.has(name)) {
+    skipped.push({ file: rel, reason: "infra" });
+    continue;
+  }
   if (SKIP_PREFIXES.some((p) => name.startsWith(p))) {
     skipped.push({ file: rel, reason: "admin" });
     continue;
@@ -86,7 +85,6 @@ for (const path of walk(ROUTES_DIR)) {
     continue;
   }
 
-
   if (src.includes(OPT_OUT_MARKER)) {
     skipped.push({ file: rel, reason: "opted out via // @no-back-to-hub" });
     continue;
@@ -96,8 +94,7 @@ for (const path of walk(ROUTES_DIR)) {
   // requirement automatically — the component itself contains the canonical
   // link + label.
   const usesSharedHeader =
-    /\bBackToHubHeader\b/.test(src) &&
-    /from\s+["'][^"']*components\/BackToHubHeader["']/.test(src);
+    /\bBackToHubHeader\b/.test(src) && /from\s+["'][^"']*components\/BackToHubHeader["']/.test(src);
 
   const reasons: string[] = [];
   if (!usesSharedHeader) {
@@ -107,7 +104,6 @@ for (const path of walk(ROUTES_DIR)) {
 
   if (reasons.length > 0) failures.push({ file: rel, reasons });
   else checked.push(rel);
-
 }
 
 const line = (s: string) => `  ${s}`;

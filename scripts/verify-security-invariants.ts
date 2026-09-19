@@ -47,12 +47,15 @@ const isServerOnly = (f: string) =>
   f.startsWith("scripts/");
 
 const SECRET_PATTERNS: { name: string; re: RegExp }[] = [
-  { name: "supabase-service-role-jwt", re: /eyJhbGciOi[A-Za-z0-9_\-\.]{40,}/ },
-  { name: "supabase-secret-key", re: /\bsb_secret_[A-Za-z0-9_\-]{20,}/ },
+  { name: "supabase-service-role-jwt", re: /eyJhbGciOi[A-Za-z0-9_.-]{40,}/ },
+  { name: "supabase-secret-key", re: /\bsb_secret_[A-Za-z0-9_-]{20,}/ },
   { name: "openai-key", re: /\bsk-[A-Za-z0-9]{32,}/ },
   { name: "stripe-secret-key", re: /\bsk_live_[A-Za-z0-9]{20,}/ },
   { name: "aws-access-key", re: /\bAKIA[0-9A-Z]{16}\b/ },
-  { name: "generic-private-key-block", re: /-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/ },
+  {
+    name: "generic-private-key-block",
+    re: /-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/,
+  },
 ];
 
 const ALLOW_INNER_HTML = new Set<string>([
@@ -91,14 +94,24 @@ for (const file of walk("src")) {
     // 1. Secrets in source
     for (const { name, re } of SECRET_PATTERNS) {
       if (re.test(line)) {
-        findings.push({ file, line: ln, rule: `secret:${name}`, detail: line.trim().slice(0, 120) });
+        findings.push({
+          file,
+          line: ln,
+          rule: `secret:${name}`,
+          detail: line.trim().slice(0, 120),
+        });
       }
     }
 
     // 2. client.server.ts imported from non-server file
-    if (!isServerOnly(normalizedFile) && /from\s+["']@\/integrations\/supabase\/client\.server["']/.test(line)) {
+    if (
+      !isServerOnly(normalizedFile) &&
+      /from\s+["']@\/integrations\/supabase\/client\.server["']/.test(line)
+    ) {
       findings.push({
-        file, line: ln, rule: "admin-client-leak",
+        file,
+        line: ln,
+        rule: "admin-client-leak",
         detail: "client.server.ts (service-role) imported from client-side module",
       });
     }
@@ -106,7 +119,9 @@ for (const file of walk("src")) {
     // 3. SERVICE_ROLE access from non-server file
     if (!isServerOnly(normalizedFile) && /process\.env\.[A-Z_]*SERVICE_ROLE/.test(line)) {
       findings.push({
-        file, line: ln, rule: "service-role-in-client",
+        file,
+        line: ln,
+        rule: "service-role-in-client",
         detail: "service-role env read from client-side module",
       });
     }
@@ -114,14 +129,21 @@ for (const file of walk("src")) {
     // 4. dangerouslySetInnerHTML outside allowlist
     if (/dangerouslySetInnerHTML/.test(line) && !ALLOW_INNER_HTML.has(normalizedFile)) {
       findings.push({
-        file, line: ln, rule: "dangerously-set-inner-html",
+        file,
+        line: ln,
+        rule: "dangerously-set-inner-html",
         detail: "dangerouslySetInnerHTML used outside allowlist",
       });
     }
 
     // 5. eval / Function constructor
     if (/\beval\s*\(/.test(line) || /\bnew\s+Function\s*\(/.test(line)) {
-      findings.push({ file, line: ln, rule: "eval-or-function-ctor", detail: line.trim().slice(0, 120) });
+      findings.push({
+        file,
+        line: ln,
+        rule: "eval-or-function-ctor",
+        detail: line.trim().slice(0, 120),
+      });
     }
   });
 
@@ -148,8 +170,11 @@ for (const file of walk("src")) {
       PUBLIC_READ_ONLY_OK.has(normalizedFile) || PUBLIC_TELEMETRY_OK.has(normalizedFile);
     if (!hasGuard && !reviewedPublicException) {
       findings.push({
-        file, line: 1, rule: "public-api-no-guard",
-        detail: "public API route lacks signature / auth / role check — confirm it is read-only or add a guard",
+        file,
+        line: 1,
+        rule: "public-api-no-guard",
+        detail:
+          "public API route lacks signature / auth / role check — confirm it is read-only or add a guard",
       });
     }
   }
