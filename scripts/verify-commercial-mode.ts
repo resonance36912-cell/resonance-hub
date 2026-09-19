@@ -78,8 +78,44 @@ function verifyFreePromotion() {
     }
   }
 
+  const publicPromotionSurfaces = [
+    "src/routes/index.tsx",
+    "public/content/updates.json",
+  ] as const;
+  const staleCommercialFragments = [
+    "buy once-off credits",
+    "optional monthly ecosystem passes",
+    "see ecosystem passes",
+    "just buy the once-off pack",
+    "billed monthly via payfast",
+    "once-off pack pricing is published",
+    "pack checkout remains on the launch waitlist",
+    "credit packs replace the old monthly plan",
+    "pack prices are published",
+    "view packs",
+    "see passes",
+    "paid tiers",
+    "per-report pricing",
+    "district packages arrive",
+  ] as const;
+  const stalePrice = /\b(?:from\s+)?R(?:99|149|349|499|599|699|899|999|1,499|2,499|2,999)(?:\s*\/\s*month)?\b/i;
+
+  for (const rel of publicPromotionSurfaces) {
+    const source = readFileSync(join(ROOT, rel), "utf8");
+    const lower = source.toLowerCase();
+    for (const fragment of staleCommercialFragments) {
+      if (lower.includes(fragment)) {
+        throw new Error(`${rel}: stale commercial copy exposed during promotion: "${fragment}"`);
+      }
+    }
+    const match = source.match(stalePrice);
+    if (match) {
+      throw new Error(`${rel}: legacy public price exposed during promotion: "${match[0]}"`);
+    }
+  }
+
   console.log(
-    "free-promotion commercial mode verified: no sale catalog, no billed apps, guarded checkout/account routes",
+    "free-promotion commercial mode verified: no sale catalog, no billed apps, guarded checkout/account routes, no legacy public commerce copy",
   );
 }
 

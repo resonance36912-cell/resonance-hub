@@ -50,3 +50,5 @@ supabase/.temp/
 *.sw?
 
 .output-candidate-local/
+.output-rollback-*/
+.output-failed-*/
