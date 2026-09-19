@@ -42,7 +42,8 @@
     "verify:lockfile-consistency": "bun run scripts/verify-lockfile-consistency.ts",
     "prebuild": "bun run scripts/verify-pinned-deps.ts && bun run scripts/check-prices.ts && bun run scripts/test-payfast-itn.ts && bun run scripts/verify-epublisher-checkout.ts && bun run scripts/verify-all-apps-checkout.ts && bun run scripts/verify-back-to-hub.ts && bun run scripts/verify-no-stale-domains.ts && bun run scripts/verify-bundle-copy.ts && bun run scripts/verify-honest-copy.ts && bun run scripts/verify-catalog-parity.ts && bun run scripts/verify-security-invariants.ts && bun run scripts/verify-all-access.ts && bun run scripts/verify-pricing.ts && bun run scripts/verify-pricing-packs.ts && bun run scripts/verify-public-audit-remediation.ts && bun run scripts/verify-sovereign-itn.ts && bun run scripts/verify-transparency-copy.ts && bun run scripts/verify-discernment-usage.ts",
     "typecheck": "tsc --noEmit",
-    "build:local": "vite --config vite.local.config.ts build",
+    "verify:local-build-target": "bun run scripts/assert-local-build-target-safe.ts",
+    "build:local": "bun run scripts/assert-local-build-target-safe.ts && vite --config vite.local.config.ts build",
     "start:local": "node .output-local/server/index.mjs"
   },
   "dependencies": {
