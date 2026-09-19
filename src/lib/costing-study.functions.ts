@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireRonsAuth } from "@/lib/rons-auth-middleware";
-import { hasBackendRole } from "@/lib/backend-provider.server";
+import { fetchSovereignCostUsageSummary, hasBackendRole } from "@/lib/backend-provider.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { FREE_PROMOTION, FREE_PROMOTION_ACTIVE } from "@/lib/promotion";
 
@@ -54,16 +54,16 @@ const EXTERNAL_COST_SOURCES = [
   {
     key: "creative_studio",
     label: "Resonance Creative Studio",
-    evidence: "No authoritative persisted provider-cost field identified in the current source audit",
-    authority: "Creative Studio",
-    status: "instrumentation_gap",
+    evidence: "RONS v0.12 cost_usage_events via keyed record_cost_usage",
+    authority: "RONS sovereign backend",
+    status: "central_ledger_ready_route_instrumentation_pending",
   },
   {
     key: "youtube_optimizer",
     label: "YouTube Optimizer",
-    evidence: "No authoritative persisted provider-cost field identified in the current source audit",
-    authority: "YouTube Optimizer",
-    status: "instrumentation_gap",
+    evidence: "RONS v0.12 /v1/ai/chat automatic usage receipt",
+    authority: "RONS sovereign backend",
+    status: "central_ledger_ready_app_attribution_pending",
   },
 ] as const;
 
@@ -84,13 +84,14 @@ export const getCostingStudy = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
 
-    const [spendResult, healthResult, costResult] = await Promise.allSettled([
+    const [spendResult, healthResult, costResult, ledgerResult] = await Promise.allSettled([
       brokerJson("/v1/spend"),
       brokerJson("/health"),
       supabaseAdmin
         .from("sku_costs")
         .select("sku,cost_cents,currency,notes,updated_at")
         .order("sku", { ascending: true }),
+      fetchSovereignCostUsageSummary(),
     ]);
 
     const spend =
@@ -107,6 +108,15 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       costResult.status === "fulfilled" && !costResult.value.error
         ? (costResult.value.data ?? [])
         : [];
+
+    const sovereignCostLedger =
+      ledgerResult.status === "fulfilled" ? ledgerResult.value : null;
+    const sovereignLedgerAll = sovereignCostLedger?.all ?? {
+      events: 0,
+      costed_events: 0,
+      provider_api_cost_usd: 0,
+      rows: [],
+    };
 
     const appCoverage = COSTED_APPS.map((app) => {
       const rows = costRows.filter((row) => String(row.sku ?? "").startsWith(`${app.key}:`));
@@ -125,7 +135,7 @@ export const getCostingStudy = createServerFn({ method: "GET" })
     const observed = spend.all ?? { calls: 0, cost_usd: 0, by_provider: {} };
     const gaps = [
       "Local hardware, electricity, depreciation, and maintenance are not included in AI-broker API spend.",
-      "Storage, bandwidth, media rendering, speech, image, and video provider charges must be captured from their own receipts or logs.",
+      "The v0.12 sovereign ledger records provider/runtime usage, but storage, bandwidth and local infrastructure costs still require measured operating inputs.",
       "Support time, operations, tax/VAT treatment, refunds, payment fees, and target margin remain business assumptions until explicitly entered.",
       "Zero provider spend during the promotion is evidence of the sovereign/free route in use; it is not, by itself, a complete customer-price basis.",
     ];
@@ -146,8 +156,10 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       manualCostAssumptions: costRows,
       appCoverage,
       externalCostSources: EXTERNAL_COST_SOURCES,
+      sovereignCostLedger,
+      sovereignLedgerAll,
       adapterPolicy:
-        "Do not use browser/anon credentials as pricing evidence. External app costs require a read-only server adapter or signed governed export from the app's authoritative backend.",
+        "RONS v0.12 is the central server-authoritative ledger for new sovereign operations. Historical app-backend evidence still requires a read-only server adapter or signed governed export; browser/anon credentials are never pricing evidence.",
       gaps,
       decision: {
         status: "costing_in_progress" as const,
@@ -159,6 +171,7 @@ export const getCostingStudy = createServerFn({ method: "GET" })
         aiBrokerSpend: spendResult.status === "fulfilled",
         aiBrokerProviders: healthResult.status === "fulfilled",
         skuCosts: costResult.status === "fulfilled" && !costResult.value.error,
+        sovereignCostLedger: ledgerResult.status === "fulfilled",
       },
     };
   });

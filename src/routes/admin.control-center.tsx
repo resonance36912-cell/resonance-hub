@@ -90,10 +90,12 @@ function ControlCenter() {
           {costing.error && <p className="mt-4 text-sm text-red-400">{(costing.error as Error).message}</p>}
 
           {costing.data && <div className="mt-5 space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               <Card label="Checkout" value={costing.data.promotion.checkoutLocked ? "LOCKED" : "OPEN"} sub="Commercial guard" />
-              <Card label="Observed calls" value={String(costing.data.observedAllTime.calls)} sub="AI broker · all time" />
-              <Card label="Observed API spend" value={`$${Number(costing.data.observedAllTime.cost_usd ?? 0).toFixed(6)}`} sub="AI broker · all time" />
+              <Card label="Broker calls" value={String(costing.data.observedAllTime.calls)} sub="Legacy AI receipts · all time" />
+              <Card label="Broker API spend" value={`$${Number(costing.data.observedAllTime.cost_usd ?? 0).toFixed(6)}`} sub="Legacy AI receipts · all time" />
+              <Card label="Sovereign events" value={String(costing.data.sovereignLedgerAll.events)} sub="RONS v0.12 ledger · all time" />
+              <Card label="Sovereign API spend" value={`$${Number(costing.data.sovereignLedgerAll.provider_api_cost_usd ?? 0).toFixed(6)}`} sub="Provider API charge only" />
               <Card label="Manual cost rows" value={String(costing.data.manualCostAssumptions.length)} sub="SKU assumptions retained" />
             </div>
 
@@ -113,9 +115,27 @@ function ControlCenter() {
                   <div>AI spend: {costing.data.sourceHealth.aiBrokerSpend ? "online" : "unavailable"}</div>
                   <div>Provider registry: {costing.data.sourceHealth.aiBrokerProviders ? "online" : "unavailable"}</div>
                   <div>SKU costs: {costing.data.sourceHealth.skuCosts ? "online" : "unavailable"}</div>
+                  <div>Sovereign ledger: {costing.data.sourceHealth.sovereignCostLedger ? "online" : "unavailable"}</div>
                   <div>Unverified active providers: {costing.data.unverifiedActiveProviderCount}</div>
                 </div>
               </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm font-semibold">Sovereign v0.12 cost ledger</p>
+                <span className="text-xs text-muted-foreground">
+                  {costing.data.sovereignLedgerAll.costed_events}/{costing.data.sovereignLedgerAll.events} events with provider API cost
+                </span>
+              </div>
+              {costing.data.sovereignLedgerAll.rows.length === 0
+                ? <p className="mt-3 text-xs text-muted-foreground">Ledger online; no production usage receipts recorded yet.</p>
+                : <div className="mt-3 space-y-2">
+                    {costing.data.sovereignLedgerAll.rows.map((row) => <div key={`${row.app}:${row.provider}:${row.operation}`} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span>{row.app} · {row.operation} · {row.provider}</span>
+                      <span className="text-muted-foreground">{row.events} event(s) · $${Number(row.provider_api_cost_usd).toFixed(6)} API · infra {row.infrastructure_cost_status}</span>
+                    </div>)}
+                  </div>}
             </div>
 
             <div className="rounded-lg border border-border bg-background p-4">
@@ -125,7 +145,7 @@ function ControlCenter() {
                 {costing.data.externalCostSources.map((source) => <div key={source.key} className="rounded-lg border border-border/70 p-3 text-xs">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-medium text-foreground">{source.label}</span>
-                    <span className="text-muted-foreground">{source.status === "source_identified_adapter_pending" ? "source identified · adapter pending" : "instrumentation gap"}</span>
+                    <span className="text-muted-foreground">{source.status.split("_").join(" ")}</span>
                   </div>
                   <p className="mt-1 text-muted-foreground">{source.evidence}</p>
                   <p className="mt-1 text-[11px] text-muted-foreground">Authority: {source.authority}</p>
