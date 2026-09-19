@@ -9,12 +9,13 @@ import {
   formatZar,
   type MyBilling,
 } from "@/lib/billing-portal.functions";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
 
 export const Route = createFileRoute("/account/billing")({
   head: () => ({
     meta: [
-      { title: "Billing — The Resonance" },
-      { name: "description", content: "View subscriptions, credit balances, and payment history across every Resonance app." },
+      { title: "Free Access Promotion — The Resonance" },
+      { name: "description", content: FREE_PROMOTION.description },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -54,7 +55,28 @@ function BillingGate() {
       </div>
     );
   }
-  return <BillingPortal />;
+  return FREE_PROMOTION_ACTIVE ? <PromotionBillingNotice /> : <BillingPortal />;
+}
+
+function PromotionBillingNotice() {
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-3xl px-4 py-20">
+        <div className="rounded-3xl border border-primary/25 bg-card/60 p-8 text-center sm:p-12">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">{FREE_PROMOTION.shortLabel}</p>
+          <h1 className="mt-3 text-3xl font-bold sm:text-5xl">{FREE_PROMOTION.headline}</h1>
+          <p className="mt-5 text-muted-foreground">{FREE_PROMOTION.description}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Historical billing records remain preserved for audit and support, but no new payment, top-up, or checkout is required during the promotion.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/" className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Open Resonance Hub</Link>
+            <a href="/support" className="rounded-full border border-white/15 px-6 py-3 font-semibold">Support</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 function BillingPortal() {

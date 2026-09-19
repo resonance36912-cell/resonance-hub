@@ -23,7 +23,7 @@ export const Route = createFileRoute("/api/billing/catalog")({
         }
 
         const payload = buildBillingCatalogPayload(app);
-        if (payload.packs.length === 0) {
+        if (!payload.knownApp) {
           return new Response(JSON.stringify({ error: "unknown app", app }), {
             status: 404,
             headers: { ...CORS, "Content-Type": "application/json; charset=utf-8" },

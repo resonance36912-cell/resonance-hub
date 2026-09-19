@@ -13,6 +13,7 @@ import {
   type PackDef,
   type SkuDef,
 } from "@/lib/checkout.functions";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 const SearchSchema = z.object({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
       { title: "Checkout — The Resonance Hub" },
-      { name: "description", content: "Hub availability for Resonance app packs and secure PayFast checkout for active ecosystem passes." },
+      { name: "description", content: FREE_PROMOTION.description },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -69,6 +70,38 @@ function CheckoutPage() {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  if (FREE_PROMOTION_ACTIVE) {
+    const appKey = pack?.app ?? search.app ?? "";
+    const appUrls: Record<string, string> = {
+      epublisher: "https://epublisher.reson8.life",
+      creative_studio: "https://creative.reson8.life",
+      sync_vision: "https://sync.reson8.life",
+      youtube_optimizer: "https://youtube.reson8.life",
+    };
+    const appUrl = appUrls[appKey] ?? "/";
+
+    return (
+      <Shell>
+        <div className="mx-auto max-w-2xl py-16 text-center">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">{FREE_PROMOTION.shortLabel}</p>
+          <h1 className="mt-4 text-3xl font-bold sm:text-5xl">{FREE_PROMOTION.headline}</h1>
+          <p className="mt-5 text-muted-foreground">{FREE_PROMOTION.description}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Checkout is disabled while the promotion is active. Sign in to the app so usage can be measured for future costing.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <a href={appUrl} className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">
+              Open app free
+            </a>
+            <Link to="/" className="rounded-full border border-white/15 px-6 py-3 font-semibold">
+              Back to Hub
+            </Link>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
 
   // Once-off pack: one-time settlement/fulfillment is not live yet.
   if (pack) {

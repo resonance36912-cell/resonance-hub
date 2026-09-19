@@ -3,6 +3,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
 import { fetchSubscriptionRows, writeEntitlementAudit } from "@/lib/backend-provider.server";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION_TIER } from "@/lib/promotion";
 
 const AppSchema = z.enum([
   "epublisher",
@@ -118,6 +119,31 @@ export const getEntitlement = createServerFn({ method: "POST" })
     }
     const sourceIp = req?.headers.get("x-forwarded-for") ?? null;
     const userAgent = req?.headers.get("user-agent") ?? null;
+
+    if (FREE_PROMOTION_ACTIVE) {
+      void logEntitlementCheck({
+        userId,
+        app: data.app,
+        tier: FREE_PROMOTION_TIER,
+        status: "active",
+        source: "trial",
+        sourceIp,
+        userAgent,
+      });
+      return {
+        ok: true,
+        app: data.app,
+        userId,
+        tier: FREE_PROMOTION_TIER,
+        status: "active",
+        source: "trial",
+        expiresAt: null,
+        features: deriveFeatures(data.app, FREE_PROMOTION_TIER),
+        checkedAt,
+        hasAccess: true,
+        currentPeriodEnd: null,
+      };
+    }
 
     const cacheKey = entitlementCacheKey(userId, data.app);
     const cached = entitlementCache.get(cacheKey);

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { deriveFeatures, logEntitlementCheck, type Tier } from "@/lib/entitlement.functions";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION_TIER } from "@/lib/promotion";
 import {
   compareSubscriptionShadow,
   fetchSovereignSubscriptionRows,
@@ -88,6 +89,33 @@ export const Route = createFileRoute("/api/public/entitlement")({
         if (!userId) {
           void logEntitlementCheck({ userId: null, app, tier: null, status: "unauthorized", source: null, error: "invalid_token", sourceIp, userAgent });
           return json({ error: "Invalid or expired token" }, 401);
+        }
+
+        if (FREE_PROMOTION_ACTIVE) {
+          const checkedAt = new Date().toISOString();
+          void logEntitlementCheck({
+            userId,
+            app,
+            tier: FREE_PROMOTION_TIER,
+            status: "active",
+            source: "trial",
+            sourceIp,
+            userAgent,
+          });
+          return json({
+            ok: true,
+            app,
+            userId,
+            tier: FREE_PROMOTION_TIER,
+            status: "active",
+            source: "trial",
+            expiresAt: null,
+            features: deriveFeatures(app, FREE_PROMOTION_TIER),
+            checkedAt,
+            hasAccess: true,
+            currentPeriodEnd: null,
+            promotionActive: true,
+          });
         }
         let rows;
         try {

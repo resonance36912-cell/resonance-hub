@@ -11,13 +11,14 @@ import {
 } from "@/lib/subscriptions.functions";
 import { retryPayfastLaunch } from "@/lib/checkout.functions";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
     meta: [
-      { title: "My Subscriptions — The Resonance" },
-      { name: "description", content: "Manage your Resonance subscriptions and entitlements." },
+      { title: "Free Access Promotion — The Resonance" },
+      { name: "description", content: FREE_PROMOTION.description },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -325,9 +326,30 @@ function SubscriptionsGate() {
     );
   }
   if (status === "anon") return null;
-  return <SubscriptionsPage />;
+  return FREE_PROMOTION_ACTIVE ? <PromotionSubscriptionsNotice /> : <SubscriptionsPage />;
 }
 
+
+function PromotionSubscriptionsNotice() {
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-3xl px-4 py-20">
+        <div className="rounded-3xl border border-primary/25 bg-card/60 p-8 text-center sm:p-12">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">{FREE_PROMOTION.shortLabel}</p>
+          <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Subscriptions are not required during the promotion</h1>
+          <p className="mt-5 text-muted-foreground">{FREE_PROMOTION.description}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Existing subscription records remain preserved for audit and support. New checkout and payment retry actions are disabled.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/" className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Open Resonance Hub</Link>
+            <a href="/support" className="rounded-full border border-white/15 px-6 py-3 font-semibold">Support</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 const ALL_APPS: AppKey[] = ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"];
 

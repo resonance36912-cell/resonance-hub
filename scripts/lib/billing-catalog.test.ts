@@ -2,18 +2,19 @@ import { describe, expect, test } from "bun:test";
 import { buildBillingCatalogPayload } from "../../src/lib/billing-catalog";
 
 describe("public billing catalog", () => {
-  test("exposes the current three ePublisher packs with authoritative prices", () => {
+  test("suppresses sale items while the free promotion is active", () => {
     const payload = buildBillingCatalogPayload("epublisher");
-    expect(payload.packs.map((pack) => [pack.id, pack.amount])).toEqual([
-      ["epublisher_starter_pack", 99],
-      ["epublisher_creator_pack", 299],
-      ["epublisher_studio_pack", 699],
-    ]);
+    expect(payload.knownApp).toBe(true);
+    expect(payload.packs).toEqual([]);
+    expect(payload.skus).toEqual([]);
     expect(payload.checkoutAvailable).toBe(false);
-    expect(payload.skus.map((entry) => entry.sku)).toEqual(payload.packs.map((pack) => pack.id));
+    expect(payload.promotionActive).toBe(true);
+    expect(payload.promotion?.shortLabel).toBe("Free promotion");
   });
 
-  test("returns an empty catalog for an unknown app", () => {
-    expect(buildBillingCatalogPayload("does-not-exist").packs).toEqual([]);
+  test("still identifies an unknown app during the promotion", () => {
+    const payload = buildBillingCatalogPayload("does-not-exist");
+    expect(payload.knownApp).toBe(false);
+    expect(payload.packs).toEqual([]);
   });
 });

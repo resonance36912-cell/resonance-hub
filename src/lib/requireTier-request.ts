@@ -20,6 +20,7 @@
 
 import { fetchSubscriptionRows, resolveBearerUserId } from "@/lib/backend-provider.server";
 import { deriveFeatures, type AppKey, type Tier } from "@/lib/entitlement.functions";
+import { FREE_PROMOTION_ACTIVE } from "@/lib/promotion";
 
 // ── Tier ranking (mirror of canonical) ──────────────────────────────────────
 const TIER_RANK: Record<Tier, number> = {
@@ -83,8 +84,10 @@ function upgradeBody(
     required_tier: required,
     current_tier: currentTier,
     status,
-    upgrade_url: `${HUB_URL}/checkout?app=${encodeURIComponent(app)}&plan=${encodeURIComponent(required)}&return_to=${encodeURIComponent(returnTo)}`,
-    manage_url: `${HUB_URL}/account/subscriptions`,
+    upgrade_url: FREE_PROMOTION_ACTIVE
+      ? `${HUB_URL}/pricing`
+      : `${HUB_URL}/checkout?app=${encodeURIComponent(app)}&plan=${encodeURIComponent(required)}&return_to=${encodeURIComponent(returnTo)}`,
+    manage_url: FREE_PROMOTION_ACTIVE ? `${HUB_URL}/pricing` : `${HUB_URL}/account/subscriptions`,
   } as const;
 }
 
