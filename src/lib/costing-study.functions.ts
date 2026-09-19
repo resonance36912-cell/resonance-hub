@@ -35,6 +35,38 @@ const COSTED_APPS = [
   { key: "youtube_optimizer", label: "YouTube Optimizer" },
 ] as const;
 
+const EXTERNAL_COST_SOURCES = [
+  {
+    key: "epublisher",
+    label: "Resonance ePublisher",
+    evidence: "api_usage_logs.cost_estimate",
+    authority: "ePublisher backend",
+    status: "source_identified_adapter_pending",
+  },
+  {
+    key: "sync_vision",
+    label: "Resonance Sync Vision",
+    evidence:
+      "generation_metrics.estimated_cost_usd; render_jobs/generation_jobs.estimated_cost_gbp",
+    authority: "Sync Vision backend",
+    status: "source_identified_adapter_pending",
+  },
+  {
+    key: "creative_studio",
+    label: "Resonance Creative Studio",
+    evidence: "No authoritative persisted provider-cost field identified in the current source audit",
+    authority: "Creative Studio",
+    status: "instrumentation_gap",
+  },
+  {
+    key: "youtube_optimizer",
+    label: "YouTube Optimizer",
+    evidence: "No authoritative persisted provider-cost field identified in the current source audit",
+    authority: "YouTube Optimizer",
+    status: "instrumentation_gap",
+  },
+] as const;
+
 async function assertAdmin(userId: string) {
   if (!(await hasBackendRole(userId, "admin", supabaseAdmin))) {
     throw new Error("Forbidden: admin role required");
@@ -113,6 +145,9 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       unverifiedActiveProviderCount: unverifiedActiveProviders.length,
       manualCostAssumptions: costRows,
       appCoverage,
+      externalCostSources: EXTERNAL_COST_SOURCES,
+      adapterPolicy:
+        "Do not use browser/anon credentials as pricing evidence. External app costs require a read-only server adapter or signed governed export from the app's authoritative backend.",
       gaps,
       decision: {
         status: "costing_in_progress" as const,

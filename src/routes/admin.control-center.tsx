@@ -99,7 +99,7 @@ function ControlCenter() {
 
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-lg border border-border bg-background p-4">
-                <p className="text-sm font-semibold">Per-app cost coverage</p>
+                <p className="text-sm font-semibold">Manual SKU-assumption coverage</p>
                 <div className="mt-3 space-y-2">
                   {costing.data.appCoverage.map((app) => <div key={app.key} className="flex items-center justify-between gap-3 text-sm">
                     <span>{app.label}</span>
@@ -115,6 +115,21 @@ function ControlCenter() {
                   <div>SKU costs: {costing.data.sourceHealth.skuCosts ? "online" : "unavailable"}</div>
                   <div>Unverified active providers: {costing.data.unverifiedActiveProviderCount}</div>
                 </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4">
+              <p className="text-sm font-semibold">Authoritative external cost evidence</p>
+              <p className="mt-1 text-xs text-muted-foreground">{costing.data.adapterPolicy}</p>
+              <div className="mt-3 space-y-3">
+                {costing.data.externalCostSources.map((source) => <div key={source.key} className="rounded-lg border border-border/70 p-3 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium text-foreground">{source.label}</span>
+                    <span className="text-muted-foreground">{source.status === "source_identified_adapter_pending" ? "source identified · adapter pending" : "instrumentation gap"}</span>
+                  </div>
+                  <p className="mt-1 text-muted-foreground">{source.evidence}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">Authority: {source.authority}</p>
+                </div>)}
               </div>
             </div>
 
