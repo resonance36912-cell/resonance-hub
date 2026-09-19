@@ -260,7 +260,6 @@ jobs:
       # the real production worker — closer to prod than `vite dev`.
       - name: Start production preview (wrangler dev) for smoke test
         if: steps.smoke_target.outputs.needs_local == 'true'
-        working-directory: .output/server
         run: |
           bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
@@ -489,7 +488,6 @@ jobs:
 
       - name: Start production preview (live, wrangler dev)
         if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
-        working-directory: .output/server
         run: |
           bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
           echo $! > /tmp/preview-server.pid
