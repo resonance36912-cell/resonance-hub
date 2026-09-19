@@ -23,6 +23,7 @@
  */
 
 import { APP_REGISTRY, type ResonanceAppKey } from "../src/lib/app-registry";
+import { appDetailDescription } from "../src/lib/app-status-meta";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:8080";
 
@@ -63,9 +64,7 @@ function extractTitle(html: string): string | null {
 }
 
 function extractMetaDescription(html: string): string | null {
-  const m = html.match(
-    /<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i,
-  );
+  const m = html.match(/<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i);
   return m ? m[1].trim() : null;
 }
 
@@ -97,23 +96,28 @@ for (const key of Object.keys(APP_REGISTRY) as ResonanceAppKey[]) {
   if (!title) {
     fail(`Title present (${path})`, "no <title> in SSR HTML");
   } else if (title !== expectedTitle) {
-    fail(`Title matches registry (${path})`, `got ${JSON.stringify(title)}, want ${JSON.stringify(expectedTitle)}`);
+    fail(
+      `Title matches registry (${path})`,
+      `got ${JSON.stringify(title)}, want ${JSON.stringify(expectedTitle)}`,
+    );
   } else {
     pass(`Title matches registry (${path})`, title);
     titleSeen.push(title);
   }
 
-  // Meta description uses the app tagline.
+  // Meta description carries the tagline plus the same live/pilot access
+  // meaning shown by the page and social metadata.
   const desc = extractMetaDescription(res.body);
+  const expectedDescription = appDetailDescription(entry);
   if (!desc) {
     fail(`Meta description present (${path})`, "no <meta name=description>");
-  } else if (desc !== entry.tagline) {
+  } else if (desc !== expectedDescription) {
     fail(
-      `Meta description matches tagline (${path})`,
-      `got ${JSON.stringify(desc)}, want ${JSON.stringify(entry.tagline)}`,
+      `Meta description matches status contract (${path})`,
+      `got ${JSON.stringify(desc)}, want ${JSON.stringify(expectedDescription)}`,
     );
   } else {
-    pass(`Meta description matches tagline (${path})`);
+    pass(`Meta description matches status contract (${path})`);
   }
 
   // All three capability card titles render server-side.
