@@ -25,7 +25,7 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 
 const ROUTES_DIR = "src/routes";
 
@@ -63,7 +63,7 @@ const failures: Diag[] = [];
 
 for (const path of walk(ROUTES_DIR)) {
   const rel = relative(".", path);
-  const name = path.split("/").pop()!;
+  const name = basename(path);
 
   if (!/\.(t|j)sx?$/.test(name)) continue;
   if (SKIP_FILENAMES.has(name)) { skipped.push({ file: rel, reason: "infra" }); continue; }
