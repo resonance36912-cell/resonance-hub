@@ -1,6 +1,6 @@
 {
   "schemaVersion": "2026-08-06",
-  "capturedAt": "2026-08-07T04:17:35.342Z",
+  "capturedAt": "2026-09-19T19:44:45.972Z",
   "apps": [
     {
       "key": "all_access",
@@ -47,6 +47,14 @@
     {
       "key": "career_compass",
       "label": "Career Compass",
+      "status": "pilot",
+      "badgeLabel": "Pilot",
+      "access": "Pilot badge, live access",
+      "accessible": true
+    },
+    {
+      "key": "myify",
+      "label": "MYIFY · DataNest",
       "status": "pilot",
       "badgeLabel": "Pilot",
       "access": "Pilot badge, live access",
