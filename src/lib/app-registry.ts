@@ -16,6 +16,8 @@
  * pricing tables, checkout, entitlement, SKU catalog, or All-Access copy.
  */
 
+import { FREE_PROMOTION_ACTIVE } from "@/lib/promotion";
+
 export type ResonanceAppKey =
   | "epublisher"
   | "creative_studio"
@@ -59,8 +61,8 @@ export type AppRegistryEntry = {
   publicUrl: string;
   /** @deprecated use `url`. */
   appUrl: string;
-  /** @deprecated all entries here are billable; non-paid apps live in ECOSYSTEM_REGISTRY. */
-  hasBilling: true;
+  /** Billing capability is disabled while the free-access promotion is active. */
+  hasBilling: boolean;
 };
 
 function entry(
@@ -74,7 +76,7 @@ function entry(
     backToHubPath: HUB_URL,
     publicUrl: e.url,
     appUrl: e.url,
-    hasBilling: true,
+    hasBilling: !FREE_PROMOTION_ACTIVE,
   };
 }
 

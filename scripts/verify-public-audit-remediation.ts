@@ -15,6 +15,8 @@ const catalog = read("src/lib/checkout.functions.ts");
 const pricing = read("src/routes/pricing.tsx");
 const home = read("src/routes/index.tsx");
 const updates = read("public/content/updates.json");
+const promotion = read("src/lib/promotion.ts");
+const freePromotionActive = /FREE_PROMOTION_ACTIVE\s*=\s*true\s+as\s+const/.test(promotion);
 
 checks.push(
   {
@@ -30,19 +32,34 @@ checks.push(
     ok: /no payment will be taken/i.test(checkout),
   },
   {
-    label: "pricing discloses waitlist before pack selection",
-    ok: /Pack checkout waitlist/i.test(pricing) && /Join waitlist/i.test(pricing),
+    label: freePromotionActive
+      ? "pricing presents the free-access promotion"
+      : "pricing discloses waitlist before pack selection",
+    ok: freePromotionActive
+      ? /FREE_PROMOTION_ACTIVE/.test(pricing) && /FREE_PROMOTION\.headline/.test(pricing)
+      : /Pack checkout waitlist/i.test(pricing) && /Join waitlist/i.test(pricing),
   },
   {
-    label: "public pack CTA follows the central availability flag",
-    ok: /PACK_CHECKOUT_AVAILABLE\s*\?\s*"Buy pack"\s*:\s*"Join waitlist"/.test(pricing)
-      && /PACK_CHECKOUT_AVAILABLE\s*\?\s*"Buy pack"\s*:\s*"View pack waitlist"/.test(home),
+    label: freePromotionActive
+      ? "free promotion suppresses public purchase CTAs"
+      : "public pack CTA follows the central availability flag",
+    ok: freePromotionActive
+      ? /if\s*\(FREE_PROMOTION_ACTIVE\)/.test(pricing)
+        && /Open free/.test(home)
+        && !/View pack waitlist/.test(home)
+        && !/Buy pack/.test(home)
+      : /PACK_CHECKOUT_AVAILABLE\s*\?\s*"Buy pack"\s*:\s*"Join waitlist"/.test(pricing)
+        && /PACK_CHECKOUT_AVAILABLE\s*\?\s*"Buy pack"\s*:\s*"View pack waitlist"/.test(home),
   },
   {
-    label: "ePublisher Starter is consistently R99",
-    ok: /epublisher_starter_pack[\s\S]{0,220}zar:\s*"R99"/.test(catalog)
-      && /Starter Pack is R99/i.test(updates)
-      && !/New R149 starter pack/i.test(home + updates),
+    label: freePromotionActive
+      ? "free promotion does not advertise a legacy ePublisher price"
+      : "ePublisher Starter price remains internally consistent",
+    ok: freePromotionActive
+      ? !/Starter Pack is R99|New R149 starter pack/i.test(home + pricing + checkout)
+      : /epublisher_starter_pack[\s\S]{0,220}zar:\s*"R99"/.test(catalog)
+        && /Starter Pack is R99/i.test(updates)
+        && !/New R149 starter pack/i.test(home + updates),
   },
   {
     label: "Sync Vision public pack copy describes storyboard deliverables",
@@ -76,7 +93,7 @@ checks.push(
 
 const failed = checks.filter((check) => !check.ok);
 for (const check of checks) {
-  console.log(`${check.ok ? "✓" : "✗"} ${check.label}${check.detail ? ` — ${check.detail}` : ""}`);
+  console.log(`${check.ok ? "âœ“" : "âœ—"} ${check.label}${check.detail ? ` â€” ${check.detail}` : ""}`);
 }
 
 if (failed.length) {
@@ -84,4 +101,4 @@ if (failed.length) {
   process.exit(1);
 }
 
-console.log("\n✓ public audit remediation invariants hold.");
+console.log("\nâœ“ public audit remediation invariants hold.");

@@ -1,21 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PACK_CATALOG, PACK_CHECKOUT_AVAILABLE } from "@/lib/checkout.functions";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing | The Resonance Hub" },
+      { title: "Free Access Promotion | The Resonance Hub" },
       {
         name: "description",
         content:
-          "Individual Resonance apps use once-off credit and project packs. Optional monthly ecosystem passes bundle multiple tools for creators and teams. ZAR · PayFast.",
+          FREE_PROMOTION.description,
       },
-      { property: "og:title", content: "Pricing | The Resonance Hub" },
+      { property: "og:title", content: "Free Access Promotion | The Resonance Hub" },
       {
         property: "og:description",
         content:
-          "Once-off app packs and optional monthly ecosystem passes. No individual app subscriptions.",
+          FREE_PROMOTION.description,
       },
     ],
   }),
@@ -104,6 +105,44 @@ const PASSES = [
 ];
 
 function PricingPage() {
+  if (FREE_PROMOTION_ACTIVE) {
+    return (
+      <div className="min-h-screen text-foreground">
+        <header className="border-b border-white/10 bg-background/80 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+            <Link to="/" className="flex items-center gap-3">
+              <img src={resonanceLockup} alt="The Resonance" className="h-9 w-auto" />
+            </Link>
+            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">Back to Hub</Link>
+          </div>
+        </header>
+        <main className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="mb-4 font-mono text-xs uppercase tracking-[0.24em] text-primary">{FREE_PROMOTION.shortLabel}</p>
+            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">{FREE_PROMOTION.headline}</h1>
+            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{FREE_PROMOTION.description}</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Sign-in remains enabled so usage, provider consumption, and support demand can be measured before future pricing is set.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 sm:grid-cols-2">
+            {Object.values(APP_META).map((app) => (
+              <a
+                key={app.anchor}
+                href={app.visit}
+                className="rounded-2xl border border-white/10 bg-card/60 p-6 transition hover:border-primary/40"
+              >
+                <p className="text-xs font-mono uppercase tracking-[0.2em] text-primary">Free promotional access</p>
+                <h2 className="mt-2 text-xl font-semibold">{app.name}</h2>
+                <p className="mt-2 text-sm text-muted-foreground">Open the app · no checkout required</p>
+              </a>
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const packsByApp = Object.values(PACK_CATALOG).reduce<Record<string, typeof PACK_CATALOG[string][]>>(
     (acc, pack) => {
       (acc[pack.app] ??= []).push(pack);

@@ -9,6 +9,7 @@ import {
   recordPayfastLaunchAudit,
 } from "@/lib/backend-provider.server";
 import { isAllowedReturnTo } from "./return-to-allowlist";
+import { FREE_PROMOTION_ACTIVE } from "@/lib/promotion";
 
 
 /**
@@ -142,6 +143,10 @@ async function buildLaunch(
   origin: { proto: string; host: string; sourceIp: string | null; userAgent: string | null },
   meta: { retryOfSubscriptionId?: string } = {},
 ): Promise<PayfastLaunch> {
+  if (FREE_PROMOTION_ACTIVE) {
+    throw new Error("Checkout is disabled during the Resonance free-access promotion.");
+  }
+
   const merchantId = process.env.PAYFAST_MERCHANT_ID ?? "";
   const merchantKey = process.env.PAYFAST_MERCHANT_KEY ?? "";
   const passphrase = process.env.PAYFAST_PASSPHRASE ?? "";
