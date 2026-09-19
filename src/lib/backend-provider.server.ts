@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { summarizePromotionCostingRows, type PromotionCostingRawRow, type PromotionWorkloadSummary } from "@/lib/promotion-costing";
 
 export type BackendProvider = "supabase" | "sovereign";
 
@@ -398,6 +399,20 @@ export async function fetchSovereignCostUsageSummary(): Promise<SovereignCostUsa
     {},
   );
   return result.summary;
+}
+
+export async function fetchPromotionCostingSummary(): Promise<PromotionWorkloadSummary> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Promotion costing workload requires sovereign backend mode");
+  }
+  const rows = await sovereignDbQuery<PromotionCostingRawRow[]>({
+    table: "feature_usage",
+    action: "select",
+    columns: "feature,metadata,created_at",
+    filters: [{ column: "feature", op: "eq", value: "promotion_costing" }],
+    options: { order: { column: "created_at", ascending: false }, limit: 10000 },
+  });
+  return summarizePromotionCostingRows(rows);
 }
 
 export async function recordSovereignCostUsage(
