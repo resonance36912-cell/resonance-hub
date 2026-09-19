@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
@@ -672,7 +672,7 @@ function Index() {
               Create eBooks, posters, campaigns, music-video storyboards, YouTube audits, and career reports from one Resonance hub.
             </p>
             <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-4">
-              Buy once-off credits, launch apps, manage bundles, and follow product updates from one South African-built hub.
+              Open every Resonance product at no charge during the promotion, then help us learn from real usage so future pricing reflects actual operating cost.
             </p>
             <p className="text-[13px] text-white/60 leading-relaxed max-w-[58ch] mb-10">
               All Resonance products are temporarily free during this promotion while real usage, provider consumption, and support demand are measured.
@@ -706,9 +706,9 @@ function Index() {
               "Built in South Africa",
               "Free promotional access",
               "No payment required",
-              "Cancel anytime",
+              "Cost study active",
               "POPIA-conscious",
-              "Free tiers & pilots",
+              "Measured usage & cost",
             ].map((t) => (
               <li key={t} className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02]">
                 {t}
@@ -996,120 +996,86 @@ function Index() {
           </div>
         </section>
 
-        {/* PRICING TABLE */}
-        {/* PRICING CALLOUT */}
+        {/* FREE PROMOTION */}
         <section id="pricing" data-reveal className="mb-24">
           <div className="rounded-3xl border border-white/10 bg-card/50 backdrop-blur-xl p-8 md:p-12 text-center">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              02 / Free promotion
+              02 / Free access promotion
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
-              All products are free during the promotion.
+              All Resonance products are free during the promotion.
             </h2>
             <p className="text-white/70 max-w-2xl mx-auto text-sm leading-relaxed mb-5">
-              Individual-app pack prices are published with a launch waitlist while one-time fulfillment
-              is completed. The Hub's optional monthly ecosystem passes are available for creators and teams
-              using multiple Resonance tools every month.
+              Billing, checkout, subscriptions, passes, paid packs, and credit purchases are paused while we measure
+              real provider consumption, infrastructure cost, support demand, and feature usage.
             </p>
             <div className="flex flex-wrap justify-center gap-2 mb-8 text-[11px] font-mono uppercase tracking-wider text-white/70">
-              <span className="px-3 py-1.5 rounded-full border border-white/10">ePublisher from R99</span>
-              <span className="px-3 py-1.5 rounded-full border border-white/10">Creative / YouTube from R149</span>
-              <span className="px-3 py-1.5 rounded-full border border-white/10">Sync Vision from R349</span>
-              <span className="px-3 py-1.5 rounded-full border border-white/10">Creator Pass R499 / month</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">Full app access</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">No checkout</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">No subscription</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">Usage & cost measured</span>
             </div>
             <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                to="/pricing"
+              <a
+                href="#apps"
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-xs uppercase tracking-widest shadow-[0_0_40px_-10px_hsl(295_90%_60%/0.8)]"
               >
-                View full pricing â†’
-              </Link>
-              <a href="#bundles" className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest">
-                See ecosystem passes
+                Explore free products
               </a>
+              <Link
+                to="/pricing"
+                className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
+              >
+                Promotion details →
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* BUNDLES / ECOSYSTEM PASSES */}
+        {/* PROMOTION ACCESS */}
         <section id="bundles" data-reveal className="mb-32">
           <div className="text-center mb-10">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              Optional ecosystem passes
+              Promotion access
             </div>
             <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
-              For creators and teams using multiple tools every month
+              Use the full suite while we learn what sustainable pricing should be
             </h3>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-              Passes are optional. If you only need one app, just buy the once-off pack.
+              The promotion temporarily removes commercial feature gates. Sign in where requested so usage can be measured accurately.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {
-                name: "Creator Pass",
-                price: "R499",
-                period: "/ month",
-                body: "Monthly allowance across ePublisher, Creative Studio, and YouTube Optimizer. Best for solo creators publishing and promoting regularly.",
-                href: "/checkout?app=all_access&plan=creator_pass",
-                cta: "Subscribe",
-                featured: false,
+                name: "Creators",
+                body: "Create, publish, design, optimise, and prototype across the Resonance suite with full promotional access.",
               },
               {
-                name: "Studio Pass",
-                price: "R1,499",
-                period: "/ month",
-                body: "Monthly allowance across ePublisher, Creative Studio, Sync Vision, and YouTube Optimizer. Best for musicians, media teams, and high-output creators.",
-                href: "/checkout?app=all_access&plan=studio_pass",
-                cta: "Subscribe",
-                featured: true,
+                name: "Teams",
+                body: "Evaluate higher-capability workflows and collaboration needs without buying a pass or pack during the promotion.",
               },
               {
-                name: "Business Pass",
-                price: "Custom",
-                period: "/ month",
-                body: "Multi-seat access, onboarding, priority support, invoice support, and custom app allowances. Best for agencies, schools, publishers, and businesses.",
-                href: "mailto:hello@reson8.life?subject=Business%20Pass%20enquiry",
-                cta: "Request quote",
-                featured: false,
+                name: "Schools & businesses",
+                body: "Pilot suitable Resonance tools and help establish real support, infrastructure, and provider-cost requirements.",
               },
-            ].map((b) => (
+            ].map((item) => (
               <article
-                key={b.name}
-                className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
-                  b.featured
-                    ? "border-[hsl(295_90%_60%/0.4)] bg-card/80 shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]"
-                    : "border-white/10 bg-card/50"
-                }`}
+                key={item.name}
+                className="rounded-2xl border border-white/10 bg-card/50 p-6 flex flex-col backdrop-blur-xl"
               >
-                <span className={`self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${b.featured ? "border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]" : "border-white/15 bg-white/[0.04] text-white/60"}`}>
-                  {b.featured ? "Most popular" : "Optional pass"}
+                <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]">
+                  Free during promotion
                 </span>
-                <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-3xl font-extrabold">{b.price}</span>
-                  <span className="text-xs text-white/65">{b.period}</span>
-                </div>
-                <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
-                <a
-                  href={b.href}
-                  className={`inline-block w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
-                    b.featured
-                      ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
-                      : "border border-white/15 hover:border-white/40"
-                  }`}
-                >
-                  {b.cta}
-                </a>
+                <h4 className="text-base font-bold tracking-tight mb-2">{item.name}</h4>
+                <p className="text-sm text-white/65 leading-relaxed">{item.body}</p>
               </article>
             ))}
           </div>
           <p className="text-center text-xs text-white/60 mt-6">
-            Ecosystem passes are optional and billed monthly via PayFast â€” cancel anytime. Individual
-            apps remain available as once-off credit and project packs with no recurring app fees.
+            No card, checkout, recurring plan, pass, pack, or credit purchase is required during this promotion.
           </p>
         </section>
-
         {/* ROADMAP */}
         <section id="roadmap" data-reveal className="mb-24">
           <div className="text-center mb-8">
@@ -1120,8 +1086,8 @@ function Index() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { title: "Unified Hub login", body: "Single sign-on across every Resonance app.", status: "In rollout" },
-              { title: "Pack redemption", body: "Once-off packs redeemable inside each app dashboard.", status: "In development" },
-              { title: "Career Compass paid tiers", body: "Per-report, school, and district packages.", status: "Planned" },
+              { title: "Cost instrumentation", body: "Provider consumption and operational cost signals captured across app workflows.", status: "In development" },
+              { title: "Career Compass pilot scaling", body: "Measure school, learner, support, and report-delivery demand before setting a post-pilot model.", status: "Planned" },
             ].map((r) => (
               <article key={r.title} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5">
                 <div className="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-2">{r.status}</div>
@@ -1206,47 +1172,38 @@ function Index() {
               04 / Questions
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
-              Before you buy
+              Free promotion questions
             </h2>
           </div>
           <div className="max-w-3xl mx-auto divide-y divide-white/10 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
             {[
               {
-                q: "Do individual apps have monthly subscriptions?",
-                a: "No. Individual Resonance apps use once-off credits and project packs â€” no recurring app fees. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps.",
+                q: "Are all Resonance products free during the promotion?",
+                a: "Yes. Commercial feature gates are paused across the promoted Resonance app suite while we measure real operating cost and usage patterns.",
               },
               {
-                q: "Can I use Resonance tools for free?",
-                a: "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits before you buy a pack.",
+                q: "Do I need a card, checkout, pack, pass, or subscription?",
+                a: "No. No payment method or purchase is required during the promotion. Checkout and new billing are disabled.",
               },
               {
-                q: "Is there a single login across every app?",
-                a: "One Hub billing account today â€” packs and passes live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
+                q: "Why should I sign in if access is free?",
+                a: "Signing in lets your work persist and lets Resonance attribute usage accurately enough to understand provider, infrastructure, and support cost before setting future prices.",
               },
               {
-                q: "Can I cancel an ecosystem pass anytime?",
-                a: "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases with no recurring billing.",
+                q: "Will the products always remain free?",
+                a: "This is a temporary promotion. Future pricing will be based on measured costs and usage evidence, and any commercial relaunch will be communicated before new charges are introduced.",
               },
               {
-                q: "Are prices in South African Rand?",
-                a: "All prices are in ZAR and processed locally through PayFast (card and EFT).",
-              },
-
-              {
-                q: "Can schools use Career Compass?",
-                a: "Yes â€” schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
+                q: "What happens to previous purchase and billing records?",
+                a: "Historical records are retained for reconciliation and audit purposes. They do not create a new charge or restrict promotional access.",
               },
               {
-                q: "Can publishers test ePublisher with one title first?",
-                a: "Absolutely. Start with a single title on the free or Starter tier, then upgrade for full audiovisual exports and backlist conversion.",
+                q: "Can schools, publishers, creators, and businesses participate?",
+                a: "Yes. The promotion is intended to support real-world pilots across these groups so capability, support demand, and sustainable future pricing can be evaluated.",
               },
               {
-                q: "Does Sync Vision generate final videos or AI-ready storyboards?",
-                a: "Sync Vision produces AI-ready music-video storyboards, character performances, and scene prompts â€” ready to feed into your video generation pipeline.",
-              },
-              {
-                q: "Can Creative Studio create ads and product visuals?",
-                a: "Yes â€” posters, brochures, social ads, product mockups, and short marketing videos from a single prompt or upload.",
+                q: "Is usage still measured during free access?",
+                a: "Yes. Product usage, provider consumption, operational performance, and relevant cost signals continue to be measured under Resonance governance so pricing can later reflect real service cost.",
               },
             ].map((item) => (
               <details key={item.q} className="group p-6">
@@ -1259,7 +1216,6 @@ function Index() {
             ))}
           </div>
         </section>
-
         {/* JOIN */}
         <section
           id="join"
@@ -1396,7 +1352,7 @@ const FALLBACK_UPDATES: UpdateItem[] = [
   { app: "Creative Studio", status: "Free Promotion", tone: "pilot", change: "Creative Studio generation access is temporarily free while image and media provider costs are measured.", date: "Sep 2026", href: "https://creative.reson8.life", cta: "Open free" },
   { app: "Sync Vision", status: "Free Promotion", tone: "pilot", change: "Storyboard, lipsync, rendering, and export access are included while video-provider costs are measured.", date: "Sep 2026", href: "https://sync.reson8.life", cta: "Open free" },
   { app: "YouTube Optimizer", status: "Free Promotion", tone: "pilot", change: "Audits, thumbnail generation, and optimizer tools are temporarily free while usage and AI costs are measured.", date: "Sep 2026", href: "https://youtube.reson8.life", cta: "Open free" },
-  { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
+  { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners while delivery, support, and report-generation costs are measured.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
   { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live â€” free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com/episodes", cta: "Listen" },
   { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published â€” how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
 ];
