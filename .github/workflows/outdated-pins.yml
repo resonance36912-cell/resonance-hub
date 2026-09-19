@@ -111,7 +111,7 @@ jobs:
       # A bug in the audit core would turn this gate into a silent no-op that
       # passes on drifted pins, so its unit tests run after dependencies exist.
       - name: Test the pin-audit core
-        run: bunx vitest run scripts/lib/pinned-deps.test.ts
+        run: bun test scripts/lib/pinned-deps.test.ts
 
       - name: Audit pins against bun.lock
         id: drift
