@@ -23,6 +23,7 @@
  */
 
 import { APP_REGISTRY, type ResonanceAppKey } from "../src/lib/app-registry";
+import { appDetailDescription } from "../src/lib/app-status-meta";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:8080";
 
@@ -103,17 +104,19 @@ for (const key of Object.keys(APP_REGISTRY) as ResonanceAppKey[]) {
     titleSeen.push(title);
   }
 
-  // Meta description uses the app tagline.
+  // Meta description carries the tagline plus the same live/pilot access
+  // meaning shown by the page and social metadata.
   const desc = extractMetaDescription(res.body);
+  const expectedDescription = appDetailDescription(entry);
   if (!desc) {
     fail(`Meta description present (${path})`, "no <meta name=description>");
-  } else if (desc !== entry.tagline) {
+  } else if (desc !== expectedDescription) {
     fail(
-      `Meta description matches tagline (${path})`,
-      `got ${JSON.stringify(desc)}, want ${JSON.stringify(entry.tagline)}`,
+      `Meta description matches status contract (${path})`,
+      `got ${JSON.stringify(desc)}, want ${JSON.stringify(expectedDescription)}`,
     );
   } else {
-    pass(`Meta description matches tagline (${path})`);
+    pass(`Meta description matches status contract (${path})`);
   }
 
   // All three capability card titles render server-side.
