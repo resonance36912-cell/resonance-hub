@@ -193,7 +193,7 @@ const slug = (v: string): string => v.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0,
 /** Resolve every deep link for one charted run. */
 export function runLinks(point: HistoryPoint, opts: RunLinkOptions = {}): RunLinks {
   const server = (opts.server ?? process.env.GITHUB_SERVER_URL ?? "https://github.com").replace(/\/+$/, "");
-  const repo = opts.repo ?? process.env.GITHUB_REPOSITORY ?? null;
+  const repo = opts.repo === undefined ? process.env.GITHUB_REPOSITORY ?? null : opts.repo;
   const anchorId = `run-${slug(point.runId ?? (point.generatedAt || shortLabel(point)))}`;
   const anchor = `#${anchorId}`;
   const base = repo && point.runId ? `${server}/${repo}/actions/runs/${point.runId}` : null;
