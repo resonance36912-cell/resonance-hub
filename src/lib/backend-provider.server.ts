@@ -349,6 +349,66 @@ async function sovereignProcedure<T>(name: string, args: Record<string, unknown>
   return (await response.json()) as T;
 }
 
+export type CostUsageSummaryRow = {
+  app: string;
+  provider: string;
+  operation: string;
+  external_provider: boolean;
+  infrastructure_cost_status: "unmeasured" | "measured" | "not_applicable";
+  events: number;
+  costed_events: number;
+  provider_api_cost_usd: number;
+  input_units: number;
+  output_units: number;
+  duration_ms: number;
+};
+
+export type CostUsageSummaryWindow = {
+  events: number;
+  costed_events: number;
+  provider_api_cost_usd: number;
+  rows: CostUsageSummaryRow[];
+};
+
+export type SovereignCostUsageSummary = Record<"today" | "7d" | "30d" | "all", CostUsageSummaryWindow>;
+
+export type SovereignCostUsageEvent = {
+  app: "epublisher" | "creative_studio" | "sync_vision" | "youtube_optimizer" | "all_access" | "hub" | "rons" | "unknown";
+  operation: string;
+  provider: string;
+  model: string | null;
+  provider_api_cost_usd: number | null;
+  infrastructure_cost_status: "unmeasured" | "measured" | "not_applicable";
+  input_units: number | null;
+  output_units: number | null;
+  unit_kind: "tokens" | "bytes" | "seconds" | "frames" | "operations" | "requests" | "pixels" | null;
+  duration_ms: number | null;
+  evidence_source: string;
+  external_provider: boolean;
+  request_id: string | null;
+  metadata: Record<string, unknown>;
+};
+
+export async function fetchSovereignCostUsageSummary(): Promise<SovereignCostUsageSummary> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Sovereign cost usage summary requires sovereign backend mode");
+  }
+  const result = await sovereignProcedure<{ summary: SovereignCostUsageSummary }>(
+    "read_cost_usage_summary",
+    {},
+  );
+  return result.summary;
+}
+
+export async function recordSovereignCostUsage(
+  event: SovereignCostUsageEvent,
+): Promise<{ id: string; occurred_at: string; request_id: string; duplicate: boolean }> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Sovereign cost usage recording requires sovereign backend mode");
+  }
+  return sovereignProcedure("record_cost_usage", { event });
+}
+
 const INVOICE_COLS =
   "id,number,user_id,subscription_id,sku,app,tier,billing_cycle,amount_cents,currency,status,recipient_email,pf_payment_id,m_payment_id,provider,issued_at,refunded_at,pdf_path,metadata,created_at,updated_at";
 
