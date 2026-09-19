@@ -32,8 +32,8 @@ const PAID_MODE_CHECKS = [
 ] as const;
 
 function runScript(name: string) {
-  console.log(`\n[commercial-mode] bun run scripts/${name}`);
-  const result = spawnSync("bun", ["run", `scripts/${name}`], {
+  console.log("\n[commercial-mode] bun run scripts/" + name);
+  const result = spawnSync("bun", ["run", "scripts/" + name], {
     cwd: ROOT,
     stdio: "inherit",
     shell: process.platform === "win32",
@@ -42,25 +42,26 @@ function runScript(name: string) {
 }
 
 function verifyFreePromotion() {
-  const appKeys = [
-    "epublisher",
-    "creative_studio",
-    "sync_vision",
-    "youtube_optimizer",
-  ] as const;
+  const appKeys = ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"] as const;
 
   for (const app of appKeys) {
     const payload = buildBillingCatalogPayload(app);
-    if (!payload.knownApp) throw new Error(`${app}: missing billing catalog identity`);
-    if (payload.checkoutAvailable) throw new Error(`${app}: checkout must be disabled`);
-    if (!payload.promotionActive) throw new Error(`${app}: promotion flag missing`);
+    if (!payload.knownApp) throw new Error(app + ": missing app identity");
+    if (payload.checkoutAvailable) throw new Error(app + ": checkout must be disabled");
+    if (!payload.promotionActive) throw new Error(app + ": promotion flag missing");
+    if (payload.pricingStatus !== "costing_in_progress") {
+      throw new Error(app + ": pricingStatus must remain costing_in_progress");
+    }
     if (payload.packs.length || payload.skus.length) {
-      throw new Error(`${app}: sale catalog must be empty during promotion`);
+      throw new Error(app + ": public sale catalog must remain empty");
     }
   }
 
   for (const entry of Object.values(APP_REGISTRY)) {
-    if (entry.hasBilling) throw new Error(`${entry.key}: hasBilling must be false`);
+    if (entry.hasBilling) throw new Error(entry.key + ": hasBilling must be false");
+    if (entry.manageBillingPath !== entry.pricingPath) {
+      throw new Error(entry.key + ": billing navigation must resolve to free access during promotion");
+    }
   }
 
   const guardedFiles = [
@@ -69,59 +70,68 @@ function verifyFreePromotion() {
     "src/routes/pricing.tsx",
     "src/routes/account.billing.tsx",
     "src/routes/account.subscriptions.tsx",
-  ];
-
+  ] as const;
   for (const rel of guardedFiles) {
     const source = readFileSync(join(ROOT, rel), "utf8");
     if (!source.includes("FREE_PROMOTION_ACTIVE")) {
-      throw new Error(`${rel}: missing free-promotion guard`);
+      throw new Error(rel + ": missing free-promotion guard");
+    }
+  }
+
+  const checkoutSource = readFileSync(join(ROOT, "src/routes/checkout.tsx"), "utf8");
+  for (const forbidden of ["checkout.functions", "createPayfastLaunch", "SKU_CATALOG", "PACK_CATALOG"]) {
+    if (checkoutSource.includes(forbidden)) {
+      throw new Error("src/routes/checkout.tsx: active checkout route still imports " + forbidden);
+    }
+  }
+
+  const pricingSource = readFileSync(join(ROOT, "src/routes/pricing.tsx"), "utf8");
+  for (const forbidden of ["PACK_CATALOG", "Creator Pass", "Studio Pass", "/checkout?"]) {
+    if (pricingSource.includes(forbidden)) {
+      throw new Error("src/routes/pricing.tsx: stale paid pricing branch remains: " + forbidden);
     }
   }
 
   const publicPromotionSurfaces = [
     "src/routes/index.tsx",
+    "src/routes/pricing.tsx",
+    "src/routes/checkout.tsx",
     "public/content/updates.json",
+    "public/llms.txt",
   ] as const;
-  const staleCommercialFragments = [
+  const staleFragments = [
     "buy once-off credits",
     "optional monthly ecosystem passes",
-    "see ecosystem passes",
-    "just buy the once-off pack",
-    "billed monthly via payfast",
-    "once-off pack pricing is published",
-    "pack checkout remains on the launch waitlist",
-    "credit packs replace the old monthly plan",
-    "pack prices are published",
-    "view packs",
-    "see passes",
+    "creator pass",
+    "studio pass",
+    "buy credits",
+    "buy a pack",
+    "view hub pricing",
+    "billed monthly",
+    "secure checkout",
     "paid tiers",
     "per-report pricing",
-    "district packages arrive",
   ] as const;
-  const stalePrice = /\b(?:from\s+)?R(?:99|149|349|499|599|699|899|999|1,499|2,499|2,999)(?:\s*\/\s*month)?\b/i;
+  const randPrice = /\b(?:from\s+)?R\s?\d[\d,]*(?:\s*\/\s*month)?\b/i;
 
   for (const rel of publicPromotionSurfaces) {
     const source = readFileSync(join(ROOT, rel), "utf8");
     const lower = source.toLowerCase();
-    for (const fragment of staleCommercialFragments) {
+    for (const fragment of staleFragments) {
       if (lower.includes(fragment)) {
-        throw new Error(`${rel}: stale commercial copy exposed during promotion: "${fragment}"`);
+        throw new Error(rel + ': stale commercial copy exposed during promotion: "' + fragment + '"');
       }
     }
-    const match = source.match(stalePrice);
-    if (match) {
-      throw new Error(`${rel}: legacy public price exposed during promotion: "${match[0]}"`);
-    }
+    const match = source.match(randPrice);
+    if (match) throw new Error(rel + ': public Rand price exposed during promotion: "' + match[0] + '"');
   }
 
   console.log(
-    "free-promotion commercial mode verified: no sale catalog, no billed apps, guarded checkout/account routes, no legacy public commerce copy",
+    "free-promotion commercial mode verified: no public sale catalog, no active checkout imports, no billed apps, no public prices",
   );
 }
 
-console.log(
-  `[commercial-mode] mode=${FREE_PROMOTION_ACTIVE ? "FREE_PROMOTION" : "PAID"}`,
-);
+console.log("[commercial-mode] mode=" + (FREE_PROMOTION_ACTIVE ? "FREE_PROMOTION" : "PAID"));
 
 for (const name of COMMON_CHECKS) runScript(name);
 if (FREE_PROMOTION_ACTIVE) verifyFreePromotion();

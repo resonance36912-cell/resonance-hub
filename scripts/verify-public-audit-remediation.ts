@@ -1,11 +1,9 @@
 #!/usr/bin/env bun
 import { existsSync, readFileSync } from "node:fs";
+import { buildBillingCatalogPayload } from "../src/lib/billing-catalog";
+import { FREE_PROMOTION_ACTIVE } from "../src/lib/promotion";
 
-type Check = {
-  label: string;
-  ok: boolean;
-  detail?: string;
-};
+type Check = { label: string; ok: boolean };
 
 const read = (path: string) => readFileSync(path, "utf8");
 const checks: Check[] = [];
@@ -15,57 +13,48 @@ const catalog = read("src/lib/checkout.functions.ts");
 const pricing = read("src/routes/pricing.tsx");
 const home = read("src/routes/index.tsx");
 const updates = read("public/content/updates.json");
-const promotion = read("src/lib/promotion.ts");
-const freePromotionActive = /FREE_PROMOTION_ACTIVE\s*=\s*true\s+as\s+const/.test(promotion);
+const llms = read("public/llms.txt");
 
 checks.push(
   {
-    label: "pack checkout is explicitly disabled until one-time fulfillment exists",
+    label: "historical pack checkout remains disabled",
     ok: /PACK_CHECKOUT_AVAILABLE\s*=\s*false\s+as\s+const/.test(catalog),
   },
   {
-    label: "checkout does not advertise the stale Q1 2027 date",
-    ok: !/Q1\s+2027/i.test(checkout + pricing + home + updates),
+    label: "public surfaces do not advertise the stale Q1 2027 date",
+    ok: !/Q1\s+2027/i.test(checkout + pricing + home + updates + llms),
   },
   {
-    label: "pack checkout tells visitors that no payment is taken",
-    ok: /no payment will be taken/i.test(checkout),
+    label: "checkout explicitly says no payment is required",
+    ok: /No payment is required/i.test(checkout) && /Checkout is disabled during the promotion/i.test(checkout),
   },
   {
-    label: freePromotionActive
-      ? "pricing presents the free-access promotion"
-      : "pricing discloses waitlist before pack selection",
-    ok: freePromotionActive
-      ? /FREE_PROMOTION_ACTIVE/.test(pricing) && /FREE_PROMOTION\.headline/.test(pricing)
-      : /Pack checkout waitlist/i.test(pricing) && /Join waitlist/i.test(pricing),
+    label: "pricing presents promotion-only access",
+    ok: /All Resonance apps are free during the promotion/i.test(pricing)
+      && /No payment, card, subscription, credit pack, or checkout is required/i.test(pricing),
   },
   {
-    label: freePromotionActive
-      ? "free promotion suppresses public purchase CTAs"
-      : "public pack CTA follows the central availability flag",
-    ok: freePromotionActive
-      ? /if\s*\(FREE_PROMOTION_ACTIVE\)/.test(pricing)
-        && /Open free/.test(home)
-        && !/View pack waitlist/.test(home)
-        && !/Buy pack/.test(home)
-      : /PACK_CHECKOUT_AVAILABLE\s*\?\s*"Buy pack"\s*:\s*"Join waitlist"/.test(pricing)
-        && /PACK_CHECKOUT_AVAILABLE\s*\?\s*"Buy pack"\s*:\s*"View pack waitlist"/.test(home),
+    label: "public billing catalog is empty while costing is in progress",
+    ok: ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"].every((app) => {
+      const payload = buildBillingCatalogPayload(app);
+      return payload.knownApp
+        && payload.promotionActive
+        && payload.pricingStatus === "costing_in_progress"
+        && payload.checkoutAvailable === false
+        && payload.packs.length === 0
+        && payload.skus.length === 0;
+    }),
   },
   {
-    label: freePromotionActive
-      ? "free promotion does not advertise a legacy ePublisher price"
-      : "ePublisher Starter price remains internally consistent",
-    ok: freePromotionActive
-      ? !/Starter Pack is R99|New R149 starter pack/i.test(home + pricing + checkout)
-      : /epublisher_starter_pack[\s\S]{0,220}zar:\s*"R99"/.test(catalog)
-        && /Starter Pack is R99/i.test(updates)
-        && !/New R149 starter pack/i.test(home + updates),
+    label: "free promotion exposes no public Rand price or purchase CTA",
+    ok: FREE_PROMOTION_ACTIVE
+      && !/\bR\s?\d[\d,]*\b/i.test(pricing + checkout + llms)
+      && !/Buy pack|Buy credits|View hub pricing|Get Creator Pass|Get Studio Pass/i.test(pricing + checkout + home + llms),
   },
   {
-    label: "Sync Vision public pack copy describes storyboard deliverables",
+    label: "historical Sync Vision catalog remains audit-compatible",
     ok: /One-track storyboard pack/i.test(catalog)
-      && !/One music video/i.test(catalog + pricing + home + updates)
-      && !/ZAR PayFast checkout on the Hub/i.test(home + updates),
+      && !/One music video/i.test(catalog + pricing + home + updates),
   },
   {
     label: "dedicated privacy route exists and is linked",
@@ -86,19 +75,16 @@ checks.push(
   {
     label: "podcast listen journeys use the episodes destination",
     ok: /resonance-podcast\.com\/episodes/.test(home)
-      && /resonance-podcast\.com\/episodes/.test(pricing)
       && /resonance-podcast\.com\/episodes/.test(updates),
   },
 );
 
 const failed = checks.filter((check) => !check.ok);
-for (const check of checks) {
-  console.log(`${check.ok ? "âœ“" : "âœ—"} ${check.label}${check.detail ? ` â€” ${check.detail}` : ""}`);
-}
+for (const check of checks) console.log(`${check.ok ? "PASS" : "FAIL"} ${check.label}`);
 
 if (failed.length) {
   console.error(`\nverify-public-audit-remediation failed: ${failed.length} invariant(s) violated.`);
   process.exit(1);
 }
 
-console.log("\nâœ“ public audit remediation invariants hold.");
+console.log("\nPublic audit remediation invariants hold.");
