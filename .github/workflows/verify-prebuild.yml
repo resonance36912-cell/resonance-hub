@@ -337,6 +337,14 @@ jobs:
         run: bun run scripts/smoke-app-status-meta.ts
 
 
+      # Python Playwright powers the browser E2E gates below. Install it once
+      # after the SSR smoke checks so missing runner packages cannot masquerade
+      # as an application regression.
+      - name: Set up Python Playwright for E2E gates
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright
+          python3 -m playwright install --with-deps chromium
+
       # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
       # session with admin role is injected) renders the full CRUD surface.
       - name: E2E admin/roadmap auth + CRUD gate
