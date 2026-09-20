@@ -4,6 +4,7 @@ import { nitro } from "nitro/vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 export default defineConfig({
   css: { transformer: "lightningcss" },
@@ -36,6 +37,7 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     tsconfigPaths({ projects: ["./tsconfig.json"] }),
+    mcpPlugin(),
     tanstackStart({
       server: { entry: "server" },
       importProtection: {
