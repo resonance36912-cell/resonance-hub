@@ -114,6 +114,10 @@ describe("Nova workspace UI boundary", () => {
     expect(switcher).toContain("Media");
     expect(switcher).toContain("Research");
     expect(switcher).toContain("Brand");
+    expect(switcher).toContain("Apps");
+    const projectRoute = readFileSync("src/routes/nova.projects.$projectId.tsx", "utf8");
+    expect(projectRoute).toContain("WorkspaceModeSwitcher");
+    expect(projectRoute).toContain("AppFactoryPanel");
     for (const path of [
       "src/components/nova/workspaces/ContentWorkspace.tsx",
       "src/components/nova/workspaces/ProductWorkspace.tsx",
