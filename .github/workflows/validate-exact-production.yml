@@ -57,14 +57,36 @@ jobs:
           echo $! > /tmp/hub-candidate.pid
           cleanup() { kill "$(cat /tmp/hub-candidate.pid)" 2>/dev/null || true; }
           trap cleanup EXIT
-          for i in $(seq 1 60); do
-            curl -fsS http://127.0.0.1:4175/ >/dev/null && break
+
+          code=000
+          for i in $(seq 1 15); do
+            code=$(curl -sS -o /tmp/home.html -w '%{http_code}' http://127.0.0.1:4175/ || true)
+            [ "$code" != "000" ] && break
             sleep 1
           done
-          curl -fsS http://127.0.0.1:4175/ >/tmp/home.html
-          curl -fsS http://127.0.0.1:4175/pricing >/tmp/pricing.html
-          curl -fsS http://127.0.0.1:4175/changelog >/tmp/changelog.html
-          curl -fsS http://127.0.0.1:4175/api/public/app-status/health >/tmp/status.json
+          if [ "$code" != "200" ]; then
+            echo "::error::candidate root returned HTTP $code"
+            echo "--- candidate server log ---"
+            cat /tmp/hub-candidate.log || true
+            echo "--- candidate response ---"
+            head -c 8000 /tmp/home.html || true
+            exit 1
+          fi
+
+          fetch_200() {
+            local path="$1" out="$2"
+            local status
+            status=$(curl -sS -o "$out" -w '%{http_code}' "http://127.0.0.1:4175$path" || true)
+            if [ "$status" != "200" ]; then
+              echo "::error::$path returned HTTP $status"
+              cat /tmp/hub-candidate.log || true
+              head -c 8000 "$out" || true
+              exit 1
+            fi
+          }
+          fetch_200 /pricing /tmp/pricing.html
+          fetch_200 /changelog /tmp/changelog.html
+          fetch_200 /api/public/app-status/health /tmp/status.json
           grep -qi "temporarily free\|free during" /tmp/home.html
           grep -qi "free during the promotion" /tmp/pricing.html
           grep -qi "changelog" /tmp/changelog.html
