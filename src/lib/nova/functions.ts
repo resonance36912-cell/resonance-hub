@@ -4,11 +4,15 @@ import { getBackendProvider, hasServerBackendRole } from "@/lib/backend-provider
 import {
   ArtifactVersionCreateInput,
   ArtifactVersionDecisionInput,
+  CreateDecisionTrayInput,
+  ResolveDecisionTrayInput,
   ProjectCreateInput,
   ProjectIdInput,
   type ProjectRole,
 } from "@/lib/nova/contracts";
 import { canReadNovaProject, canReviewNovaProject, canWriteNovaProject } from "@/lib/nova/projects";
+import { classifyNovaAction, fingerprintNovaAction } from "@/lib/nova/autonomy";
+import { resolveDecisionState } from "@/lib/nova/decision-tray";
 
 async function novaDb() {
   if (getBackendProvider() !== "supabase") {
@@ -278,3 +282,127 @@ export const restoreNovaArtifactVersion = createServerFn({ method: "POST" })
     await db.from("nova_artifacts").update({ updated_at: new Date().toISOString() }).eq("id", data.artifact_id);
     return { version: restored };
   });
+
+async function assertDecisionAuthority(db: any, userId: string, projectId: string | null) {
+  if (projectId) {
+    await assertProjectPermission(db, userId, projectId, "review");
+    return;
+  }
+  if (!(await hasServerBackendRole(userId, "admin"))) throw new Error("Forbidden");
+}
+
+export const createDecisionTrayItem = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => CreateDecisionTrayInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    if (data.action.project_id) {
+      await assertProjectPermission(db, context.userId, data.action.project_id, "write");
+    } else if (!(await hasServerBackendRole(context.userId, "admin"))) {
+      throw new Error("Forbidden");
+    }
+
+    const level = classifyNovaAction(data.action);
+    if (level !== "A4" && level !== "A5") throw new Error("decision_not_required");
+    const actionFingerprint = fingerprintNovaAction(data.action);
+
+    const { data: decision, error } = await db
+      .from("nova_decisions")
+      .insert({
+        project_id: data.action.project_id ?? null,
+        job_id: data.action.job_id ?? null,
+        action_fingerprint: actionFingerprint,
+        action: data.action,
+        level,
+        decision_text: data.summary,
+        options: data.options,
+        default_option: data.default_option,
+        evidence: data.evidence,
+        risk_summary: data.risk_summary,
+        cost_ceiling_usd: data.action.estimated_cost_usd,
+        scope: data.action.scope,
+        state: "open",
+        created_by: context.userId,
+        expires_at: data.expires_at,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { error: eventError } = await db.from("nova_authorization_events").insert({
+      project_id: data.action.project_id ?? null,
+      job_id: data.action.job_id ?? null,
+      action_fingerprint: actionFingerprint,
+      level,
+      allowed: false,
+      requires_human: true,
+      reason: "Decision Tray approval requested",
+      approval_id: decision.id,
+      actor_user_id: context.userId,
+      estimated_cost_usd: data.action.estimated_cost_usd,
+      scope: data.action.scope,
+    });
+    if (eventError) throw new Error(eventError.message);
+    return { decision };
+  });
+
+export const resolveDecisionTrayItem = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => ResolveDecisionTrayInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    const { data: decision, error: lookupError } = await db
+      .from("nova_decisions")
+      .select("*")
+      .eq("id", data.decision_id)
+      .maybeSingle();
+    if (lookupError) throw new Error(lookupError.message);
+    if (!decision) throw new Error("decision_not_found");
+
+    await assertDecisionAuthority(db, context.userId, decision.project_id ?? null);
+    resolveDecisionState(decision.state, data.outcome);
+
+    const now = new Date();
+    if (Date.parse(decision.expires_at) <= now.getTime()) {
+      const { error: expireError } = await db
+        .from("nova_decisions")
+        .update({ state: "expired", resolved_at: now.toISOString() })
+        .eq("id", decision.id)
+        .eq("state", "open");
+      if (expireError) throw new Error(expireError.message);
+      throw new Error("decision_expired");
+    }
+
+    const { data: resolved, error } = await db
+      .from("nova_decisions")
+      .update({
+        state: data.outcome,
+        approval_actor_user_id: context.userId,
+        resolved_option: data.outcome,
+        resolution_reason: data.reason,
+        resolved_at: now.toISOString(),
+      })
+      .eq("id", decision.id)
+      .eq("state", "open")
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+
+    const { error: eventError } = await db.from("nova_authorization_events").insert({
+      project_id: decision.project_id ?? null,
+      job_id: decision.job_id ?? null,
+      action_fingerprint: decision.action_fingerprint,
+      level: decision.level,
+      allowed: data.outcome === "approved",
+      requires_human: false,
+      reason: data.reason,
+      approval_id: decision.id,
+      actor_user_id: context.userId,
+      estimated_cost_usd: decision.cost_ceiling_usd ?? 0,
+      scope: decision.scope,
+      metadata: { resolution: data.outcome },
+    });
+    if (eventError) throw new Error(eventError.message);
+    return { decision: resolved };
+  });
+

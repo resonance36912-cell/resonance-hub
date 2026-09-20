@@ -49,3 +49,54 @@ export const ArtifactVersionDecisionInput = z
 export type ProjectRole = z.infer<typeof ProjectRole>;
 export type ProjectCreateInput = z.infer<typeof ProjectCreateInput>;
 export type ArtifactVersionCreateInput = z.infer<typeof ArtifactVersionCreateInput>;
+
+export const NovaAutonomyLevel = z.enum(["A0", "A1", "A2", "A3", "A4", "A5"]);
+
+export const NovaActionInput = z
+  .object({
+    kind: z.string().trim().min(1).max(160),
+    destructive: z.boolean(),
+    production: z.boolean(),
+    external: z.boolean(),
+    project_id: z.string().uuid().optional(),
+    job_id: z.string().uuid().optional(),
+    scope: z.string().trim().min(1).max(120),
+    estimated_cost_usd: z.number().nonnegative().max(1_000_000).optional().default(0),
+    target: z.string().trim().min(1).max(500).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional().default({}),
+  })
+  .strict();
+
+export const CreateDecisionTrayInput = z
+  .object({
+    action: NovaActionInput,
+    summary: z.string().trim().min(3).max(2000),
+    options: z.array(z.string().trim().min(1).max(120)).min(1).max(8),
+    default_option: z.string().trim().min(1).max(120),
+    evidence: z.array(z.string().trim().min(1).max(2000)).max(100).optional().default([]),
+    risk_summary: z.string().trim().max(4000).optional().default(""),
+    expires_at: z.string().datetime({ offset: true }),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (!value.options.includes(value.default_option)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["default_option"],
+        message: "default_option must be present in options",
+      });
+    }
+  });
+
+export const ResolveDecisionTrayInput = z
+  .object({
+    decision_id: z.string().uuid(),
+    outcome: z.enum(["approved", "rejected"]),
+    reason: z.string().trim().min(3).max(4000),
+  })
+  .strict();
+
+export type NovaActionInput = z.infer<typeof NovaActionInput>;
+export type CreateDecisionTrayInput = z.infer<typeof CreateDecisionTrayInput>;
+export type ResolveDecisionTrayInput = z.infer<typeof ResolveDecisionTrayInput>;
+
