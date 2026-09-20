@@ -44,6 +44,11 @@ export const NOVA_CAPABILITIES = [
   "capability.model.code",
   "capability.model.vision",
   "capability.model.embed",
+  "capability.content.publish",
+  "capability.media.generate",
+  "capability.storyboard.generate",
+  "capability.audio.transcribe",
+  "capability.video.lipsync",
 ] as const;
 
 export type NovaCapabilityId = (typeof NOVA_CAPABILITIES)[number];
