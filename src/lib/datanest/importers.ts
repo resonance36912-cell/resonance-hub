@@ -63,14 +63,13 @@ export function parseImportJsonl(text: string, defaultSourceKey: string): Import
   const errors: ImportFailure[] = [];
   const seen = new Set<string>();
   let duplicates = 0;
-  const lines = text.split(/?
-/);
+  const lines = text.split(/\r?\n/);
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index].trim();
     if (!line) continue;
     try {
       const envelope = normalizeEnvelope(JSON.parse(line), defaultSourceKey);
-      const identity = `${envelope.source_key}\0${envelope.external_id}\0${envelope.content}`;
+      const identity = \`\${envelope.source_key}\0\${envelope.external_id}\0\${envelope.content}\`;
       if (seen.has(identity)) { duplicates += 1; continue; }
       seen.add(identity);
       envelopes.push(envelope);
@@ -104,7 +103,7 @@ export function normalizeChatGptExport(input: unknown): ImportNormalizationResul
       errors.push({ index: nodeIndex += 1, error: "conversation_not_object" });
       continue;
     }
-    const conversationId = String(rawConversation.id ?? rawConversation.conversation_id ?? `conversation-${nodeIndex + 1}`);
+    const conversationId = String(rawConversation.id ?? rawConversation.conversation_id ?? \`conversation-\${nodeIndex + 1}\`);
     const title = typeof rawConversation.title === "string" ? rawConversation.title : "";
     const mapping = isRecord(rawConversation.mapping) ? rawConversation.mapping : {};
     for (const [mappingKey, rawNode] of Object.entries(mapping)) {
@@ -125,7 +124,7 @@ export function normalizeChatGptExport(input: unknown): ImportNormalizationResul
         const author = isRecord(message.author) && typeof message.author.role === "string" ? message.author.role : "unknown";
         envelopes.push({
           source_key: "chatgpt-export",
-          external_id: `chatgpt:${conversationId}:${messageId}:${mappingKey}`,
+          external_id: \`chatgpt:\${conversationId}:\${messageId}:\${mappingKey}\`,
           content_type: "application/vnd.openai.chat-message+json",
           ...(occurredAt ? { occurred_at: occurredAt } : {}),
           visibility: "private",
@@ -147,7 +146,13 @@ export function normalizeChatGptExport(input: unknown): ImportNormalizationResul
   return { envelopes, duplicates, errors, completeness: errors.length > 0 ? "partial" : "complete" };
 }
 
-export type GitHistoryRecord = { hash: string; occurred_at?: string; message: string; author?: string; source_uri?: string };
+export type GitHistoryRecord = {
+  hash: string;
+  occurred_at?: string;
+  message: string;
+  author?: string;
+  source_uri?: string;
+};
 
 export function normalizeGitHistory(records: readonly GitHistoryRecord[], sourceKey: string): ImportNormalizationResult {
   const envelopes: ImportEnvelope[] = [];
@@ -158,12 +163,15 @@ export function normalizeGitHistory(records: readonly GitHistoryRecord[], source
     try {
       const hash = String(record.hash ?? "").trim();
       if (!hash) throw new Error("commit_hash_required");
-      if (seen.has(hash)) { duplicates += 1; return; }
+      if (seen.has(hash)) {
+        duplicates += 1;
+        return;
+      }
       seen.add(hash);
       const occurredAt = normalizeTimestamp(record.occurred_at);
       envelopes.push({
         source_key: sourceKey,
-        external_id: `git:${hash}`,
+        external_id: \`git:\${hash}\`,
         content_type: "application/vnd.git.commit+json",
         ...(occurredAt ? { occurred_at: occurredAt } : {}),
         ...(record.source_uri ? { source_uri: record.source_uri } : {}),
@@ -182,16 +190,26 @@ export async function runImportEnvelopes(
   envelopes: readonly ImportEnvelope[],
   ingest: (envelope: ImportEnvelope) => Promise<{ duplicate?: boolean } | void>,
 ) {
-  let imported = 0, duplicates = 0, errors = 0;
+  let imported = 0;
+  let duplicates = 0;
+  let errors = 0;
   const failures: ImportFailure[] = [];
   for (let index = 0; index < envelopes.length; index += 1) {
     try {
       const result = await ingest(envelopes[index]);
-      if (result?.duplicate) duplicates += 1; else imported += 1;
+      if (result?.duplicate) duplicates += 1;
+      else imported += 1;
     } catch (error) {
       errors += 1;
       failures.push({ index: index + 1, error: error instanceof Error ? error.message : "ingest_failed" });
     }
   }
-  return { discovered: envelopes.length, imported, duplicates, errors, failures, completeness: errors > 0 ? "partial" as const : "complete" as const };
+  return {
+    discovered: envelopes.length,
+    imported,
+    duplicates,
+    errors,
+    failures,
+    completeness: errors > 0 ? "partial" as const : "complete" as const,
+  };
 }
