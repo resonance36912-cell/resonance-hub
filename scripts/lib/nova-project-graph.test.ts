@@ -101,3 +101,22 @@ describe("Nova Project Graph database boundary", () => {
     }
   });
 });
+
+
+test("AI artifact versions retain contributor identity", () => {
+  expect(contracts).not.toBeNull();
+  if (!contracts) return;
+  const contributorId = "11111111-1111-4111-8111-111111111111";
+  const parsed = contracts.ArtifactVersionCreateInput.parse({
+    project_id: "22222222-2222-4222-8222-222222222222",
+    kind: "code",
+    title: "Generated module",
+    content: "export const value = 1;",
+    content_hash: "a".repeat(64),
+    contributor_id: contributorId,
+  });
+  expect(parsed.contributor_id).toBe(contributorId);
+  expect(migration).toContain("contributor_id uuid");
+  const source = readFileSync("src/lib/nova/functions.ts", "utf8");
+  expect(source).toContain("contributor_id: data.contributor_id ?? null");
+});
