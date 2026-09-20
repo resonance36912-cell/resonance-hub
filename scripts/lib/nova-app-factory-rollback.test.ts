@@ -34,3 +34,21 @@ describe("Nova App Factory rollback", () => {
     expect(result.production_deploy_allowed).toBe(false);
   });
 });
+
+
+describe("Nova App Factory execution boundary", () => {
+  test("requires an isolated feature worktree and blocks direct production execution", () => {
+    expect(executor).not.toBeNull();
+    if (!executor) return;
+    expect(() => executor.assertIsolatedAppBuildWorkspace({
+      branch: "ronsas/ealiophin-production",
+      worktree: "C:\\Resonance\\Sources\\ronsas-hub-canonical",
+    })).toThrow();
+    expect(() => executor.assertIsolatedAppBuildWorkspace({
+      branch: "ronsas/nova-app-lab-inventory",
+      worktree: "../ronsas-nova-app-lab-inventory",
+    })).not.toThrow();
+    expect(() => executor.assertAppFactoryStepAllowed({ capability_id: "capability.deploy.production" })).toThrow();
+    expect(() => executor.assertAppFactoryStepAllowed({ capability_id: "capability.deploy.preview" })).not.toThrow();
+  });
+});
