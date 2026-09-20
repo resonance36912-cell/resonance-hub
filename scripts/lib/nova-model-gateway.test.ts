@@ -143,6 +143,13 @@ describe("Nova OpenAI-compatible response contracts", () => {
     });
   });
 
+  test("public chat input cannot self-assert external-provider approval", async () => {
+    const gatewaySource = await Bun.file("src/lib/nova/model-gateway.server.ts").text();
+    expect(chatRoute).not.toContain("human_approved_external");
+    expect(gatewaySource).not.toContain("input.human_approved_external");
+    expect(gatewaySource).toContain("context.human_approved_external");
+  });
+
   test("route handlers delegate to the gateway instead of calling broker/provider URLs directly", () => {
     expect(modelsRoute).toContain("listNovaModelsResponse");
     expect(chatRoute).toContain("completeNovaChat");
