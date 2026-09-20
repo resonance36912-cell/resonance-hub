@@ -41,6 +41,7 @@ CREATE TABLE public.nova_artifact_versions (
   content text NOT NULL,
   derived_from_version_id uuid REFERENCES public.nova_artifact_versions(id) ON DELETE SET NULL,
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  contributor_id uuid,
   approved_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   approved_at timestamptz,
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb,

@@ -190,6 +190,7 @@ export const createNovaArtifactVersion = createServerFn({ method: "POST" })
         state: "draft",
         content_hash: data.content_hash.toLowerCase(),
         content: data.content,
+        contributor_id: data.contributor_id ?? null,
         metadata: data.metadata,
         created_by: context.userId,
       })

@@ -33,6 +33,7 @@ export const ArtifactVersionCreateInput = z
     title: z.string().trim().min(1).max(180),
     content: z.string().max(2_000_000),
     content_hash: z.string().regex(/^[a-f0-9]{64}$/i),
+    contributor_id: z.string().uuid().optional(),
     metadata: z.record(z.string(), z.unknown()).optional().default({}),
   })
   .strict();
