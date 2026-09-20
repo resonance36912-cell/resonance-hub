@@ -100,3 +100,59 @@ export type NovaActionInput = z.infer<typeof NovaActionInput>;
 export type CreateDecisionTrayInput = z.infer<typeof CreateDecisionTrayInput>;
 export type ResolveDecisionTrayInput = z.infer<typeof ResolveDecisionTrayInput>;
 
+export const NovaJobState = z.enum([
+  "PLAN",
+  "AUTHORIZE",
+  "EXECUTE",
+  "VERIFY",
+  "REVIEW",
+  "LEARN",
+  "COMPLETE",
+  "BLOCKED",
+  "WAITING_FOR_HUMAN",
+  "RETRYING",
+  "ROLLING_BACK",
+  "FAILED",
+]);
+
+export const CreateNovaJobInput = z
+  .object({
+    project_id: z.string().uuid(),
+    title: z.string().trim().min(3).max(180),
+    goal: z.string().max(12000).optional().default(""),
+    action: NovaActionInput,
+    capability_id: z.string().trim().min(3).max(160),
+    idempotency_key: z.string().trim().min(8).max(240),
+    depends_on_job_ids: z.array(z.string().uuid()).max(100).optional().default([]),
+    metadata: z.record(z.string(), z.unknown()).optional().default({}),
+  })
+  .strict();
+
+export const TransitionNovaJobInput = z
+  .object({
+    job_id: z.string().uuid(),
+    expected_version: z.number().int().nonnegative(),
+    next_state: NovaJobState,
+    reason: z.string().trim().max(4000).optional().default(""),
+  })
+  .strict();
+
+export const ResumeNovaJobInput = z
+  .object({
+    job_id: z.string().uuid(),
+    expected_version: z.number().int().nonnegative(),
+    reason: z.string().trim().max(4000).optional().default(""),
+  })
+  .strict();
+
+export const ListNovaJobsInput = z
+  .object({
+    project_id: z.string().uuid().optional(),
+    limit: z.number().int().min(1).max(200).optional().default(100),
+  })
+  .strict();
+
+export type NovaJobState = z.infer<typeof NovaJobState>;
+export type CreateNovaJobInput = z.infer<typeof CreateNovaJobInput>;
+export type TransitionNovaJobInput = z.infer<typeof TransitionNovaJobInput>;
+export type ResumeNovaJobInput = z.infer<typeof ResumeNovaJobInput>;

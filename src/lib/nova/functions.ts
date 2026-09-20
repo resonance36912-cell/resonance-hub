@@ -8,11 +8,16 @@ import {
   ResolveDecisionTrayInput,
   ProjectCreateInput,
   ProjectIdInput,
+  CreateNovaJobInput,
+  TransitionNovaJobInput,
+  ResumeNovaJobInput,
+  ListNovaJobsInput,
   type ProjectRole,
 } from "@/lib/nova/contracts";
 import { canReadNovaProject, canReviewNovaProject, canWriteNovaProject } from "@/lib/nova/projects";
 import { classifyNovaAction, fingerprintNovaAction } from "@/lib/nova/autonomy";
 import { resolveDecisionState } from "@/lib/nova/decision-tray";
+import { resumeTargetForState, transitionState } from "@/lib/nova/jobs";
 
 async function novaDb() {
   if (getBackendProvider() !== "supabase") {
@@ -404,5 +409,197 @@ export const resolveDecisionTrayItem = createServerFn({ method: "POST" })
     });
     if (eventError) throw new Error(eventError.message);
     return { decision: resolved };
+  });
+
+function normalizeNovaJobRpcRow(value: any): any {
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+async function transitionNovaJobRow(
+  db: any,
+  job: any,
+  nextState: string,
+  actorUserId: string,
+  reason: string,
+) {
+  transitionState(job.state, nextState as any);
+  const { data, error } = await db.rpc("nova_transition_job", {
+    p_job_id: job.id,
+    p_expected_version: job.version,
+    p_next_state: nextState,
+    p_actor_user_id: actorUserId,
+    p_reason: reason,
+  });
+  if (error) throw new Error(error.message);
+  const updated = normalizeNovaJobRpcRow(data);
+  if (!updated) throw new Error("job_transition_failed");
+  return updated;
+}
+
+export const createNovaJob = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => CreateNovaJobInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    await assertProjectPermission(db, context.userId, data.project_id, "write");
+
+    if (data.depends_on_job_ids.length > 0) {
+      const dependencyIds = [...new Set(data.depends_on_job_ids)];
+      const { data: dependencies, error: dependencyError } = await db
+        .from("nova_jobs")
+        .select("id,project_id")
+        .in("id", dependencyIds);
+      if (dependencyError) throw new Error(dependencyError.message);
+      if (
+        (dependencies ?? []).length !== dependencyIds.length ||
+        (dependencies ?? []).some((row: any) => String(row.project_id) !== data.project_id)
+      ) {
+        throw new Error("invalid_job_dependency");
+      }
+    }
+
+    const { data: job, error } = await db
+      .from("nova_jobs")
+      .insert({
+        project_id: data.project_id,
+        title: data.title,
+        goal: data.goal,
+        state: "PLAN",
+        version: 0,
+        next_action: data.action,
+        capability_id: data.capability_id,
+        idempotency_key: data.idempotency_key,
+        metadata: data.metadata,
+        created_by: context.userId,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+
+    try {
+      if (data.depends_on_job_ids.length > 0) {
+        const rows = [...new Set(data.depends_on_job_ids)].map((depends_on_job_id) => ({
+          job_id: job.id,
+          depends_on_job_id,
+          required_state: "COMPLETE",
+        }));
+        const { error: dependencyInsertError } = await db.from("nova_job_dependencies").insert(rows);
+        if (dependencyInsertError) throw new Error(dependencyInsertError.message);
+      }
+
+      const { error: eventError } = await db.from("nova_job_events").insert({
+        job_id: job.id,
+        event_type: "job.created",
+        from_state: null,
+        to_state: "PLAN",
+        version: 0,
+        actor_user_id: context.userId,
+        payload: { title: data.title, capability_id: data.capability_id },
+      });
+      if (eventError) throw new Error(eventError.message);
+    } catch (failure) {
+      await db.from("nova_jobs").delete().eq("id", job.id);
+      throw failure;
+    }
+
+    return { job };
+  });
+
+export const transitionNovaJob = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => TransitionNovaJobInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    const { data: job, error } = await db
+      .from("nova_jobs")
+      .select("id,project_id,state,version")
+      .eq("id", data.job_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!job) throw new Error("job_not_found");
+    await assertProjectPermission(db, context.userId, job.project_id, "write");
+    if (Number(job.version) !== data.expected_version) throw new Error("stale_job_version");
+
+    const updated = await transitionNovaJobRow(
+      db,
+      job,
+      data.next_state,
+      context.userId,
+      data.reason,
+    );
+    return { job: updated };
+  });
+
+export const resumeNovaJob = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => ResumeNovaJobInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    const { data: job, error } = await db
+      .from("nova_jobs")
+      .select("id,project_id,state,resume_state,version")
+      .eq("id", data.job_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!job) throw new Error("job_not_found");
+    await assertProjectPermission(db, context.userId, job.project_id, "write");
+    if (Number(job.version) !== data.expected_version) throw new Error("stale_job_version");
+
+    const target = resumeTargetForState(job.state, job.resume_state ?? null);
+    const updated = await transitionNovaJobRow(
+      db,
+      job,
+      target,
+      context.userId,
+      data.reason || "Job resumed",
+    );
+    return { job: updated };
+  });
+
+export const listNovaJobs = createServerFn({ method: "GET" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => ListNovaJobsInput.parse(input ?? {}))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+
+    if (data.project_id) {
+      await assertProjectPermission(db, context.userId, data.project_id, "read");
+      const { data: jobs, error } = await db
+        .from("nova_jobs")
+        .select("*")
+        .eq("project_id", data.project_id)
+        .order("updated_at", { ascending: false })
+        .limit(data.limit);
+      if (error) throw new Error(error.message);
+      return { jobs: jobs ?? [] };
+    }
+
+    if (await hasServerBackendRole(context.userId, "admin")) {
+      const { data: jobs, error } = await db
+        .from("nova_jobs")
+        .select("*")
+        .order("updated_at", { ascending: false })
+        .limit(data.limit);
+      if (error) throw new Error(error.message);
+      return { jobs: jobs ?? [] };
+    }
+
+    const { data: memberships, error: membershipError } = await db
+      .from("nova_project_members")
+      .select("project_id")
+      .eq("user_id", context.userId)
+      .limit(1000);
+    if (membershipError) throw new Error(membershipError.message);
+    const projectIds = [...new Set((memberships ?? []).map((row: any) => String(row.project_id)))];
+    if (projectIds.length === 0) return { jobs: [] };
+
+    const { data: jobs, error } = await db
+      .from("nova_jobs")
+      .select("*")
+      .in("project_id", projectIds)
+      .order("updated_at", { ascending: false })
+      .limit(data.limit);
+    if (error) throw new Error(error.message);
+    return { jobs: jobs ?? [] };
   });
 
