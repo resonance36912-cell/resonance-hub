@@ -42,6 +42,7 @@ describe("DataNest governed memory lifecycle", () => {
     expect(migration).toContain("to_tsvector");
     expect(migration).toContain("USING gin");
     expect(migration).toContain("TO service_role");
+    expect(migration).not.toContain("SECURITY DEFINER");
     expect(functionsSource).toContain("hasServerBackendRole");
     expect(functionsSource).toContain("governance_decisions");
     for (const name of [
