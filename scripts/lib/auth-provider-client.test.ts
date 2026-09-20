@@ -44,19 +44,26 @@ describe("RONS client auth facade", () => {
   });
 });
 
-  test("low-risk account and checkout routes use the RONS auth facade", () => {
+  test("low-risk account routes use the RONS auth facade", () => {
     for (const rel of [
       "src/routes/account.billing.tsx",
       "src/routes/account.invoices.$id.tsx",
       "src/routes/account.invoices.by-payment.$pf.tsx",
       "src/routes/account.invoices.tsx",
       "src/routes/account.subscriptions.tsx",
-      "src/routes/checkout.tsx",
     ]) {
       const source = readFileSync(rel, "utf8");
       expect(source).toContain("ronsAuth.");
       expect(source).not.toContain("supabase.auth.");
     }
+  });
+
+  test("promotion checkout stays static and auth-independent", () => {
+    const source = readFileSync("src/routes/checkout.tsx", "utf8");
+    expect(source).toContain("FREE_PROMOTION");
+    expect(source).toContain("Checkout is disabled during the promotion");
+    expect(source).not.toContain("ronsAuth.");
+    expect(source).not.toContain("supabase.auth.");
   });
 
   test("tool routes split auth from existing Supabase data queries", () => {
