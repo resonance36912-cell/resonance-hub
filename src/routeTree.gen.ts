@@ -16,6 +16,7 @@ import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as MyifyRouteImport } from './routes/myify'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -23,6 +24,8 @@ import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
+import { Route as V1ModelsRouteImport } from './routes/v1/models'
+import { Route as V1EmbeddingsRouteImport } from './routes/v1/embeddings'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
 import { Route as ToolsReleasesRouteImport } from './routes/tools.releases'
 import { Route as ToolsPrStatusRouteImport } from './routes/tools.pr-status'
@@ -57,14 +60,19 @@ import { Route as AccountSubscriptionsRouteImport } from './routes/account.subsc
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as V1ChatCompletionsRouteImport } from './routes/v1/chat/completions'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
 import { Route as ApiBillingCatalogRouteImport } from './routes/api/billing/catalog'
 import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiSovereignNovaChatRouteImport } from './routes/api/sovereign/nova/chat'
 import { Route as ApiSovereignLaunchAppRouteImport } from './routes/api/sovereign/launch/$app'
 import { Route as ApiSovereignAuthActionRouteImport } from './routes/api/sovereign/auth/$action'
 import { Route as ApiPublicUpdatesRssRouteImport } from './routes/api/public/updates/rss'
@@ -119,6 +127,11 @@ const MyifyRoute = MyifyRouteImport.update({
   path: '/myify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -152,6 +165,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
   id: '/youtube-optimizer/pricing',
   path: '/youtube-optimizer/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const V1ModelsRoute = V1ModelsRouteImport.update({
+  id: '/v1/models',
+  path: '/v1/models',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const V1EmbeddingsRoute = V1EmbeddingsRouteImport.update({
+  id: '/v1/embeddings',
+  path: '/v1/embeddings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
@@ -325,6 +348,23 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const V1ChatCompletionsRoute = V1ChatCompletionsRouteImport.update({
+  id: '/v1/chat/completions',
+  path: '/v1/chat/completions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -345,6 +385,12 @@ const AccountInvoicesIdRoute = AccountInvoicesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AccountInvoicesRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -368,6 +414,11 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSovereignNovaChatRoute = ApiSovereignNovaChatRouteImport.update({
+  id: '/api/sovereign/nova/chat',
+  path: '/api/sovereign/nova/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSovereignLaunchAppRoute = ApiSovereignLaunchAppRouteImport.update({
   id: '/api/sovereign/launch/$app',
   path: '/api/sovereign/launch/$app',
@@ -442,514 +493,7 @@ const ApiPublicAppStatusHealthRoute =
   } as any)
 const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicAnalyticsAuthGateRouteImport.update({
-    id: '/api/public/analytics/auth-gate',
-    path: '/api/public/analytics/auth-gate',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const AccountInvoicesByPaymentPfRoute =
-  AccountInvoicesByPaymentPfRouteImport.update({
-    id: '/by-payment/$pf',
-    path: '/by-payment/$pf',
-    getParentRoute: () => AccountInvoicesRoute,
-  } as any)
-const ApiPublicRopCronMeasureOutcomesRoute =
-  ApiPublicRopCronMeasureOutcomesRouteImport.update({
-    id: '/api/public/rop/cron/measure-outcomes',
-    path: '/api/public/rop/cron/measure-outcomes',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicRopCronCrossAppScanRoute =
-  ApiPublicRopCronCrossAppScanRouteImport.update({
-    id: '/api/public/rop/cron/cross-app-scan',
-    path: '/api/public/rop/cron/cross-app-scan',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicGenerateCreativeStudioPosterRoute =
-  ApiPublicGenerateCreativeStudioPosterRouteImport.update({
-    id: '/api/public/generate/creative-studio/poster',
-    path: '/api/public/generate/creative-studio/poster',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/changelog': typeof ChangelogRoute
-  '/checkout': typeof CheckoutRouteWithChildren
-  '/governance': typeof GovernanceRoute
-  '/login': typeof LoginRoute
-  '/myify': typeof MyifyRoute
-  '/pricing': typeof PricingRoute
-  '/privacy': typeof PrivacyRoute
-  '/rcgf': typeof RcgfRoute
-  '/refunds': typeof RefundsRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/terms': typeof TermsRoute
-  '/account/billing': typeof AccountBillingRoute
-  '/account/debug': typeof AccountDebugRoute
-  '/account/invoices': typeof AccountInvoicesRouteWithChildren
-  '/account/subscriptions': typeof AccountSubscriptionsRoute
-  '/admin/access': typeof AdminAccessRoute
-  '/admin/billing': typeof AdminBillingRoute
-  '/admin/ci-health': typeof AdminCiHealthRoute
-  '/admin/control-center': typeof AdminControlCenterRoute
-  '/admin/credits': typeof AdminCreditsRoute
-  '/admin/email-domain': typeof AdminEmailDomainRoute
-  '/admin/emails': typeof AdminEmailsRoute
-  '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
-  '/admin/invoices': typeof AdminInvoicesRoute
-  '/admin/login': typeof AdminLoginRoute
-  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
-  '/admin/promotion': typeof AdminPromotionRoute
-  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
-  '/admin/repo-health': typeof AdminRepoHealthRoute
-  '/admin/revenue': typeof AdminRevenueRoute
-  '/admin/rop': typeof AdminRopRoute
-  '/admin/security-scan': typeof AdminSecurityScanRoute
-  '/admin/webhooks': typeof AdminWebhooksRoute
-  '/checkout/cancel': typeof CheckoutCancelRoute
-  '/checkout/success': typeof CheckoutSuccessRoute
-  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/epublisher/pricing': typeof EpublisherPricingRoute
-  '/governance/workspace': typeof GovernanceWorkspaceRoute
-  '/legal/governance': typeof LegalGovernanceRoute
-  '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/issue-triage': typeof ToolsIssueTriageRoute
-  '/tools/pr-status': typeof ToolsPrStatusRoute
-  '/tools/releases': typeof ToolsReleasesRoute
-  '/updates/preview': typeof UpdatesPreviewRoute
-  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
-  '/admin/': typeof AdminIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/account/invoices/$id': typeof AccountInvoicesIdRoute
-  '/api/billing/catalog': typeof ApiBillingCatalogRoute
-  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
-  '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
-  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
-  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
-  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
-  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
-  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
-  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
-  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
-  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
-  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
-  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
-  '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
-  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
-  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
-  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
-  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
-}
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/changelog': typeof ChangelogRoute
-  '/checkout': typeof CheckoutRouteWithChildren
-  '/governance': typeof GovernanceRoute
-  '/login': typeof LoginRoute
-  '/myify': typeof MyifyRoute
-  '/pricing': typeof PricingRoute
-  '/privacy': typeof PrivacyRoute
-  '/rcgf': typeof RcgfRoute
-  '/refunds': typeof RefundsRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/terms': typeof TermsRoute
-  '/account/billing': typeof AccountBillingRoute
-  '/account/debug': typeof AccountDebugRoute
-  '/account/invoices': typeof AccountInvoicesRouteWithChildren
-  '/account/subscriptions': typeof AccountSubscriptionsRoute
-  '/admin/access': typeof AdminAccessRoute
-  '/admin/billing': typeof AdminBillingRoute
-  '/admin/ci-health': typeof AdminCiHealthRoute
-  '/admin/control-center': typeof AdminControlCenterRoute
-  '/admin/credits': typeof AdminCreditsRoute
-  '/admin/email-domain': typeof AdminEmailDomainRoute
-  '/admin/emails': typeof AdminEmailsRoute
-  '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
-  '/admin/invoices': typeof AdminInvoicesRoute
-  '/admin/login': typeof AdminLoginRoute
-  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
-  '/admin/promotion': typeof AdminPromotionRoute
-  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
-  '/admin/repo-health': typeof AdminRepoHealthRoute
-  '/admin/revenue': typeof AdminRevenueRoute
-  '/admin/rop': typeof AdminRopRoute
-  '/admin/security-scan': typeof AdminSecurityScanRoute
-  '/admin/webhooks': typeof AdminWebhooksRoute
-  '/checkout/cancel': typeof CheckoutCancelRoute
-  '/checkout/success': typeof CheckoutSuccessRoute
-  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/epublisher/pricing': typeof EpublisherPricingRoute
-  '/governance/workspace': typeof GovernanceWorkspaceRoute
-  '/legal/governance': typeof LegalGovernanceRoute
-  '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/issue-triage': typeof ToolsIssueTriageRoute
-  '/tools/pr-status': typeof ToolsPrStatusRoute
-  '/tools/releases': typeof ToolsReleasesRoute
-  '/updates/preview': typeof UpdatesPreviewRoute
-  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
-  '/admin': typeof AdminIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/account/invoices/$id': typeof AccountInvoicesIdRoute
-  '/api/billing/catalog': typeof ApiBillingCatalogRoute
-  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
-  '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
-  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
-  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
-  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
-  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
-  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
-  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
-  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
-  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
-  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
-  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
-  '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
-  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
-  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
-  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
-  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
-}
-export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/changelog': typeof ChangelogRoute
-  '/checkout': typeof CheckoutRouteWithChildren
-  '/governance': typeof GovernanceRoute
-  '/login': typeof LoginRoute
-  '/myify': typeof MyifyRoute
-  '/pricing': typeof PricingRoute
-  '/privacy': typeof PrivacyRoute
-  '/rcgf': typeof RcgfRoute
-  '/refunds': typeof RefundsRoute
-  '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/terms': typeof TermsRoute
-  '/account/billing': typeof AccountBillingRoute
-  '/account/debug': typeof AccountDebugRoute
-  '/account/invoices': typeof AccountInvoicesRouteWithChildren
-  '/account/subscriptions': typeof AccountSubscriptionsRoute
-  '/admin/access': typeof AdminAccessRoute
-  '/admin/billing': typeof AdminBillingRoute
-  '/admin/ci-health': typeof AdminCiHealthRoute
-  '/admin/control-center': typeof AdminControlCenterRoute
-  '/admin/credits': typeof AdminCreditsRoute
-  '/admin/email-domain': typeof AdminEmailDomainRoute
-  '/admin/emails': typeof AdminEmailsRoute
-  '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
-  '/admin/invoices': typeof AdminInvoicesRoute
-  '/admin/login': typeof AdminLoginRoute
-  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
-  '/admin/promotion': typeof AdminPromotionRoute
-  '/admin/promotion-campaigns': typeof AdminPromotionCampaignsRoute
-  '/admin/repo-health': typeof AdminRepoHealthRoute
-  '/admin/revenue': typeof AdminRevenueRoute
-  '/admin/rop': typeof AdminRopRoute
-  '/admin/security-scan': typeof AdminSecurityScanRoute
-  '/admin/webhooks': typeof AdminWebhooksRoute
-  '/checkout/cancel': typeof CheckoutCancelRoute
-  '/checkout/success': typeof CheckoutSuccessRoute
-  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
-  '/epublisher/pricing': typeof EpublisherPricingRoute
-  '/governance_/workspace': typeof GovernanceWorkspaceRoute
-  '/legal/governance': typeof LegalGovernanceRoute
-  '/sync-vision/pricing': typeof SyncVisionPricingRoute
-  '/tools/issue-triage': typeof ToolsIssueTriageRoute
-  '/tools/pr-status': typeof ToolsPrStatusRoute
-  '/tools/releases': typeof ToolsReleasesRoute
-  '/updates/preview': typeof UpdatesPreviewRoute
-  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
-  '/admin/': typeof AdminIndexRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/account/invoices/$id': typeof AccountInvoicesIdRoute
-  '/api/billing/catalog': typeof ApiBillingCatalogRoute
-  '/api/public/entitlement': typeof ApiPublicEntitlementRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
-  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
-  '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
-  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
-  '/api/public/forms/create-issue': typeof ApiPublicFormsCreateIssueRoute
-  '/api/public/hooks/ci-failure-alerts': typeof ApiPublicHooksCiFailureAlertsRoute
-  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
-  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
-  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
-  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
-  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
-  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
-  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
-  '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
-  '/api/sovereign/auth/$action': typeof ApiSovereignAuthActionRoute
-  '/api/sovereign/launch/$app': typeof ApiSovereignLaunchAppRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
-  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
-  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
-}
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/changelog'
-    | '/checkout'
-    | '/governance'
-    | '/login'
-    | '/myify'
-    | '/pricing'
-    | '/privacy'
-    | '/rcgf'
-    | '/refunds'
-    | '/sitemap.xml'
-    | '/terms'
-    | '/account/billing'
-    | '/account/debug'
-    | '/account/invoices'
-    | '/account/subscriptions'
-    | '/admin/access'
-    | '/admin/billing'
-    | '/admin/ci-health'
-    | '/admin/control-center'
-    | '/admin/credits'
-    | '/admin/email-domain'
-    | '/admin/emails'
-    | '/admin/entitlement-diagnostics'
-    | '/admin/invoices'
-    | '/admin/login'
-    | '/admin/payfast-audit'
-    | '/admin/promotion'
-    | '/admin/promotion-campaigns'
-    | '/admin/repo-health'
-    | '/admin/revenue'
-    | '/admin/rop'
-    | '/admin/security-scan'
-    | '/admin/webhooks'
-    | '/checkout/cancel'
-    | '/checkout/success'
-    | '/creative-studio/pricing'
-    | '/email/unsubscribe'
-    | '/epublisher/pricing'
-    | '/governance/workspace'
-    | '/legal/governance'
-    | '/sync-vision/pricing'
-    | '/tools/issue-triage'
-    | '/tools/pr-status'
-    | '/tools/releases'
-    | '/updates/preview'
-    | '/youtube-optimizer/pricing'
-    | '/admin/'
-    | '/.lovable/oauth/consent'
-    | '/account/invoices/$id'
-    | '/api/billing/catalog'
-    | '/api/public/entitlement'
-    | '/lovable/email/suppression'
-    | '/account/invoices/by-payment/$pf'
-    | '/api/public/analytics/auth-gate'
-    | '/api/public/app-status/health'
-    | '/api/public/forms/create-issue'
-    | '/api/public/hooks/ci-failure-alerts'
-    | '/api/public/hooks/process-subscription-emails'
-    | '/api/public/payfast/itn'
-    | '/api/public/rop/ingest-applied'
-    | '/api/public/rop/ingest-perf'
-    | '/api/public/rop/ingest-suggestion'
-    | '/api/public/rop/pull-broadcasts'
-    | '/api/public/updates/atom'
-    | '/api/public/updates/rss'
-    | '/api/sovereign/auth/$action'
-    | '/api/sovereign/launch/$app'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
-    | '/api/public/generate/creative-studio/poster'
-    | '/api/public/rop/cron/cross-app-scan'
-    | '/api/public/rop/cron/measure-outcomes'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/changelog'
-    | '/checkout'
-    | '/governance'
-    | '/login'
-    | '/myify'
-    | '/pricing'
-    | '/privacy'
-    | '/rcgf'
-    | '/refunds'
-    | '/sitemap.xml'
-    | '/terms'
-    | '/account/billing'
-    | '/account/debug'
-    | '/account/invoices'
-    | '/account/subscriptions'
-    | '/admin/access'
-    | '/admin/billing'
-    | '/admin/ci-health'
-    | '/admin/control-center'
-    | '/admin/credits'
-    | '/admin/email-domain'
-    | '/admin/emails'
-    | '/admin/entitlement-diagnostics'
-    | '/admin/invoices'
-    | '/admin/login'
-    | '/admin/payfast-audit'
-    | '/admin/promotion'
-    | '/admin/promotion-campaigns'
-    | '/admin/repo-health'
-    | '/admin/revenue'
-    | '/admin/rop'
-    | '/admin/security-scan'
-    | '/admin/webhooks'
-    | '/checkout/cancel'
-    | '/checkout/success'
-    | '/creative-studio/pricing'
-    | '/email/unsubscribe'
-    | '/epublisher/pricing'
-    | '/governance/workspace'
-    | '/legal/governance'
-    | '/sync-vision/pricing'
-    | '/tools/issue-triage'
-    | '/tools/pr-status'
-    | '/tools/releases'
-    | '/updates/preview'
-    | '/youtube-optimizer/pricing'
-    | '/admin'
-    | '/.lovable/oauth/consent'
-    | '/account/invoices/$id'
-    | '/api/billing/catalog'
-    | '/api/public/entitlement'
-    | '/lovable/email/suppression'
-    | '/account/invoices/by-payment/$pf'
-    | '/api/public/analytics/auth-gate'
-    | '/api/public/app-status/health'
-    | '/api/public/forms/create-issue'
-    | '/api/public/hooks/ci-failure-alerts'
-    | '/api/public/hooks/process-subscription-emails'
-    | '/api/public/payfast/itn'
-    | '/api/public/rop/ingest-applied'
-    | '/api/public/rop/ingest-perf'
-    | '/api/public/rop/ingest-suggestion'
-    | '/api/public/rop/pull-broadcasts'
-    | '/api/public/updates/atom'
-    | '/api/public/updates/rss'
-    | '/api/sovereign/auth/$action'
-    | '/api/sovereign/launch/$app'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
-    | '/api/public/generate/creative-studio/poster'
-    | '/api/public/rop/cron/cross-app-scan'
-    | '/api/public/rop/cron/measure-outcomes'
-  id:
-    | '__root__'
-    | '/'
-    | '/changelog'
-    | '/checkout'
-    | '/governance'
-    | '/login'
-    | '/myify'
-    | '/pricing'
-    | '/privacy'
-    | '/rcgf'
-    | '/refunds'
-    | '/sitemap.xml'
-    | '/terms'
-    | '/account/billing'
-    | '/account/debug'
-    | '/account/invoices'
-    | '/account/subscriptions'
-    | '/admin/access'
-    | '/admin/billing'
-    | '/admin/ci-health'
-    | '/admin/control-center'
-    | '/admin/credits'
-    | '/admin/email-domain'
-    | '/admin/emails'
-    | '/admin/entitlement-diagnostics'
-    | '/admin/invoices'
-    | '/admin/login'
-    | '/admin/payfast-audit'
-    | '/admin/promotion'
-    | '/admin/promotion-campaigns'
-    | '/admin/repo-health'
-    | '/admin/revenue'
-    | '/admin/rop'
-    | '/admin/security-scan'
-    | '/admin/webhooks'
-    | '/checkout/cancel'
-    | '/checkout/success'
-    | '/creative-studio/pricing'
-    | '/email/unsubscribe'
-    | '/epublisher/pricing'
-    | '/governance_/workspace'
-    | '/legal/governance'
-    | '/sync-vision/pricing'
-    | '/tools/issue-triage'
-    | '/tools/pr-status'
-    | '/tools/releases'
-    | '/updates/preview'
-    | '/youtube-optimizer/pricing'
-    | '/admin/'
-    | '/.lovable/oauth/consent'
-    | '/account/invoices/$id'
-    | '/api/billing/catalog'
-    | '/api/public/entitlement'
-    | '/lovable/email/suppression'
-    | '/account/invoices/by-payment/$pf'
-    | '/api/public/analytics/auth-gate'
-    | '/api/public/app-status/health'
-    | '/api/public/forms/create-issue'
-    | '/api/public/hooks/ci-failure-alerts'
-    | '/api/public/hooks/process-subscription-emails'
-    | '/api/public/payfast/itn'
-    | '/api/public/rop/ingest-applied'
-    | '/api/public/rop/ingest-perf'
-    | '/api/public/rop/ingest-suggestion'
-    | '/api/public/rop/pull-broadcasts'
-    | '/api/public/updates/atom'
-    | '/api/public/updates/rss'
-    | '/api/sovereign/auth/$action'
-    | '/api/sovereign/launch/$app'
-    | '/lovable/email/queue/process'
-    | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
-    | '/api/public/generate/creative-studio/poster'
-    | '/api/public/rop/cron/cross-app-scan'
-    | '/api/public/rop/cron/measure-outcomes'
-  fileRoutesById: FileRoutesById
-}
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ChangelogRoute: typeof ChangelogRoute
-  CheckoutRoute: typeof CheckoutRouteWithChildren
-  GovernanceRoute: typeof GovernanceRoute
-  LoginRoute: typeof LoginRoute
-  MyifyRoute: typeof MyifyRoute
-  PricingRoute: typeof PricingRoute
-  PrivacyRoute: typeof PrivacyRoute
-  RcgfRoute: typeof RcgfRoute
-  RefundsRoute: typeof RefundsRoute
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  TermsRoute: typeof TermsRoute
-  AccountBillingRoute: typeof AccountBillingRoute
-  AccountDebugRoute: typeof AccountDebugRoute
-  AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
-  AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
-  AdminAccessRoute: typeof AdminAccessRoute
-  AdminBillingRoute: typeof AdminBillingRoute
+    id: '/api/public/analytics/auth-gate',°(€€€•ÑA…É•¹ÑI½ÕÑ”è€ ¤€ôøÉ½½ÑI½ÕÑ•%µÁ½ÉĞ°(€ô…Ì…¹ä¤()•áÁ½ÉĞ¥¹Ñ•É™…”¥±•I½ÕÑ•Í	åÕ±±A…Ñ ì(€€œ¼œèÑåÁ•½˜%¹‘•áI½ÕÑ”(€€œ½¡…¹•±½œœèÑåÁ•½˜¡…¹•±½I½ÕÑ”(€€œ½¡•­½ÕĞœèÑåÁ•½˜¡•­½ÕÑI½ÕÑ•]¥Ñ¡¡¥±‘É•¸(€€œ½½Ù•É¹…¹”œèÑåÁ•½˜½Ù•É¹…¹•I½ÕÑ”(€€œ½±½¥¸œèÑåÁ•½˜1½¥¹I½ÕÑ”(€€œ½µÀœèÑåÁ•½˜5ÁI½ÕÑ”(€€œ½µå¥™äœèÑåÁ•½˜5å¥™åI½ÕÑ”(€€œ½ÁÉ¥¥¹œœèÑåÁ•½˜AÉ¥¥¹I½ÕÑ”(€€œ½ÁÉ¥Ù…äœèÑåÁ•½˜AÉ¥Ù…åI½ÕÑ”(€€œ½É˜œèÑåÁ•½˜I™I½ÕÑ”(€€œ½É•™Õ¹‘ÌœèÑåÁ•½˜I•™Õ¹‘ÍI½ÕÑ”(€€œ½Í¥Ñ•µ…À¹áµ°œèÑåÁ•½˜M¥Ñ•µ…Á½Ñáµ±I½ÕÑ”(€€œ½Ñ•ÉµÌœèÑåÁ•½˜Q•ÉµÍI½ÕÑ”(€€œ¼¹µÀ½±¥ÍĞµÑ½½±ÌœèÑåÁ•½˜¡…ÈäÅ½ÑµÁ¡…ÈäÍ1¥ÍÑQ½½±ÍI½ÕÑ”(€€œ¼¹İ•±°µ­¹½İ¸½½…ÕÑ µÁÉ½Ñ•Ñ•µÉ•Í½ÕÉ”œèÑåÁ•½˜¡…ÈäÅ½Ñİ•±±-¹½İ¹¡…ÈäÍ=…ÕÑ¡AÉ½Ñ•Ñ•‘I•Í½ÕÉ•I½ÕÑ”(€€œ½…½Õ¹Ğ½‰¥±±¥¹œœèÑåÁ•½˜½Õ¹Ñ	¥±±¥¹I½ÕÑ”(€€œ½…½Õ¹Ğ½‘•‰ÕœœèÑåÁ•½˜½Õ¹Ñ•‰ÕI½ÕÑ”(€€œ½…½Õ¹Ğ½¥¹Ù½¥•ÌœèÑåÁ•½˜½Õ¹Ñ%¹Ù½¥•ÍI½ÕÑ•]¥Ñ¡¡¥±‘É•¸(€€œ½…½Õ¹Ğ½ÍÕ‰ÍÉ¥ÁÑ¥½¹ÌœèÑåÁ•½˜½Õ¹ÑMÕ‰ÍÉ¥ÁÑ¥½¹ÍI½ÕÑ”(€€œ½…‘µ¥¸½…•ÍÌœèÑåÁ•½˜‘µ¥¹•ÍÍI½ÕÑ”(€€œ½…‘µ¥¸½‰¥±±¥¹œœèÑåÁ•½˜‘µ¥¹	¥±±¥¹I½ÕÑ”(€€œ½…‘µ¥¸½¤µ¡•…±Ñ œèÑåÁ•½˜‘µ¥¹¥!•…±Ñ¡I½ÕÑ”(€€œ½…‘µ¥¸½½¹ÑÉ½°µ•¹Ñ•ÈœèÑåÁ•½˜‘µ¥¹½¹ÑÉ½±•¹Ñ•ÉI½ÕÑ”(€€œ½…‘µ¥¸½É•‘¥ÑÌœèÑåÁ•½˜‘µ¥¹É•‘¥ÑÍI½ÕÑ”(€€œ½…‘µ¥¸½•µ…¥°µ‘½µ…¥¸œèÑåÁ•½˜‘µ¥¹µ…¥±½µ…¥¹I½ÕÑ”(€€œ½…‘µ¥¸½•µ…¥±ÌœèÑåÁ•½˜‘µ¥¹µ…¥±ÍI½ÕÑ”(€€œ½…‘µ¥¸½•¹Ñ¥Ñ±•µ•¹Ğµ‘¥…¹½ÍÑ¥ÌœèÑåÁ•½˜‘µ¥¹¹Ñ¥Ñ±•µ•¹Ñ¥…¹½ÍÑ¥ÍI½ÕÑ”(€€œ½…‘µ¥¸½¥¹Ù½¥•ÌœèÑåÁ•½˜‘µ¥¹%¹Ù½¥•ÍI½ÕÑ”(€€œ½…‘µ¥¸½±½¥¸œèÑåÁ•½˜‘µ¥¹1½¥¹I½ÕÑ”(€€œ½…‘µ¥¸½Á…å™…ÍĞµ…Õ‘¥ĞœèÑåÁ•½˜‘µ¥¹A…å™…ÍÑÕ‘¥ÑI½ÕÑ”(€€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸œèÑåÁ•½˜‘µ¥¹AÉ½µ½Ñ¥½¹I½ÕÑ”(€€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸µ…µÁ…¥¹ÌœèÑåÁ•½˜‘µ¥¹AÉ½µ½Ñ¥½¹…µÁ…¥¹ÍI½ÕÑ”(€€œ½…‘µ¥¸½É•Á¼µ¡•…±Ñ œèÑåÁ•½˜‘µ¥¹I•Á½!•…±Ñ¡I½ÕÑ”(€€œ½…‘µ¥¸½É•Ù•¹Õ”œèÑåÁ•½˜‘µ¥¹I•Ù•¹Õ•I½ÕÑ”(€€œ½…‘µ¥¸½É½ÀœèÑåÁ•½˜‘µ¥¹I½ÁI½ÕÑ”(€€œ½…‘µ¥¸½Í•ÕÉ¥ÑäµÍ…¸œèÑåÁ•½˜‘µ¥¹M•ÕÉ¥ÑåM…¹I½ÕÑ”(€€œ½…‘µ¥¸½İ•‰¡½½­ÌœèÑåÁ•½˜‘µ¥¹]•‰¡½½­ÍI½ÕÑ”(€€œ½¡•­½ÕĞ½…¹•°œèÑåÁ•½˜¡•­½ÕÑ…¹•±I½ÕÑ”(€€œ½¡•­½ÕĞ½ÍÕ•ÍÌœèÑåÁ•½˜¡•­½ÕÑMÕ•ÍÍI½ÕÑ”(€€œ½É•…Ñ¥Ù”µÍÑÕ‘¥¼½ÁÉ¥¥¹œœèÑåÁ•½˜É•…Ñ¥Ù•MÑÕ‘¥½AÉ¥¥¹I½ÕÑ”(€€œ½•µ…¥°½Õ¹ÍÕ‰ÍÉ¥‰”œèÑåÁ•½˜µ…¥±U¹ÍÕ‰ÍÉ¥†’÷V&Æ–2övVæW&FRö7&VF—fR×7GVF–ò÷÷7FW"s¢G—Vöb•V&Æ–4vVæW&FT7&VF—fU7GVF–õ÷7FW%&÷WFP¢rö’÷V&Æ–2÷&÷ö7&öâö7&÷72Ö×66âs¢G—Vöb•V&Æ–5&÷7&öä7&÷7466å&÷WFP¢rö’÷V&Æ–2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2s¢G—Vöb•V&Æ–5&÷7&öäÖV7W&T÷WF6öÖW5&÷WFP§Ğ¦W‡÷'B–çFW&f6Rf–ÆU&÷WFW4'•Fò°¢ròs¢G—Vöb–æFW…&÷WFP¢rö6†ævVÆörs¢G—Vöb6†ævVÆöu&÷WFP¢rö6†V6¶÷WBs¢G—Vöb6†V6¶÷WE&÷WFUv—F„6†–ÆG&Và¢röv÷fW&ææ6Rs¢G—Vöbv÷fW&ææ6U&÷WFP¢röÆöv–âs¢G—VöbÆöv–å&÷WFP¢röÖ7s¢G—VöbÖ7&÷WFP¢rö×––g’s¢G—Vöb×––g•&÷WFP¢r÷&–6–ærs¢G—Vöb&–6–æu&÷WFP¢r÷&—f7’s¢G—Vöb&—f7•&÷WFP¢r÷&6vbs¢G—Vöb&6ve&÷WFP¢r÷&VgVæG2s¢G—Vöb&VgVæG5&÷WFP¢r÷6—FVÖç†ÖÂs¢G—Vöb6—FVÖF÷G†ÖÅ&÷WFP¢r÷FW&×2s¢G—VöbFW&×5&÷WFP¢ròæÖ7öÆ—7B×FööÇ2s¢G—Vöb6†#“F÷FÖ76†#“4Æ—7EFööÇ5&÷WFP¢ròçvVÆÂÖ¶æ÷vâööWF‚×&÷FV7FVB×&W6÷W&6Rs¢G—Vöb6†#“F÷GvVÆÄ¶æ÷vä6†#“4öWF…&÷FV7FVE&W6÷W&6U&÷WFP¢rö66÷VçBö&–ÆÆ–ærs¢G—Vöb66÷VçD&–ÆÆ–æu&÷WFP¢rö66÷VçBöFV'Vrs¢G—Vöb66÷VçDFV'Vu&÷WFP¢rö66÷VçBö–çfö–6W2s¢G—Vöb66÷VçD–çfö–6W5&÷WFUv—F„6†–ÆG&Và¢rö66÷VçB÷7V'67&—F–öç2s¢G—Vöb66÷VçE7V'67&—F–öç5&÷WFP¢röFÖ–âö66W72s¢G—VöbFÖ–ä66W75&÷WFP¢röFÖ–âö&–ÆÆ–ærs¢G—VöbFÖ–ä&–ÆÆ–æu&÷WFP¢röFÖ–âö6’Ö†VÇF‚s¢G—VöbFÖ–ä6”†VÇF…&÷WFP¢röFÖ–âö6öçG&öÂÖ6VçFW"s¢G—VöbFÖ–ä6öçG&öÄ6VçFW%&÷WFP¢röFÖ–âö7&VF—G2s¢G—VöbFÖ–ä7&VF—G5&÷WFP¢röFÖ–âöVÖ–ÂÖFöÖ–âs¢G—VöbFÖ–äVÖ–ÄFöÖ–å&÷WFP¢röFÖ–âöVÖ–Ç2s¢G—VöbFÖ–äVÖ–Ç5&÷WFP¢röFÖ–âöVçF—FÆVÖVçBÖF–væ÷7F–72s¢G—VöbFÖ–äVçF—FÆVÖVçDF–væ÷7F–75&÷WFP¢röFÖ–âö–çfö–6W2s¢G—VöbFÖ–ä–çfö–6W5&÷WFP¢röFÖ–âöÆöv–âs¢G—VöbFÖ–äÆöv–å&÷WFP¢röFÖ–â÷–f7BÖVF—Bs¢G—VöbFÖ–å–f7DVF—E&÷WFP¢röFÖ–â÷&öÖ÷F–öâs¢G—VöbFÖ–å&öÖ÷F–öå&÷WFP¢röFÖ–â÷&öÖ÷F–öâÖ6×–vç2s¢G—VöbFÖ–å&öÖ÷F–öä6×–vç5&÷WFP¢röFÖ–â÷&WòÖ†VÇF‚s¢G—VöbFÖ–å&Wô†VÇF…&÷WFP¢röFÖ–â÷&WfVçVRs¢G—VöbFÖ–å&WfVçVU&÷WFP¢röFÖ–â÷&÷s¢G—VöbFÖ–å&÷&÷WFP¢röFÖ–â÷6V7W&—G’×66âs¢G—VöbFÖ–å6V7W&—G•66å&÷WFP¢röFÖ–â÷vV&†öö·2s¢G—VöbFÖ–åvV&†öö·5&÷WFP¢rö6†V6¶÷WBö6æ6VÂs¢G—Vöb6†V6¶÷WD6æ6VÅ&÷WFP¢rö6†V6¶÷WB÷7V66W72s¢G—Vöb6†V6¶÷WE7V66W75&÷WFP¢rö7&VF—fR×7GVF–ò÷&–6–ærs¢G—Vöb7&VF—fU7GVF–õ&–6–æu&÷WFP¢röVÖ–Â÷Vç7V'67&–&Rs¢G—VöbVÖ–ÅVç7V'67&–&U&÷WFP¢röWV&Æ—6†W"÷&–6–ærs¢G—VöbWV&Æ—6†W%&–6–æu&÷WFP¢röv÷fW&ææ6R÷v÷&·76Rs¢G—Vöbv÷fW&ææ6Uv÷&·76U&÷WFP¢röÆVvÂöv÷fW&ææ6Rs¢G—VöbÆVvÄv÷fW&ææ6U&÷WFP¢r÷7–æ2×f—6–öâ÷&–6–ærs¢G—Vöb7–æ5f—6–öå&–6–æu&÷WFP¢r÷FööÇ2ö—77VR×G&–vRs¢G—VöbFööÇ4—77VUG&–vU&÷WFP¢r÷FööÇ2÷"×7FGW2s¢G—VöbFööÇ5%7FGW5&÷WFP¢r÷FööÇ2÷&VÆV6W2s¢G—VöbFööÇ5&VÆV6W5&÷WFP¢r÷WFFW2÷&Wf–Wrs¢G—VöbWFFW5&Wf–Wu&÷WFP¢r÷cöVÖ&VFF–æw2s¢G—VöbcVÖ&VFF–æw5&÷WFP¢r÷cöÖöFVÇ2s¢G—VöbcÖöFVÇ5&÷WFP¢r÷–÷WGV&RÖ÷F–Ö—¦W"÷&–6–ærs¢G—Vöb–÷WGV&T÷F–Ö—¦W%&–6–æu&÷WFP¢röFÖ–âs¢G—VöbFÖ–ä–æFW…&÷WFP¢ròæÆ÷f&ÆRööWF‚ö6öç6VçBs¢G—VöbF÷FÆ÷f&ÆTöWF„6öç6VçE&÷WFP¢ròæÖ7ö–çfö¶R×FööÂòGFööÂs¢G—Vöb6†#“F÷FÖ76†#“4–çfö¶UFööÅFööÅ&÷WFP¢rö66÷VçBö–çfö–6W2òF–Bs¢G—Vöb66÷VçD–çfö–6W4–E&÷WFP¢rö’ö&–ÆÆ–ærö6FÆörs¢G—Vöb”&–ÆÆ–æt6FÆöu&÷WFP¢rö’÷V&Æ–2öVçF—FÆVÖVçBs¢G—Vöb•V&Æ–4VçF—FÆVÖVçE&÷WFP¢röÆ÷f&ÆRöVÖ–Â÷7W&W76–öâs¢G—VöbÆ÷f&ÆTVÖ–Å7W&W76–öå&÷WFP¢r÷cö6†Bö6ö×ÆWF–öç2s¢G—Vöbc6†D6ö×ÆWF–öç5&÷WFP¢rö66÷VçBö–çfö–6W2ö'’×–ÖVçBòGbs¢G—Vöb66÷VçD–çfö–6W4'•–ÖVçEe&÷WFP¢rö’÷V&Æ–2öæÇ—F–72öWF‚ÖvFRs¢G—Vöb•V&Æ–4æÇ—F–74WF„vFU&÷WFP¢rö’÷V&Æ–2ö×7FGW2ö†VÇF‚s¢G—Vöb•V&Æ–47FGW4†VÇF…&÷WFP¢rö’÷V&Æ–2öf÷&×2ö7&VFRÖ—77VRs¢G—Vöb•V&Æ–4f÷&×47&VFT—77VU&÷WFP¢rö’÷V&Æ–2ö†öö·2ö6’Öf–ÇW&RÖÆW'G2s¢G—Vöb•V&Æ–4†öö·46”f–ÇW&TÆW'G5&÷WFP¢rö’÷V&Æ–2ö†öö·2÷&ö6W72×7V'67&—F–öâÖVÖ–Ç2s¢G—Vöb•V&Æ–4†öö·5&ö6W757V'67&—F–öäVÖ–Ç5&÷WFP¢rö’÷V&Æ–2÷–f7Bö—Fâs¢G—Vöb•V&Æ–5–f7D—Få&÷WFP¢rö’÷V&Æ–2÷&÷ö–ævW7BÖÆ–VBs¢G—Vöb•V&Æ–5&÷–ævW7DÆ–VE&÷WFP¢rö’÷V&Æ–2÷&÷ö–ævW7B×W&bs¢G—Vöb•V&Æ–5&÷–ævW7EW&e&÷WFP¢rö’÷V&Æ–2÷&÷ö–ævW7B×7VvvW7F–öâs¢G—Vöb•V&Æ–5&÷–ævW7E7VvvW7F–öå&÷WFP¢rö’÷V&Æ–2÷&÷÷VÆÂÖ'&öF67G2s¢G—Vöb•V&Æ–5&÷VÆÄ'&öF67G5&÷WFP¢rö’÷V&Æ–2÷WFFW2öFöÒs¢G—Vöb•V&Æ–5WFFW4FöÕ&÷WFP¢rö’÷V&Æ–2÷WFFW2÷'72s¢G—Vöb•V&Æ–5WFFW5'75&÷WFP¢rö’÷6÷fW&V–vâöWF‚òF7F–öâs¢G—Vöb•6÷fW&V–väWF„7F–öå&÷WFP¢rö’÷6÷fW&V–vâöÆVæ6‚òFs¢G—Vöb•6÷fW&V–väÆVæ6„&÷WFP¢rö’÷6÷fW&V–vâöæ÷fö6†Bs¢G—Vöb•6÷fW&V–väæ÷f6†E&÷WFP¢röÆ÷f&ÆRöVÖ–Â÷VWVR÷&ö6W72s¢G—VöbÆ÷f&ÆTVÖ–ÅVWVU&ö6W75&÷WFP¢röÆ÷f&ÆRöVÖ–Â÷G&ç67F–öæÂ÷&Wf–Wrs¢G—VöbÆ÷f&ÆTVÖ–ÅG&ç67F–öæÅ&Wf–Wu&÷WFP¢röÆ÷f&ÆRöVÖ–Â÷G&ç67F–öæÂ÷6VæBs¢G—VöbÆ÷f&ÆTVÖ–ÅG&ç67F–öæÅ6VæE&÷WFP¢rö’÷V&Æ–2övVæW&FRö7&VF—fR×7GVF–ò÷÷7FW"s¢G—Vöb•V&Æ–4vVæW&FT7&VF—fU7GVF–õ÷7FW%&÷WFP¢rö’÷V&Æ–2÷&÷ö7&öâö7&÷72Ö×66âs¢G—Vöb•V&Æ–5&÷7&öä7&÷7466å&÷WFP¢rö’÷V&Æ–2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2s¢G—Vöb•V&Æ–5&÷7&öäÖV7W&T÷WF6öÖW5&÷WFP§Ğ¦W‡÷'B–çFW&f6Rf–ÆU&÷WFW4'”–B°¢õ÷&ö÷Eõó¢G—Vöb&ö÷E&÷WFT–×÷'@¢ròs¢G—Vöb–æFW…&÷WFP¢rö6†ævVÆörs¢G—Vöb6†ævVÆöu&÷WFP¢rö6†V6¶÷WBs¢G—Vöb6†V6¶÷WE&÷WFUv—F„6†–ÆG&Và¢röv÷fW&ææ6Rs¢G—Vöbv÷fW&ææ6U&÷WFP¢röÆöv–âs¢G—VöbÆöv–å&÷WFP¢röÖ7s¢G—VöbÖ7&÷WFP¢rö×––g’s¢G—Vöb×––g•&÷WFP¢r÷&–6–ærs¢G—Vöb&–6–æu&÷WFP¢r÷&—f7’s¢G—Vöb&—f7•&÷WFP¢r÷&6vbs¢G—Vöb&6ve&÷WFP¢r÷&VgVæG2s¢G—Vöb&VgVæG5&÷WFP¢r÷6—FVÖç†ÖÂs¢G—Vöb6—FVÖF÷G†ÖÅ&÷WFP¢r÷FW&×2s¢G—VöbFW&×5&÷WFP¢ròæÖ7öÆ—7B×FööÇ2s¢G—Vöb6†#“F÷FÖ76†#“4Æ—7EFööÇ5&÷WFP¢ròçvVÆÂÖ¶æ÷vâööWF‚×&÷FV7FVB×&W6÷W&6Rs¢G—Vöb6†#“F÷GvVÆÄ¶æ÷vä6†#“4öWF…&÷FV7FVE&W6÷W&6U&÷WFP¢rö66÷VçBö&–ÆÆ–ærs¢G—Vöb66÷VçD&–ÆÆ–æu&÷WFP¢rö66÷VçBöFV'Vrs¢G—Vöb66÷VçDFV'Vu&÷WFP¢rö66÷VçBö–çfö–6W2s¢G—Vöb66÷VçD–çfö–6W5&÷WFUv—F„6†–ÆG&Và¢rö66÷VçB÷7V'67&—F–öç2s¢G—Vöb66÷VçE7V'67&—F–öç5&÷WFP¢röFÖ–âö66W72s¢G—VöbFÖ–ä66W75&÷WFP¢röFÖ–âö&–ÆÆ–ærs¢G—VöbFÖ–ä&–ÆÆ–æu&÷WFP¢röFÖ–âö6’Ö†VÇF‚s¢G—VöbFÖ–ä6”†VÇF…&÷WFP¢röFÖ–âö6öçG&öÂÖ6VçFW"s¢G—VöbFÖ–ä6öçG&öÄ6VçFW%&÷WFP¢röFÖ–âö7&VF—G2s¢G—VöbFÖ–ä7&VF—G5&÷WFP¢röFÖ–âöVÖ–ÂÖFöÖ–âs¢G—VöbFÖ–äVÖ–ÄFöÖ–å&÷WFP¢röFÖ–âöVÖ–Ç2s¢G—VöbFÖ–äVÖ–Ç5&÷WFP¢röFÖ–âöVçF—FÆVÖVçBÖF–væ÷7F–72s¢G—VöbFÖ–äVçF—FÆVÖVçDF–væ÷7F–75&÷WFP¢röFÖ–âö–çfö–6W2s¢G—VöbFÖ–ä–çfö–6W5&÷WFP¢röFÖ–âöÆöv–âs¢G—VöbFÖ–äÆöv–å&÷WFP¢röFÖ–â÷–f7BÖVF—Bs¢G—VöbFÖ–å–f7DVF—E&÷WFP¢röFÖ–â÷&öÖ÷F–öâs¢G—VöbFÖ–å&öÖ÷F–öå&÷WFP¢röFÖ–â÷&öÖ÷F–öâÖ6×–vç2s¢G—VöbFÖ–å&öÖ÷F–öä6×–vç5&÷WFP¢röFÖ–â÷&WòÖ†VÇF‚s¢G—VöbFÖ–å&Wô†VÇF…&÷WFP¢röFÖ–â÷&WfVçVRs¢G—VöbFÖ–å&WfVçVU&÷WFP¢röFÖ–â÷&÷s¢G—VöbFÖ–å&÷&÷WFP¢röFÖ–â÷6V7W&—G’×66âs¢G—VöbFÖ–å6V7W&—G•66å&÷WFP¢röFÖ–â÷vV&†öö·2s¢G—VöKÜÛİ™\™ZYÛ‹Ø]]ÉXİ[Û‰Îˆ\[Ùˆ\TÛİ™\™ZYÛ]]Xİ[Û”›İ]Bˆ	ËØ\KÜÛİ™\™ZYÛ‹Û][˜ÚÉ\	Îˆ\[Ùˆ\TÛİ™\™ZYÛ“][˜Ú\›İ]Bˆ	ËØ\KÜÛİ™\™ZYÛ‹Û›İ˜KØÚ]	Îˆ\[Ùˆ\TÛİ™\™ZYÛ“›İ˜PÚ]›İ]Bˆ	ËÛİ˜X›KÙ[XZ[Ü]Y]YKÜ›ØÙ\ÜÉÎˆ\[Ùˆİ˜X›Q[XZ[]Y]YT›ØÙ\ÜÔ›İ]Bˆ	ËÛİ˜X›KÙ[XZ[İ˜[œØXİ[Û˜[Ü™]šY]ÉÎˆ\[Ùˆİ˜X›Q[XZ[˜[œØXİ[Û˜[™]šY]Ô›İ]Bˆ	ËÛİ˜X›KÙ[XZ[İ˜[œØXİ[Û˜[ÜÙ[™	Îˆ\[Ùˆİ˜X›Q[XZ[˜[œØXİ[Û˜[Ù[™›İ]Bˆ	ËØ\KÜX›XËÙÙ[™\˜]KØÜ™X]]™K\İY[ËÜÜİ\‰Îˆ\[Ùˆ\TX›XÑÙ[™\˜]PÜ™X]]™TİY[ÔÜİ\”›İ]Bˆ	ËØ\KÜX›XËÜ›ÜØÜ›Û‹ØÜ›ÜÜËX\\ØØ[‰Îˆ\[Ùˆ\TX›XÔ›ÜÜ›ÛÜ›ÜÜĞ\ØØ[”›İ]Bˆ	ËØ\KÜX›XËÜ›ÜØÜ›Û‹ÛYX\İ\™K[İ]ÛÛY\ÉÎˆ\[Ùˆ\TX›XÔ›ÜÜ›Û“YX\İ\™Sİ]ÛÛY\Ô›İ]BŸB™^Ü[\™˜XÙHš[T›İ]U\\ÈÂˆš[T›İ]\ĞQ[]ˆš[T›İ]\ĞQ[]ˆ[]Î‚ˆ	ËÉÂˆ	ËØÚ[™Ù[ÙÉÂˆ	ËØÚXÚÛİ]	Âˆ	ËÙÛİ™\›˜[˜ÙIÂˆ	ËÛÙÚ[‰Âˆ	ËÛXÜ	Âˆ	ËÛ^ZYIÂˆ	ËÜšXÚ[™ÉÂˆ	ËÜš]˜XŞIÂˆ	ËÜ˜ÙÙ‰Âˆ	ËÜ™Y[™ÉÂˆ	ËÜÚ][X\[	Âˆ	Ëİ\›\ÉÂˆ	ËË›XÜÛ\İ]ÛÛÉÂˆ	ËËÙ[ZÛ›İÛ‹ÛØ]]\›İXİY\™\Ûİ\˜ÙIÂˆ	ËØXØÛİ[Øš[[™ÉÂˆ	ËØXØÛİ[ÙXYÉÂˆ	ËØXØÛİ[Ú[›ÚXÙ\ÉÂˆ	ËØXØÛİ[ÜİXœØÜš\[ÛœÉÂˆ	ËØYZ[‹ØXØÙ\ÜÉÂˆ	ËØYZ[‹Øš[[™ÉÂˆ	ËØYZ[‹ØÚKZX[	Âˆ	ËØYZ[‹ØÛÛ›ÛXÙ[\‰Âˆ	ËØYZ[‹ØÜ™Y]ÉÂˆ	ËØYZ[‹Ù[XZ[YÛXZ[‰Âˆ	ËØYZ[‹Ù[XZ[ÉÂˆ	ËØYZ[‹Ù[][Y[YXYÛ›ÜİXÜÉÂˆ	ËØYZ[‹Ú[›ÚXÙ\ÉÂˆ	ËØYZ[‹ÛÙÚ[‰Âˆ	ËØYZ[‹Ü^Y˜\İX]Y]	Âˆ	ËØYZ[‹Ü›Û[İ[Û‰Âˆ	ËØYZ[‹Ü›Û[İ[Û‹XØ[\ZYÛœÉÂˆ	ËØYZ[‹Ü™\ËZX[	Âˆ	ËØYZ[‹Ü™]™[YIÂˆ	ËØYZ[‹Ü›Ü	Âˆ	ËØYZ[‹ÜÙXİ\š]K\ØØ[‰Âˆ	ËØYZ[‹İÙXšÛÚÜÉÂˆ	ËØÚXÚÛİ]ØØ[˜Ù[	Âˆ	ËØÚXÚÛİ]ÜİXØÙ\ÜÉÂˆ	ËØÜ™X]]™K\İY[ËÜšXÚ[™ÉÂˆ	ËÙ[XZ[İ[œİXœØÜšX™IÂˆ	ËÙ\X›\Ú\‹ÜšXÚ[™ÉÂˆ	ËÙÛİ™\›˜[˜ÙKİÛÜšÜÜXÙIÂˆ	ËÛYØ[ÙÛİ™\›˜[˜ÙIÂˆ	ËÜŞ[˜Ë]š\Ú[Û‹ÜšXÚ[™ÉÂˆ	ËİÛÛËÚ\ÜİYK]šXYÙIÂˆ	ËİÛÛËÜ‹\İ]\ÉÂˆ	ËİÛÛËÜ™[X\Ù\ÉÂˆ	Ëİ\]\ËÜ™]šY]ÉÂˆ	ËİŒKÙ[X™Y[™ÜÉÂˆ	ËİŒKÛ[Ù[ÉÂˆ	ËŞ[İ]X™K[Ü[Z^™\‹ÜšXÚ[™ÉÂˆ	ËØYZ[‹ÉÂˆ	ËË›İ˜X›KÛØ]]ØÛÛœÙ[	Âˆ	ËË›XÜÚ[›ÚÙK]ÛÛÉÛÛ	Âˆ	ËØXØÛİ[Ú[›ÚXÙ\ËÉY	Âˆ	ËØ\KØš[[™ËØØ][ÙÉÂˆ	ËØ\KÜX›XËÙ[][Y[	Âˆ	ËÛİ˜X›KÙ[XZ[Üİ\™\ÜÚ[Û‰Âˆ	ËİŒKØÚ]ØÛÛ\][ÛœÉÂˆ	ËØXØÛİ[Ú[›ÚXÙ\ËØK\^[Y[É‰Âˆ	ËØ\KÜX›XËØ[˜[]XÜËØ]]YØ]IÂˆ	ËØ\KÜX›XËØ\\İ]\ËÚX[	Âˆ	ËØ\KÜX›XËÙ›Ü›\ËØÜ™X]KZ\ÜİYIÂˆ	ËØ\KÜX›XËÚÛÚÜËØÚKY˜Z[\™KX[\ÉÂˆ	ËØ\KÜX›XËÚÛÚÜËÜ›ØÙ\ÜË\İXœØÜš\[Û‹Y[XZ[ÉÂˆ	ËØ\KÜX›XËÜ^Y˜\İÚ]‰Âˆ	ËØ\KÜX›XËÜ›ÜÚ[™Ù\İX\YY	Âˆ	ËØ\KÜX›XËÜ›ÜÚ[™Ù\İ\\™‰Âˆ	ËØ\KÜX›XËÜ›ÜÚ[™Ù\İ\İYÙÙ\İ[Û‰Âˆ	ËØ\KÜX›XËÜ›ÜÜ[Xœ›ØYØ\İÉÂˆ	ËØ\KÜX›XËİ\]\ËØ]ÛIÂˆ	ËØ\KÜX›XËİ\]\ËÜœÜÉÂˆ	ËØ\KÜÛİ™\™ZYÛ‹Ø]]ÉXİ[Û‰Âˆ	ËØ\KÜÛİ™\™ZYÛ‹Û][˜ÚÉ\	Âˆ	ËØ\KÜÛİ™\™ZYÛ‹Û›İ˜KØÚ]	Âˆ	ËÛİ˜X›KÙ[XZ[Ü]Y]YKÜ›ØÙ\ÜÉÂˆ	ËÛİ˜X›KÙ[XZ[İ˜[œØXİ[Û˜[Ü™]šY]ÉÂˆ	ËÛİ˜X›KÙ[XZ[İ˜[œØXİ[Û˜[ÜÙ[™	Âˆ	ËØ\KÜX›XËÙÙ[™\˜]KØÜ™X]]™K\İY[ËÜÜİ\‰Âˆ	ËØ\KÜX›XËÜ›ÜØÜ›Û‹ØÜ›ÜÜËX\\ØØ[‰Âˆ	ËØ\KÜX›XËÜ›ÜØÜ›Û‹ÛYX\İ\™K[İ]ÛÛY\ÉÂˆš[T›İ]\ĞUÎˆš[T›İ]\ĞUÂˆÎ‚ˆ	ËÉÂˆ	ËØÚ[™Ù[ÙÉÂˆ	ËØÚXÚÛİ]	Âˆ	ËÙÛİ™\›˜[˜ÙIÂˆ	ËÛÙÚ[‰Âˆ	ËÛXÜ	Âˆ	ËÛ^ZYIÂˆ	ËÜšXÚ[™ÉÂˆ	ËÜš]˜XŞIÂˆ	ËÜ˜ÙÙ‰Âˆ	ËÜ™Y[™ÉÂˆ	ËÜÚ][X\[	Âˆ	Ëİ\›\ÉÂˆ	ËË›XÜÛ\İ]ÛÛÉÂˆ	ËËÙ[ZÛ›İÛ‹ÛØ]]\›İXİY\™\Ûİ\˜ÙIÂˆ	ËØXØÛİ[Øš[[™ÉÂˆ	ËØXØÛİ[ÙXYÉÂˆ	ËØXØÛİ[Ú[›ÚXÙ\ÉÂˆ	ËØXØÛİ[ÜİXœØÜš\[ÛœÉÂˆ	ËØYZ[‹ØXØÙ\ÜÉÂˆ	ËØYZ[‹Øš[[™ÉÂˆ	ËØYZ[‹ØÚKZX[	Âˆ	ËØYZ[‹ØÛÛ›ÛXÙ[\‰Âˆ	ËØYZ[‹ØÜ™Y]ÉÂˆ	ËØYZ[‹Ù[XZ[YÛXZ[‰Âˆ	ËØYZ[‹Ù[XZ[ÉÂˆ	ËØYZ[‹Ù[][Y[YXYÛ›ÜİXÜÉÂˆ	ËØYZ[‹Ú[›ÚXÙ\ÉÂˆ	ËØYZ[‹ÛÙÚ[‰Âˆ	ËØYZ[‹Ü^Y˜\İX]Y]	Âˆ	ËØYZ[‹Ü›Û[İ[Û‰Âˆ	ËØYZ[‹Ü›Û[İ[Û‹XØ[\ZYÛœÉÂˆ	ËØYZ[‹Ü™\ËZX[	Âˆ	ËØYZ[‹Ü™]™[YIÂˆ	ËØYZ[‹Ü›Ü	Âˆ	ËØYZ[‹ÜÙXİ\š]K\ØØ[‰Âˆ	ËØYZ[‹İÙXšÛÚÜÉÂˆ	ËØÚXÚÛİ]ØØ[˜Ù[	Âˆ	ËØÚXÚÛİ]ÜİXØÙ\ÜÉÂˆ	ËØÜ™X]]™K\İY[ËÜšXÚ[™ÉÂˆ	ËÙ[XZ[İ[œİXœØÜšX™IÂˆ	ËÙ\X›\Ú\‹ÜšXÚ[™ÉÂˆ	ËÙÛİ™\›˜[˜ÙKİÛÜšÜÜXÙIÂˆ	ËÛYØ[ÙÛİ™\›˜[˜ÙIÂˆ	ËÜŞ[˜Ë]š\Ú[Û‹ÜšXÚ[™ÉÂˆ	ËİÛÛËÚ\ÜİYK]šXYÙIÂˆ	ËİÛÛËÜ‹\İ]\ÉÂˆ	ËİÛÛËÜ™[X\Ù\ÉÂˆ	Ëİ\]\ËÜ™]šY]ÉÂˆ	ËİŒKÙ[X™Y[™ÜÉÂˆ	ËİŒKÛ[Ù[ÉÂˆ	ËŞ[İ]X™K[Ü[Z^™\‹ÜšXÚ[™ÉÂˆ	ËØYZ[‰Âˆ	ËË›İ˜X›KÛØ]]ØÛÛœÙ[	Âˆ	ËË›XÜÚ[›ÚÙK]ÛÛÉÛÛ	Âˆ	ËØXØÛİ[Ú[›ÚXÙ\ËÉY	Âˆ	ËØ\KØš[[™ËØØ][ÙÉÂˆ	ËØ\KÜX›XËÙ[][Y[	Âˆ	ËÛİ˜X›KÙ[XZ[Üİ\™\ÜÚ[Û‰Âˆ	ËİŒKØÚ]ØÛÛ\][ÛœÉÂˆ	ËØXØÛİ[Ú[›ÚXÙ\ËØK\^[Y[É‰Âˆ	ËØ\KÜX›XËØ[˜[]XÜËØ]]YØ]IÂˆ	ËØ\KÜX›XËØ\\İ]\ËÚX[	Âˆ	ËØ\KÜX›XËÙ›Ü›\ËØÜ™X]KZ\ÜİYIÂˆ	ËØ\KÜX›XËÚÛÚÜËØÚKY˜Z[\™KX[\ÉÂˆ	ËØ\KÜX›XËÚÛÚÜËÜ›ØÙ\ÜË\İXœØÜš\[Û‹Y[XZ[ÉÂˆ	ËØ\KÜX›XËÜ^Y˜\İÚ]‰Âˆ	ËØ\KÜX›XËÜ›ÜÚ[™Ù\İX\YY	Âˆ	ËØ\KÜX›XËÜ›ÜÚ[™Ù\İ\\™‰Âˆ	ËØ\KÜX›XËÜ›ÜÚ[™Ù\İ\İYÙÙ\İ[Û‰Âˆ	ËØ\KÜX›XËÜ›ÜÜ[Xœ›ØYØ\İÉÂˆ	ËØ\KÜX›XËİ\]\ËØ]ÛIÂˆ	ËØ\KÜX›XËİ\]\ËÜœÜÉÂˆ	ËØ\KÜÛİ™\™ZYÛ‹Ø]]ÉXİ[Û‰Âˆ	ËØ\KÜÛİ™\™ZYÛ‹Û][˜ÚÉ\	Âˆ	ËØ\KÜÛİ™\™ZYÛ‹Û›İ˜KØÚ]	Âˆ	ËÛİ˜X›KÙ[XZ[Ü]Y]YKÜ›ØÙ\ÜÉÂˆ	ËÛİ˜X›KÙ[XZ[İ˜[œØXİ[Û˜[Ü™]šY]ÉÂˆ	ËÛİ˜X›KÙ[XZ[İ˜[œØXİ[Û˜[ÜÙ[™	Âˆ	ËØ\KÜX›XËÙÙ[™\˜]KØÜ™X]]™K\İY[ËÜÜİ\‰Âˆ	ËØ\KÜX›XËÜ›ÜØÜ›Û‹ØÜ›ÜÜËX\\ØØ[‰Âˆ	ËØ\KÜX›XËÜ›ÜØÜ›Û‹ÛYX\İ\™K[İ]ÛÛY\ÉÂˆY‚ˆ	××Ü›Ûİ×ÉÂˆ	ËÉÂˆ	ËØÚ[™Ù[ÙÉÂˆ	ËØÚXÚÛİ]	Âˆ	ËÙÛİ™\›˜[˜ÙIÂˆ	ËÛÙÚ[‰Âˆ	ËÛXÜ	Âˆ	ËÛ^ZYIÂˆ	ËÜšXÚ[™ÉÂˆ	ËÜš]˜XŞIÂˆ	ËÜ˜ÙÙ‰Âˆ	ËÜ™Y[™ÉÂˆ	ËÜÚ][X\[	Âˆ	Ëİ\›\ÉÂˆ	ËË›XÜÛ\İ]ÛÛÉÂˆ	ËËÙ[ZÛ›İÛ‹ÛØ]]\›İXİY\™\Ûİ\˜ÙIÂˆ	ËØXØÛİ[Øš[[™ÉÂˆ	ËØXØÛİ[ÙXYÉÂˆ	ËØXØÛİ[Ú[›ÚXÙ\ÉÂˆ	ËØXØÛİ[ÜİXœØÜš\[ÛœÉÂˆ	ËØYZ[‹ØXØÙ\ÜÉÂˆ	ËØYZ[‹Øš[[™ÉÂˆ	ËØYZ[‹ØÚKZX[	Âˆ	ËØYZ[‹ØÛÛ›ÛXÙ[\‰Âˆ	ËØYZ[‹ØÜ™Y]ÉÂˆ	ËØYZ[‹Ù[XZ[YÛXZ[‰Âˆ	ËØYZ[‹Ù[XZ[ÉÂˆ	ËØYZ[‹Ù[][Y[YXYÛ›ÜİXÜÉÂˆ	ËØYZ[‹Ú[›ÚXÙ\ÉÂˆ	ËØYZ[‹ÛÙÚ[‰Âˆ	ËØYZ[‹Ü^Y˜\İX]Y]	Âˆ	ËØYZ[‹Ü›Û[İ[Û‰Âˆ	ËØYZ[‹Ü›Û[İ[Û‹XØ[\ZYÛœÉÂˆ	ËØYZ[‹Ü™\ËZX[	Âˆ	ËØYZ[‹Ü™]™[YIÂˆ	ËØYZ[‹Ü›Ü	Âˆ	ËØYZ[‹ÜÙXİ\š]K\ØØ[‰Âˆ	ËØYZ[‹İÙXšÛÚÜÉÂˆ	ËØÚXÚÛİ]ØØ[˜Ù[	Âˆ	ËØÚXÚÛİ]ÜİXØÙ\ÜÉÂˆ	ËØÜ™X]]™K\İY[ËÜšXÚ[™ÉÂˆ	ËÙ[XZ[İ[œİXœØÜšX™IÂˆ	ËÙ\X›\Ú\‹ÜšXÚ[™ÉÂˆ	ËÙÛİ™\›˜[˜ÙWËİÛÜšÜÜXÙIÂˆ	ËÛYØ[ÙÛİ™\›˜[˜ÙIÂˆ	ËÜŞ[˜Ë]š\Ú[Û‹ÜšXÚ[™ÉÂˆ	ËİÛÛËÚ\ÜİYK]šXYÙIÂˆ	ËİÛÛËÜ‹\İ]\ÉÂˆ	ËİÛÛËÜ™[X\Ù\ÉÂˆ	Ëİ\]\ËÜ™]šY]ÉÂˆ	ËİŒKÙ[X™Y[™ÜÉÂˆ	ËİŒKÛ[Ù[ÉÂˆ	ËŞ[İ]X™K[Ü[Z^™\‹ÜšXÚ[™ÉÂˆ	ËØYZ[‹ÉÂˆ	ËË›İ˜X›KÛØ]]ØÛÛœÙ[	Âˆ	ËË›XÜÚ[›ÚÙK]ÛÛÉÛÛ	Âˆ	ËØXØÛf AdminBillingRoute
   AdminCiHealthRoute: typeof AdminCiHealthRoute
   AdminControlCenterRoute: typeof AdminControlCenterRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
@@ -976,12 +520,16 @@ export interface RootRouteChildren {
   ToolsPrStatusRoute: typeof ToolsPrStatusRoute
   ToolsReleasesRoute: typeof ToolsReleasesRoute
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
+  V1EmbeddingsRoute: typeof V1EmbeddingsRoute
+  V1ModelsRoute: typeof V1ModelsRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
   AdminIndexRoute: typeof AdminIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiBillingCatalogRoute: typeof ApiBillingCatalogRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  V1ChatCompletionsRoute: typeof V1ChatCompletionsRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
   ApiPublicAppStatusHealthRoute: typeof ApiPublicAppStatusHealthRoute
   ApiPublicFormsCreateIssueRoute: typeof ApiPublicFormsCreateIssueRoute
@@ -996,6 +544,7 @@ export interface RootRouteChildren {
   ApiPublicUpdatesRssRoute: typeof ApiPublicUpdatesRssRoute
   ApiSovereignAuthActionRoute: typeof ApiSovereignAuthActionRoute
   ApiSovereignLaunchAppRoute: typeof ApiSovereignLaunchAppRoute
+  ApiSovereignNovaChatRoute: typeof ApiSovereignNovaChatRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -1055,6 +604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MyifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -1104,6 +660,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YoutubeOptimizerPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/v1/models': {
+      id: '/v1/models'
+      path: '/v1/models'
+      fullPath: '/v1/models'
+      preLoaderRoute: typeof V1ModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/v1/embeddings': {
+      id: '/v1/embeddings'
+      path: '/v1/embeddings'
+      fullPath: '/v1/embeddings'
+      preLoaderRoute: typeof V1EmbeddingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/updates/preview': {
       id: '/updates/preview'
       path: '/updates/preview'
@@ -1114,531 +684,5 @@ declare module '@tanstack/react-router' {
     '/tools/releases': {
       id: '/tools/releases'
       path: '/tools/releases'
-      fullPath: '/tools/releases'
-      preLoaderRoute: typeof ToolsReleasesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tools/pr-status': {
-      id: '/tools/pr-status'
-      path: '/tools/pr-status'
-      fullPath: '/tools/pr-status'
-      preLoaderRoute: typeof ToolsPrStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tools/issue-triage': {
-      id: '/tools/issue-triage'
-      path: '/tools/issue-triage'
-      fullPath: '/tools/issue-triage'
-      preLoaderRoute: typeof ToolsIssueTriageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sync-vision/pricing': {
-      id: '/sync-vision/pricing'
-      path: '/sync-vision/pricing'
-      fullPath: '/sync-vision/pricing'
-      preLoaderRoute: typeof SyncVisionPricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/legal/governance': {
-      id: '/legal/governance'
-      path: '/legal/governance'
-      fullPath: '/legal/governance'
-      preLoaderRoute: typeof LegalGovernanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/governance_/workspace': {
-      id: '/governance_/workspace'
-      path: '/governance/workspace'
-      fullPath: '/governance/workspace'
-      preLoaderRoute: typeof GovernanceWorkspaceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/epublisher/pricing': {
-      id: '/epublisher/pricing'
-      path: '/epublisher/pricing'
-      fullPath: '/epublisher/pricing'
-      preLoaderRoute: typeof EpublisherPricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/creative-studio/pricing': {
-      id: '/creative-studio/pricing'
-      path: '/creative-studio/pricing'
-      fullPath: '/creative-studio/pricing'
-      preLoaderRoute: typeof CreativeStudioPricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/checkout/success': {
-      id: '/checkout/success'
-      path: '/success'
-      fullPath: '/checkout/success'
-      preLoaderRoute: typeof CheckoutSuccessRouteImport
-      parentRoute: typeof CheckoutRoute
-    }
-    '/checkout/cancel': {
-      id: '/checkout/cancel'
-      path: '/cancel'
-      fullPath: '/checkout/cancel'
-      preLoaderRoute: typeof CheckoutCancelRouteImport
-      parentRoute: typeof CheckoutRoute
-    }
-    '/admin/webhooks': {
-      id: '/admin/webhooks'
-      path: '/admin/webhooks'
-      fullPath: '/admin/webhooks'
-      preLoaderRoute: typeof AdminWebhooksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/security-scan': {
-      id: '/admin/security-scan'
-      path: '/admin/security-scan'
-      fullPath: '/admin/security-scan'
-      preLoaderRoute: typeof AdminSecurityScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/rop': {
-      id: '/admin/rop'
-      path: '/admin/rop'
-      fullPath: '/admin/rop'
-      preLoaderRoute: typeof AdminRopRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/revenue': {
-      id: '/admin/revenue'
-      path: '/admin/revenue'
-      fullPath: '/admin/revenue'
-      preLoaderRoute: typeof AdminRevenueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/repo-health': {
-      id: '/admin/repo-health'
-      path: '/admin/repo-health'
-      fullPath: '/admin/repo-health'
-      preLoaderRoute: typeof AdminRepoHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/promotion-campaigns': {
-      id: '/admin/promotion-campaigns'
-      path: '/admin/promotion-campaigns'
-      fullPath: '/admin/promotion-campaigns'
-      preLoaderRoute: typeof AdminPromotionCampaignsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/promotion': {
-      id: '/admin/promotion'
-      path: '/admin/promotion'
-      fullPath: '/admin/promotion'
-      preLoaderRoute: typeof AdminPromotionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/payfast-audit': {
-      id: '/admin/payfast-audit'
-      path: '/admin/payfast-audit'
-      fullPath: '/admin/payfast-audit'
-      preLoaderRoute: typeof AdminPayfastAuditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/login': {
-      id: '/admin/login'
-      path: '/admin/login'
-      fullPath: '/admin/login'
-      preLoaderRoute: typeof AdminLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/invoices': {
-      id: '/admin/invoices'
-      path: '/admin/invoices'
-      fullPath: '/admin/invoices'
-      preLoaderRoute: typeof AdminInvoicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/entitlement-diagnostics': {
-      id: '/admin/entitlement-diagnostics'
-      path: '/admin/entitlement-diagnostics'
-      fullPath: '/admin/entitlement-diagnostics'
-      preLoaderRoute: typeof AdminEntitlementDiagnosticsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/emails': {
-      id: '/admin/emails'
-      path: '/admin/emails'
-      fullPath: '/admin/emails'
-      preLoaderRoute: typeof AdminEmailsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/email-domain': {
-      id: '/admin/email-domain'
-      path: '/admin/email-domain'
-      fullPath: '/admin/email-domain'
-      preLoaderRoute: typeof AdminEmailDomainRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/credits': {
-      id: '/admin/credits'
-      path: '/admin/credits'
-      fullPath: '/admin/credits'
-      preLoaderRoute: typeof AdminCreditsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/control-center': {
-      id: '/admin/control-center'
-      path: '/admin/control-center'
-      fullPath: '/admin/control-center'
-      preLoaderRoute: typeof AdminControlCenterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/ci-health': {
-      id: '/admin/ci-health'
-      path: '/admin/ci-health'
-      fullPath: '/admin/ci-health'
-      preLoaderRoute: typeof AdminCiHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/billing': {
-      id: '/admin/billing'
-      path: '/admin/billing'
-      fullPath: '/admin/billing'
-      preLoaderRoute: typeof AdminBillingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/access': {
-      id: '/admin/access'
-      path: '/admin/access'
-      fullPath: '/admin/access'
-      preLoaderRoute: typeof AdminAccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/subscriptions': {
-      id: '/account/subscriptions'
-      path: '/account/subscriptions'
-      fullPath: '/account/subscriptions'
-      preLoaderRoute: typeof AccountSubscriptionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/invoices': {
-      id: '/account/invoices'
-      path: '/account/invoices'
-      fullPath: '/account/invoices'
-      preLoaderRoute: typeof AccountInvoicesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/debug': {
-      id: '/account/debug'
-      path: '/account/debug'
-      fullPath: '/account/debug'
-      preLoaderRoute: typeof AccountDebugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/billing': {
-      id: '/account/billing'
-      path: '/account/billing'
-      fullPath: '/account/billing'
-      preLoaderRoute: typeof AccountBillingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/entitlement': {
-      id: '/api/public/entitlement'
-      path: '/api/public/entitlement'
-      fullPath: '/api/public/entitlement'
-      preLoaderRoute: typeof ApiPublicEntitlementRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/billing/catalog': {
-      id: '/api/billing/catalog'
-      path: '/api/billing/catalog'
-      fullPath: '/api/billing/catalog'
-      preLoaderRoute: typeof ApiBillingCatalogRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/invoices/$id': {
-      id: '/account/invoices/$id'
-      path: '/$id'
-      fullPath: '/account/invoices/$id'
-      preLoaderRoute: typeof AccountInvoicesIdRouteImport
-      parentRoute: typeof AccountInvoicesRoute
-    }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/transactional/preview': {
-      id: '/lovable/email/transactional/preview'
-      path: '/lovable/email/transactional/preview'
-      fullPath: '/lovable/email/transactional/preview'
-      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sovereign/launch/$app': {
-      id: '/api/sovereign/launch/$app'
-      path: '/api/sovereign/launch/$app'
-      fullPath: '/api/sovereign/launch/$app'
-      preLoaderRoute: typeof ApiSovereignLaunchAppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/sovereign/auth/$action': {
-      id: '/api/sovereign/auth/$action'
-      path: '/api/sovereign/auth/$action'
-      fullPath: '/api/sovereign/auth/$action'
-      preLoaderRoute: typeof ApiSovereignAuthActionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/updates/rss': {
-      id: '/api/public/updates/rss'
-      path: '/api/public/updates/rss'
-      fullPath: '/api/public/updates/rss'
-      preLoaderRoute: typeof ApiPublicUpdatesRssRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/updates/atom': {
-      id: '/api/public/updates/atom'
-      path: '/api/public/updates/atom'
-      fullPath: '/api/public/updates/atom'
-      preLoaderRoute: typeof ApiPublicUpdatesAtomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/rop/pull-broadcasts': {
-      id: '/api/public/rop/pull-broadcasts'
-      path: '/api/public/rop/pull-broadcasts'
-      fullPath: '/api/public/rop/pull-broadcasts'
-      preLoaderRoute: typeof ApiPublicRopPullBroadcastsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/rop/ingest-suggestion': {
-      id: '/api/public/rop/ingest-suggestion'
-      path: '/api/public/rop/ingest-suggestion'
-      fullPath: '/api/public/rop/ingest-suggestion'
-      preLoaderRoute: typeof ApiPublicRopIngestSuggestionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/rop/ingest-perf': {
-      id: '/api/public/rop/ingest-perf'
-      path: '/api/public/rop/ingest-perf'
-      fullPath: '/api/public/rop/ingest-perf'
-      preLoaderRoute: typeof ApiPublicRopIngestPerfRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/rop/ingest-applied': {
-      id: '/api/public/rop/ingest-applied'
-      path: '/api/public/rop/ingest-applied'
-      fullPath: '/api/public/rop/ingest-applied'
-      preLoaderRoute: typeof ApiPublicRopIngestAppliedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/payfast/itn': {
-      id: '/api/public/payfast/itn'
-      path: '/api/public/payfast/itn'
-      fullPath: '/api/public/payfast/itn'
-      preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/process-subscription-emails': {
-      id: '/api/public/hooks/process-subscription-emails'
-      path: '/api/public/hooks/process-subscription-emails'
-      fullPath: '/api/public/hooks/process-subscription-emails'
-      preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/ci-failure-alerts': {
-      id: '/api/public/hooks/ci-failure-alerts'
-      path: '/api/public/hooks/ci-failure-alerts'
-      fullPath: '/api/public/hooks/ci-failure-alerts'
-      preLoaderRoute: typeof ApiPublicHooksCiFailureAlertsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/forms/create-issue': {
-      id: '/api/public/forms/create-issue'
-      path: '/api/public/forms/create-issue'
-      fullPath: '/api/public/forms/create-issue'
-      preLoaderRoute: typeof ApiPublicFormsCreateIssueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/app-status/health': {
-      id: '/api/public/app-status/health'
-      path: '/api/public/app-status/health'
-      fullPath: '/api/public/app-status/health'
-      preLoaderRoute: typeof ApiPublicAppStatusHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/analytics/auth-gate': {
-      id: '/api/public/analytics/auth-gate'
-      path: '/api/public/analytics/auth-gate'
-      fullPath: '/api/public/analytics/auth-gate'
-      preLoaderRoute: typeof ApiPublicAnalyticsAuthGateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/account/invoices/by-payment/$pf': {
-      id: '/account/invoices/by-payment/$pf'
-      path: '/by-payment/$pf'
-      fullPath: '/account/invoices/by-payment/$pf'
-      preLoaderRoute: typeof AccountInvoicesByPaymentPfRouteImport
-      parentRoute: typeof AccountInvoicesRoute
-    }
-    '/api/public/rop/cron/measure-outcomes': {
-      id: '/api/public/rop/cron/measure-outcomes'
-      path: '/api/public/rop/cron/measure-outcomes'
-      fullPath: '/api/public/rop/cron/measure-outcomes'
-      preLoaderRoute: typeof ApiPublicRopCronMeasureOutcomesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/rop/cron/cross-app-scan': {
-      id: '/api/public/rop/cron/cross-app-scan'
-      path: '/api/public/rop/cron/cross-app-scan'
-      fullPath: '/api/public/rop/cron/cross-app-scan'
-      preLoaderRoute: typeof ApiPublicRopCronCrossAppScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/generate/creative-studio/poster': {
-      id: '/api/public/generate/creative-studio/poster'
-      path: '/api/public/generate/creative-studio/poster'
-      fullPath: '/api/public/generate/creative-studio/poster'
-      preLoaderRoute: typeof ApiPublicGenerateCreativeStudioPosterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
-}
-
-interface CheckoutRouteChildren {
-  CheckoutCancelRoute: typeof CheckoutCancelRoute
-  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutCancelRoute: CheckoutCancelRoute,
-  CheckoutSuccessRoute: CheckoutSuccessRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
-interface AccountInvoicesRouteChildren {
-  AccountInvoicesIdRoute: typeof AccountInvoicesIdRoute
-  AccountInvoicesByPaymentPfRoute: typeof AccountInvoicesByPaymentPfRoute
-}
-
-const AccountInvoicesRouteChildren: AccountInvoicesRouteChildren = {
-  AccountInvoicesIdRoute: AccountInvoicesIdRoute,
-  AccountInvoicesByPaymentPfRoute: AccountInvoicesByPaymentPfRoute,
-}
-
-const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
-  AccountInvoicesRouteChildren,
-)
-
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ChangelogRoute: ChangelogRoute,
-  CheckoutRoute: CheckoutRouteWithChildren,
-  GovernanceRoute: GovernanceRoute,
-  LoginRoute: LoginRoute,
-  MyifyRoute: MyifyRoute,
-  PricingRoute: PricingRoute,
-  PrivacyRoute: PrivacyRoute,
-  RcgfRoute: RcgfRoute,
-  RefundsRoute: RefundsRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
-  TermsRoute: TermsRoute,
-  AccountBillingRoute: AccountBillingRoute,
-  AccountDebugRoute: AccountDebugRoute,
-  AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
-  AccountSubscriptionsRoute: AccountSubscriptionsRoute,
-  AdminAccessRoute: AdminAccessRoute,
-  AdminBillingRoute: AdminBillingRoute,
-  AdminCiHealthRoute: AdminCiHealthRoute,
-  AdminControlCenterRoute: AdminControlCenterRoute,
-  AdminCreditsRoute: AdminCreditsRoute,
-  AdminEmailDomainRoute: AdminEmailDomainRoute,
-  AdminEmailsRoute: AdminEmailsRoute,
-  AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
-  AdminInvoicesRoute: AdminInvoicesRoute,
-  AdminLoginRoute: AdminLoginRoute,
-  AdminPayfastAuditRoute: AdminPayfastAuditRoute,
-  AdminPromotionRoute: AdminPromotionRoute,
-  AdminPromotionCampaignsRoute: AdminPromotionCampaignsRoute,
-  AdminRepoHealthRoute: AdminRepoHealthRoute,
-  AdminRevenueRoute: AdminRevenueRoute,
-  AdminRopRoute: AdminRopRoute,
-  AdminSecurityScanRoute: AdminSecurityScanRoute,
-  AdminWebhooksRoute: AdminWebhooksRoute,
-  CreativeStudioPricingRoute: CreativeStudioPricingRoute,
-  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
-  EpublisherPricingRoute: EpublisherPricingRoute,
-  GovernanceWorkspaceRoute: GovernanceWorkspaceRoute,
-  LegalGovernanceRoute: LegalGovernanceRoute,
-  SyncVisionPricingRoute: SyncVisionPricingRoute,
-  ToolsIssueTriageRoute: ToolsIssueTriageRoute,
-  ToolsPrStatusRoute: ToolsPrStatusRoute,
-  ToolsReleasesRoute: ToolsReleasesRoute,
-  UpdatesPreviewRoute: UpdatesPreviewRoute,
-  YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
-  AdminIndexRoute: AdminIndexRoute,
-  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  ApiBillingCatalogRoute: ApiBillingCatalogRoute,
-  ApiPublicEntitlementRoute: ApiPublicEntitlementRoute,
-  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
-  ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
-  ApiPublicAppStatusHealthRoute: ApiPublicAppStatusHealthRoute,
-  ApiPublicFormsCreateIssueRoute: ApiPublicFormsCreateIssueRoute,
-  ApiPublicHooksCiFailureAlertsRoute: ApiPublicHooksCiFailureAlertsRoute,
-  ApiPublicHooksProcessSubscriptionEmailsRoute:
-    ApiPublicHooksProcessSubscriptionEmailsRoute,
-  ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
-  ApiPublicRopIngestAppliedRoute: ApiPublicRopIngestAppliedRoute,
-  ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,
-  ApiPublicRopIngestSuggestionRoute: ApiPublicRopIngestSuggestionRoute,
-  ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
-  ApiPublicUpdatesAtomRoute: ApiPublicUpdatesAtomRoute,
-  ApiPublicUpdatesRssRoute: ApiPublicUpdatesRssRoute,
-  ApiSovereignAuthActionRoute: ApiSovereignAuthActionRoute,
-  ApiSovereignLaunchAppRoute: ApiSovereignLaunchAppRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
-  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
-  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
-  ApiPublicGenerateCreativeStudioPosterRoute:
-    ApiPublicGenerateCreativeStudioPosterRoute,
-  ApiPublicRopCronCrossAppScanRoute: ApiPublicRopCronCrossAppScanRoute,
-  ApiPublicRopCronMeasureOutcomesRoute: ApiPublicRopCronMeasureOutcomesRoute,
-}
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
+      fulm¥¥¹œœ(€€€€€Á…Ñ è€œ½É•…Ñ¥Ù”µÍÑÕ‘¥¼½ÁÉ¥¥¹œœ(€€€€€™Õ±±A…Ñ è€œ½É•…Ñ¥Ù”µÍÑÕ‘¥¼½ÁÉ¥¥¹œœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜É•…Ñ¥Ù•MÑÕ‘¥½AÉ¥¥¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½¡•­½ÕĞ½ÍÕ•ÍÌœèì(€€€€€¥è€œ½¡•­½ÕĞ½ÍÕ•ÍÌœ(€€€€€Á…Ñ è€œ½ÍÕ•ÍÌœ(€€€€€™Õ±±A…Ñ è€œ½¡•­½ÕĞ½ÍÕ•ÍÌœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜¡•­½ÕÑMÕ•ÍÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜¡•­½ÕÑI½ÕÑ”(€€€ô(€€€€œ½¡•­½ÕĞ½…¹•°œèì(€€€€€¥è€œ½¡•­½ÕĞ½…¹•°œ(€€€€€Á…Ñ è€œ½…¹•°œ(€€€€€™Õ±±A…Ñ è€œ½¡•­½ÕĞ½…¹•°œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜¡•­½ÕÑ…¹•±I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜¡•­½ÕÑI½ÕÑ”(€€€ô(€€€€œ½…‘µ¥¸½İ•‰¡½½­Ìœèì(€€€€€¥è€œ½…‘µ¥¸½İ•‰¡½½­Ìœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½İ•‰¡½½­Ìœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½İ•‰¡½½­Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹]•‰¡½½­ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½Í•ÕÉ¥ÑäµÍ…¸œèì(€€€€€¥è€œ½…‘µ¥¸½Í•ÕÉ¥ÑäµÍ…¸œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½Í•ÕÉ¥ÑäµÍ…¸œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½Í•ÕÉ¥ÑäµÍ…¸œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹M•ÕÉ¥ÑåM…¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½É½Àœèì(€€€€€¥è€œ½…‘µ¥¸½É½Àœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½É½Àœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½É½Àœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹I½ÁI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½É•Ù•¹Õ”œèì(€€€€€¥è€œ½…‘µ¥¸½É•Ù•¹Õ”œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½É•Ù•¹Õ”œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½É•Ù•¹Õ”œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹I•Ù•¹Õ•I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½É•Á¼µ¡•…±Ñ œèì(€€€€€¥è€œ½…‘µ¥¸½É•Á¼µ¡•…±Ñ œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½É•Á¼µ¡•…±Ñ œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½É•Á¼µ¡•…±Ñ œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹I•Á½!•…±Ñ¡I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸µ…µÁ…¥¹Ìœèì(€€€€€¥è€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸µ…µÁ…¥¹Ìœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸µ…µÁ…¥¹Ìœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸µ…µÁ…¥¹Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹AÉ½µ½Ñ¥½¹…µÁ…¥¹ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸œèì(€€€€€¥è€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½ÁÉ½µ½Ñ¥½¸œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹AÉ½µ½Ñ¥½¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½Á…å™…ÍĞµ…Õ‘¥Ğœèì(€€€€€¥è€œ½…‘µ¥¸½Á…å™…ÍĞµ…Õ‘¥Ğœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½Á…å™…ÍĞµ…Õ‘¥Ğœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½Á…å™…ÍĞµ…Õ‘¥Ğœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹A…å™…ÍÑÕ‘¥ÑI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½±½¥¸œèì(€€€€€¥è€œ½…‘µ¥¸½±½¥¸œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½±½¥¸œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½±½¥¸œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹1½¥¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½¥¹Ù½¥•Ìœèì(€€€€€¥è€œ½…‘µ¥¸½¥¹Ù½¥•Ìœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½¥¹Ù½¥•Ìœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½¥¹Ù½¥•Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹%¹Ù½¥•ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½•¹Ñ¥Ñ±•µ•¹Ğµ‘¥…¹½ÍÑ¥Ìœèì(€€€€€¥è€œ½…‘µ¥¸½•¹Ñ¥Ñ±•µ•¹Ğµ‘¥…¹½ÍÑ¥Ìœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½•¹Ñ¥Ñ±•µ•¹Ğµ‘¥…¹½ÍÑ¥Ìœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½•¹Ñ¥Ñ±•µ•¹Ğµ‘¥…¹½ÍÑ¥Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹¹Ñ¥Ñ±•µ•¹Ñ¥…¹½ÍÑ¥ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½•µ…¥±Ìœèì(€€€€€¥è€œ½…‘µ¥¸½•µ…¥±Ìœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½•µ…¥±Ìœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½•µ…¥±Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹µ…¥±ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½•µ…¥°µ‘½µ…¥¸œèì(€€€€€¥è€œ½…‘µ¥¸½•µ…¥°µ‘½µ…¥¸œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½•µ…¥°µ‘½µ…¥¸œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½•µ…¥°µ‘½µ…¥¸œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹µ…¥±½µ…¥¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½É•‘¥ÑÌœèì(€€€€€¥è€œ½…‘µ¥¸½É•‘¥ÑÌœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½É•‘¥ÑÌœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½É•‘¥ÑÌœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹É•‘¥ÑÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½½¹ÑÉ½°µ•¹Ñ•Èœèì(€€€€€¥è€œ½…‘µ¥¸½½¹ÑÉ½°µ•¹Ñ•Èœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½½¹ÑÉ½°µ•¹Ñ•Èœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½½¹ÑÉ½°µ•¹Ñ•Èœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹½¹ÑÉ½±•¹Ñ•ÉI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½¤µ¡•…±Ñ œèì(€€€€€¥è€œ½…‘µ¥¸½¤µ¡•…±Ñ œ(€€€€€Á…Ñ è€œ½…‘µ¥¸½¤µ¡•…±Ñ œ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½¤µ¡•…±Ñ œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹¥!•…±Ñ¡I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½‰¥±±¥¹œœèì(€€€€€¥è€œ½…‘µ¥¸½‰¥±±¥¹œœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½‰¥±±¥¹œœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½‰¥±±¥¹œœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹	¥±±¥¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…‘µ¥¸½…•ÍÌœèì(€€€€€¥è€œ½…‘µ¥¸½…•ÍÌœ(€€€€€Á…Ñ è€œ½…‘µ¥¸½…•ÍÌœ(€€€€€™Õ±±A…Ñ è€œ½…‘µ¥¸½…•ÍÌœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜‘µ¥¹•ÍÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…½Õ¹Ğ½ÍÕ‰ÍÉ¥ÁÑ¥½¹Ìœèì(€€€€€¥è€œ½…½Õ¹Ğ½ÍÕ‰ÍÉ¥ÁÑ¥½¹Ìœ(€€€€€Á…Ñ è€œ½…½Õ¹Ğ½ÍÕ‰ÍÉ¥ÁÑ¥½¹Ìœ(€€€€€™Õ±±A…Ñ è€œ½…½Õ¹Ğ½ÍÕ‰ÍÉ¥ÁÑ¥½¹Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜½Õ¹ÑMÕ‰ÍÉ¥ÁÑ¥½¹ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…½Õ¹Ğ½¥¹Ù½¥•Ìœèì(€€€€€¥è€œ½…½Õ¹Ğ½¥¹Ù½¥•Ìœ(€€€€€Á…Ñ è€œ½…½Õ¹Ğ½¥¹Ù½¥•Ìœ(€€€€€™Õ±±A…Ñ è€œ½…½Õ¹Ğ½¥¹Ù½¥•Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜½Õ¹Ñ%¹Ù½¥•ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…½Õ¹Ğ½‘•‰Õœœèì(€€€€€¥è€œ½…½Õ¹Ğ½‘•‰Õœœ(€€€€€Á…Ñ è€œ½…½Õ¹Ğ½‘•‰Õœœ(€€€€€™Õ±±A…Ñ è€œ½…½Õ¹Ğ½‘•‰Õœœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜½Õ¹Ñ•‰ÕI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…½Õ¹Ğ½‰¥±±¥¹œœèì(€€€€€¥è€œ½…½Õ¹Ğ½‰¥±±¥¹œœ(€€€€€Á…Ñ è€œ½…½Õ¹Ğ½‰¥±±¥¹œœ(€€€€€™Õ±±A…Ñ è€œ½…½Õ¹Ğ½‰¥±±¥¹œœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜½Õ¹Ñ	¥±±¥¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ¼¹İ•±°µ­¹½İ¸½½…ÕÑ µÁÉ½Ñ•Ñ•µÉ•Í½ÕÉ”œèì(€€€€€¥è€œ¼¹İ•±°µ­¹½İ¸½½…ÕÑ µÁÉ½Ñ•Ñ•µÉ•Í½ÕÉ”œ(€€€€€Á…Ñ è€œ¼¹İ•±°µ­¹½İ¸½½…ÕÑ µÁÉ½Ñ•Ñ•µÉ•Í½ÕÉ”œ(€€€€€™Õ±±A…Ñ è€œ¼¹İ•±°µ­¹½İ¸½½…ÕÑ µÁÉ½Ñ•Ñ•µÉ•Í½ÕÉ”œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜¡…ÈäÅ½Ñİ•±±-¹½İ¹¡…ÈäÍ=…ÕÑ¡AÉ½Ñ•Ñ•‘I•Í½ÕÉ•I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ¼¹µÀ½±¥ÍĞµÑ½½±Ìœèì(€€€€€¥è€œ¼¹µÀ½±¥ÍĞµÑ½½±Ìœ(€€€€€Á…Ñ è€œ¼¹µÀ½±¥ÍĞµÑ½½±Ìœ(€€€€€™Õ±±A…Ñ è€œ¼¹µÀ½±¥ÍĞµÑ½½±Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜¡…ÈäÅ½ÑµÁ¡…ÈäÍ1¥ÍÑQ½½±ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½ØÄ½¡…Ğ½½µÁ±•Ñ¥½¹Ìœèì(€€€€€¥è€œ½ØÄ½¡…Ğ½½µÁ±•Ñ¥½¹Ìœ(€€€€€Á…Ñ è€œ½ØÄ½¡…Ğ½½µÁ±•Ñ¥½¹Ìœ(€€€€€™Õ±±A…Ñ è€œ½ØÄ½¡…Ğ½½µÁ±•Ñ¥½¹Ìœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜XÅ¡…Ñ½µÁ±•Ñ¥½¹ÍI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½±½Ù…‰±”½•µ…¥°½ÍÕÁÁÉ•ÍÍ¥½¸œèì(€€€€€¥è€œ½±½Ù…‰±”½•µ…¥°½ÍÕÁÁÉ•ÍÍ¥½¸œ(€€€€€Á…Ñ è€œ½±½Ù…‰±”½•µ…¥°½ÍÕÁÁÉ•ÍÍ¥½¸œ(€€€€€™Õ±±A…Ñ è€œ½±½Ù…‰±”½•µ…¥°½ÍÕÁÁÉ•ÍÍ¥½¸œ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜1½Ù…‰±•µ…¥±MÕÁÁÉ•ÍÍ¥½¹I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…Á¤½ÁÕ‰±¥Œ½•¹Ñ¥Ñ±•µ•¹Ğœèì(€€€€€¥è€œ½…Á¤½ÁÕ‰±¥Œ½•¹Ñ¥Ñ±•µ•¹Ğœ(€€€€€Á…Ñ è€œ½…Á¤½ÁÕ‰±¥Œ½•¹Ñ¥Ñ±•µ•¹Ğœ(€€€€€™Õ±±A…Ñ è€œ½…Á¤½ÁÕ‰±¥Œ½•¹Ñ¥Ñ±•µ•¹Ğœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜Á¥AÕ‰±¥¹Ñ¥Ñ±•µ•¹ÑI½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…Á¤½‰¥±±¥¹œ½…Ñ…±½œœèì(€€€€€¥è€œ½…Á¤½‰¥±±¥¹œ½…Ñ…±½œœ(€€€€€Á…Ñ è€œ½…Á¤½‰¥±±¥¹œ½…Ñ…±½œœ(€€€€€™Õ±±A…Ñ è€œ½…Á¤½‰¥±±¥¹œ½…Ñ…±½œœ(€€€€€ÁÉ•1½…‘•ÉI½ÕÑ”èÑåÁ•½˜Á¥	¥±±¥¹…Ñ…±½I½ÕÑ•%µÁ½ÉĞ(€€€€€Á…É•¹ÑI½ÕÑ”èÑåÁ•½˜É½½ÑI½ÕÑ•%µÁ½ÉĞ(€€€ô(€€€€œ½…½Õ¹Ğ½¥¹Ù½¥•Ì¼‘¥œèì(€€€€€¥è€œ½…½Õ¹Ğ½¥¹Ù½¥•Ì¼‘¥œ(€€€€€Á…Ñ è€œ¼‘¥œ(€€€€€™Õ±±A…Ñ¦6†Bp¢Fƒ¢rö’÷6÷fW&V–vâöæ÷fö6†Bp¢gVÆÅFƒ¢rö’÷6÷fW&V–vâöæ÷fö6†Bp¢&TÆöFW%&÷WFS¢G—Vöb•6÷fW&V–väæ÷f6†E&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷6÷fW&V–vâöÆVæ6‚òFs¢°¢–C¢rö’÷6÷fW&V–vâöÆVæ6‚òFp¢Fƒ¢rö’÷6÷fW&V–vâöÆVæ6‚òFp¢gVÆÅFƒ¢rö’÷6÷fW&V–vâöÆVæ6‚òFp¢&TÆöFW%&÷WFS¢G—Vöb•6÷fW&V–väÆVæ6„&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷6÷fW&V–vâöWF‚òF7F–öâs¢°¢–C¢rö’÷6÷fW&V–vâöWF‚òF7F–öâp¢Fƒ¢rö’÷6÷fW&V–vâöWF‚òF7F–öâp¢gVÆÅFƒ¢rö’÷6÷fW&V–vâöWF‚òF7F–öâp¢&TÆöFW%&÷WFS¢G—Vöb•6÷fW&V–väWF„7F–öå&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷WFFW2÷'72s¢°¢–C¢rö’÷V&Æ–2÷WFFW2÷'72p¢Fƒ¢rö’÷V&Æ–2÷WFFW2÷'72p¢gVÆÅFƒ¢rö’÷V&Æ–2÷WFFW2÷'72p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5WFFW5'75&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷WFFW2öFöÒs¢°¢–C¢rö’÷V&Æ–2÷WFFW2öFöÒp¢Fƒ¢rö’÷V&Æ–2÷WFFW2öFöÒp¢gVÆÅFƒ¢rö’÷V&Æ–2÷WFFW2öFöÒp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5WFFW4FöÕ&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷&÷÷VÆÂÖ'&öF67G2s¢°¢–C¢rö’÷V&Æ–2÷&÷÷VÆÂÖ'&öF67G2p¢Fƒ¢rö’÷V&Æ–2÷&÷÷VÆÂÖ'&öF67G2p¢gVÆÅFƒ¢rö’÷V&Æ–2÷&÷÷VÆÂÖ'&öF67G2p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5&÷VÆÄ'&öF67G5&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷&÷ö–ævW7B×7VvvW7F–öâs¢°¢–C¢rö’÷V&Æ–2÷&÷ö–ævW7B×7VvvW7F–öâp¢Fƒ¢rö’÷V&Æ–2÷&÷ö–ævW7B×7VvvW7F–öâp¢gVÆÅFƒ¢rö’÷V&Æ–2÷&÷ö–ævW7B×7VvvW7F–öâp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5&÷–ævW7E7VvvW7F–öå&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷&÷ö–ævW7B×W&bs¢°¢–C¢rö’÷V&Æ–2÷&÷ö–ævW7B×W&bp¢Fƒ¢rö’÷V&Æ–2÷&÷ö–ævW7B×W&bp¢gVÆÅFƒ¢rö’÷V&Æ–2÷&÷ö–ævW7B×W&bp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5&÷–ævW7EW&e&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷&÷ö–ævW7BÖÆ–VBs¢°¢–C¢rö’÷V&Æ–2÷&÷ö–ævW7BÖÆ–VBp¢Fƒ¢rö’÷V&Æ–2÷&÷ö–ævW7BÖÆ–VBp¢gVÆÅFƒ¢rö’÷V&Æ–2÷&÷ö–ævW7BÖÆ–VBp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5&÷–ævW7DÆ–VE&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷–f7Bö—Fâs¢°¢–C¢rö’÷V&Æ–2÷–f7Bö—Fâp¢Fƒ¢rö’÷V&Æ–2÷–f7Bö—Fâp¢gVÆÅFƒ¢rö’÷V&Æ–2÷–f7Bö—Fâp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5–f7D—Få&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2ö†öö·2÷&ö6W72×7V'67&—F–öâÖVÖ–Ç2s¢°¢–C¢rö’÷V&Æ–2ö†öö·2÷&ö6W72×7V'67&—F–öâÖVÖ–Ç2p¢Fƒ¢rö’÷V&Æ–2ö†öö·2÷&ö6W72×7V'67&—F–öâÖVÖ–Ç2p¢gVÆÅFƒ¢rö’÷V&Æ–2ö†öö·2÷&ö6W72×7V'67&—F–öâÖVÖ–Ç2p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–4†öö·5&ö6W757V'67&—F–öäVÖ–Ç5&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2ö†öö·2ö6’Öf–ÇW&RÖÆW'G2s¢°¢–C¢rö’÷V&Æ–2ö†öö·2ö6’Öf–ÇW&RÖÆW'G2p¢Fƒ¢rö’÷V&Æ–2ö†öö·2ö6’Öf–ÇW&RÖÆW'G2p¢gVÆÅFƒ¢rö’÷V&Æ–2ö†öö·2ö6’Öf–ÇW&RÖÆW'G2p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–4†öö·46”f–ÇW&TÆW'G5&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2öf÷&×2ö7&VFRÖ—77VRs¢°¢–C¢rö’÷V&Æ–2öf÷&×2ö7&VFRÖ—77VRp¢Fƒ¢rö’÷V&Æ–2öf÷&×2ö7&VFRÖ—77VRp¢gVÆÅFƒ¢rö’÷V&Æ–2öf÷&×2ö7&VFRÖ—77VRp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–4f÷&×47&VFT—77VU&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2ö×7FGW2ö†VÇF‚s¢°¢–C¢rö’÷V&Æ–2ö×7FGW2ö†VÇF‚p¢Fƒ¢rö’÷V&Æ–2ö×7FGW2ö†VÇF‚p¢gVÆÅFƒ¢rö’÷V&Æ–2ö×7FGW2ö†VÇF‚p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–47FGW4†VÇF…&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2öæÇ—F–72öWF‚ÖvFRs¢°¢–C¢rö’÷V&Æ–2öæÇ—F–72öWF‚ÖvFRp¢Fƒ¢rö’÷V&Æ–2öæÇ—F–72öWF‚ÖvFRp¢gVÆÅFƒ¢rö’÷V&Æ–2öæÇ—F–72öWF‚ÖvFRp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–4æÇ—F–74WF„vFU&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö66÷VçBö–çfö–6W2ö'’×–ÖVçBòGbs¢°¢–C¢rö66÷VçBö–çfö–6W2ö'’×–ÖVçBòGbp¢Fƒ¢rö'’×–ÖVçBòGbp¢gVÆÅFƒ¢rö66÷VçBö–çfö–6W2ö'’×–ÖVçBòGbp¢&TÆöFW%&÷WFS¢G—Vöb66÷VçD–çfö–6W4'•–ÖVçEe&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb66÷VçD–çfö–6W5&÷WFP¢Ğ¢rö’÷V&Æ–2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2s¢°¢–C¢rö’÷V&Æ–2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2p¢Fƒ¢rö’÷V&Æ–2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2p¢gVÆÅFƒ¢rö’÷V&Æ–2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5&÷7&öäÖV7W&T÷WF6öÖW5&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2÷&÷ö7&öâö7&÷72Ö×66âs¢°¢–C¢rö’÷V&Æ–2÷&÷ö7&öâö7&÷72Ö×66âp¢Fƒ¢rö’÷V&Æ–2÷&÷ö7&öâö7&÷72Ö×66âp¢gVÆÅFƒ¢rö’÷V&Æ–2÷&÷ö7&öâö7&÷72Ö×66âp¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–5&÷7&öä7&÷7466å&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢rö’÷V&Æ–2övVæW&FRö7&VF—fR×7GVF–ò÷÷7FW"s¢°¢–C¢rö’÷V&Æ–2övVæW&FRö7&VF—fR×7GVF–ò÷÷7FW"p¢Fƒ¢rö’÷V&Æ–2övVæW&FRö7&VF—fR×7GVF–ò÷÷7FW"p¢gVÆÅFƒ¢rö’÷V&Æ–2övVæW&FRö7&VF—fR×7GVF–ò÷÷7FW"p¢&TÆöFW%&÷WFS¢G—Vöb•V&Æ–4vVæW&FT7&VF—fU7GVF–õ÷7FW%&÷WFT–×÷'@¢&VçE&÷WFS¢G—Vöb&ö÷E&÷WFT–×÷'@¢Ğ¢Ğ§Ğ ¦–çFW&f6R6†V6¶÷WE&÷WFT6†–ÆG&Vâ°¢6†V6¶÷WD6æ6VÅ&÷WFS¢G—Vöb6†V6¶÷WD6æ6VÅ&÷WFP¢6†V6¶÷WE7V66W75&÷WFS¢G—Vöb6†V6¶÷WE7V66W75&÷WFP§Ğ ¦6öç7B6†V6¶÷WE&÷WFT6†–ÆG&Vã¢6†V6¶÷WE&÷WFT6†–ÆG&VâÒ°¢6†V6¶÷WD6æ6VÅ&÷WFS¢6†V6¶÷WD6æ6VÅ&÷WFRÀ¢6†V6¶÷WE7V66W75&÷WFS¢6†V6¶÷WE7V66W75&÷WFRÀ§Ğ ¦6öç7B6†V6¶÷WE&÷WFUv—F„6†–ÆG&VâÒ6†V6¶÷WE&÷WFRåöFDf–ÆT6†–ÆG&Vâ€¢6†V6¶÷WE&÷WFT6†–ÆG&VâÀ¢ ¦–çFW&f6R66÷VçD–çfö–6W5&÷WFT6†–ÆG&Vâ°¢66÷VçD–çfö–6W4–E&÷WFS¢G—Vöb66÷VçD–çfö–6W4–E&÷WFP¢66÷VçD–çfö–6W4'•–ÖVçEe&÷WFS¢G—Vöb66÷VçD–çfö–6W4'•–ÖVçEe&÷WFP§Ğ ¦6öç7B66÷VçD–çfö–6W5&÷WFT6†–ÆG&Vã¢66÷VçD–çfö–6W5&÷WFT6†–ÆG&VâÒ°¢66÷VçD–çfö–6W4–E&÷WFS¢66÷VçD–çfö–6W4–E&÷WFRÀ¢66÷VçD–çfö–6W4'•–ÖVçEe&÷WFS¢66÷VçD–çfö–6W4'•–ÖVçEe&÷WFRÀ§Ğ ¦6öç7B66÷VçD–çfö–6W5&÷WFUv—F„6†–ÆG&VâÒ66÷VçD–çfö–6W5&÷WFRåöFDf–ÆT6†–ÆG&Vâ€¢66÷VçD–çfö–6W5&÷WFT6†–ÆG&VâÀ¢ ¦6öç7B&ö÷E&÷WFT6†–ÆG&Vã¢&ö÷E&÷WFT6†–ÆG&VâÒ°¢–æFW…&÷WFS¢–æFW…&÷WFRÀ¢6†ævVÆöu&÷WFS¢6†ævVÆöu&÷WFRÀ¢6†V6¶÷WE&÷WFS¢6†V6¶÷WE&÷WFUv—F„6†–ÆG&VâÀ¢v÷fW&ææ6U&÷WFS¢v÷fW&ææ6U&÷WFRÀ¢Æöv–å&÷WFS¢Æöv–å&÷WFRÀ¢Ö7&÷WFS¢Ö7&÷WFRÀ¢×––g•&÷WFS¢×––g•&÷WFRÀ¢&–6–æu&÷WFS¢&–6–æu&÷WFRÀ¢&—f7•&÷WFS¢&—f7•&÷WFRÀ¢&6ve&÷WFS¢&6ve&÷WFRÀ¢&VgVæG5&÷WFS¢&VgVæG5&÷WFRÀ¢6—FVÖF÷G†ÖÅ&÷WFS¢6—FVÖF÷G†ÖÅ&÷WFRÀ¢FW&×5&÷WFS¢FW&×5&÷WFRÀ¢6†#“F÷FÖ76†#“4Æ—7EFööÇ5&÷WFS¢6†#“F÷FÖ76†#“4Æ—7EFööÇ5&÷WFRÀ¢6†#“F÷GvVÆÄ¶æ÷vä6†#“4öWF…&÷FV7FVE&W6÷W&6U&÷WFS ¢6†#“F÷GvVÆÄ¶æ÷vä6†#“4öWF…&÷FV7FVE&W6÷W&6U&÷WFRÀ¢66÷VçD&–ÆÆ–æu&÷WFS¢66÷VçD&–ÆÆ–æu&÷WFRÀ¢66÷VçDFV'Vu&÷WFS¢66÷VçDFV'Vu&÷WFRÀ¢66÷VçD–çfö–6W5&÷WFS¢66÷VçD–çfö–6W5&÷WFUv—F„6†–ÆG&VâÀ¢66÷VçE7V'67&—F–öç5&÷WFS¢66÷VçE7V'67&—F–öç5&÷WFRÀ¢FÖ–ä66W75&÷WFS¢FÖ–ä66W75&÷WFRÀ¢FÖ–ä&–ÆÆ–æu&÷WFS¢FÖ–ä&–ÆÆ–æu&÷WFRÀ¢FÖ–ä6”†VÇF…&÷WFS¢FÖ–ä6”†VÇF…&÷WFRÀ¢FÖ–ä6öçG&öÄ6VçFW%&÷WFS¢FÖ–ä6öçG&öÄ6VçFW%&÷WFRÀ¢FÖ–ä7&VF—G5&÷WFS¢FÖ–ä7&VF—G5&÷WFRÀ¢FÖ–äVÖ–ÄFöÖ–å&÷WFS¢FÖ–äVÖ–ÄFöÖ–å&÷WFRÀ¢FÖ–äVÖ–Ç5&÷WFS¢FÖ–äVÖ–Ç5&÷WFRÀ¢FÖ–äVçF—FÆVÖVçDF–væ÷7F–75&÷WFS¢FÖ–äVçF—FÆVİ[ÛœÔ›İ]NˆŒPÚ]ÛÛ\][ÛœÔ›İ]Kˆ\TX›XĞ[˜[]XÜĞ]]Ø]T›İ]Nˆ\TX›XĞ[˜[]XÜĞ]]Ø]T›İ]Kˆ\TX›XĞ\İ]\ÒX[›İ]Nˆ\TX›XĞ\İ]\ÒX[›İ]Kˆ\TX›XÑ›Ü›\ĞÜ™X]R\ÜİYT›İ]Nˆ\TX›XÑ›Ü›\ĞÜ™X]R\ÜİYT›İ]Kˆ\TX›XÒÛÚÜĞÚQ˜Z[\™P[\Ô›İ]Nˆ\TX›XÒÛÚÜĞÚQ˜Z[\™P[\Ô›İ]Kˆ\TX›XÒÛÚÜÔ›ØÙ\ÜÔİXœØÜš\[Û‘[XZ[Ô›İ]N‚ˆ\TX›XÒÛÚÜÔ›ØÙ\ÜÔİXœØÜš\[Û‘[XZ[Ô›İ]Kˆ\TX›XÔ^Y˜\İ]”›İ]Nˆ\TX›XÔ^Y˜\İ]”›İ]Kˆ\TX›XÔ›Ü[™Ù\İ\YY›İ]Nˆ\TX›XÔ›Ü[™Ù\İ\YY›İ]Kˆ\TX›XÔ›Ü[™Ù\İ\™”›İ]Nˆ\TX›XÔ›Ü[™Ù\İ\™”›İ]Kˆ\TX›XÔ›Ü[™Ù\İİYÙÙ\İ[Û”›İ]Nˆ\TX›XÔ›Ü[™Ù\İİYÙÙ\İ[Û”›İ]Kˆ\TX›XÔ›Ü[œ›ØYØ\İÔ›İ]Nˆ\TX›XÔ›Ü[œ›ØYØ\İÔ›İ]Kˆ\TX›XÕ\]\Ğ]ÛT›İ]Nˆ\TX›XÕ\]\Ğ]ÛT›İ]Kˆ\TX›XÕ\]\ÔœÜÔ›İ]Nˆ\TX›XÕ\]\ÔœÜÔ›İ]Kˆ\TÛİ™\™ZYÛ]]Xİ[Û”›İ]Nˆ\TÛİ™\™ZYÛ]]Xİ[Û”›İ]Kˆ\TÛİ™\™ZYÛ“][˜Ú\›İ]Nˆ\TÛİ™\™ZYÛ“][˜Ú\›İ]Kˆ\TÛİ™\™ZYÛ“›İ˜PÚ]›İ]Nˆ\TÛİ™\™ZYÛ“›İ˜PÚ]›İ]Kˆİ˜X›Q[XZ[]Y]YT›ØÙ\ÜÔ›İ]Nˆİ˜X›Q[XZ[]Y]YT›ØÙ\ÜÔ›İ]Kˆİ˜X›Q[XZ[˜[œØXİ[Û˜[™]šY]Ô›İ]Nˆİ˜X›Q[XZ[˜[œØXİ[Û˜[™]šY]Ô›İ]Kˆİ˜X›Q[XZ[˜[œØXİ[Û˜[Ù[™›İ]Nˆİ˜X›Q[XZ[˜[œØXİ[Û˜[Ù[™›İ]Kˆ\TX›XÑÙ[™\˜]PÜ™X]]™TİY[ÔÜİ\”›İ]N‚ˆ\TX›XÑÙ[™\˜]PÜ™X]]™TİY[ÔÜİ\”›İ]Kˆ\TX›XÔ›ÜÜ›ÛÜ›ÜÜĞ\ØØ[”›İ]Nˆ\TX›XÔ›ÜÜ›ÛÜ›ÜÜĞ\ØØ[”›İ]Kˆ\TX›XÔ›ÜÜ›Û“YX\İ\™Sİ]ÛÛY\Ô›İ]Nˆ\TX›XÔ›ÜÜ›Û“YX\İ\™Sİ]ÛÛY\Ô›İ]KŸB™^ÜÛÛœİ›İ]U™YHH›Ûİ›İ]R[\Üˆ—ØYš[PÚ[™[Š›Ûİ›İ]PÚ[™[ŠBˆ—ØYš[U\\Ïš[T›İ]U\\ÏŠ
+B‚š[\Ü\HÈÙ]›İ]\ˆHœ›ÛH	Ë‹Ü›İ]\‹Ş	Âš[\Ü\HÈİ\[œİ[˜ÙHHœ›ÛH	Ë‹Üİ\ÉÂ™XÛ\™H[Ù[H	Ğ[œİXÚËÜ™XXİ\İ\	ÈÂˆ[\™˜XÙH™YÚ\İ\ˆÂˆÜÜˆYBˆ›İ]\ˆ]ØZ]Y™]\›•\O\[ÙˆÙ]›İ]\‚ˆÛÛ™šYÎˆ]ØZ]Y™]\›•\O\[Ùˆİ\[œİ[˜ÙK™Ù]Ü[ÛœÏ‚ˆBŸB
