@@ -3,7 +3,7 @@ name: Validate exact production Hub candidate
 on:
   push:
     branches:
-      - ronsas/validate-production-174cf6f-20260920
+      - ronsas/validate-production-791c5b7-20260920
     paths:
       - ".github/workflows/validate-exact-production.yml"
 
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-exact-production-174cf6f
+  group: validate-exact-production-791c5b7
   cancel-in-progress: true
 
 jobs:
@@ -23,8 +23,8 @@ jobs:
         run: |
           set -euo pipefail
           git clone --no-checkout https://github.com/resonance36912-cell/resonance-hub.git hub
-          git -C hub checkout --detach 174cf6f64edbf9eafb7301008c1be7dcfbdbdf3f
-          test "$(git -C hub rev-parse HEAD)" = "174cf6f64edbf9eafb7301008c1be7dcfbdbdf3f"
+          git -C hub checkout --detach 791c5b7e74dab20c1e48fb0d7bb34a8f6d426d57
+          test "$(git -C hub rev-parse HEAD)" = "791c5b7e74dab20c1e48fb0d7bb34a8f6d426d57"
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -105,26 +105,26 @@ jobs:
         working-directory: hub
         run: |
           set -euo pipefail
-          tar -czf ../ronsas-hub-candidate-174cf6f.tar.gz .output-candidate-local
-          SHA=$(sha256sum ../ronsas-hub-candidate-174cf6f.tar.gz | awk '{print $1}')
+          tar -czf ../ronsas-hub-candidate-791c5b7.tar.gz .output-candidate-local
+          SHA=$(sha256sum ../ronsas-hub-candidate-791c5b7.tar.gz | awk '{print $1}')
           FILES=$(find .output-candidate-local -type f | wc -l | tr -d ' ')
           {
             echo "schema=ronsas-hub-candidate/v1"
             echo "source_repo=resonance36912-cell/resonance-hub"
             echo "source_branch=ronsas/ealiophin-production"
-            echo "source_commit=174cf6f64edbf9eafb7301008c1be7dcfbdbdf3f"
+            echo "source_commit=791c5b7e74dab20c1e48fb0d7bb34a8f6d426d57"
             echo "artifact_sha256=$SHA"
             echo "artifact_files=$FILES"
             echo "route_smoke=passed"
-          } > ../ronsas-hub-candidate-174cf6f.receipt.txt
-          cat ../ronsas-hub-candidate-174cf6f.receipt.txt
+          } > ../ronsas-hub-candidate-791c5b7.receipt.txt
+          cat ../ronsas-hub-candidate-791c5b7.receipt.txt
 
       - name: Upload candidate
         uses: actions/upload-artifact@v4
         with:
-          name: ronsas-hub-candidate-174cf6f
+          name: ronsas-hub-candidate-791c5b7
           path: |
-            ronsas-hub-candidate-174cf6f.tar.gz
-            ronsas-hub-candidate-174cf6f.receipt.txt
+            ronsas-hub-candidate-791c5b7.tar.gz
+            ronsas-hub-candidate-791c5b7.receipt.txt
           if-no-files-found: error
           retention-days: 30
