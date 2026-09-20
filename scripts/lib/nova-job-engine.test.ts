@@ -1,12 +1,36 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 
-const jobs = await import("../../src/lib/nova/jobs").catch(() => null);
+const jobs = await import("../../src/lib/nova/jobs").catch(() => null);\nconst contracts = await import("../../src/lib/nova/contracts").catch(() => null);
 const migration = await Bun.file("supabase/migrations/20260920235000_nova_job_engine.sql")
   .text()
   .catch(() => "");
 const runner = readFileSync("src/lib/nova/job-runner.server.ts", "utf8");
 const functionsSource = readFileSync("src/lib/nova/functions.ts", "utf8");
+
+
+describe("Nova Job Engine project scope", () => {
+  test("rejects a job whose embedded action targets a different project", () => {
+    expect(contracts).not.toBeNull();
+    if (!contracts) return;
+    const projectId = "11111111-1111-4111-8111-111111111111";
+    expect(() => contracts.CreateNovaJobInput.parse({
+      project_id: projectId,
+      title: "Scoped build",
+      goal: "Build only inside the governed project",
+      capability_id: "capability.git.write",
+      idempotency_key: "job-scope-test-1",
+      action: {
+        kind: "code.edit",
+        destructive: false,
+        production: false,
+        external: false,
+        project_id: "22222222-2222-4222-8222-222222222222",
+        scope: "project",
+      },
+    })).toThrow();
+  });
+});
 
 describe("Nova Job Engine state machine", () => {
   test("allows the governed primary path and rejects shortcuts", () => {
