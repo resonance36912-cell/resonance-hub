@@ -1,14 +1,25 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { handleSovereignAuthProxy } from "../../src/lib/sovereign-auth-proxy.server";
 
 const savedEnabled = process.env.RONS_SOVEREIGN_PROXY_ENABLED;
 const savedGateway = process.env.RESONANCE_SOVEREIGN_GATEWAY_URL;
+const savedProductionCookie = process.env.RONS_PRODUCTION_AUTH_COOKIE;
+const savedProductionOrigin = process.env.RONS_PRODUCTION_ORIGIN;
+
+beforeEach(() => {
+  delete process.env.RONS_PRODUCTION_AUTH_COOKIE;
+  delete process.env.RONS_PRODUCTION_ORIGIN;
+});
 
 afterEach(() => {
   if (savedEnabled === undefined) delete process.env.RONS_SOVEREIGN_PROXY_ENABLED;
   else process.env.RONS_SOVEREIGN_PROXY_ENABLED = savedEnabled;
   if (savedGateway === undefined) delete process.env.RESONANCE_SOVEREIGN_GATEWAY_URL;
   else process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = savedGateway;
+  if (savedProductionCookie === undefined) delete process.env.RONS_PRODUCTION_AUTH_COOKIE;
+  else process.env.RONS_PRODUCTION_AUTH_COOKIE = savedProductionCookie;
+  if (savedProductionOrigin === undefined) delete process.env.RONS_PRODUCTION_ORIGIN;
+  else process.env.RONS_PRODUCTION_ORIGIN = savedProductionOrigin;
 });
 
 describe("sovereign auth same-origin proxy", () => {
