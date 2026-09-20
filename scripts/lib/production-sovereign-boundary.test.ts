@@ -4,19 +4,27 @@ import { existsSync, readFileSync } from "node:fs";
 const read = (path: string) => readFileSync(path, "utf8");
 
 describe("RONSAS production sovereign build boundary", () => {
-  test("retires embedded MCP and Lovable project metadata", () => {
+  test("retires legacy MCP routes and Lovable project metadata", () => {
     for (const path of [
       ".lovable",
-      "src/lib/mcp",
       "src/routes/mcp.ts",
       "src/routes/[.mcp]",
       "src/routes/[.well-known]/oauth-protected-resource.ts",
     ]) expect(existsSync(path)).toBe(false);
   });
 
-  test("does not declare the retired MCP SDK or npm lock", () => {
+  test("keeps only the governed Nova and DataNest MCP runtime", () => {
+    const source = read("src/lib/mcp/index.ts");
+    expect(source).toContain("defineMcp");
+    expect(source).toContain("GOVERNED_MCP_TOOL_NAMES");
+    expect(source).toContain("auth.oauth.issuer");
+    expect(source).toContain('name: "ronsas-nova-datanest-mcp"');
+  });
+
+  test("does not declare the retired MCP SDK or npm lock and pins the governed runtime", () => {
     const pkg = JSON.parse(read("package.json"));
     expect(pkg.dependencies?.["@modelcontextprotocol/sdk"]).toBeUndefined();
+    expect(pkg.dependencies?.["@lovable.dev/mcp-js"]).toBe("0.20.0");
     expect(existsSync("package-lock.json")).toBe(false);
   });
 
