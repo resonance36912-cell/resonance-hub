@@ -18,6 +18,7 @@ import { canReadNovaProject, canReviewNovaProject, canWriteNovaProject } from "@
 import { classifyNovaAction, fingerprintNovaAction } from "@/lib/nova/autonomy";
 import { resolveDecisionState } from "@/lib/nova/decision-tray";
 import { assertJobProjectScope, resumeTargetForState, transitionState } from "@/lib/nova/jobs";
+import { AppendNovaMessageInput, CreateNovaConversationInput, hashNovaMessage } from "@/lib/nova/conversations";
 
 async function novaDb() {
   if (getBackendProvider() !== "supabase") {
@@ -604,3 +605,70 @@ export const listNovaJobs = createServerFn({ method: "GET" })
     return { jobs: jobs ?? [] };
   });
 
+
+
+export const createNovaConversation = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => CreateNovaConversationInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    await assertProjectPermission(db, context.userId, data.project_id, "write");
+    const { data: conversation, error } = await db
+      .from("nova_conversations")
+      .insert({
+        project_id: data.project_id,
+        title: data.title ?? "Nova conversation",
+        created_by: context.userId,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return { conversation };
+  });
+
+export const appendNovaMessage = createServerFn({ method: "POST" })
+  .middleware([requireRonsAuth])
+  .validator((input: unknown) => AppendNovaMessageInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const db = await novaDb();
+    await assertProjectPermission(db, context.userId, data.project_id, "write");
+    if (data.role !== "user" || data.contributor_kind !== "human") {
+      throw new Error("client_message_role_forbidden");
+    }
+    const { data: conversation, error: conversationError } = await db
+      .from("nova_conversations")
+      .select("id,project_id")
+      .eq("id", data.conversation_id)
+      .maybeSingle();
+    if (conversationError) throw new Error(conversationError.message);
+    if (!conversation || conversation.project_id !== data.project_id) {
+      throw new Error("conversation_project_mismatch");
+    }
+    const { data: message, error } = await db
+      .from("nova_messages")
+      .insert({
+        conversation_id: data.conversation_id,
+        project_id: data.project_id,
+        role: data.role,
+        contributor_kind: data.contributor_kind,
+        contributor_id: data.contributor_id ?? context.userId,
+        content: data.content,
+        content_sha256: hashNovaMessage(data.content),
+        model_id: null,
+        provider_id: null,
+        provider_trace: {},
+        memory_ids: [],
+        artifact_ids: [],
+        source_refs: [],
+        created_by: context.userId,
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    const { error: touchError } = await db
+      .from("nova_conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", data.conversation_id);
+    if (touchError) throw new Error(touchError.message);
+    return { message };
+  });
