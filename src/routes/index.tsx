@@ -678,6 +678,12 @@ function Index() {
               All Resonance products are temporarily free during this promotion while real usage, provider consumption, and support demand are measured.
             </p>
             <div className="flex flex-wrap gap-3">
+              <Link
+                to="/nova"
+                className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Open Nova Studio
+              </Link>
               <a
                 href="#apps"
                 className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
