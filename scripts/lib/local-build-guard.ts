@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { resolve, win32 } from "node:path";
 
 export type LiveListener = {
   port: number;
@@ -10,8 +10,13 @@ function normalized(value: string): string {
   return value.replaceAll("/", "\\").replaceAll("\\\\", "\\").toLowerCase();
 }
 
+function isWindowsAbsolutePath(value: string): boolean {
+  return /^[a-zA-Z]:[\\/]/.test(value) || value.startsWith("\\\\");
+}
+
 export function buildServerEntry(root: string, outputDir: string): string {
-  return resolve(root, outputDir, "server", "index.mjs");
+  const pathApi = isWindowsAbsolutePath(root) ? win32 : { resolve };
+  return pathApi.resolve(root, outputDir, "server", "index.mjs");
 }
 
 export function findLiveBuildHazards(
