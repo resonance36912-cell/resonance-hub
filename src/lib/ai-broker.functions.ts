@@ -20,7 +20,14 @@ export type NovaBrokerProviderEvidence = {
   capability_ids: string[];
   permissions: string[];
   estimated_cost_usd?: number;
-  evidence: Record<string, unknown>;
+  evidence: {
+    source: string;
+    enabled: boolean;
+    approved: boolean;
+    secret_ready: boolean;
+    model: string;
+    pricing_verified_at: string | null;
+  };
 };
 
 export function brokerProviderToNovaEvidence(provider: BrokerProvider): NovaBrokerProviderEvidence {
