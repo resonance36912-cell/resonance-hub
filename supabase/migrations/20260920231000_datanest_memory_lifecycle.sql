@@ -18,7 +18,6 @@ CREATE OR REPLACE FUNCTION public.datanest_approve_memory(
 )
 RETURNS public.datanest_memories
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
@@ -77,7 +76,6 @@ CREATE OR REPLACE FUNCTION public.datanest_supersede_memory(
 )
 RETURNS public.datanest_memories
 LANGUAGE plpgsql
-SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
