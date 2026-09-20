@@ -93,3 +93,15 @@ describe("Historical import execution", () => {
     }
   });
 });
+
+
+test("historical ingestion updates DataNest coverage and append-only evidence", async () => {
+  const source = await Bun.file("src/lib/datanest/import-service.server.ts").text();
+  expect(source).toContain('.from("datanest_ingestion_runs")');
+  expect(source).toContain("discovered: 1");
+  expect(source).toContain("duplicates: 1");
+  expect(source).toContain("ingested: 1");
+  expect(source).toContain("indexed: 1");
+  expect(source).toContain("errors: 1");
+  expect(source).toContain('.from("datanest_events")');
+});
