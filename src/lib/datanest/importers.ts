@@ -197,7 +197,7 @@ export async function runImportEnvelopes(
   for (let index = 0; index < envelopes.length; index += 1) {
     try {
       const result = await ingest(envelopes[index]);
-      if (result?.duplicate) duplicates += 1;
+      if (result && result.duplicate) duplicates += 1;
       else imported += 1;
     } catch (error) {
       errors += 1;
