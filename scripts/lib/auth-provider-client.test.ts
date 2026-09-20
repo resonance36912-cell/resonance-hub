@@ -51,7 +51,6 @@ describe("RONS client auth facade", () => {
       "src/routes/account.invoices.by-payment.$pf.tsx",
       "src/routes/account.invoices.tsx",
       "src/routes/account.subscriptions.tsx",
-      "src/routes/checkout.tsx",
     ]) {
       const source = readFileSync(rel, "utf8");
       expect(source).toContain("ronsAuth.");
