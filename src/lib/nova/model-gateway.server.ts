@@ -33,8 +33,6 @@ export type NovaChatMessage = {
 export type NovaChatCompletionInput = {
   model?: NovaModelId | string;
   messages: NovaChatMessage[];
-  max_cost_usd?: number;
-  human_approved_external?: boolean;
 };
 
 export class NovaGatewayError extends Error {
@@ -61,6 +59,8 @@ export function resolveNovaModelRoute(
   const governed = providers.filter((provider) => {
     if (!isExternal(provider)) return true;
     if (!context.human_approved_external) return false;
+    if (context.max_cost_usd == null) return false;
+    if (provider.estimated_cost_usd == null || provider.estimated_cost_usd > context.max_cost_usd) return false;
     if (!provider.permissions.includes(MODEL_INVOKE_PERMISSION)) return false;
     return provider.state === "verified" || provider.state === "connected";
   });
@@ -250,7 +250,10 @@ function promptFromMessages(messages: NovaChatMessage[]): { system: string; prom
   return { system, prompt };
 }
 
-export async function completeNovaChat(input: NovaChatCompletionInput) {
+export async function completeNovaChat(
+  input: NovaChatCompletionInput,
+  context: NovaModelRouteContext = {},
+) {
   const model = input.model ?? "ronsas-nova";
   getNovaModel(model);
   const messages = input.messages.map((message) => {
@@ -265,8 +268,8 @@ export async function completeNovaChat(input: NovaChatCompletionInput) {
   const { system, prompt } = promptFromMessages(messages);
   const providers = await loadBrokerCandidates();
   const route = resolveNovaModelRoute(model, providers, {
-    max_cost_usd: input.max_cost_usd,
-    human_approved_external: input.human_approved_external === true,
+    max_cost_usd: context.max_cost_usd,
+    human_approved_external: context.human_approved_external === true,
   });
   const body = await brokerJson("/v1/compare", {
     method: "POST",
@@ -275,7 +278,7 @@ export async function completeNovaChat(input: NovaChatCompletionInput) {
       prompt,
       system,
       providers: [route.provider.id],
-      human_approved_external: input.human_approved_external === true,
+      human_approved_external: context.human_approved_external === true,
     }),
   });
   const result = ((body?.results ?? []) as BrokerCouncilResult[]).find(
