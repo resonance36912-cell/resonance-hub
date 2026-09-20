@@ -14,6 +14,11 @@ describe("Nova Job Engine project scope", () => {
     expect(contracts).not.toBeNull();
     if (!contracts) return;
     const projectId = "11111111-1111-4111-8111-111111111111";
+    expect(() => jobs?.assertJobProjectScope(
+      projectId,
+      "22222222-2222-4222-8222-222222222222",
+    )).toThrow("job_action_project_mismatch");
+
     expect(() => contracts.CreateNovaJobInput.parse({
       project_id: projectId,
       title: "Scoped build",
