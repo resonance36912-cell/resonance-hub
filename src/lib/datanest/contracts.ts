@@ -39,3 +39,60 @@ export type DataNestCoverage = {
   completeness: "unknown" | "partial" | "complete";
   gap_summary: string | null;
 };
+
+export const DataNestContributorKind = z.enum(["human", "ai", "service", "importer"]);
+
+export const ProposeMemoryInput = z.object({
+  source_id: DataNestUuid.optional(),
+  title: z.string().trim().min(1).max(240),
+  content: z.string().min(1).max(2_000_000),
+  visibility: DataNestVisibility.optional().default("private"),
+  protection: MemoryProtection.optional().default("working"),
+  contributor_kind: DataNestContributorKind.optional().default("human"),
+  evidence_ids: z.array(DataNestUuid).max(200).optional().default([]),
+  contradicts_memory_id: DataNestUuid.optional(),
+  metadata: DataNestMetadata.optional().default({}),
+}).strict();
+
+export const ApproveMemoryInput = z.object({
+  memory_id: DataNestUuid,
+  governance_decision_id: DataNestUuid.optional(),
+}).strict();
+
+export const SupersedeMemoryInput = z.object({
+  memory_id: DataNestUuid,
+  title: z.string().trim().min(1).max(240),
+  content: z.string().min(1).max(2_000_000),
+  visibility: DataNestVisibility.optional().default("shareable"),
+  protection: MemoryProtection.optional().default("canonical"),
+  governance_decision_id: DataNestUuid.optional(),
+  evidence_ids: z.array(DataNestUuid).max(200).optional().default([]),
+  metadata: DataNestMetadata.optional().default({}),
+}).strict();
+
+export const SearchMemoryInput = z.object({
+  query: z.string().trim().min(1).max(1000),
+  limit: z.number().int().min(1).max(100).optional().default(20),
+}).strict();
+
+export const ResonancePulseInput = z.object({
+  affect_label: z.string().trim().min(1).max(120),
+  intensity: z.number().min(0).max(1),
+  reason: z.string().trim().min(1).max(4000),
+  worked: z.string().max(4000).optional().default(""),
+  change: z.string().trim().min(1).max(4000),
+  importance: z.number().min(0).max(1),
+  memory_scope: z.enum(["turn", "project", "global"]),
+  origin: z.enum(["explicit", "inferred"]),
+  confirmed_by_user: z.boolean().optional().default(false),
+  evidence_ids: z.array(DataNestUuid).max(200).optional().default([]),
+  target_memory_id: DataNestUuid.optional(),
+}).strict();
+
+export const ApplyPulseInput = z.object({
+  pulse_id: DataNestUuid,
+  memory_id: DataNestUuid,
+}).strict();
+
+export type ProposeMemoryInput = z.infer<typeof ProposeMemoryInput>;
+export type ResonancePulseInput = z.infer<typeof ResonancePulseInput>;
