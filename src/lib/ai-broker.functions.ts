@@ -11,6 +11,48 @@ async function assertAdmin(userId: string) {
 export type CouncilResult = { ok: boolean; provider: string; model?: string; text?: string; error?: string; cost_usd?: number | null; latency_ms?: number; receipt_id?: string; usage?: { input_tokens: number; output_tokens: number; cached_input_tokens: number } };
 export type BrokerProvider = { id: string; name: string; kind: string; enabled: boolean; approved: boolean; model?: string; secret_ready: boolean; input_usd_m?: number | null; cached_input_usd_m?: number | null; output_usd_m?: number | null; pricing_verified_at?: string; pricing_source?: string };
 export type SpendWindow = { calls: number; cost_usd: number; by_provider: Record<string, { calls: number; cost_usd: number }> };
+export type NovaBrokerProviderEvidence = {
+  id: string;
+  name: string;
+  state: "discovered" | "available" | "connected" | "verified";
+  local: boolean;
+  self_hosted: boolean;
+  capability_ids: string[];
+  permissions: string[];
+  estimated_cost_usd?: number;
+  evidence: Record<string, unknown>;
+};
+
+export function brokerProviderToNovaEvidence(provider: BrokerProvider): NovaBrokerProviderEvidence {
+  const local = provider.kind.toLowerCase() === "local";
+  const state: NovaBrokerProviderEvidence["state"] =
+    local && provider.enabled
+      ? "verified"
+      : provider.enabled && provider.approved && provider.secret_ready
+        ? "connected"
+        : provider.secret_ready
+          ? "available"
+          : "discovered";
+  const usable = local ? provider.enabled : provider.enabled && provider.approved && provider.secret_ready;
+  return {
+    id: provider.id,
+    name: provider.name,
+    state,
+    local,
+    self_hosted: local,
+    capability_ids: ["capability.model.reason", "capability.model.code"],
+    permissions: usable ? ["model.invoke"] : [],
+    estimated_cost_usd: local ? 0 : undefined,
+    evidence: {
+      source: "rons-ai-broker",
+      enabled: provider.enabled,
+      approved: provider.approved,
+      secret_ready: provider.secret_ready,
+      model: provider.model ?? "",
+      pricing_verified_at: provider.pricing_verified_at ?? null,
+    },
+  };
+}
 type CouncilResponse = { results: CouncilResult[]; governance: string; production_authority: boolean };
 const CompareInput = z.object({ prompt: z.string().min(1).max(200000), system: z.string().max(20000).optional().default(""), providers: z.array(z.string().min(2).max(80)).min(1).max(8), human_approved_external: z.boolean().optional().default(false) });
 const ProviderStateInput = z.object({ provider: z.string().min(2).max(80), enabled: z.boolean(), approved: z.boolean() });
@@ -26,7 +68,12 @@ async function brokerJson(path: string, init?: RequestInit) {
 export const getAiBrokerState = createServerFn({ method: "GET" }).middleware([requireRonsAuth]).handler(async ({ context }) => {
   await assertAdmin(context.userId);
   const [health, spend] = await Promise.all([brokerJson("/health"), brokerJson("/v1/spend")]);
-  return { providers: (health.providers ?? []) as BrokerProvider[], summary: (spend.summary ?? {}) as Record<string, SpendWindow> };
+  const providers = (health.providers ?? []) as BrokerProvider[];
+  return {
+    providers,
+    novaProviderEvidence: providers.map(brokerProviderToNovaEvidence),
+    summary: (spend.summary ?? {}) as Record<string, SpendWindow>,
+  };
 });
 
 export const setAiProviderState = createServerFn({ method: "POST" }).middleware([requireRonsAuth]).validator((v: unknown) => ProviderStateInput.parse(v)).handler(async ({ context, data }) => {

@@ -7,7 +7,7 @@ async function assertAdmin(userId: string) {
   if (!(await hasBackendRole(userId, "admin", supabaseAdmin))) throw new Error("Forbidden");
 }
 
-const providers = [
+export const RONS_CONTROL_PROVIDERS = [
   { id: "rons-local", name: "RONS Local / Qwen", mode: "local", enabled: true, inputUsdM: 0, outputUsdM: 0, note: "Preferred sovereign zero-credit runtime" },
   { id: "openai-gpt56-sol", name: "OpenAI GPT-5.6 Sol", mode: "external", enabled: false, inputUsdM: 4, outputUsdM: 20, note: "External use requires explicit human approval" },
   { id: "openai-gpt56-terra", name: "OpenAI GPT-5.6 Terra", mode: "external", enabled: false, inputUsdM: 2, outputUsdM: 12, note: "External use requires explicit human approval" },
@@ -15,6 +15,42 @@ const providers = [
   { id: "anthropic", name: "Claude / Anthropic", mode: "external", enabled: false, inputUsdM: null, outputUsdM: null, note: "Rate loaded only when an approved model is configured" },
   { id: "poe", name: "Poe", mode: "external", enabled: false, inputUsdM: null, outputUsdM: null, note: "Usage/points shown when an approved Poe integration is configured" },
 ];
+export function getRonsControlProviderEvidence(
+  localHealth?: { ok?: boolean; model?: string; error?: string },
+) {
+  return RONS_CONTROL_PROVIDERS.map((provider) => {
+    const local = provider.mode === "local";
+    const enabled = !!provider.enabled;
+    const state = local
+      ? localHealth
+        ? localHealth.ok
+          ? "verified"
+          : "degraded"
+        : enabled
+          ? "connected"
+          : "discovered"
+      : enabled
+        ? "connected"
+        : "discovered";
+    return {
+      id: provider.id,
+      name: provider.name,
+      state,
+      local,
+      self_hosted: local,
+      capability_ids: ["capability.model.reason", "capability.model.code"],
+      permissions: enabled ? ["model.invoke"] : [],
+      estimated_cost_usd: local ? 0 : undefined,
+      evidence: {
+        source: "rons-control",
+        enabled,
+        model: localHealth?.model ?? "",
+        error: local ? localHealth?.error ?? "" : "",
+      },
+    };
+  });
+}
+
 export const getRonsControlState = createServerFn({ method: "GET" })
   .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
@@ -36,8 +72,9 @@ export const getRonsControlState = createServerFn({ method: "GET" })
         externalProvidersDefault: "disabled", productionCutoverAutomatic: false, receipts: "append-only",
         workflow: ["Observe", "Measure", "Validate", "Test", "Recommend", "Review", "Approve", "Version", "Deploy", "Audit", "Improve"],
       },
-      providers,
+      providers: RONS_CONTROL_PROVIDERS,
       localHealth,
+      novaProviderEvidence: getRonsControlProviderEvidence(localHealth),
       promotionSites: [
         { name: "Resonance Hub", url: "https://www.reson8.life", email: "" },
         { name: "Resonance Online", url: "https://epublisher.reson8.life", email: "" },
