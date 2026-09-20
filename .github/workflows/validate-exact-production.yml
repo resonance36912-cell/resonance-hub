@@ -1,0 +1,101 @@
+name: Validate exact production Hub candidate
+
+on:
+  push:
+    branches:
+      - ronsas/validate-production-174cf6f-20260920
+    paths:
+      - ".github/workflows/validate-exact-production.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-exact-production-174cf6f
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Clone exact production commit
+        run: |
+          set -euo pipefail
+          git clone --no-checkout https://github.com/resonance36912-cell/resonance-hub.git hub
+          git -C hub checkout --detach 174cf6f64edbf9eafb7301008c1be7dcfbdbdf3f
+          test "$(git -C hub rev-parse HEAD)" = "174cf6f64edbf9eafb7301008c1be7dcfbdbdf3f"
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Install exact dependencies
+        working-directory: hub
+        run: bun install --frozen-lockfile
+
+      - name: Verify commercial mode and tests
+        working-directory: hub
+        run: |
+          set -euo pipefail
+          bun run prebuild
+          bun test
+          bun run typecheck
+
+      - name: Build isolated local candidate
+        working-directory: hub
+        env:
+          RONS_LOCAL_OUTPUT_DIR: .output-candidate-local
+        run: bun run build:local
+
+      - name: Smoke policy-critical candidate routes
+        working-directory: hub
+        run: |
+          set -euo pipefail
+          HOST=127.0.0.1 PORT=4175 NODE_ENV=production node .output-candidate-local/server/index.mjs > /tmp/hub-candidate.log 2>&1 &
+          echo $! > /tmp/hub-candidate.pid
+          cleanup() { kill "$(cat /tmp/hub-candidate.pid)" 2>/dev/null || true; }
+          trap cleanup EXIT
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:4175/ >/dev/null && break
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:4175/ >/tmp/home.html
+          curl -fsS http://127.0.0.1:4175/pricing >/tmp/pricing.html
+          curl -fsS http://127.0.0.1:4175/changelog >/tmp/changelog.html
+          curl -fsS http://127.0.0.1:4175/api/public/app-status/health >/tmp/status.json
+          grep -qi "temporarily free\|free during" /tmp/home.html
+          grep -qi "free during the promotion" /tmp/pricing.html
+          grep -qi "changelog" /tmp/changelog.html
+          grep -q '"ok": true' /tmp/status.json
+          grep -q '"myify"' /tmp/status.json
+          echo "policy_route_smoke=passed"
+
+      - name: Package immutable candidate and receipt
+        working-directory: hub
+        run: |
+          set -euo pipefail
+          tar -czf ../ronsas-hub-candidate-174cf6f.tar.gz .output-candidate-local
+          SHA=$(sha256sum ../ronsas-hub-candidate-174cf6f.tar.gz | awk '{print $1}')
+          FILES=$(find .output-candidate-local -type f | wc -l | tr -d ' ')
+          {
+            echo "schema=ronsas-hub-candidate/v1"
+            echo "source_repo=resonance36912-cell/resonance-hub"
+            echo "source_branch=ronsas/ealiophin-production"
+            echo "source_commit=174cf6f64edbf9eafb7301008c1be7dcfbdbdf3f"
+            echo "artifact_sha256=$SHA"
+            echo "artifact_files=$FILES"
+            echo "route_smoke=passed"
+          } > ../ronsas-hub-candidate-174cf6f.receipt.txt
+          cat ../ronsas-hub-candidate-174cf6f.receipt.txt
+
+      - name: Upload candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: ronsas-hub-candidate-174cf6f
+          path: |
+            ronsas-hub-candidate-174cf6f.tar.gz
+            ronsas-hub-candidate-174cf6f.receipt.txt
+          if-no-files-found: error
+          retention-days: 30
