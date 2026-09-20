@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 
-const jobs = await import("../../src/lib/nova/jobs").catch(() => null);\nconst contracts = await import("../../src/lib/nova/contracts").catch(() => null);
+const jobs = await import("../../src/lib/nova/jobs").catch(() => null);
+const contracts = await import("../../src/lib/nova/contracts").catch(() => null);
 const migration = await Bun.file("supabase/migrations/20260920235000_nova_job_engine.sql")
   .text()
   .catch(() => "");
