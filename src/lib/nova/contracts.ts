@@ -126,7 +126,16 @@ export const CreateNovaJobInput = z
     depends_on_job_ids: z.array(z.string().uuid()).max(100).optional().default([]),
     metadata: z.record(z.string(), z.unknown()).optional().default({}),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.action.project_id !== value.project_id) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["action", "project_id"],
+        message: "action.project_id must match project_id",
+      });
+    }
+  });
 
 export const TransitionNovaJobInput = z
   .object({

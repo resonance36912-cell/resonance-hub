@@ -83,3 +83,9 @@ export function resumeTargetForState(
   if (state === "BLOCKED") return resumeState ?? "PLAN";
   throw new Error("job_not_resumable");
 }
+
+export function assertJobProjectScope(projectId: string, actionProjectId?: string | null): void {
+  if (!actionProjectId || actionProjectId !== projectId) {
+    throw new Error("job_action_project_mismatch");
+  }
+}

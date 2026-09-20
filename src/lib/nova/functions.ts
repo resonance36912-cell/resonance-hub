@@ -17,7 +17,7 @@ import {
 import { canReadNovaProject, canReviewNovaProject, canWriteNovaProject } from "@/lib/nova/projects";
 import { classifyNovaAction, fingerprintNovaAction } from "@/lib/nova/autonomy";
 import { resolveDecisionState } from "@/lib/nova/decision-tray";
-import { resumeTargetForState, transitionState } from "@/lib/nova/jobs";
+import { assertJobProjectScope, resumeTargetForState, transitionState } from "@/lib/nova/jobs";
 
 async function novaDb() {
   if (getBackendProvider() !== "supabase") {
@@ -442,6 +442,7 @@ export const createNovaJob = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const db = await novaDb();
     await assertProjectPermission(db, context.userId, data.project_id, "write");
+    assertJobProjectScope(data.project_id, data.action.project_id);
 
     if (data.depends_on_job_ids.length > 0) {
       const dependencyIds = [...new Set(data.depends_on_job_ids)];
