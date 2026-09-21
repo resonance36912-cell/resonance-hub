@@ -1163,7 +1163,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  GovernanceWorkspaceRoute: typeof GovernanceWorkspaceRoute
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
   DependencyHealthRoute: typeof DependencyHealthRoute
@@ -1965,7 +1964,6 @@ const rootRouteChildren: RootRouteChildren = {
   DependencyHealthRoute: DependencyHealthRoute,
   DependencyThresholdsRoute: DependencyThresholdsRoute,
   GovernanceRoute: GovernanceRouteWithChildren,
-  GovernanceWorkspaceRoute: GovernanceWorkspaceRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
