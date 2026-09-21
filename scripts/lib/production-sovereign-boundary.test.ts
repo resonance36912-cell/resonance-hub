@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const read = (path: string) => readFileSync(path, "utf8");
+const repoRoot = resolve(import.meta.dir, "../..");
+
+const read = (path: string) => readFileSync(resolve(repoRoot, path), "utf8");
 
 describe("RONSAS production sovereign build boundary", () => {
   test("retires legacy MCP routes and Lovable project metadata", () => {
@@ -10,7 +13,7 @@ describe("RONSAS production sovereign build boundary", () => {
       "src/routes/mcp.ts",
       "src/routes/[.mcp]",
       "src/routes/[.well-known]/oauth-protected-resource.ts",
-    ]) expect(existsSync(path)).toBe(false);
+    ]) expect(existsSync(resolve(repoRoot, path))).toBe(false);
   });
 
   test("keeps only the governed Nova and DataNest MCP runtime", () => {
@@ -25,7 +28,7 @@ describe("RONSAS production sovereign build boundary", () => {
     const pkg = JSON.parse(read("package.json"));
     expect(pkg.dependencies?.["@modelcontextprotocol/sdk"]).toBeUndefined();
     expect(pkg.dependencies?.["@lovable.dev/mcp-js"]).toBe("0.20.0");
-    expect(existsSync("package-lock.json")).toBe(false);
+    expect(existsSync(resolve(repoRoot, "package-lock.json"))).toBe(false);
   });
 
   test("uses canonical Supabase authority without Lovable redirect", () => {
