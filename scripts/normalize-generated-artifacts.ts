@@ -13,6 +13,7 @@ const UNTRACKED_GENERATED = [
   "src/routes/mcp.ts",
   "sbom-cyclonedx.json",
   "sbom-spdx.json",
+  "results.sarif",
 ] as const;
 
 function statusEntries(): Array<{ status: string; path: string }> {
