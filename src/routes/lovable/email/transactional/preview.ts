@@ -22,7 +22,11 @@ export const Route = createFileRoute("/lovable/email/transactional/preview")({
         const authHeader = request.headers.get('Authorization')
         const token = authHeader?.replace(/^Bearer\s+/i, '') ?? ''
         const { timingSafeEqual } = await import('node:crypto')
+        // The buffer is decoded request data, compared with an environment secret; utf8 is an encoding label.
+        // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_secret
         const tokenBuf = Buffer.from(token, 'utf8')
+        // The expected value comes from LOVABLE_API_KEY; utf8 is an encoding label.
+        // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_secret
         const expectedBuf = Buffer.from(expectedSecret, 'utf8')
         if (tokenBuf.length !== expectedBuf.length || !timingSafeEqual(tokenBuf, expectedBuf)) {
           return Response.json({ error: 'Unauthorized' }, { status: 401 })

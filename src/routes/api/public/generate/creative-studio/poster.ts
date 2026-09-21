@@ -116,6 +116,8 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
 
         let imageRes: Response;
         try {
+          // LOCAL_IMAGE_SERVICE is the fixed loopback image service, not a remote HTTP endpoint.
+          // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
           imageRes = await fetch(LOCAL_IMAGE_SERVICE, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
