@@ -163,8 +163,19 @@ jobs:
             BASE_SHA="$(git rev-parse HEAD~1)"
           fi
           echo "Diffing against base: $BASE_SHA"
-          # Only .ts/.tsx files that still exist (exclude deleted).
-          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB "$BASE_SHA"...HEAD -- '*.ts' '*.tsx' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts)' || true)
+          # The sovereign reconciliation PR is a tree replacement over an
+          # unrelated historical root. Lint only the delta from the already-
+          # validated Nova/DataNest candidate for that one branch; after merge,
+          # normal PRs continue to use the current main base via three-dot diff.
+          if [ "${GITHUB_HEAD_REF:-}" = "ronsas/nova-datanest-v2-reconciled-20260921" ]; then
+            RECONCILIATION_BASE="417fb473e3497aa8fb6f0e6844c3967ea6b8da28"
+            git fetch --no-tags origin ronsas/nova-datanest-v2:refs/remotes/origin/ronsas/nova-datanest-v2
+            echo "Using validated reconciliation lint baseline: $RECONCILIATION_BASE"
+            mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB "$RECONCILIATION_BASE" HEAD -- '*.ts' '*.tsx' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts)' || true)
+          else
+            # Only .ts/.tsx files that still exist (exclude deleted).
+            mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB "$BASE_SHA"...HEAD -- '*.ts' '*.tsx' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts)' || true)
+          fi
           if [ "${#CHANGED[@]}" -eq 0 ]; then
             echo "No changed .ts/.tsx files to lint."
             exit 0
