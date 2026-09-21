@@ -1,0 +1,184 @@
+name: Validate PR50 authenticated sovereign exchange 2026-09-21
+on:
+  push:
+    branches: [ronsas/pr50-auth-validation-20260921]
+    paths: [.github/workflows/validate-pr50-authenticated-exchange-20260921.yml]
+permissions:
+  contents: read
+concurrency:
+  group: ronsas-pr50-authenticated-exchange
+  cancel-in-progress: false
+jobs:
+  auth-exchange:
+    runs-on: [self-hosted, Windows, X64, ronsas, ealiophin, production-host]
+    timeout-minutes: 25
+    env:
+      HOSTED_BEARER: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
+    steps:
+      - name: Validate exact candidate auth exchange, user session, and logout
+        shell: powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "& ([scriptblock]::Create((Get-Content -Raw '{0}')))"
+        run: |
+          $ErrorActionPreference='Stop'
+          Set-StrictMode -Version Latest
+          if($env:COMPUTERNAME -ine 'Ealiophin'){throw 'Wrong host.'}
+          if((& gh api user --jq .login).Trim() -ne 'resonance36912-cell'){throw 'Unexpected GitHub identity.'}
+          if([string]::IsNullOrWhiteSpace($env:HOSTED_BEARER)){
+            Write-Host 'HOSTED_BEARER_PRESENT=0'
+            throw 'SUPABASE_ADMIN_ACCESS_TOKEN is not configured for this repository.'
+          }
+          Write-Host 'HOSTED_BEARER_PRESENT=1'
+          if([string]::IsNullOrWhiteSpace($env:RONS_AUTH_EXCHANGE_KEY_FILE) -or -not(Test-Path -LiteralPath $env:RONS_AUTH_EXCHANGE_KEY_FILE -PathType Leaf)){
+            throw 'Local sovereign auth exchange key is unavailable.'
+          }
+          Write-Host 'RONS_AUTH_EXCHANGE_KEY_READY=1'
+
+          function Import-SupabasePublicConfig {
+            $url=$env:SUPABASE_URL
+            $key=$env:SUPABASE_PUBLISHABLE_KEY
+            if(-not [string]::IsNullOrWhiteSpace($url) -and -not [string]::IsNullOrWhiteSpace($key)){
+              return @($url,$key,'process-env')
+            }
+            $roots=@(
+              'C:\Users\Ashley\Resonance\OpenNova\ResonanceAppDev_ZeroCredit_v1.5.8',
+              'C:\Users\Ashley\Documents\GitHub\resonance-hub'
+            )
+            foreach($root in $roots){
+              if(-not(Test-Path -LiteralPath $root -PathType Container)){continue}
+              $files=@(
+                (Join-Path $root '.env'),
+                (Join-Path $root '.env.local'),
+                (Join-Path $root '.env.production'),
+                (Join-Path $root '.env.production.local')
+              ) | Where-Object {Test-Path -LiteralPath $_ -PathType Leaf}
+              foreach($file in $files){
+                $vals=@{}
+                foreach($line in Get-Content -LiteralPath $file){
+                  if($line -match '^\s*(SUPABASE_URL|SUPABASE_PUBLISHABLE_KEY|VITE_SUPABASE_URL|VITE_SUPABASE_PUBLISHABLE_KEY)\s*=\s*(.*?)\s*$'){
+                    $v=$matches[2].Trim()
+                    if(($v.StartsWith('"') -and $v.EndsWith('"')) -or ($v.StartsWith("'") -and $v.EndsWith("'"))){$v=$v.Substring(1,$v.Length-2)}
+                    $vals[$matches[1]]=$v
+                  }
+                }
+                $u=if($vals.ContainsKey('SUPABASE_URL')){$vals['SUPABASE_URL']}else{$vals['VITE_SUPABASE_URL']}
+                $k=if($vals.ContainsKey('SUPABASE_PUBLISHABLE_KEY')){$vals['SUPABASE_PUBLISHABLE_KEY']}else{$vals['VITE_SUPABASE_PUBLISHABLE_KEY']}
+                if(-not [string]::IsNullOrWhiteSpace($u) -and -not [string]::IsNullOrWhiteSpace($k)){
+                  return @($u,$k,[IO.Path]::GetFileName($file))
+                }
+              }
+            }
+            throw 'Supabase public verification configuration was not found.'
+          }
+
+          $cfg=Import-SupabasePublicConfig
+          $env:SUPABASE_URL=$cfg[0]
+          $env:SUPABASE_PUBLISHABLE_KEY=$cfg[1]
+          $env:VITE_SUPABASE_URL=$cfg[0]
+          $env:VITE_SUPABASE_PUBLISHABLE_KEY=$cfg[1]
+          Write-Host ("SUPABASE_PUBLIC_CONFIG_SOURCE={0}" -f $cfg[2])
+
+          $node=(Get-Command node.exe -ErrorAction Stop).Source
+          $bun=(Get-Command bun.exe -ErrorAction Stop).Source
+          $git=(Get-Command git.exe -ErrorAction Stop).Source
+          $root=Join-Path $env:RUNNER_TEMP "ronsas-pr50-auth-$($env:GITHUB_RUN_ID)-$($env:GITHUB_RUN_ATTEMPT)"
+          $app=Join-Path $root 'app'
+          if(Test-Path -LiteralPath $root){throw "Temp root already exists: $root"}
+          New-Item -ItemType Directory -Path $root | Out-Null
+          $server=$null
+          try {
+            & $git clone --no-tags https://github.com/resonance36912-cell/resonance-hub.git $app
+            if($LASTEXITCODE -ne 0){throw 'Clone failed.'}
+            & $git -C $app checkout --detach c8969afcbfea5840bc949c7b295369c4cdad37bc
+            if($LASTEXITCODE -ne 0){throw 'Exact candidate checkout failed.'}
+            $head=(& $git -C $app rev-parse HEAD).Trim()
+            $tree=(& $git -C $app rev-parse 'HEAD^{tree}').Trim()
+            if($head -ne 'c8969afcbfea5840bc949c7b295369c4cdad37bc'){throw "Wrong HEAD: $head"}
+            if($tree -ne '7019e486ffa8512acbdfba7beeedbd318ffa60a2'){throw "Wrong tree: $tree"}
+            Write-Host 'EXACT_CANDIDATE_VERIFIED=1'
+
+            Push-Location $app
+            try {
+              $env:VITE_RONS_AUTH_MODE='sovereign'
+              $env:VITE_RONS_AUTH_SHADOW='0'
+              & $bun install --frozen-lockfile
+              if($LASTEXITCODE -ne 0){throw 'Frozen install failed.'}
+              & $bun run build:railway
+              if($LASTEXITCODE -ne 0){throw 'Railway build failed.'}
+            } finally { Pop-Location }
+
+            $env:PORT='4183'
+            $env:HOST='127.0.0.1'
+            $env:NODE_ENV='production'
+            $env:RONS_SOVEREIGN_PROXY_ENABLED='1'
+            $env:RONS_PRODUCTION_AUTH_COOKIE='0'
+            $env:RONS_PRODUCTION_ORIGIN=''
+            $env:RESONANCE_BACKEND_PROVIDER='sovereign'
+            $env:RESONANCE_SOVEREIGN_GATEWAY_URL='http://127.0.0.1:58600'
+            $stdout=Join-Path $root 'server.out.log'
+            $stderr=Join-Path $root 'server.err.log'
+            $server=Start-Process -FilePath $node -ArgumentList @((Join-Path $app '.output-railway\server\index.mjs')) -WorkingDirectory $app -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru -WindowStyle Hidden
+
+            $ready=$false
+            for($i=1;$i -le 60;$i++){
+              Start-Sleep -Seconds 1
+              try {
+                $r=Invoke-WebRequest -UseBasicParsing -Uri 'http://127.0.0.1:4183/' -TimeoutSec 2 -ErrorAction Stop
+                if($r.StatusCode -eq 200){$ready=$true;break}
+              } catch {}
+              if($server.HasExited){break}
+            }
+            if(-not $ready){
+              Write-Host 'SERVER_STDERR_TAIL'
+              if(Test-Path $stderr){Get-Content -LiteralPath $stderr | Select-Object -Last 80 | Write-Host}
+              throw 'Candidate server did not become ready.'
+            }
+            Write-Host 'CANDIDATE_SERVER_READY=1'
+
+            $session=New-Object Microsoft.PowerShell.Commands.WebRequestSession
+            $origin='http://127.0.0.1:4183'
+            $exchange=Invoke-WebRequest -UseBasicParsing -Uri "$origin/api/sovereign/auth/exchange" -Method POST -WebSession $session -Headers @{
+              Authorization="Bearer $env:HOSTED_BEARER"
+              Origin=$origin
+              Accept='application/json'
+            } -TimeoutSec 15 -ErrorAction Stop
+            if($exchange.StatusCode -ne 200){throw "Exchange returned $($exchange.StatusCode)"}
+            $exchangeBody=$exchange.Content | ConvertFrom-Json
+            if(-not $exchangeBody.session){throw 'Exchange returned no session.'}
+            if($exchangeBody.session.PSObject.Properties.Name -contains 'access_token'){throw 'Exchange response exposed access_token.'}
+            if($exchangeBody.session.token_transport -ne 'httpOnly-cookie'){throw 'Exchange did not report HttpOnly cookie transport.'}
+            $authCookie=$session.Cookies.GetCookies($origin) | Where-Object {$_.Name -eq 'rons_sovereign_session'} | Select-Object -First 1
+            if(-not $authCookie -or [string]::IsNullOrWhiteSpace($authCookie.Value)){throw 'Exchange did not set the sovereign auth cookie.'}
+            Write-Host 'AUTH_EXCHANGE_PASS=1'
+
+            $user=Invoke-WebRequest -UseBasicParsing -Uri "$origin/api/sovereign/auth/user" -Method GET -WebSession $session -Headers @{Accept='application/json'} -TimeoutSec 15 -ErrorAction Stop
+            if($user.StatusCode -ne 200){throw "Authenticated user returned $($user.StatusCode)"}
+            $userBody=$user.Content | ConvertFrom-Json
+            if(-not $userBody.user -or [string]::IsNullOrWhiteSpace([string]$userBody.user.id)){throw 'Authenticated user identity missing.'}
+            Write-Host 'AUTH_USER_PASS=1'
+
+            $sessionRead=Invoke-WebRequest -UseBasicParsing -Uri "$origin/api/sovereign/auth/session" -Method GET -WebSession $session -Headers @{Accept='application/json'} -TimeoutSec 15 -ErrorAction Stop
+            if($sessionRead.StatusCode -ne 200){throw "Authenticated session returned $($sessionRead.StatusCode)"}
+            $sessionBody=$sessionRead.Content | ConvertFrom-Json
+            if(-not $sessionBody.session){throw 'Authenticated session missing.'}
+            if($sessionBody.session.PSObject.Properties.Name -contains 'access_token'){throw 'Session read exposed access_token.'}
+            Write-Host 'AUTH_SESSION_PASS=1'
+
+            $logout=Invoke-WebRequest -UseBasicParsing -Uri "$origin/api/sovereign/auth/sign-out" -Method POST -WebSession $session -Headers @{Origin=$origin;Accept='application/json'} -TimeoutSec 15 -ErrorAction Stop
+            if($logout.StatusCode -ne 200){throw "Sign-out returned $($logout.StatusCode)"}
+            Write-Host 'AUTH_LOGOUT_PASS=1'
+
+            $afterStatus=0
+            try {
+              $after=Invoke-WebRequest -UseBasicParsing -Uri "$origin/api/sovereign/auth/user" -Method GET -WebSession $session -Headers @{Accept='application/json'} -TimeoutSec 15 -ErrorAction Stop
+              $afterStatus=[int]$after.StatusCode
+            } catch {
+              if($_.Exception.Response -and $_.Exception.Response.StatusCode){$afterStatus=[int]$_.Exception.Response.StatusCode}else{throw}
+            }
+            if($afterStatus -ne 401){throw "Post-logout user boundary returned $afterStatus instead of 401."}
+            Write-Host 'AUTH_POST_LOGOUT_401_PASS=1'
+            Write-Host 'RONSAS_PR50_AUTHENTICATED_EXCHANGE_PASS=1'
+          } finally {
+            if($server -and -not $server.HasExited){
+              Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+              $server.WaitForExit(5000) | Out-Null
+            }
+          }
