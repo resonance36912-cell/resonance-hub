@@ -38,6 +38,14 @@ jobs:
           GITLEAKS_ENABLE_SUMMARY: "true"
 
       - name: Set up Bun
+        id: setup_bun
+        continue-on-error: true
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Retry Bun setup after transient release download failure
+        if: steps.setup_bun.outcome == 'failure'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -83,6 +91,7 @@ jobs:
       # a workflow artifact for supply-chain traceability (auditing what
       # exact versions were built into a given commit). Non-blocking.
       - name: Generate SBOM (syft, CycloneDX + SPDX)
+        continue-on-error: true
         uses: anchore/sbom-action@v0
         with:
           path: .
@@ -93,6 +102,7 @@ jobs:
           upload-release-assets: false
 
       - name: Generate SBOM (syft, SPDX)
+        continue-on-error: true
         uses: anchore/sbom-action@v0
         with:
           path: .

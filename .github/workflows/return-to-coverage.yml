@@ -26,6 +26,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Bun
+        id: setup_bun
+        continue-on-error: true
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Retry Bun setup after transient release download failure
+        if: steps.setup_bun.outcome == 'failure'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest

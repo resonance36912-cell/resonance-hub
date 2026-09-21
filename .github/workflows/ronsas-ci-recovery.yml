@@ -57,7 +57,7 @@ jobs:
           classification="deterministic-ci-failure"
           action="persistent failure recorded; source/config repair required"
 
-          if grep -Eqi 'ECONNRESET|ETIMEDOUT|TLS handshake timeout|Connection reset by peer|HTTP (429|502|503|504)|rate limit|runner.*(lost|offline)|Unable to resolve action|failed to download action|Service Unavailable|The hosted runner lost communication' "$log"; then
+          if grep -Eqi 'ECONNRESET|ETIMEDOUT|TLS handshake timeout|Connection reset by peer|HTTP([^0-9]|response[^0-9]*|status[=: ]*)+(429|502|503|504)|Unexpected HTTP response[^0-9]*(429|502|503|504)|received HTTP status[=: ]*(429|502|503|504)|rate limit|runner.*(lost|offline)|Unable to resolve action|failed to download action|Service Unavailable|The hosted runner lost communication' "$log"; then
             classification="transient-infrastructure"
             if [ "${RUN_ATTEMPT:-1}" -lt 2 ]; then
               if gh run rerun "$RUN_ID" --repo "$REPO" --failed; then
