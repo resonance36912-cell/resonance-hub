@@ -63,17 +63,27 @@ jobs:
           retention-days: 14
 
       - name: Set up Bun for SARIF reporting
+        id: setup_bun_reporting
         if: always()
+        continue-on-error: true
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "1.3.3"
+
+      - name: Retry Bun setup for SARIF reporting
+        id: retry_bun_reporting
+        if: always() && steps.setup_bun_reporting.outcome == 'failure'
+        continue-on-error: true
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.3"
 
       - name: Summarize CodeQL findings
-        if: always()
+        if: always() && (steps.setup_bun_reporting.outcome == 'success' || steps.retry_bun_reporting.outcome == 'success')
         run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL (${{ matrix.language }})" --top 15
 
       - name: Annotate CodeQL findings on PR
-        if: always()
+        if: always() && (steps.setup_bun_reporting.outcome == 'success' || steps.retry_bun_reporting.outcome == 'success')
         env:
           ARTIFACT_URL: ${{ steps.analyze.outputs.sarif-output-url }}
         run: |
@@ -81,6 +91,11 @@ jobs:
             --label "CodeQL (${{ matrix.language }})" \
             --top 20 \
             --artifact-url "${ARTIFACT_URL:-}"
+
+      - name: Note unavailable SARIF pretty-report tooling
+        if: always() && steps.setup_bun_reporting.outcome == 'failure' && steps.retry_bun_reporting.outcome == 'failure'
+        run: |
+          echo "::warning::Bun reporting helper was unavailable after two attempts. CodeQL analysis and the Python severity gate remain authoritative."
 
       # Severity gate: parse the SARIF file(s) produced above and fail the
       # build if any result has security-severity >= 7.0 (i.e. High or
