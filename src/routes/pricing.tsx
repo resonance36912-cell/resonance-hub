@@ -43,7 +43,7 @@ function PricingPage() {
 
         <section className="mt-10 grid gap-4 md:grid-cols-2" aria-label="Free promotion apps">
           {apps.map((app) => (
-            <article key={app.key} className="rounded-2xl border border-white/10 bg-card/50 p-6">
+            <article id={app.key.replaceAll("_", "-")} key={app.key} className="scroll-mt-24 rounded-2xl border border-white/10 bg-card/50 p-6">
               <p className="text-xs font-mono uppercase tracking-[0.18em] text-primary">Free during promotion</p>
               <h2 className="mt-2 text-2xl font-semibold">{app.label}</h2>
               <p className="mt-2 text-sm text-muted-foreground">Full product capability is available at no charge while costing is established.</p>
