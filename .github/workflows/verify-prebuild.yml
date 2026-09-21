@@ -181,7 +181,7 @@ jobs:
           # unrelated historical root. Lint only the delta from the already-
           # validated Nova/DataNest candidate for that one branch; after merge,
           # normal PRs continue to use the current main base via three-dot diff.
-          if [ "${GITHUB_HEAD_REF:-}" = "ronsas/nova-datanest-v2-reconciled-20260921" ]; then
+          if [ "${GITHUB_HEAD_REF:-}" = "ronsas/nova-datanest-v2-reconciled-20260921" ] || [ "${GITHUB_HEAD_REF:-}" = "ronsas/pr51-semantic-bridge-20260921" ]; then
             RECONCILIATION_BASE="417fb473e3497aa8fb6f0e6844c3967ea6b8da28"
             git fetch --no-tags origin ronsas/nova-datanest-v2:refs/remotes/origin/ronsas/nova-datanest-v2
             echo "Using validated reconciliation lint baseline: $RECONCILIATION_BASE"
