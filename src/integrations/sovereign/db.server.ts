@@ -176,8 +176,7 @@ class SovereignQuery implements PromiseLike<QueryResult> {
         data: null,
         error: error instanceof Error ? error : new Error(String(error)),
       };
-      if (onrejected) return onrejected(result.error);
-      return result as TResult1;
+      return onfulfilled ? await onfulfilled(result) : (result as TResult1);
     }
   }
 }
