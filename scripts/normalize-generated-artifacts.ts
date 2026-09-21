@@ -5,10 +5,7 @@ import { resolve } from "node:path";
 
 const root = process.cwd();
 
-const TRACKED_GENERATED = [
-  "reports/discernment-violations.json",
-  "src/routeTree.gen.ts",
-] as const;
+const TRACKED_GENERATED = ["reports/discernment-violations.json", "src/routeTree.gen.ts"] as const;
 
 const UNTRACKED_GENERATED = [
   "src/routes/[.mcp]",
@@ -17,11 +14,10 @@ const UNTRACKED_GENERATED = [
 ] as const;
 
 function statusEntries(): Array<{ status: string; path: string }> {
-  const raw = execFileSync(
-    "git",
-    ["status", "--porcelain=v1", "-z", "--untracked-files=all"],
-    { cwd: root, encoding: "utf8" },
-  );
+  const raw = execFileSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], {
+    cwd: root,
+    encoding: "utf8",
+  });
   if (!raw) return [];
   return raw
     .split("\0")
