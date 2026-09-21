@@ -13,9 +13,9 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RedeemRouteImport } from './routes/redeem'
 import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
+import { Route as GovernanceWorkspaceRouteImport } from './routes/governance_.workspace'
 import { Route as DependencyThresholdsRouteImport } from './routes/dependency-thresholds'
 import { Route as DependencyHealthRouteImport } from './routes/dependency-health'
 import { Route as ChangelogRouteImport } from './routes/changelog'
@@ -72,14 +72,11 @@ import { Route as AccountPrivacyRouteImport } from './routes/account.privacy'
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ToolsCodexThreadIdRouteImport } from './routes/tools.codex.$threadId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as AppsSubmissionsIdRouteImport } from './routes/apps.submissions.$id'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
 import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -127,11 +124,6 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -140,6 +132,11 @@ const LoginRoute = LoginRouteImport.update({
 const GovernanceRoute = GovernanceRouteImport.update({
   id: '/governance',
   path: '/governance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GovernanceWorkspaceRoute = GovernanceWorkspaceRouteImport.update({
+  id: '/governance_/workspace',
+  path: '/governance/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DependencyThresholdsRoute = DependencyThresholdsRouteImport.update({
@@ -425,23 +422,6 @@ const AccountBillingRoute = AccountBillingRouteImport.update({
   path: '/account/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ToolsCodexThreadIdRoute = ToolsCodexThreadIdRouteImport.update({
-  id: '/$threadId',
-  path: '/$threadId',
-  getParentRoute: () => ToolsCodexRoute,
-} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -461,17 +441,6 @@ const AccountInvoicesIdRoute = AccountInvoicesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => AccountInvoicesRoute,
-} as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailTransactionalSendRoute =
   LovableEmailTransactionalSendRouteImport.update({
@@ -623,13 +592,10 @@ export interface FileRoutesByFullPath {
   '/dependency-thresholds': typeof DependencyThresholdsRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -683,7 +649,6 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
@@ -722,13 +687,10 @@ export interface FileRoutesByTo {
   '/dependency-thresholds': typeof DependencyThresholdsRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -782,7 +744,6 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/legal': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
@@ -822,13 +783,10 @@ export interface FileRoutesById {
   '/dependency-thresholds': typeof DependencyThresholdsRoute
   '/governance': typeof GovernanceRouteWithChildren
   '/login': typeof LoginRoute
-  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/rcgf': typeof RcgfRoute
   '/redeem': typeof RedeemRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account/billing': typeof AccountBillingRoute
   '/account/debug': typeof AccountDebugRoute
   '/account/invoices': typeof AccountInvoicesRouteWithChildren
@@ -882,7 +840,6 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/legal/': typeof LegalIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/account/invoices/$id': typeof AccountInvoicesIdRoute
   '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
   '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
@@ -928,8 +885,6 @@ export interface FileRouteTypes {
     | '/rcgf'
     | '/redeem'
     | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -983,7 +938,6 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/legal/'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
@@ -1027,8 +981,6 @@ export interface FileRouteTypes {
     | '/rcgf'
     | '/redeem'
     | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -1082,7 +1034,6 @@ export interface FileRouteTypes {
     | '/docs'
     | '/legal'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
@@ -1126,8 +1077,6 @@ export interface FileRouteTypes {
     | '/rcgf'
     | '/redeem'
     | '/sitemap.xml'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/account/billing'
     | '/account/debug'
     | '/account/invoices'
@@ -1181,7 +1130,6 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/legal/'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
     | '/account/invoices/$id'
     | '/api/public/entitlement'
     | '/apps/submissions/$id'
@@ -1221,13 +1169,10 @@ export interface RootRouteChildren {
   DependencyThresholdsRoute: typeof DependencyThresholdsRoute
   GovernanceRoute: typeof GovernanceRouteWithChildren
   LoginRoute: typeof LoginRoute
-  McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   RcgfRoute: typeof RcgfRoute
   RedeemRoute: typeof RedeemRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AccountBillingRoute: typeof AccountBillingRoute
   AccountDebugRoute: typeof AccountDebugRoute
   AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
@@ -1280,7 +1225,6 @@ export interface RootRouteChildren {
   DocsIndexRoute: typeof DocsIndexRoute
   LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
   AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -1337,13 +1281,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1752,20 +1689,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/tools/codex/$threadId': {
       id: '/tools/codex/$threadId'
       path: '/$threadId'
@@ -1800,13 +1723,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/account/invoices/$id'
       preLoaderRoute: typeof AccountInvoicesIdRouteImport
       parentRoute: typeof AccountInvoicesRoute
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
@@ -2049,14 +1965,10 @@ const rootRouteChildren: RootRouteChildren = {
   DependencyThresholdsRoute: DependencyThresholdsRoute,
   GovernanceRoute: GovernanceRouteWithChildren,
   LoginRoute: LoginRoute,
-  McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
   RedeemRoute: RedeemRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   AccountBillingRoute: AccountBillingRoute,
   AccountDebugRoute: AccountDebugRoute,
   AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
@@ -2109,7 +2021,6 @@ const rootRouteChildren: RootRouteChildren = {
   DocsIndexRoute: DocsIndexRoute,
   LegalIndexRoute: LegalIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
   AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,

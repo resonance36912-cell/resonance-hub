@@ -1,20 +1,14 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { bootstrapAdmin } from "@/lib/admin-bootstrap.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
+import { ronsAuth } from "@/lib/auth-provider";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({
-    meta: [
-      { title: "Admin Login — Resonance" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "Admin Login — Resonance" }, { name: "robots", content: "noindex, nofollow" }],
   }),
   beforeLoad: async () => {
-    const { data } = await supabase.auth.getUser();
+    const { data } = await ronsAuth.getUser();
     if (data.user) {
       const { data: role } = await supabase
         .from("user_roles")
@@ -22,7 +16,8 @@ export const Route = createFileRoute("/admin/login")({
         .eq("user_id", data.user.id)
         .eq("role", "admin")
         .maybeSingle();
-      if (role) throw redirect({ to: ROUTES.admin });
+      if (role) throw redirect({ to: "/admin" });
+      throw redirect({ to: "/admin/access" });
     }
   },
   component: AdminLoginPage,
@@ -30,13 +25,10 @@ export const Route = createFileRoute("/admin/login")({
 
 function AdminLoginPage() {
   const navigate = useNavigate();
-  const promote = useServerFn(bootstrapAdmin);
   // Only expose the "Create account" tab when an invite query param is present
-  // (e.g. /admin/login?invite=1). Server-side bootstrap is also gated by the
-  // ADMIN_BOOTSTRAP_EMAILS allowlist — this is just UX hardening.
+  // (e.g. /admin/login?invite=1). Account creation does not grant admin access.
   const signupAllowed =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("invite");
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("invite");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,22 +36,20 @@ function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  async function finalizeAdmin(userId: string) {
-    try {
-      await promote();
-    } catch {
-      // ignore — role check below decides access
-    }
-    const { data: role } = await supabase
+  async function routeSignedInUser(userId: string) {
+    const { data: role, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId)
       .eq("role", "admin")
       .maybeSingle();
+
+    if (roleError) throw roleError;
+
     if (role) {
-      navigate({ to: ROUTES.admin });
+      await navigate({ to: "/admin" });
     } else {
-      setError("This account does not have admin access. Ask an existing admin to grant the role.");
+      await navigate({ to: "/admin/access" });
     }
   }
 
@@ -67,9 +57,13 @@ function AdminLoginPage() {
     // Handle case where user lands on this page already signed in
     // (e.g. after email confirmation link, or returning after sign-in).
     let cancelled = false;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (cancelled || !data.user) return;
-      finalizeAdmin(data.user.id);
+      void routeSignedInUser(data.user.id).catch(() => {
+        if (!cancelled) {
+          setError("We couldn't check admin access. Please try signing in again.");
+        }
+      });
     });
     return () => {
       cancelled = true;
@@ -84,25 +78,29 @@ function AdminLoginPage() {
     setNotice(null);
     try {
       if (mode === "signin") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await ronsAuth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
-          await finalizeAdmin(data.user.id);
+          await routeSignedInUser(data.user.id);
         }
       } else {
         if (!signupAllowed) {
-          throw new Error("Account creation is disabled. Contact an existing admin for an invite link.");
+          throw new Error(
+            "Account creation is disabled. Contact an existing admin for an invite link.",
+          );
         }
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await ronsAuth.signUp({
           email,
           password,
           options: { emailRedirectTo: `${window.location.origin}/admin/login` },
         });
         if (error) throw error;
         if (!data.session) {
-          setNotice("Check your email to confirm your account, then return here to sign in.");
+          setNotice(
+            "Check your email to confirm your account, then return here to sign in and review admin access.",
+          );
         } else if (data.user) {
-          await finalizeAdmin(data.user.id);
+          await routeSignedInUser(data.user.id);
         }
       }
     } catch (e) {
@@ -111,7 +109,6 @@ function AdminLoginPage() {
       setBusy(false);
     }
   }
-
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6">
@@ -130,18 +127,30 @@ function AdminLoginPage() {
           <div className="mb-4 flex rounded-full border border-border bg-card p-1 text-sm">
             <button
               type="button"
-              onClick={() => { setMode("signin"); setError(null); setNotice(null); }}
+              onClick={() => {
+                setMode("signin");
+                setError(null);
+                setNotice(null);
+              }}
               className={`flex-1 rounded-full px-4 py-2 transition ${
-                mode === "signin" ? "bg-primary-surface text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                mode === "signin"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Sign in
             </button>
             <button
               type="button"
-              onClick={() => { setMode("signup"); setError(null); setNotice(null); }}
+              onClick={() => {
+                setMode("signup");
+                setError(null);
+                setNotice(null);
+              }}
               className={`flex-1 rounded-full px-4 py-2 transition ${
-                mode === "signup" ? "bg-primary-surface text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                mode === "signup"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Create account
@@ -161,7 +170,9 @@ function AdminLoginPage() {
             </div>
           )}
           <div>
-            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Email</label>
+            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              Email
+            </label>
             <input
               type="email"
               required
@@ -172,7 +183,9 @@ function AdminLoginPage() {
             />
           </div>
           <div>
-            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">Password</label>
+            <label className="text-[11px] uppercase tracking-widest text-muted-foreground">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -185,14 +198,20 @@ function AdminLoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-primary-surface px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
             {busy
-              ? (mode === "signin" ? "Signing in…" : "Creating account…")
-              : (mode === "signin" ? "Sign in" : "Create admin account")}
+              ? mode === "signin"
+                ? "Signing in…"
+                : "Creating account…"
+              : mode === "signin"
+                ? "Sign in"
+                : "Create account"}
           </button>
           <p className="text-center text-xs text-muted-foreground">
-            <AppLink to={ROUTES.home} className="hover:underline">← Back to site</AppLink>
+            <Link to="/" className="hover:underline">
+              ← Back to Hub
+            </Link>
           </p>
         </form>
       </div>

@@ -1,5 +1,19 @@
-REVOKE SELECT (signing_key_hash, signing_key_prefix) ON public.hub_apps FROM authenticated;
-REVOKE SELECT (signing_key_hash, signing_key_prefix) ON public.hub_apps FROM anon;
+-- Column revokes do not override an existing table-level SELECT grant. Replace
+-- that grant with an explicit safe-column allowlist so app signing material is
+-- available only through service-role code.
+REVOKE SELECT ON TABLE public.hub_apps FROM PUBLIC, anon, authenticated;
+GRANT SELECT (
+  id,
+  slug,
+  name,
+  origin_url,
+  status,
+  workspace_id,
+  metadata,
+  created_by,
+  created_at,
+  updated_at
+) ON TABLE public.hub_apps TO authenticated;
 
 REVOKE EXECUTE ON FUNCTION public.touch_updated_at()                          FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.hub_touch_updated_at()                      FROM PUBLIC, anon, authenticated;

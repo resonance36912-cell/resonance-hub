@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 async function assertAdmin(userId: string) {
@@ -33,7 +33,7 @@ export type AdminSubRow = {
 };
 
 export const listAllSubscriptions = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
 
@@ -109,8 +109,8 @@ const UpsertCost = z.object({
 });
 
 export const upsertSkuCost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((i: unknown) => UpsertCost.parse(i))
+  .middleware([requireRonsAuth])
+  .validator((i: unknown) => UpsertCost.parse(i))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.userId);
     const { error } = await supabaseAdmin

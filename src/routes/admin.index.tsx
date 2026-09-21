@@ -1,13 +1,12 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { listAllSubscriptions, type AdminSubRow } from "@/lib/admin-revenue.functions";
 import { getVisitStats } from "@/lib/visits.functions";
 import { listPayfastAudit } from "@/lib/payfast-audit.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
@@ -17,15 +16,15 @@ export const Route = createFileRoute("/admin/")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
+    if (!role) throw redirect({ to: "/admin/login" });
   },
   component: AdminHome,
 });
@@ -86,28 +85,22 @@ function AdminHome() {
   }, [rows]);
 
   async function signOut() {
-    await supabase.auth.signOut();
-    navigate({ to: ROUTES.adminLogin });
+    await ronsAuth.signOut();
+    navigate({ to: "/admin/login" });
   }
 
   const sections = [
-    { to: ROUTES.adminRevenue, label: "Revenue & Profit", desc: "Per-subscription revenue, costs, and profit." },
-    { to: ROUTES.adminBilling, label: "Billing Overview", desc: "Cross-app subscriptions, wallets, and ledger activity." },
-    { to: ROUTES.adminCredits, label: "Credit Adjustments", desc: "Add or subtract subscription credits with a full audit trail." },
-    { to: ROUTES.adminPayfastAudit, label: "PayFast Audit", desc: "Launch ↔ ITN trace and amount reconciliation." },
-    { to: ROUTES.adminWebhooks, label: "Raw ITN Log", desc: "Every ITN webhook received from PayFast." },
-    { to: ROUTES.adminEntitlementDiagnostics, label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
-    { to: ROUTES.adminReconciliation, label: "Reconciliation", desc: "Wallet drift, orphan entitlements/subs, stale reservations, unposted ITNs." },
-    { to: ROUTES.adminRop, label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
-    { to: ROUTES.adminSpokeHealth, label: "Spoke Health & Control", desc: "Push config to spokes, probe health, review delivery history." },
-    { to: ROUTES.adminEmails, label: "Email Queue", desc: "Transactional sends and delivery status." },
-    { to: ROUTES.adminEmailDomain, label: "Email Domain", desc: "Sending domain configuration and DNS." },
-    { to: ROUTES.adminAppSubmissions, label: "App Submissions", desc: "Review and publish community-submitted apps to the catalog." },
-    { to: ROUTES.adminReturnToAllowlist, label: "return_to Allowlist", desc: "Manage allowed post-checkout return origins with a live accept/reject preview." },
-    { to: ROUTES.adminReturnToCounterexamples, label: "return_to Counterexamples", desc: "Hostile return_to inputs with sanitized fields and the exact failing verdict." },
-
+    { to: "/admin/control-center", label: "RONS Control Center", desc: "AI development council, governance gates, provider costs, and promotion workspace." },
+    { to: "/admin/revenue", label: "Revenue & Profit", desc: "Per-subscription revenue, costs, and profit." },
+    { to: "/admin/billing", label: "Billing Overview", desc: "Cross-app subscriptions, wallets, and ledger activity." },
+    { to: "/admin/credits", label: "Credit Adjustments", desc: "Add or subtract subscription credits with a full audit trail." },
+    { to: "/admin/payfast-audit", label: "PayFast Audit", desc: "Launch ↔ ITN trace and amount reconciliation." },
+    { to: "/admin/webhooks", label: "Raw ITN Log", desc: "Every ITN webhook received from PayFast." },
+    { to: "/admin/entitlement-diagnostics", label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
+    { to: "/admin/rop", label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
+    { to: "/admin/emails", label: "Email Queue", desc: "Transactional sends and delivery status." },
+    { to: "/admin/email-domain", label: "Email Domain", desc: "Sending domain configuration and DNS." },
   ] as const;
-
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -346,14 +339,14 @@ function AdminHome() {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {sections.map((s) => (
-              <AppLink
+              <Link
                 key={s.to}
                 to={s.to}
                 className="block rounded-xl border border-border bg-card p-5 hover:bg-accent/40 transition"
               >
                 <p className="font-semibold">{s.label}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{s.desc}</p>
-              </AppLink>
+              </Link>
             ))}
           </div>
         </section>

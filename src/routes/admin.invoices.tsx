@@ -1,8 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   listAllInvoices,
   formatMoney,
@@ -10,8 +11,6 @@ import {
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { StatusPill } from "./account.invoices";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/invoices")({
   head: () => ({
@@ -21,15 +20,15 @@ export const Route = createFileRoute("/admin/invoices")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
+    if (!roleRow) throw redirect({ to: "/admin/login" });
   },
   component: AdminInvoicesPage,
 });
@@ -75,8 +74,8 @@ function AdminInvoicesPage() {
             </p>
           </div>
           <nav className="flex gap-3 text-sm">
-            <AppLink to={ROUTES.adminBilling} className="text-primary underline">Billing</AppLink>
-            <AppLink to={ROUTES.adminPayfastAudit} className="text-primary underline">PayFast audit</AppLink>
+            <Link to="/admin/billing" className="text-primary underline">Billing</Link>
+            <Link to="/admin/payfast-audit" className="text-primary underline">PayFast audit</Link>
           </nav>
         </header>
 
@@ -120,7 +119,7 @@ function AdminInvoicesPage() {
             className="rounded border bg-background px-3 py-2 text-sm sm:col-span-1"
           />
           <div className="flex gap-2">
-            <button type="submit" className="rounded bg-primary-surface px-4 py-2 text-sm text-primary-foreground">
+            <button type="submit" className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground">
               Apply
             </button>
             <button
@@ -175,9 +174,9 @@ function AdminInvoicesPage() {
                     <td className="py-2 px-3"><StatusPill status={row.status} /></td>
                     <td className="py-2 px-3 font-mono text-xs">{row.pf_payment_id ?? "—"}</td>
                     <td className="py-2 px-3">
-                      <AppLink to="/account/invoices/$id" params={{ id: row.id }} className="text-primary underline">
+                      <Link to="/account/invoices/$id" params={{ id: row.id }} className="text-primary underline">
                         View
-                      </AppLink>
+                      </Link>
                     </td>
                   </tr>
                 ))}

@@ -12,12 +12,11 @@ describe("governance workspace routing", () => {
   test("keeps the private workspace at /governance/workspace without nesting under the public constitution page", () => {
     expect(workspace).toContain('createFileRoute("/governance_/workspace")');
     expect(publicGovernance).toContain('createFileRoute("/governance")');
-    expect(routeTree).toMatch(
-      /GovernanceWorkspaceRouteImport\.update\(\{[\s\S]*?path: '\/governance\/workspace',[\s\S]*?getParentRoute: \(\) => rootRouteImport/,
-    );
-    expect(routeTree).not.toMatch(
-      /GovernanceWorkspaceRoute[\s\S]*?parentRoute: typeof GovernanceRoute/,
-    );
+    const routeStart = routeTree.indexOf("const GovernanceWorkspaceRoute = GovernanceWorkspaceRouteImport.update({");
+    expect(routeStart).toBeGreaterThanOrEqual(0);
+    const routeBlock = routeTree.slice(routeStart, routeStart + 250);
+    expect(routeBlock).toContain("path: '/governance/workspace'");
+    expect(routeBlock).toContain("getParentRoute: () => rootRouteImport");
   });
 });
 

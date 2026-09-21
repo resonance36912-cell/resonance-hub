@@ -52,9 +52,6 @@ jobs:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Don't gate the whole workflow on gitleaks — license/quota hiccups on
-    # the action shouldn't block security-events uploads from CodeQL/Semgrep.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,9 +60,8 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # No license required for public repos or personal private repos.
-          # For organization private repos add GITLEAKS_LICENSE in repo secrets
-          # and uncomment:
+          # No license required for public repos. For private repos add
+          # GITLEAKS_LICENSE in repo secrets and uncomment:
           # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
           GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
           GITLEAKS_ENABLE_SUMMARY: "true"
@@ -97,20 +93,10 @@ jobs:
     name: SAST (semgrep)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # NOTE: Previously ran inside `container: semgrep/semgrep`, but that
-    # minimal Alpine image lacks the glibc / unzip tooling that
-    # oven-sh/setup-bun@v2 and other node-based actions need, breaking the
-    # whole job before Semgrep even ran. Install Semgrep via pip on the
-    # standard ubuntu-latest runner instead — same rulesets, working actions.
+    container:
+      image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - name: Install Semgrep
-        run: python -m pip install --upgrade "semgrep>=1.90"
       - name: semgrep ci
         # Curated rulesets:
         #   p/owasp-top-ten, p/javascript, p/typescript, p/react,
@@ -123,6 +109,7 @@ jobs:
             --config p/react \
             --config p/nodejsscan \
             --config p/secrets \
+            --error \
             --sarif --output=semgrep.sarif || true
       - name: Upload SARIF to GitHub code scanning
         if: always()
@@ -187,7 +174,10 @@ jobs:
         with:
           category: "/language:javascript-typescript"
           output: codeql-results
-      - name: Setup Bun (for SARIF summarizer)
+      - name: Summarize CodeQL findings to job summary
+        # Parses the SARIF that CodeQL just emitted and appends a compact
+        # Markdown table (top rule IDs + locations) to $GITHUB_STEP_SUMMARY
+        # so reviewers can triage the top alerts without downloading anything.
         if: always()
         uses: oven-sh/setup-bun@v2
         with:

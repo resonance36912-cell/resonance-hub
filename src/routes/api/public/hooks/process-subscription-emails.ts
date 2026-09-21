@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { sendLovableEmail } from "@lovable.dev/email-js";
+import { sendRonsEmail } from "@/lib/email-provider.server";
 import { render } from "@react-email/render";
 import * as React from "react";
 import { TEMPLATES } from "@/lib/email-templates/registry";
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY;
+        const apiKey = process.env.RONS_EMAIL_API_KEY ?? process.env.LOVABLE_API_KEY;
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -136,7 +136,7 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
                 ? template.subject({ app: row.app, tier: row.tier })
                 : template.subject;
 
-            await sendLovableEmail(
+            await sendRonsEmail(
               {
                 to: row.recipient_email,
                 from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
@@ -149,7 +149,6 @@ export const Route = createFileRoute("/api/public/hooks/process-subscription-ema
                 idempotency_key: `sub-confirm-${row.pf_payment_id}-${attemptNumber}`,
                 message_id: messageId,
               },
-              { apiKey, sendUrl: process.env.LOVABLE_SEND_URL },
             );
 
             await supabase.from("subscription_email_attempts").insert({

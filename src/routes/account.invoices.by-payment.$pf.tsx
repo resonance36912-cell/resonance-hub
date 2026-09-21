@@ -1,12 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { BackToHubHeader } from "@/components/BackToHubHeader";
+import { ronsAuth } from "@/lib/auth-provider";
 import { findInvoiceByPfPaymentId } from "@/lib/invoices.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
-
 
 export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
   head: () => ({
@@ -15,9 +11,9 @@ export const Route = createFileRoute("/account/invoices/by-payment/$pf")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.login, search: { next: "/" } });
+  beforeLoad: async ({ params }) => {
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/login", search: { next: `/account/invoices/by-payment/${params.pf}` } });
   },
   component: ByPaymentPage,
 });
@@ -52,9 +48,9 @@ function ByPaymentPage() {
     return (
       <main className="mx-auto max-w-2xl px-6 py-16 space-y-4">
         <p className="text-sm text-muted-foreground">Redirecting to receipt…</p>
-        <AppLink to="/account/invoices/$id" params={{ id: data.id }} className="underline">
+        <Link to="/account/invoices/$id" params={{ id: data.id }} className="underline">
           Open receipt
-        </AppLink>
+        </Link>
       </main>
     );
   }
@@ -74,16 +70,9 @@ function ByPaymentPage() {
 
 function BackLinks() {
   return (
-    <BackToHubHeader
-      className="flex gap-4 text-sm"
-      linkClassName="underline"
-      extra={
-        <>
-          <AppLink to={ROUTES.accountInvoices} className="underline">All invoices</AppLink>
-          <AppLink to={ROUTES.accountBilling} className="underline">Billing</AppLink>
-        </>
-      }
-    />
+    <div className="flex gap-4 text-sm">
+      <Link to="/account/invoices" className="underline">All invoices</Link>
+      <Link to="/account/billing" className="underline">Billing</Link>
+    </div>
   );
 }
-

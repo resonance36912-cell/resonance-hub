@@ -11,14 +11,32 @@ node_modules
 dist
 dist-ssr
 .output
+.output-local
 .vinxi
 .tanstack/**
 .nitro
 *.local
 
+# Local secrets (never commit)
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Supabase CLI local link/cache state
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*
@@ -30,7 +48,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.lighthouseci/
 
-# Generated audit reports (scripts/check-outdated-pins.ts and friends)
-reports/
+.output-candidate-local/
+.output-rollback-*/
+.output-failed-*/

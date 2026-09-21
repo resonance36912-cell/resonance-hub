@@ -79,14 +79,25 @@ function isValid(u: unknown): u is UpdateItem {
   );
 }
 
+const UPDATES_CACHE_TTL_MS = 5 * 60 * 1000;
+let updatesCache: { origin: string; expiresAt: number; value: UpdateItem[] } | null = null;
+let updatesInflight: Promise<UpdateItem[]> | null = null;
+
 async function loadUpdates(origin: string): Promise<UpdateItem[]> {
-  const res = await fetch(`${origin}/content/updates.json`, {
-    headers: { accept: "application/json" },
-  });
-  if (!res.ok) throw new Error(`Failed to load updates.json: ${res.status}`);
-  const data = (await res.json()) as unknown;
-  if (!Array.isArray(data)) return [];
-  return data.filter(isValid);
+  const now = Date.now();
+  if (updatesCache && updatesCache.origin === origin && updatesCache.expiresAt > now) return updatesCache.value;
+  if (updatesInflight) return updatesInflight;
+  updatesInflight = (async () => {
+    const res = await fetch(`${origin}/content/updates.json`, {
+      headers: { accept: "application/json" },
+    });
+    if (!res.ok) throw new Error(`Failed to load updates.json: ${res.status}`);
+    const data = (await res.json()) as unknown;
+    const value = Array.isArray(data) ? data.filter(isValid) : [];
+    updatesCache = { origin, expiresAt: Date.now() + UPDATES_CACHE_TTL_MS, value };
+    return value;
+  })();
+  try { return await updatesInflight; } finally { updatesInflight = null; }
 }
 
 const ALLOWED_STATUSES = ["Live", "Updating", "New", "Free Pilot"] as const;

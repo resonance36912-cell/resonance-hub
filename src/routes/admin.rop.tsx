@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   listHubApps,
   listHubOutcomes,
@@ -12,7 +13,6 @@ import {
   setHubAppStatus,
   updateHubSuggestion,
 } from "@/lib/rop-admin.functions";
-import { ROUTES } from "@/lib/routes";
 
 export const Route = createFileRoute("/admin/rop")({
   head: () => ({
@@ -22,15 +22,15 @@ export const Route = createFileRoute("/admin/rop")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
+    if (!role) throw redirect({ to: "/admin/login" });
   },
   component: RopAdmin,
 });
@@ -147,7 +147,7 @@ function RopAdmin() {
             />
             <button
               disabled={registerMut.isPending}
-              className="rounded bg-primary-surface px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+              className="rounded bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
               {registerMut.isPending ? "Minting…" : "Register & mint key"}
             </button>
