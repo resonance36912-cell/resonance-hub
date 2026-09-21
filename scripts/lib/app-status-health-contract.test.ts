@@ -7,7 +7,7 @@ import {
 
 describe("RONSAS app-status health contract", () => {
   test("remains GET/OPTIONS-only for unauthenticated public access", () => {
-    const source = readFileSync(new URL("../../src/routes/api/public/app-status.health.ts", import.meta.url), "utf8");
+    const source = readFileSync(\n      new URL("../../src/routes/api/public/app-status.health.ts", import.meta.url),\n      "utf8",\n    );
     expect(source).toContain("OPTIONS:");
     expect(source).toContain("GET:");
     expect(source).not.toMatch(/\b(?:POST|PUT|PATCH|DELETE)\s*:/);
