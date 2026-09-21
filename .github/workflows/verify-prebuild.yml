@@ -343,6 +343,11 @@ jobs:
 
       # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
       # session with admin role is injected) renders the full CRUD surface.
+      - name: Set up Python Playwright for browser E2E
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir "playwright==1.55.0"
+          python3 -m playwright install chromium
+
       - name: E2E admin/roadmap auth + CRUD gate
         env:
           E2E_BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
