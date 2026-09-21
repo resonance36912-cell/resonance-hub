@@ -41,7 +41,7 @@
     "verify:overrides": "bun run scripts/sync-overrides-from-lock.ts --check",
     "verify:lockfile-consistency": "bun run scripts/verify-lockfile-consistency.ts",
     "prebuild": "bun run scripts/verify-commercial-mode.ts",
-    "typecheck": "vite build --mode development && tsc --noEmit",
+    "typecheck": "vite build --mode development && tsc --noEmit && bun run normalize:generated-artifacts",
     "verify:local-build-target": "bun run scripts/assert-local-build-target-safe.ts",
     "build:local": "bun run scripts/assert-local-build-target-safe.ts && vite --config vite.local.config.ts build",
     "start:local": "node .output-local/server/index.mjs",
