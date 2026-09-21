@@ -14,7 +14,7 @@ jobs:
   verify:
     name: Run all prebuild verification scripts
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -340,6 +340,13 @@ jobs:
           BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
         run: bun run scripts/smoke-app-status-meta.ts
 
+
+      # Python E2E suites below use Playwright directly. GitHub-hosted
+      # runners do not include the Python package/browser by default.
+      - name: Install Python Playwright browser for E2E gates
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
 
       # E2E: /admin/roadmap redirects anon users to /admin/login and (when a
       # session with admin role is injected) renders the full CRUD surface.
