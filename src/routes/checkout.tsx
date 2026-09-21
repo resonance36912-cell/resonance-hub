@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
+import { ronsAuth } from "@/lib/auth-provider";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 
 const SearchSchema = z.object({
