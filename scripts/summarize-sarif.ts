@@ -34,7 +34,9 @@ function sarifFiles(path: string): string[] {
 }
 
 function esc(value: unknown): string {
-  return String(value ?? "").replaceAll("|", "\\|").replaceAll("\n", " ");
+  return String(value ?? "")
+    .replaceAll("|", "\\|")
+    .replaceAll("\n", " ");
 }
 
 const findings: Array<{ rule: string; level: string; path: string; line: number }> = [];
@@ -43,12 +45,17 @@ for (const file of sarifFiles(input)) {
   try {
     doc = JSON.parse(readFileSync(file, "utf8"));
   } catch (error) {
-    console.warn(`Could not parse SARIF ${file}: ${error instanceof Error ? error.message : error}`);
+    console.warn(
+      `Could not parse SARIF ${file}: ${error instanceof Error ? error.message : error}`,
+    );
     continue;
   }
   for (const run of doc.runs ?? []) {
     const defaults = new Map(
-      (run.tool?.driver?.rules ?? []).map((rule) => [rule.id ?? "", rule.defaultConfiguration?.level ?? "warning"]),
+      (run.tool?.driver?.rules ?? []).map((rule) => [
+        rule.id ?? "",
+        rule.defaultConfiguration?.level ?? "warning",
+      ]),
     );
     for (const result of run.results ?? []) {
       const loc = result.locations?.[0]?.physicalLocation;
@@ -85,7 +92,10 @@ const markdown = [
     ? [
         "| Rule | Level | Count | Sample location |",
         "| --- | --- | ---: | --- |",
-        ...rows.map(([rule, info]) => `| ${esc(rule)} | ${esc(info.level)} | ${info.count} | ${esc(info.sample)} |`),
+        ...rows.map(
+          ([rule, info]) =>
+            `| ${esc(rule)} | ${esc(info.level)} | ${info.count} | ${esc(info.sample)} |`,
+        ),
       ]
     : ["No SARIF findings were present."]),
   "",

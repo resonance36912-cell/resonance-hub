@@ -39,10 +39,14 @@ function commandProp(value: unknown): string {
     .replaceAll(",", "%2C");
 }
 function commandMessage(value: unknown): string {
-  return String(value ?? "").replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
+  return String(value ?? "")
+    .replaceAll("%", "%25")
+    .replaceAll("\r", "%0D")
+    .replaceAll("\n", "%0A");
 }
 
-const findings: Array<{ rule: string; level: string; path: string; line: number; col: number }> = [];
+const findings: Array<{ rule: string; level: string; path: string; line: number; col: number }> =
+  [];
 for (const file of sarifFiles(input)) {
   try {
     const doc = JSON.parse(readFileSync(file, "utf8")) as { runs?: SarifRun[] };
@@ -59,12 +63,16 @@ for (const file of sarifFiles(input)) {
       }
     }
   } catch (error) {
-    console.warn(`Could not parse SARIF ${file}: ${error instanceof Error ? error.message : error}`);
+    console.warn(
+      `Could not parse SARIF ${file}: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 
 const rank = (level: string) => (level === "error" ? 0 : level === "warning" ? 1 : 2);
-findings.sort((a, b) => rank(a.level) - rank(b.level) || a.path.localeCompare(b.path) || a.line - b.line);
+findings.sort(
+  (a, b) => rank(a.level) - rank(b.level) || a.path.localeCompare(b.path) || a.line - b.line,
+);
 
 for (const finding of findings.slice(0, top)) {
   const kind = finding.level === "error" ? "error" : "warning";
@@ -73,8 +81,14 @@ for (const finding of findings.slice(0, top)) {
     `line=${finding.line}`,
     `col=${finding.col}`,
     `title=${commandProp(`${label}: ${finding.rule}`)}`,
-  ].filter(Boolean).join(",");
+  ]
+    .filter(Boolean)
+    .join(",");
   const suffix = artifactUrl ? ` — SARIF artifact: ${artifactUrl}` : "";
-  console.log(`::${kind} ${props}::${commandMessage(`Static-analysis finding ${finding.rule}${suffix}`)}`);
+  console.log(
+    `::${kind} ${props}::${commandMessage(`Static-analysis finding ${finding.rule}${suffix}`)}`,
+  );
 }
-console.log(`Annotated ${Math.min(findings.length, top)} of ${findings.length} ${label} finding(s).`);
+console.log(
+  `Annotated ${Math.min(findings.length, top)} of ${findings.length} ${label} finding(s).`,
+);

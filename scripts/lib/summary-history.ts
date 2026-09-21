@@ -13,10 +13,10 @@ import { join } from "node:path";
 import type { CounterexampleStats, History, HistoryPoint } from "./coverage-history";
 import { sparkline } from "./coverage-history";
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null;
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 
-const num = (v: unknown, fallback = 0): number => (typeof v === "number" && Number.isFinite(v) ? v : fallback);
+const num = (v: unknown, fallback = 0): number =>
+  typeof v === "number" && Number.isFinite(v) ? v : fallback;
 
 const str = (v: unknown): string | null => (typeof v === "string" && v.length > 0 ? v : null);
 
@@ -192,7 +192,10 @@ const slug = (v: string): string => v.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0,
 
 /** Resolve every deep link for one charted run. */
 export function runLinks(point: HistoryPoint, opts: RunLinkOptions = {}): RunLinks {
-  const server = (opts.server ?? process.env.GITHUB_SERVER_URL ?? "https://github.com").replace(/\/+$/, "");
+  const server = (opts.server ?? process.env.GITHUB_SERVER_URL ?? "https://github.com").replace(
+    /\/+$/,
+    "",
+  );
   const repo = Object.prototype.hasOwnProperty.call(opts, "repo")
     ? (opts.repo ?? null)
     : (process.env.GITHUB_REPOSITORY ?? null);
@@ -210,16 +213,16 @@ export function runLinks(point: HistoryPoint, opts: RunLinkOptions = {}): RunLin
 }
 
 /** Tooltip lines plus the click hint, so the card explains where a click goes. */
-export function pointTooltipLinesWithLink(point: HistoryPoint, opts: RunLinkOptions = {}): string[] {
+export function pointTooltipLinesWithLink(
+  point: HistoryPoint,
+  opts: RunLinkOptions = {},
+): string[] {
   const links = runLinks(point, opts);
   return [
     ...pointTooltipLines(point),
     `Open: ${links.summaryUrl ? "run summary + CI log (click)" : "this run's row (click)"}`,
   ];
 }
-
-
-
 
 /* ------------------------------------------------------------------ *
  * Suite filters
@@ -384,13 +387,20 @@ export function renderSuiteHistoryCsv(points: readonly HistoryPoint[]): string {
   ]);
   const rows = points.flatMap((p, i) =>
     p.suites.map((s) =>
-      csvRow([i + 1, p.runId, p.commit, p.generatedAt, s.id, s.pass ?? "", s.fail, s.assertions ?? ""]),
+      csvRow([
+        i + 1,
+        p.runId,
+        p.commit,
+        p.generatedAt,
+        s.id,
+        s.pass ?? "",
+        s.fail,
+        s.assertions ?? "",
+      ]),
     ),
   );
   return [header, ...rows].join("\n") + "\n";
 }
-
-
 
 /**
  * Normalize a comma/space separated suite filter (CLI flag or env var) into
@@ -412,7 +422,6 @@ export function parseSuiteFilter(
     unknown: wanted.filter((id) => !knownSet.has(id)),
   };
 }
-
 
 function escapeXml(v: string): string {
   return v.replace(/[<>&"]/g, (c) =>
@@ -488,8 +497,11 @@ export function renderFailureRateChart(
       return `<a href="${escapeXml(l.href)}"${
         external ? ' target="_blank" rel="noreferrer"' : ""
       } aria-label="${escapeXml(`Open run ${p.runId ?? shortLabel(p)}`)}"><rect class="pt-hit" x="${(
-        cx(i) - slot / 2
-      ).toFixed(1)}" y="${PAD.top}" width="${slot.toFixed(1)}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
+        cx(i) -
+        slot / 2
+      ).toFixed(
+        1,
+      )}" y="${PAD.top}" width="${slot.toFixed(1)}" height="${plotH}" fill="transparent" data-tip="${escapeXml(
         pointTooltipLinesWithLink(p, linkOpts).join("|"),
       )}" data-href="${escapeXml(l.href)}"${
         l.logUrl ? ` data-log="${escapeXml(l.logUrl)}"` : ""
@@ -546,7 +558,6 @@ export function renderRunLinkList(
   return `<ul class="run-links">${items}</ul>`;
 }
 
-
 let uidSeq = 0;
 const chartUid = (): number => ++uidSeq;
 
@@ -600,7 +611,6 @@ export const CHART_TOOLTIP_CSS = `
   .pt-hit { cursor: crosshair; }
   .pt-hit:hover { fill: rgba(148,163,184,.14); }
 `;
-
 
 /**
  * Interactive variant of the chart: the same pass/fail bars and failure-rate
@@ -763,9 +773,6 @@ export const SUITE_FILTER_CSS = `
   .run-links a:hover { text-decoration: underline; }
 ${CHART_TOOLTIP_CSS}`;
 
-
-
-
 /**
  * Markdown for the run-summary page (`$GITHUB_STEP_SUMMARY`): sparklines plus a
  * compact per-run table. GitHub strips inline SVG from step summaries, so the
@@ -792,9 +799,7 @@ export function renderSummaryHistoryMarkdown(
     links?: RunLinkOptions;
     /** CSV artifact path to advertise; `false` hides the CSV line entirely. */
     csv?: string | false;
-
   } = {},
-
 ): string[] {
   const pts = history.points;
   if (pts.length === 0) {
@@ -878,5 +883,3 @@ export function renderSummaryHistoryMarkdown(
         ]),
   ];
 }
-
-

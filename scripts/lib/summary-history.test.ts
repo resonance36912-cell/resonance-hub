@@ -56,20 +56,41 @@ describe("parseSummaryPoint", () => {
 
 describe("failureRate", () => {
   it("is fail / executed as a percentage", () => {
-    expect(failureRate(parseSummaryPoint(summary({ totals: { pass: 90, fail: 10, assertions: 1 } }))!)).toBe(10);
+    expect(
+      failureRate(parseSummaryPoint(summary({ totals: { pass: 90, fail: 10, assertions: 1 } }))!),
+    ).toBe(10);
   });
 
   it("is 0 when nothing ran", () => {
-    expect(failureRate(parseSummaryPoint(summary({ totals: { pass: 0, fail: 0, assertions: 0 } }))!)).toBe(0);
+    expect(
+      failureRate(parseSummaryPoint(summary({ totals: { pass: 0, fail: 0, assertions: 0 } }))!),
+    ).toBe(0);
   });
 });
 
 describe("collectSummaryHistory", () => {
   const dir = mkdtempSync(join(tmpdir(), "summ-hist-"));
   mkdirSync(join(dir, "nested"), { recursive: true });
-  writeFileSync(join(dir, "b-summary.json"), summary({ generatedAt: "2026-08-03T10:00:00.000Z", commit: "ccc", totals: { pass: 95, fail: 5, assertions: 3100 } }));
-  writeFileSync(join(dir, "nested", "a-summary.json"), summary({ generatedAt: "2026-08-02T10:00:00.000Z", commit: "bbb" }));
-  writeFileSync(join(dir, "dup.json"), summary({ generatedAt: "2026-08-03T10:00:00.000Z", commit: "ccc", totals: { pass: 95, fail: 5, assertions: 3100 } }));
+  writeFileSync(
+    join(dir, "b-summary.json"),
+    summary({
+      generatedAt: "2026-08-03T10:00:00.000Z",
+      commit: "ccc",
+      totals: { pass: 95, fail: 5, assertions: 3100 },
+    }),
+  );
+  writeFileSync(
+    join(dir, "nested", "a-summary.json"),
+    summary({ generatedAt: "2026-08-02T10:00:00.000Z", commit: "bbb" }),
+  );
+  writeFileSync(
+    join(dir, "dup.json"),
+    summary({
+      generatedAt: "2026-08-03T10:00:00.000Z",
+      commit: "ccc",
+      totals: { pass: 95, fail: 5, assertions: 3100 },
+    }),
+  );
   writeFileSync(join(dir, "junk.json"), "{}");
   writeFileSync(join(dir, "notes.txt"), "ignored");
 
@@ -101,7 +122,13 @@ describe("rendering", () => {
   it("renders bars, a failure-rate line and a per-run table", () => {
     const pts = [
       parseSummaryPoint(summary())!,
-      parseSummaryPoint(summary({ commit: "bbb", generatedAt: "2026-08-02T10:00:00.000Z", totals: { pass: 90, fail: 10, assertions: 3100 } }))!,
+      parseSummaryPoint(
+        summary({
+          commit: "bbb",
+          generatedAt: "2026-08-02T10:00:00.000Z",
+          totals: { pass: 90, fail: 10, assertions: 3100 },
+        }),
+      )!,
     ];
     const svg = renderFailureRateChart(pts);
     expect(svg).toContain("<svg");
@@ -149,9 +176,9 @@ const suitePoints = () => [
 
 describe("suite filters", () => {
   it("keeps per-suite pass/assertion counts when present", () => {
-    const p = parseSummaryPoint(suiteSummary("c", "2026-08-01T00:00:00.000Z", [
-      { id: "login", pass: 3, fail: 1 },
-    ]))!;
+    const p = parseSummaryPoint(
+      suiteSummary("c", "2026-08-01T00:00:00.000Z", [{ id: "login", pass: 3, fail: 1 }]),
+    )!;
     expect(p.suites[0]).toMatchObject({ id: "login", pass: 3, fail: 1 });
     expect(parseSummaryPoint(summary())!.suites[0]!.pass).toBeUndefined();
   });
@@ -349,7 +376,10 @@ describe("run deep links", () => {
     expect(md).toContain("| Run | Date | Pass | Fail | Failure rate | Links |");
     expect(md).toContain("[summary](https://github.com/o/r/actions/runs/5551212#summary)");
     expect(md).toContain("[log](https://github.com/o/r/actions/runs/5551212/job)");
-    const local = renderSummaryHistoryMarkdown({ points: [linked()] }, { links: { repo: null } }).join("\n");
+    const local = renderSummaryHistoryMarkdown(
+      { points: [linked()] },
+      { links: { repo: null } },
+    ).join("\n");
     expect(local).toContain('<a id="run-5551212"></a>');
   });
 });
@@ -395,7 +425,7 @@ describe("CSV export", () => {
   });
 
   it("quotes fields containing commas or quotes", () => {
-    expect(csvField('a,b')).toBe('"a,b"');
+    expect(csvField("a,b")).toBe('"a,b"');
     expect(csvField('say "hi"')).toBe('"say ""hi"""');
     expect(csvField(null)).toBe("");
     expect(csvField(12)).toBe("12");
@@ -420,8 +450,8 @@ describe("CSV export", () => {
   it("advertises the CSV in the run-summary markdown, and can hide it", () => {
     const md = renderSummaryHistoryMarkdown({ points: pts() }).join("\n");
     expect(md).toContain("history-graph.csv");
-    expect(renderSummaryHistoryMarkdown({ points: pts() }, { csv: false }).join("\n")).not.toContain(
-      "history-graph.csv",
-    );
+    expect(
+      renderSummaryHistoryMarkdown({ points: pts() }, { csv: false }).join("\n"),
+    ).not.toContain("history-graph.csv");
   });
 });
