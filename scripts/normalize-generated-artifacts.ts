@@ -16,6 +16,11 @@ const UNTRACKED_GENERATED = [
   "results.sarif",
 ] as const;
 
+const PRESERVED_CI_ARTIFACTS = [
+  "reports/junit.xml",
+  "reports/coverage",
+] as const;
+
 function statusEntries(): Array<{ status: string; path: string }> {
   const raw = execFileSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], {
     cwd: root,
@@ -31,11 +36,16 @@ function statusEntries(): Array<{ status: string; path: string }> {
     }));
 }
 
+function matchesPath(path: string, candidates: readonly string[]): boolean {
+  return candidates.some(
+    (candidate) => path === candidate || path.startsWith(`${candidate}/`),
+  );
+}
+
 function isAllowed(path: string): boolean {
   if ((TRACKED_GENERATED as readonly string[]).includes(path)) return true;
-  return UNTRACKED_GENERATED.some(
-    (generated) => path === generated || path.startsWith(`${generated}/`),
-  );
+  if (matchesPath(path, UNTRACKED_GENERATED)) return true;
+  return matchesPath(path, PRESERVED_CI_ARTIFACTS);
 }
 
 const before = statusEntries();
@@ -66,12 +76,17 @@ for (const path of UNTRACKED_GENERATED) {
 }
 
 const after = statusEntries();
-if (after.length > 0) {
-  console.error("Generated artifact normalization did not return the checkout to clean state:");
-  for (const entry of after) {
+const remainingUnexpected = after.filter(
+  (entry) => !matchesPath(entry.path, PRESERVED_CI_ARTIFACTS),
+);
+if (remainingUnexpected.length > 0) {
+  console.error("Generated artifact normalization left unexpected working-tree changes:");
+  for (const entry of remainingUnexpected) {
     console.error(`  ${entry.status} ${entry.path}`);
   }
   process.exit(1);
 }
 
-console.log("✓ Generated MCP/TanStack/discernment artifacts normalized; checkout is clean.");
+console.log(
+  "✓ Generated MCP/TanStack/discernment artifacts normalized; only preserved CI report artifacts may remain.",
+);
