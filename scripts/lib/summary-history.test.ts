@@ -313,6 +313,21 @@ describe("run deep links", () => {
     expect(runLinks(parseSummaryPoint(summary())!, opts).href).toMatch(/^#run-/);
   });
 
+  it("explicit null repo overrides the GitHub Actions repository environment", () => {
+    const prior = process.env.GITHUB_REPOSITORY;
+    process.env.GITHUB_REPOSITORY = "env-owner/env-repo";
+    try {
+      const links = runLinks(linked(), { server: "https://github.com", repo: null });
+      expect(links.summaryUrl).toBeNull();
+      expect(links.logUrl).toBeNull();
+      expect(links.artifactsUrl).toBeNull();
+      expect(links.href).toBe("#run-5551212");
+    } finally {
+      if (prior === undefined) delete process.env.GITHUB_REPOSITORY;
+      else process.env.GITHUB_REPOSITORY = prior;
+    }
+  });
+
   it("links every static chart column and lists printable links", () => {
     const svg = renderFailureRateChart([linked()], undefined, opts);
     expect(svg).toContain('href="https://github.com/o/r/actions/runs/5551212#summary"');
