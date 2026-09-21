@@ -64,9 +64,7 @@ function extractTitle(html: string): string | null {
 }
 
 function extractMetaDescription(html: string): string | null {
-  const m = html.match(
-    /<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i,
-  );
+  const m = html.match(/<meta\b[^>]*\bname=["']description["'][^>]*\bcontent=["']([^"']*)["']/i);
   return m ? m[1].trim() : null;
 }
 
@@ -98,7 +96,10 @@ for (const key of Object.keys(APP_REGISTRY) as ResonanceAppKey[]) {
   if (!title) {
     fail(`Title present (${path})`, "no <title> in SSR HTML");
   } else if (title !== expectedTitle) {
-    fail(`Title matches registry (${path})`, `got ${JSON.stringify(title)}, want ${JSON.stringify(expectedTitle)}`);
+    fail(
+      `Title matches registry (${path})`,
+      `got ${JSON.stringify(title)}, want ${JSON.stringify(expectedTitle)}`,
+    );
   } else {
     pass(`Title matches registry (${path})`, title);
     titleSeen.push(title);
