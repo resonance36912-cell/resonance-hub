@@ -9,68 +9,81 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RefundsRouteImport } from './routes/refunds'
+import { Route as RedeemRouteImport } from './routes/redeem'
 import { Route as RcgfRouteImport } from './routes/rcgf'
-import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as MyifyRouteImport } from './routes/myify'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
-import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as DependencyThresholdsRouteImport } from './routes/dependency-thresholds'
+import { Route as DependencyHealthRouteImport } from './routes/dependency-health'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LegalIndexRouteImport } from './routes/legal.index'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
+import { Route as AppsIndexRouteImport } from './routes/apps.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as YoutubeOptimizerPricingRouteImport } from './routes/youtube-optimizer.pricing'
-import { Route as V1ModelsRouteImport } from './routes/v1/models'
-import { Route as V1EmbeddingsRouteImport } from './routes/v1/embeddings'
 import { Route as UpdatesPreviewRouteImport } from './routes/updates.preview'
-import { Route as ToolsReleasesRouteImport } from './routes/tools.releases'
-import { Route as ToolsPrStatusRouteImport } from './routes/tools.pr-status'
-import { Route as ToolsIssueTriageRouteImport } from './routes/tools.issue-triage'
+import { Route as ToolsCodexRouteImport } from './routes/tools.codex'
 import { Route as SyncVisionPricingRouteImport } from './routes/sync-vision.pricing'
+import { Route as StatusMetaDiffRouteImport } from './routes/status.meta-diff'
+import { Route as StatusAppsRouteImport } from './routes/status.apps'
+import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalGovernanceRouteImport } from './routes/legal.governance'
-import { Route as GovernanceWorkspaceRouteImport } from './routes/governance_.workspace'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as GovernanceLogRouteImport } from './routes/governance.log'
 import { Route as EpublisherPricingRouteImport } from './routes/epublisher.pricing'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as DocsSpokeHubControlContractRouteImport } from './routes/docs.spoke-hub-control-contract'
+import { Route as DocsEntitlementApiRouteImport } from './routes/docs.entitlement-api'
 import { Route as CreativeStudioPricingRouteImport } from './routes/creative-studio.pricing'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
+import { Route as AppsSubmitRouteImport } from './routes/apps.submit'
+import { Route as AppsAppKeyRouteImport } from './routes/apps.$appKey'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AdminWebhooksRouteImport } from './routes/admin.webhooks'
-import { Route as AdminSecurityScanRouteImport } from './routes/admin.security-scan'
+import { Route as AdminSpokeHealthRouteImport } from './routes/admin.spoke-health'
 import { Route as AdminRopRouteImport } from './routes/admin.rop'
+import { Route as AdminRoadmapRouteImport } from './routes/admin.roadmap'
 import { Route as AdminRevenueRouteImport } from './routes/admin.revenue'
-import { Route as AdminRepoHealthRouteImport } from './routes/admin.repo-health'
-import { Route as AdminPromotionCampaignsRouteImport } from './routes/admin.promotion-campaigns'
-import { Route as AdminPromotionRouteImport } from './routes/admin.promotion'
+import { Route as AdminReturnToCounterexamplesRouteImport } from './routes/admin.return-to-counterexamples'
+import { Route as AdminReturnToAllowlistRouteImport } from './routes/admin.return-to-allowlist'
+import { Route as AdminReconciliationRouteImport } from './routes/admin.reconciliation'
 import { Route as AdminPayfastAuditRouteImport } from './routes/admin.payfast-audit'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminInvoicesRouteImport } from './routes/admin.invoices'
+import { Route as AdminGovernanceRouteImport } from './routes/admin.governance'
 import { Route as AdminEntitlementDiagnosticsRouteImport } from './routes/admin.entitlement-diagnostics'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminEmailDomainRouteImport } from './routes/admin.email-domain'
 import { Route as AdminCreditsRouteImport } from './routes/admin.credits'
-import { Route as AdminControlCenterRouteImport } from './routes/admin.control-center'
-import { Route as AdminCiHealthRouteImport } from './routes/admin.ci-health'
+import { Route as AdminCouponsRouteImport } from './routes/admin.coupons'
 import { Route as AdminBillingRouteImport } from './routes/admin.billing'
+import { Route as AdminAppSubmissionsRouteImport } from './routes/admin.app-submissions'
 import { Route as AdminAccessRouteImport } from './routes/admin.access'
 import { Route as AccountSubscriptionsRouteImport } from './routes/account.subscriptions'
+import { Route as AccountPrivacyRouteImport } from './routes/account.privacy'
 import { Route as AccountInvoicesRouteImport } from './routes/account.invoices'
 import { Route as AccountDebugRouteImport } from './routes/account.debug'
 import { Route as AccountBillingRouteImport } from './routes/account.billing'
-import { Route as V1ChatCompletionsRouteImport } from './routes/v1/chat/completions'
+import { Route as ToolsCodexThreadIdRouteImport } from './routes/tools.codex.$threadId'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as AppsSubmissionsIdRouteImport } from './routes/apps.submissions.$id'
 import { Route as ApiPublicEntitlementRouteImport } from './routes/api/public/entitlement'
-import { Route as ApiBillingCatalogRouteImport } from './routes/api/billing/catalog'
 import { Route as AccountInvoicesIdRouteImport } from './routes/account.invoices.$id'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as ApiSovereignNovaChatRouteImport } from './routes/api/sovereign/nova/chat'
-import { Route as ApiSovereignLaunchAppRouteImport } from './routes/api/sovereign/launch/$app'
-import { Route as ApiSovereignAuthActionRouteImport } from './routes/api/sovereign/auth/$action'
+import { Route as ApiPublicUsageWalletRouteImport } from './routes/api/public/usage/wallet'
+import { Route as ApiPublicUsageReserveRouteImport } from './routes/api/public/usage/reserve'
+import { Route as ApiPublicUsageReleaseRouteImport } from './routes/api/public/usage/release'
+import { Route as ApiPublicUsageCompleteRouteImport } from './routes/api/public/usage/complete'
 import { Route as ApiPublicUpdatesRssRouteImport } from './routes/api/public/updates/rss'
 import { Route as ApiPublicUpdatesAtomRouteImport } from './routes/api/public/updates/atom'
 import { Route as ApiPublicRopPullBroadcastsRouteImport } from './routes/api/public/rop/pull-broadcasts'
@@ -78,29 +91,26 @@ import { Route as ApiPublicRopIngestSuggestionRouteImport } from './routes/api/p
 import { Route as ApiPublicRopIngestPerfRouteImport } from './routes/api/public/rop/ingest-perf'
 import { Route as ApiPublicRopIngestAppliedRouteImport } from './routes/api/public/rop/ingest-applied'
 import { Route as ApiPublicPayfastItnRouteImport } from './routes/api/public/payfast/itn'
+import { Route as ApiPublicHubControlPullConfigRouteImport } from './routes/api/public/hub-control/pull-config'
 import { Route as ApiPublicHooksProcessSubscriptionEmailsRouteImport } from './routes/api/public/hooks/process-subscription-emails'
-import { Route as ApiPublicHooksCiFailureAlertsRouteImport } from './routes/api/public/hooks/ci-failure-alerts'
-import { Route as ApiPublicFormsCreateIssueRouteImport } from './routes/api/public/forms/create-issue'
+import { Route as ApiPublicEntitlementHealthRouteImport } from './routes/api/public/entitlement.health'
 import { Route as ApiPublicAppStatusHealthRouteImport } from './routes/api/public/app-status.health'
+import { Route as ApiPublicAnalyticsCheckoutSuccessRouteImport } from './routes/api/public/analytics/checkout-success'
 import { Route as ApiPublicAnalyticsAuthGateRouteImport } from './routes/api/public/analytics/auth-gate'
+import { Route as ApiPublicAnalyticsAppSuggestionRouteImport } from './routes/api/public/analytics/app-suggestion'
 import { Route as AccountInvoicesByPaymentPfRouteImport } from './routes/account.invoices.by-payment.$pf'
 import { Route as ApiPublicRopCronMeasureOutcomesRouteImport } from './routes/api/public/rop/cron/measure-outcomes'
 import { Route as ApiPublicRopCronCrossAppScanRouteImport } from './routes/api/public/rop/cron/cross-app-scan'
 import { Route as ApiPublicGenerateCreativeStudioPosterRouteImport } from './routes/api/public/generate/creative-studio/poster'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RefundsRoute = RefundsRouteImport.update({
-  id: '/refunds',
-  path: '/refunds',
+const RedeemRoute = RedeemRouteImport.update({
+  id: '/redeem',
+  path: '/redeem',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RcgfRoute = RcgfRouteImport.update({
@@ -108,19 +118,9 @@ const RcgfRoute = RcgfRouteImport.update({
   path: '/rcgf',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MyifyRoute = MyifyRouteImport.update({
-  id: '/myify',
-  path: '/myify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -133,9 +133,14 @@ const GovernanceRoute = GovernanceRouteImport.update({
   path: '/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CheckoutRoute = CheckoutRouteImport.update({
-  id: '/checkout',
-  path: '/checkout',
+const DependencyThresholdsRoute = DependencyThresholdsRouteImport.update({
+  id: '/dependency-thresholds',
+  path: '/dependency-thresholds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DependencyHealthRoute = DependencyHealthRouteImport.update({
+  id: '/dependency-health',
+  path: '/dependency-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChangelogRoute = ChangelogRouteImport.update({
@@ -148,9 +153,34 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalIndexRoute = LegalIndexRouteImport.update({
+  id: '/legal/',
+  path: '/legal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsIndexRoute = AppsIndexRouteImport.update({
+  id: '/apps/',
+  path: '/apps/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
@@ -158,34 +188,14 @@ const YoutubeOptimizerPricingRoute = YoutubeOptimizerPricingRouteImport.update({
   path: '/youtube-optimizer/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
-const V1ModelsRoute = V1ModelsRouteImport.update({
-  id: '/v1/models',
-  path: '/v1/models',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const V1EmbeddingsRoute = V1EmbeddingsRouteImport.update({
-  id: '/v1/embeddings',
-  path: '/v1/embeddings',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UpdatesPreviewRoute = UpdatesPreviewRouteImport.update({
   id: '/updates/preview',
   path: '/updates/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ToolsReleasesRoute = ToolsReleasesRouteImport.update({
-  id: '/tools/releases',
-  path: '/tools/releases',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ToolsPrStatusRoute = ToolsPrStatusRouteImport.update({
-  id: '/tools/pr-status',
-  path: '/tools/pr-status',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ToolsIssueTriageRoute = ToolsIssueTriageRouteImport.update({
-  id: '/tools/issue-triage',
-  path: '/tools/issue-triage',
+const ToolsCodexRoute = ToolsCodexRouteImport.update({
+  id: '/tools/codex',
+  path: '/tools/codex',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
@@ -193,15 +203,40 @@ const SyncVisionPricingRoute = SyncVisionPricingRouteImport.update({
   path: '/sync-vision/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatusMetaDiffRoute = StatusMetaDiffRouteImport.update({
+  id: '/status/meta-diff',
+  path: '/status/meta-diff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusAppsRoute = StatusAppsRouteImport.update({
+  id: '/status/apps',
+  path: '/status/apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTermsRoute = LegalTermsRouteImport.update({
+  id: '/legal/terms',
+  path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
+  id: '/legal/privacy',
+  path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalGovernanceRoute = LegalGovernanceRouteImport.update({
   id: '/legal/governance',
   path: '/legal/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GovernanceWorkspaceRoute = GovernanceWorkspaceRouteImport.update({
-  id: '/governance_/workspace',
-  path: '/governance/workspace',
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
   getParentRoute: () => rootRouteImport,
+} as any)
+const GovernanceLogRoute = GovernanceLogRouteImport.update({
+  id: '/log',
+  path: '/log',
+  getParentRoute: () => GovernanceRoute,
 } as any)
 const EpublisherPricingRoute = EpublisherPricingRouteImport.update({
   id: '/epublisher/pricing',
@@ -213,29 +248,55 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsSpokeHubControlContractRoute =
+  DocsSpokeHubControlContractRouteImport.update({
+    id: '/docs/spoke-hub-control-contract',
+    path: '/docs/spoke-hub-control-contract',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DocsEntitlementApiRoute = DocsEntitlementApiRouteImport.update({
+  id: '/docs/entitlement-api',
+  path: '/docs/entitlement-api',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CreativeStudioPricingRoute = CreativeStudioPricingRouteImport.update({
   id: '/creative-studio/pricing',
   path: '/creative-studio/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
-  id: '/success',
-  path: '/success',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
-  id: '/cancel',
-  path: '/cancel',
-  getParentRoute: () => CheckoutRoute,
+  id: '/checkout/cancel',
+  path: '/checkout/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsSubmitRoute = AppsSubmitRouteImport.update({
+  id: '/apps/submit',
+  path: '/apps/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppsAppKeyRoute = AppsAppKeyRouteImport.update({
+  id: '/apps/$appKey',
+  path: '/apps/$appKey',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminWebhooksRoute = AdminWebhooksRouteImport.update({
   id: '/admin/webhooks',
   path: '/admin/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSecurityScanRoute = AdminSecurityScanRouteImport.update({
-  id: '/admin/security-scan',
-  path: '/admin/security-scan',
+const AdminSpokeHealthRoute = AdminSpokeHealthRouteImport.update({
+  id: '/admin/spoke-health',
+  path: '/admin/spoke-health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRopRoute = AdminRopRouteImport.update({
@@ -243,24 +304,30 @@ const AdminRopRoute = AdminRopRouteImport.update({
   path: '/admin/rop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoadmapRoute = AdminRoadmapRouteImport.update({
+  id: '/admin/roadmap',
+  path: '/admin/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRevenueRoute = AdminRevenueRouteImport.update({
   id: '/admin/revenue',
   path: '/admin/revenue',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRepoHealthRoute = AdminRepoHealthRouteImport.update({
-  id: '/admin/repo-health',
-  path: '/admin/repo-health',
+const AdminReturnToCounterexamplesRoute =
+  AdminReturnToCounterexamplesRouteImport.update({
+    id: '/admin/return-to-counterexamples',
+    path: '/admin/return-to-counterexamples',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AdminReturnToAllowlistRoute = AdminReturnToAllowlistRouteImport.update({
+  id: '/admin/return-to-allowlist',
+  path: '/admin/return-to-allowlist',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPromotionCampaignsRoute = AdminPromotionCampaignsRouteImport.update({
-  id: '/admin/promotion-campaigns',
-  path: '/admin/promotion-campaigns',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminPromotionRoute = AdminPromotionRouteImport.update({
-  id: '/admin/promotion',
-  path: '/admin/promotion',
+const AdminReconciliationRoute = AdminReconciliationRouteImport.update({
+  id: '/admin/reconciliation',
+  path: '/admin/reconciliation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPayfastAuditRoute = AdminPayfastAuditRouteImport.update({
@@ -276,6 +343,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminInvoicesRoute = AdminInvoicesRouteImport.update({
   id: '/admin/invoices',
   path: '/admin/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminGovernanceRoute = AdminGovernanceRouteImport.update({
+  id: '/admin/governance',
+  path: '/admin/governance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminEntitlementDiagnosticsRoute =
@@ -299,19 +371,19 @@ const AdminCreditsRoute = AdminCreditsRouteImport.update({
   path: '/admin/credits',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminControlCenterRoute = AdminControlCenterRouteImport.update({
-  id: '/admin/control-center',
-  path: '/admin/control-center',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminCiHealthRoute = AdminCiHealthRouteImport.update({
-  id: '/admin/ci-health',
-  path: '/admin/ci-health',
+const AdminCouponsRoute = AdminCouponsRouteImport.update({
+  id: '/admin/coupons',
+  path: '/admin/coupons',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBillingRoute = AdminBillingRouteImport.update({
   id: '/admin/billing',
   path: '/admin/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAppSubmissionsRoute = AdminAppSubmissionsRouteImport.update({
+  id: '/admin/app-submissions',
+  path: '/admin/app-submissions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAccessRoute = AdminAccessRouteImport.update({
@@ -322,6 +394,11 @@ const AdminAccessRoute = AdminAccessRouteImport.update({
 const AccountSubscriptionsRoute = AccountSubscriptionsRouteImport.update({
   id: '/account/subscriptions',
   path: '/account/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountPrivacyRoute = AccountPrivacyRouteImport.update({
+  id: '/account/privacy',
+  path: '/account/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountInvoicesRoute = AccountInvoicesRouteImport.update({
@@ -344,14 +421,14 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppsSubmissionsIdRoute = AppsSubmissionsIdRouteImport.update({
+  id: '/apps/submissions/$id',
+  path: '/apps/submissions/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicEntitlementRoute = ApiPublicEntitlementRouteImport.update({
   id: '/api/public/entitlement',
   path: '/api/public/entitlement',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBillingCatalogRoute = ApiBillingCatalogRouteImport.update({
-  id: '/api/billing/catalog',
-  path: '/api/billing/catalog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountInvoicesIdRoute = AccountInvoicesIdRouteImport.update({
@@ -377,19 +454,24 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiSovereignNovaChatRoute = ApiSovereignNovaChatRouteImport.update({
-  id: '/api/sovereign/nova/chat',
-  path: '/api/sovereign/nova/chat',
+const ApiPublicUsageWalletRoute = ApiPublicUsageWalletRouteImport.update({
+  id: '/api/public/usage/wallet',
+  path: '/api/public/usage/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiSovereignLaunchAppRoute = ApiSovereignLaunchAppRouteImport.update({
-  id: '/api/sovereign/launch/$app',
-  path: '/api/sovereign/launch/$app',
+const ApiPublicUsageReserveRoute = ApiPublicUsageReserveRouteImport.update({
+  id: '/api/public/usage/reserve',
+  path: '/api/public/usage/reserve',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiSovereignAuthActionRoute = ApiSovereignAuthActionRouteImport.update({
-  id: '/api/sovereign/auth/$action',
-  path: '/api/sovereign/auth/$action',
+const ApiPublicUsageReleaseRoute = ApiPublicUsageReleaseRouteImport.update({
+  id: '/api/public/usage/release',
+  path: '/api/public/usage/release',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicUsageCompleteRoute = ApiPublicUsageCompleteRouteImport.update({
+  id: '/api/public/usage/complete',
+  path: '/api/public/usage/complete',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicUpdatesRssRoute = ApiPublicUpdatesRssRouteImport.update({
@@ -430,23 +512,23 @@ const ApiPublicPayfastItnRoute = ApiPublicPayfastItnRouteImport.update({
   path: '/api/public/payfast/itn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHubControlPullConfigRoute =
+  ApiPublicHubControlPullConfigRouteImport.update({
+    id: '/api/public/hub-control/pull-config',
+    path: '/api/public/hub-control/pull-config',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessSubscriptionEmailsRoute =
   ApiPublicHooksProcessSubscriptionEmailsRouteImport.update({
     id: '/api/public/hooks/process-subscription-emails',
     path: '/api/public/hooks/process-subscription-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksCiFailureAlertsRoute =
-  ApiPublicHooksCiFailureAlertsRouteImport.update({
-    id: '/api/public/hooks/ci-failure-alerts',
-    path: '/api/public/hooks/ci-failure-alerts',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicFormsCreateIssueRoute =
-  ApiPublicFormsCreateIssueRouteImport.update({
-    id: '/api/public/forms/create-issue',
-    path: '/api/public/forms/create-issue',
-    getParentRoute: () => rootRouteImport,
+const ApiPublicEntitlementHealthRoute =
+  ApiPublicEntitlementHealthRouteImport.update({
+    id: '/health',
+    path: '/health',
+    getParentRoute: () => ApiPublicEntitlementRoute,
   } as any)
 const ApiPublicAppStatusHealthRoute =
   ApiPublicAppStatusHealthRouteImport.update({
@@ -454,49 +536,698 @@ const ApiPublicAppStatusHealthRoute =
     path: '/api/public/app-status/health',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAnalyticsCheckoutSuccessRoute =
+  ApiPublicAnalyticsCheckoutSuccessRouteImport.update({
+    id: '/api/public/analytics/checkout-success',
+    path: '/api/public/analytics/checkout-success',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicAnalyticsAuthGateRouteImport.update({
-    id: '/api/public/analytics/auth-gate',°(ÑAÉ¹ÑI½ÕÑè ¤ôøÉ½½ÑI½ÕÑ%µÁ½ÉÐ°(ôÌ¹ä¤()áÁ½ÉÐ¥¹ÑÉ¥±I½ÕÑÍ	åÕ±±AÑ ì(¼èÑåÁ½%¹áI½ÕÑ(½¡¹±½èÑåÁ½¡¹±½I½ÕÑ(½¡­½ÕÐèÑåÁ½¡­½ÕÑI½ÕÑ]¥Ñ¡¡¥±É¸(½½ÙÉ¹¹èÑåÁ½½ÙÉ¹¹I½ÕÑ(½±½¥¸èÑåÁ½1½¥¹I½ÕÑ(½µÀèÑåÁ½5ÁI½ÕÑ(½µå¥äèÑåÁ½5å¥åI½ÕÑ(½ÁÉ¥¥¹èÑåÁ½AÉ¥¥¹I½ÕÑ(½ÁÉ¥ÙäèÑåÁ½AÉ¥ÙåI½ÕÑ(½ÉèÑåÁ½II½ÕÑ(½ÉÕ¹ÌèÑåÁ½IÕ¹ÍI½ÕÑ(½Í¥ÑµÀ¹áµ°èÑåÁ½M¥ÑµÁ½Ñáµ±I½ÕÑ(½ÑÉµÌèÑåÁ½QÉµÍI½ÕÑ(¼¹µÀ½±¥ÍÐµÑ½½±ÌèÑåÁ½¡ÈäÅ½ÑµÁ¡ÈäÍ1¥ÍÑQ½½±ÍI½ÕÑ(¼¹Ý±°µ­¹½Ý¸½½ÕÑ µÁÉ½ÑÑµÉÍ½ÕÉèÑåÁ½¡ÈäÅ½ÑÝ±±-¹½Ý¹¡ÈäÍ=ÕÑ¡AÉ½ÑÑIÍ½ÕÉI½ÕÑ(½½Õ¹Ð½¥±±¥¹èÑåÁ½½Õ¹Ñ	¥±±¥¹I½ÕÑ(½½Õ¹Ð½ÕèÑåÁ½½Õ¹ÑÕI½ÕÑ(½½Õ¹Ð½¥¹Ù½¥ÌèÑåÁ½½Õ¹Ñ%¹Ù½¥ÍI½ÕÑ]¥Ñ¡¡¥±É¸(½½Õ¹Ð½ÍÕÍÉ¥ÁÑ¥½¹ÌèÑåÁ½½Õ¹ÑMÕÍÉ¥ÁÑ¥½¹ÍI½ÕÑ(½µ¥¸½ÍÌèÑåÁ½µ¥¹ÍÍI½ÕÑ(½µ¥¸½¥±±¥¹èÑåÁ½µ¥¹	¥±±¥¹I½ÕÑ(½µ¥¸½¤µ¡±Ñ èÑåÁ½µ¥¹¥!±Ñ¡I½ÕÑ(½µ¥¸½½¹ÑÉ½°µ¹ÑÈèÑåÁ½µ¥¹½¹ÑÉ½±¹ÑÉI½ÕÑ(½µ¥¸½É¥ÑÌèÑåÁ½µ¥¹É¥ÑÍI½ÕÑ(½µ¥¸½µ¥°µ½µ¥¸èÑåÁ½µ¥¹µ¥±½µ¥¹I½ÕÑ(½µ¥¸½µ¥±ÌèÑåÁ½µ¥¹µ¥±ÍI½ÕÑ(½µ¥¸½¹Ñ¥Ñ±µ¹Ðµ¥¹½ÍÑ¥ÌèÑåÁ½µ¥¹¹Ñ¥Ñ±µ¹Ñ¥¹½ÍÑ¥ÍI½ÕÑ(½µ¥¸½¥¹Ù½¥ÌèÑåÁ½µ¥¹%¹Ù½¥ÍI½ÕÑ(½µ¥¸½±½¥¸èÑåÁ½µ¥¹1½¥¹I½ÕÑ(½µ¥¸½ÁåÍÐµÕ¥ÐèÑåÁ½µ¥¹AåÍÑÕ¥ÑI½ÕÑ(½µ¥¸½ÁÉ½µ½Ñ¥½¸èÑåÁ½µ¥¹AÉ½µ½Ñ¥½¹I½ÕÑ(½µ¥¸½ÁÉ½µ½Ñ¥½¸µµÁ¥¹ÌèÑåÁ½µ¥¹AÉ½µ½Ñ¥½¹µÁ¥¹ÍI½ÕÑ(½µ¥¸½ÉÁ¼µ¡±Ñ èÑåÁ½µ¥¹IÁ½!±Ñ¡I½ÕÑ(½µ¥¸½ÉÙ¹ÕèÑåÁ½µ¥¹IÙ¹ÕI½ÕÑ(½µ¥¸½É½ÀèÑåÁ½µ¥¹I½ÁI½ÕÑ(½µ¥¸½ÍÕÉ¥ÑäµÍ¸èÑåÁ½µ¥¹MÕÉ¥ÑåM¹I½ÕÑ(½µ¥¸½Ý¡½½­ÌèÑåÁ½µ¥¹]¡½½­ÍI½ÕÑ(½¡­½ÕÐ½¹°èÑåÁ½¡­½ÕÑ¹±I½ÕÑ(½¡­½ÕÐ½ÍÕÍÌèÑåÁ½¡­½ÕÑMÕÍÍI½ÕÑ(½ÉÑ¥ÙµÍÑÕ¥¼½ÁÉ¥¥¹èÑåÁ½ÉÑ¥ÙMÑÕ¥½AÉ¥¥¹I½ÕÑ(½µ¥°½Õ¹ÍÕÍÉ¥èÑåÁ½µ¥±U¹ÍÕÍÉ¥÷V&Æ2övVæW&FRö7&VFfR×7GVFò÷÷7FW"s¢GVöbV&Æ4vVæW&FT7&VFfU7GVFõ÷7FW%&÷WFP¢rö÷V&Æ2÷&÷ö7&öâö7&÷72Ö×66âs¢GVöbV&Æ5&÷7&öä7&÷7466å&÷WFP¢rö÷V&Æ2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2s¢GVöbV&Æ5&÷7&öäÖV7W&T÷WF6öÖW5&÷WFP§Ð¦W÷'BçFW&f6RfÆU&÷WFW4'Fò°¢ròs¢GVöbæFW&÷WFP¢rö6ævVÆörs¢GVöb6ævVÆöu&÷WFP¢rö6V6¶÷WBs¢GVöb6V6¶÷WE&÷WFUvF6ÆG&Và¢röv÷fW&ææ6Rs¢GVöbv÷fW&ææ6U&÷WFP¢röÆövâs¢GVöbÆövå&÷WFP¢röÖ7s¢GVöbÖ7&÷WFP¢rö×gs¢GVöb×g&÷WFP¢r÷&6ærs¢GVöb&6æu&÷WFP¢r÷&f7s¢GVöb&f7&÷WFP¢r÷&6vbs¢GVöb&6ve&÷WFP¢r÷&VgVæG2s¢GVöb&VgVæG5&÷WFP¢r÷6FVÖçÖÂs¢GVöb6FVÖF÷GÖÅ&÷WFP¢r÷FW&×2s¢GVöbFW&×5&÷WFP¢ròæÖ7öÆ7B×FööÇ2s¢GVöb6#F÷FÖ76#4Æ7EFööÇ5&÷WFP¢ròçvVÆÂÖ¶æ÷vâööWF×&÷FV7FVB×&W6÷W&6Rs¢GVöb6#F÷GvVÆÄ¶æ÷vä6#4öWF&÷FV7FVE&W6÷W&6U&÷WFP¢rö66÷VçBö&ÆÆærs¢GVöb66÷VçD&ÆÆæu&÷WFP¢rö66÷VçBöFV'Vrs¢GVöb66÷VçDFV'Vu&÷WFP¢rö66÷VçBöçfö6W2s¢GVöb66÷VçDçfö6W5&÷WFUvF6ÆG&Và¢rö66÷VçB÷7V'67&Föç2s¢GVöb66÷VçE7V'67&Föç5&÷WFP¢röFÖâö66W72s¢GVöbFÖä66W75&÷WFP¢röFÖâö&ÆÆærs¢GVöbFÖä&ÆÆæu&÷WFP¢röFÖâö6ÖVÇFs¢GVöbFÖä6VÇF&÷WFP¢röFÖâö6öçG&öÂÖ6VçFW"s¢GVöbFÖä6öçG&öÄ6VçFW%&÷WFP¢röFÖâö7&VFG2s¢GVöbFÖä7&VFG5&÷WFP¢röFÖâöVÖÂÖFöÖâs¢GVöbFÖäVÖÄFöÖå&÷WFP¢röFÖâöVÖÇ2s¢GVöbFÖäVÖÇ5&÷WFP¢röFÖâöVçFFÆVÖVçBÖFvæ÷7F72s¢GVöbFÖäVçFFÆVÖVçDFvæ÷7F75&÷WFP¢röFÖâöçfö6W2s¢GVöbFÖäçfö6W5&÷WFP¢röFÖâöÆövâs¢GVöbFÖäÆövå&÷WFP¢röFÖâ÷f7BÖVFBs¢GVöbFÖåf7DVFE&÷WFP¢röFÖâ÷&öÖ÷Föâs¢GVöbFÖå&öÖ÷Föå&÷WFP¢röFÖâ÷&öÖ÷FöâÖ6×vç2s¢GVöbFÖå&öÖ÷Föä6×vç5&÷WFP¢röFÖâ÷&WòÖVÇFs¢GVöbFÖå&WôVÇF&÷WFP¢röFÖâ÷&WfVçVRs¢GVöbFÖå&WfVçVU&÷WFP¢röFÖâ÷&÷s¢GVöbFÖå&÷&÷WFP¢röFÖâ÷6V7W&G×66âs¢GVöbFÖå6V7W&G66å&÷WFP¢röFÖâ÷vV&öö·2s¢GVöbFÖåvV&öö·5&÷WFP¢rö6V6¶÷WBö6æ6VÂs¢GVöb6V6¶÷WD6æ6VÅ&÷WFP¢rö6V6¶÷WB÷7V66W72s¢GVöb6V6¶÷WE7V66W75&÷WFP¢rö7&VFfR×7GVFò÷&6ærs¢GVöb7&VFfU7GVFõ&6æu&÷WFP¢röVÖÂ÷Vç7V'67&&Rs¢GVöbVÖÅVç7V'67&&U&÷WFP¢röWV&Æ6W"÷&6ærs¢GVöbWV&Æ6W%&6æu&÷WFP¢röv÷fW&ææ6R÷v÷&·76Rs¢GVöbv÷fW&ææ6Uv÷&·76U&÷WFP¢röÆVvÂöv÷fW&ææ6Rs¢GVöbÆVvÄv÷fW&ææ6U&÷WFP¢r÷7æ2×f6öâ÷&6ærs¢GVöb7æ5f6öå&6æu&÷WFP¢r÷FööÇ2ö77VR×G&vRs¢GVöbFööÇ477VUG&vU&÷WFP¢r÷FööÇ2÷"×7FGW2s¢GVöbFööÇ5%7FGW5&÷WFP¢r÷FööÇ2÷&VÆV6W2s¢GVöbFööÇ5&VÆV6W5&÷WFP¢r÷WFFW2÷&WfWrs¢GVöbWFFW5&WfWu&÷WFP¢r÷cöVÖ&VFFæw2s¢GVöbcVÖ&VFFæw5&÷WFP¢r÷cöÖöFVÇ2s¢GVöbcÖöFVÇ5&÷WFP¢r÷÷WGV&RÖ÷FÖ¦W"÷&6ærs¢GVöb÷WGV&T÷FÖ¦W%&6æu&÷WFP¢röFÖâs¢GVöbFÖäæFW&÷WFP¢ròæÆ÷f&ÆRööWFö6öç6VçBs¢GVöbF÷FÆ÷f&ÆTöWF6öç6VçE&÷WFP¢ròæÖ7öçfö¶R×FööÂòGFööÂs¢GVöb6#F÷FÖ76#4çfö¶UFööÅFööÅ&÷WFP¢rö66÷VçBöçfö6W2òFBs¢GVöb66÷VçDçfö6W4E&÷WFP¢röö&ÆÆærö6FÆörs¢GVöb&ÆÆæt6FÆöu&÷WFP¢rö÷V&Æ2öVçFFÆVÖVçBs¢GVöbV&Æ4VçFFÆVÖVçE&÷WFP¢röÆ÷f&ÆRöVÖÂ÷7W&W76öâs¢GVöbÆ÷f&ÆTVÖÅ7W&W76öå&÷WFP¢r÷cö6Bö6ö×ÆWFöç2s¢GVöbc6D6ö×ÆWFöç5&÷WFP¢rö66÷VçBöçfö6W2ö'×ÖVçBòGbs¢GVöb66÷VçDçfö6W4'ÖVçEe&÷WFP¢rö÷V&Æ2öæÇF72öWFÖvFRs¢GVöbV&Æ4æÇF74WFvFU&÷WFP¢rö÷V&Æ2ö×7FGW2öVÇFs¢GVöbV&Æ47FGW4VÇF&÷WFP¢rö÷V&Æ2öf÷&×2ö7&VFRÖ77VRs¢GVöbV&Æ4f÷&×47&VFT77VU&÷WFP¢rö÷V&Æ2ööö·2ö6ÖfÇW&RÖÆW'G2s¢GVöbV&Æ4öö·46fÇW&TÆW'G5&÷WFP¢rö÷V&Æ2ööö·2÷&ö6W72×7V'67&FöâÖVÖÇ2s¢GVöbV&Æ4öö·5&ö6W757V'67&FöäVÖÇ5&÷WFP¢rö÷V&Æ2÷f7BöFâs¢GVöbV&Æ5f7DFå&÷WFP¢rö÷V&Æ2÷&÷öævW7BÖÆVBs¢GVöbV&Æ5&÷ævW7DÆVE&÷WFP¢rö÷V&Æ2÷&÷öævW7B×W&bs¢GVöbV&Æ5&÷ævW7EW&e&÷WFP¢rö÷V&Æ2÷&÷öævW7B×7VvvW7Föâs¢GVöbV&Æ5&÷ævW7E7VvvW7Föå&÷WFP¢rö÷V&Æ2÷&÷÷VÆÂÖ'&öF67G2s¢GVöbV&Æ5&÷VÆÄ'&öF67G5&÷WFP¢rö÷V&Æ2÷WFFW2öFöÒs¢GVöbV&Æ5WFFW4FöÕ&÷WFP¢rö÷V&Æ2÷WFFW2÷'72s¢GVöbV&Æ5WFFW5'75&÷WFP¢rö÷6÷fW&VvâöWFòF7Föâs¢GVöb6÷fW&VväWF7Föå&÷WFP¢rö÷6÷fW&VvâöÆVæ6òFs¢GVöb6÷fW&VväÆVæ6&÷WFP¢rö÷6÷fW&Vvâöæ÷fö6Bs¢GVöb6÷fW&Vväæ÷f6E&÷WFP¢röÆ÷f&ÆRöVÖÂ÷VWVR÷&ö6W72s¢GVöbÆ÷f&ÆTVÖÅVWVU&ö6W75&÷WFP¢röÆ÷f&ÆRöVÖÂ÷G&ç67FöæÂ÷&WfWrs¢GVöbÆ÷f&ÆTVÖÅG&ç67FöæÅ&WfWu&÷WFP¢röÆ÷f&ÆRöVÖÂ÷G&ç67FöæÂ÷6VæBs¢GVöbÆ÷f&ÆTVÖÅG&ç67FöæÅ6VæE&÷WFP¢rö÷V&Æ2övVæW&FRö7&VFfR×7GVFò÷÷7FW"s¢GVöbV&Æ4vVæW&FT7&VFfU7GVFõ÷7FW%&÷WFP¢rö÷V&Æ2÷&÷ö7&öâö7&÷72Ö×66âs¢GVöbV&Æ5&÷7&öä7&÷7466å&÷WFP¢rö÷V&Æ2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2s¢GVöbV&Æ5&÷7&öäÖV7W&T÷WF6öÖW5&÷WFP§Ð¦W÷'BçFW&f6RfÆU&÷WFW4'B°¢õ÷&ö÷Eõó¢GVöb&ö÷E&÷WFT×÷'@¢ròs¢GVöbæFW&÷WFP¢rö6ævVÆörs¢GVöb6ævVÆöu&÷WFP¢rö6V6¶÷WBs¢GVöb6V6¶÷WE&÷WFUvF6ÆG&Và¢röv÷fW&ææ6Rs¢GVöbv÷fW&ææ6U&÷WFP¢röÆövâs¢GVöbÆövå&÷WFP¢röÖ7s¢GVöbÖ7&÷WFP¢rö×gs¢GVöb×g&÷WFP¢r÷&6ærs¢GVöb&6æu&÷WFP¢r÷&f7s¢GVöb&f7&÷WFP¢r÷&6vbs¢GVöb&6ve&÷WFP¢r÷&VgVæG2s¢GVöb&VgVæG5&÷WFP¢r÷6FVÖçÖÂs¢GVöb6FVÖF÷GÖÅ&÷WFP¢r÷FW&×2s¢GVöbFW&×5&÷WFP¢ròæÖ7öÆ7B×FööÇ2s¢GVöb6#F÷FÖ76#4Æ7EFööÇ5&÷WFP¢ròçvVÆÂÖ¶æ÷vâööWF×&÷FV7FVB×&W6÷W&6Rs¢GVöb6#F÷GvVÆÄ¶æ÷vä6#4öWF&÷FV7FVE&W6÷W&6U&÷WFP¢rö66÷VçBö&ÆÆærs¢GVöb66÷VçD&ÆÆæu&÷WFP¢rö66÷VçBöFV'Vrs¢GVöb66÷VçDFV'Vu&÷WFP¢rö66÷VçBöçfö6W2s¢GVöb66÷VçDçfö6W5&÷WFUvF6ÆG&Và¢rö66÷VçB÷7V'67&Föç2s¢GVöb66÷VçE7V'67&Föç5&÷WFP¢röFÖâö66W72s¢GVöbFÖä66W75&÷WFP¢röFÖâö&ÆÆærs¢GVöbFÖä&ÆÆæu&÷WFP¢röFÖâö6ÖVÇFs¢GVöbFÖä6VÇF&÷WFP¢röFÖâö6öçG&öÂÖ6VçFW"s¢GVöbFÖä6öçG&öÄ6VçFW%&÷WFP¢röFÖâö7&VFG2s¢GVöbFÖä7&VFG5&÷WFP¢röFÖâöVÖÂÖFöÖâs¢GVöbFÖäVÖÄFöÖå&÷WFP¢röFÖâöVÖÇ2s¢GVöbFÖäVÖÇ5&÷WFP¢röFÖâöVçFFÆVÖVçBÖFvæ÷7F72s¢GVöbFÖäVçFFÆVÖVçDFvæ÷7F75&÷WFP¢röFÖâöçfö6W2s¢GVöbFÖäçfö6W5&÷WFP¢röFÖâöÆövâs¢GVöbFÖäÆövå&÷WFP¢röFÖâ÷f7BÖVFBs¢GVöbFÖåf7DVFE&÷WFP¢röFÖâ÷&öÖ÷Föâs¢GVöbFÖå&öÖ÷Föå&÷WFP¢röFÖâ÷&öÖ÷FöâÖ6×vç2s¢GVöbFÖå&öÖ÷Föä6×vç5&÷WFP¢röFÖâ÷&WòÖVÇFs¢GVöbFÖå&WôVÇF&÷WFP¢röFÖâ÷&WfVçVRs¢GVöbFÖå&WfVçVU&÷WFP¢röFÖâ÷&÷s¢GVöbFÖå&÷&÷WFP¢röFÖâ÷6V7W&G×66âs¢GVöbFÖå6V7W&G66å&÷WFP¢röFÖâ÷vV&öö·2s¢GVöKÜÛÝ\ZYÛØ]]ÉXÝ[ÛÎ\[Ù\TÛÝ\ZYÛ]]XÝ[ÛÝ]B	ËØ\KÜÛÝ\ZYÛÛ][ÚÉ\	Î\[Ù\TÛÝ\ZYÛ][Ú\Ý]B	ËØ\KÜÛÝ\ZYÛÛÝKØÚ]	Î\[Ù\TÛÝ\ZYÛÝPÚ]Ý]B	ËÛÝXKÙ[XZ[Ü]Y]YKÜØÙ\ÜÉÎ\[ÙÝXQ[XZ[]Y]YTØÙ\ÜÔÝ]B	ËÛÝXKÙ[XZ[Ý[ØXÝ[Û[Ü]Y]ÉÎ\[ÙÝXQ[XZ[[ØXÝ[Û[]Y]ÔÝ]B	ËÛÝXKÙ[XZ[Ý[ØXÝ[Û[ÜÙ[	Î\[ÙÝXQ[XZ[[ØXÝ[Û[Ù[Ý]B	ËØ\KÜXXËÙÙ[\]KØÜX]]K\ÝY[ËÜÜÝ\Î\[Ù\TXXÑÙ[\]PÜX]]TÝY[ÔÜÝ\Ý]B	ËØ\KÜXXËÜÜØÜÛØÜÜÜËX\\ØØ[Î\[Ù\TXXÔÜÜÛÜÜÜÐ\ØØ[Ý]B	ËØ\KÜXXËÜÜØÜÛÛYX\Ý\K[Ý]ÛÛY\ÉÎ\[Ù\TXXÔÜÜÛYX\Ý\SÝ]ÛÛY\ÔÝ]BB^Ü[\XÙH[TÝ]U\\ÈÂ[TÝ]\ÐQ[][TÝ]\ÐQ[][]Î	ËÉÂ	ËØÚ[Ù[ÙÉÂ	ËØÚXÚÛÝ]	Â	ËÙÛÝ\[ÙIÂ	ËÛÙÚ[Â	ËÛXÜ	Â	ËÛ^ZYIÂ	ËÜXÚ[ÉÂ	ËÜ]XÞIÂ	ËÜÙÙÂ	ËÜY[ÉÂ	ËÜÚ][X\[	Â	ËÝ\\ÉÂ	ËËXÜÛ\Ý]ÛÛÉÂ	ËËÙ[ZÛÝÛÛØ]]\ÝXÝY\\ÛÝ\ÙIÂ	ËØXØÛÝ[Ø[[ÉÂ	ËØXØÛÝ[ÙXYÉÂ	ËØXØÛÝ[Ú[ÚXÙ\ÉÂ	ËØXØÛÝ[ÜÝXØÜ\[ÛÉÂ	ËØYZ[ØXØÙ\ÜÉÂ	ËØYZ[Ø[[ÉÂ	ËØYZ[ØÚKZX[	Â	ËØYZ[ØÛÛÛXÙ[\Â	ËØYZ[ØÜY]ÉÂ	ËØYZ[Ù[XZ[YÛXZ[Â	ËØYZ[Ù[XZ[ÉÂ	ËØYZ[Ù[][Y[YXYÛÜÝXÜÉÂ	ËØYZ[Ú[ÚXÙ\ÉÂ	ËØYZ[ÛÙÚ[Â	ËØYZ[Ü^Y\ÝX]Y]	Â	ËØYZ[ÜÛ[Ý[ÛÂ	ËØYZ[ÜÛ[Ý[ÛXØ[\ZYÛÉÂ	ËØYZ[Ü\ËZX[	Â	ËØYZ[Ü][YIÂ	ËØYZ[ÜÜ	Â	ËØYZ[ÜÙXÝ\]K\ØØ[Â	ËØYZ[ÝÙXÛÚÜÉÂ	ËØÚXÚÛÝ]ØØ[Ù[	Â	ËØÚXÚÛÝ]ÜÝXØÙ\ÜÉÂ	ËØÜX]]K\ÝY[ËÜXÚ[ÉÂ	ËÙ[XZ[Ý[ÝXØÜXIÂ	ËÙ\X\Ú\ÜXÚ[ÉÂ	ËÙÛÝ\[ÙKÝÛÜÜÜXÙIÂ	ËÛYØ[ÙÛÝ\[ÙIÂ	ËÜÞ[Ë]\Ú[ÛÜXÚ[ÉÂ	ËÝÛÛËÚ\ÜÝYK]XYÙIÂ	ËÝÛÛËÜ\Ý]\ÉÂ	ËÝÛÛËÜ[X\Ù\ÉÂ	ËÝ\]\ËÜ]Y]ÉÂ	ËÝKÙ[XY[ÜÉÂ	ËÝKÛ[Ù[ÉÂ	ËÞ[Ý]XK[Ü[Z^\ÜXÚ[ÉÂ	ËØYZ[ÉÂ	ËËÝXKÛØ]]ØÛÛÙ[	Â	ËËXÜÚ[ÚÙK]ÛÛÉÛÛ	Â	ËØXØÛÝ[Ú[ÚXÙ\ËÉY	Â	ËØ\KØ[[ËØØ][ÙÉÂ	ËØ\KÜXXËÙ[][Y[	Â	ËÛÝXKÙ[XZ[ÜÝ\\ÜÚ[ÛÂ	ËÝKØÚ]ØÛÛ\][ÛÉÂ	ËØXØÛÝ[Ú[ÚXÙ\ËØK\^[Y[ÉÂ	ËØ\KÜXXËØ[[]XÜËØ]]YØ]IÂ	ËØ\KÜXXËØ\\Ý]\ËÚX[	Â	ËØ\KÜXXËÙÜ\ËØÜX]KZ\ÜÝYIÂ	ËØ\KÜXXËÚÛÚÜËØÚKYZ[\KX[\ÉÂ	ËØ\KÜXXËÚÛÚÜËÜØÙ\ÜË\ÝXØÜ\[ÛY[XZ[ÉÂ	ËØ\KÜXXËÜ^Y\ÝÚ]Â	ËØ\KÜXXËÜÜÚ[Ù\ÝX\YY	Â	ËØ\KÜXXËÜÜÚ[Ù\Ý\\Â	ËØ\KÜXXËÜÜÚ[Ù\Ý\ÝYÙÙ\Ý[ÛÂ	ËØ\KÜXXËÜÜÜ[XØYØ\ÝÉÂ	ËØ\KÜXXËÝ\]\ËØ]ÛIÂ	ËØ\KÜXXËÝ\]\ËÜÜÉÂ	ËØ\KÜÛÝ\ZYÛØ]]ÉXÝ[ÛÂ	ËØ\KÜÛÝ\ZYÛÛ][ÚÉ\	Â	ËØ\KÜÛÝ\ZYÛÛÝKØÚ]	Â	ËÛÝXKÙ[XZ[Ü]Y]YKÜØÙ\ÜÉÂ	ËÛÝXKÙ[XZ[Ý[ØXÝ[Û[Ü]Y]ÉÂ	ËÛÝXKÙ[XZ[Ý[ØXÝ[Û[ÜÙ[	Â	ËØ\KÜXXËÙÙ[\]KØÜX]]K\ÝY[ËÜÜÝ\Â	ËØ\KÜXXËÜÜØÜÛØÜÜÜËX\\ØØ[Â	ËØ\KÜXXËÜÜØÜÛÛYX\Ý\K[Ý]ÛÛY\ÉÂ[TÝ]\ÐUÎ[TÝ]\ÐUÂÎ	ËÉÂ	ËØÚ[Ù[ÙÉÂ	ËØÚXÚÛÝ]	Â	ËÙÛÝ\[ÙIÂ	ËÛÙÚ[Â	ËÛXÜ	Â	ËÛ^ZYIÂ	ËÜXÚ[ÉÂ	ËÜ]XÞIÂ	ËÜÙÙÂ	ËÜY[ÉÂ	ËÜÚ][X\[	Â	ËÝ\\ÉÂ	ËËXÜÛ\Ý]ÛÛÉÂ	ËËÙ[ZÛÝÛÛØ]]\ÝXÝY\\ÛÝ\ÙIÂ	ËØXØÛÝ[Ø[[ÉÂ	ËØXØÛÝ[ÙXYÉÂ	ËØXØÛÝ[Ú[ÚXÙ\ÉÂ	ËØXØÛÝ[ÜÝXØÜ\[ÛÉÂ	ËØYZ[ØXØÙ\ÜÉÂ	ËØYZ[Ø[[ÉÂ	ËØYZ[ØÚKZX[	Â	ËØYZ[ØÛÛÛXÙ[\Â	ËØYZ[ØÜY]ÉÂ	ËØYZ[Ù[XZ[YÛXZ[Â	ËØYZ[Ù[XZ[ÉÂ	ËØYZ[Ù[][Y[YXYÛÜÝXÜÉÂ	ËØYZ[Ú[ÚXÙ\ÉÂ	ËØYZ[ÛÙÚ[Â	ËØYZ[Ü^Y\ÝX]Y]	Â	ËØYZ[ÜÛ[Ý[ÛÂ	ËØYZ[ÜÛ[Ý[ÛXØ[\ZYÛÉÂ	ËØYZ[Ü\ËZX[	Â	ËØYZ[Ü][YIÂ	ËØYZ[ÜÜ	Â	ËØYZ[ÜÙXÝ\]K\ØØ[Â	ËØYZ[ÝÙXÛÚÜÉÂ	ËØÚXÚÛÝ]ØØ[Ù[	Â	ËØÚXÚÛÝ]ÜÝXØÙ\ÜÉÂ	ËØÜX]]K\ÝY[ËÜXÚ[ÉÂ	ËÙ[XZ[Ý[ÝXØÜXIÂ	ËÙ\X\Ú\ÜXÚ[ÉÂ	ËÙÛÝ\[ÙKÝÛÜÜÜXÙIÂ	ËÛYØ[ÙÛÝ\[ÙIÂ	ËÜÞ[Ë]\Ú[ÛÜXÚ[ÉÂ	ËÝÛÛËÚ\ÜÝYK]XYÙIÂ	ËÝÛÛËÜ\Ý]\ÉÂ	ËÝÛÛËÜ[X\Ù\ÉÂ	ËÝ\]\ËÜ]Y]ÉÂ	ËÝKÙ[XY[ÜÉÂ	ËÝKÛ[Ù[ÉÂ	ËÞ[Ý]XK[Ü[Z^\ÜXÚ[ÉÂ	ËØYZ[Â	ËËÝXKÛØ]]ØÛÛÙ[	Â	ËËXÜÚ[ÚÙK]ÛÛÉÛÛ	Â	ËØXØÛÝ[Ú[ÚXÙ\ËÉY	Â	ËØ\KØ[[ËØØ][ÙÉÂ	ËØ\KÜXXËÙ[][Y[	Â	ËÛÝXKÙ[XZ[ÜÝ\\ÜÚ[ÛÂ	ËÝKØÚ]ØÛÛ\][ÛÉÂ	ËØXØÛÝ[Ú[ÚXÙ\ËØK\^[Y[ÉÂ	ËØ\KÜXXËØ[[]XÜËØ]]YØ]IÂ	ËØ\KÜXXËØ\\Ý]\ËÚX[	Â	ËØ\KÜXXËÙÜ\ËØÜX]KZ\ÜÝYIÂ	ËØ\KÜXXËÚÛÚÜËØÚKYZ[\KX[\ÉÂ	ËØ\KÜXXËÚÛÚÜËÜØÙ\ÜË\ÝXØÜ\[ÛY[XZ[ÉÂ	ËØ\KÜXXËÜ^Y\ÝÚ]Â	ËØ\KÜXXËÜÜÚ[Ù\ÝX\YY	Â	ËØ\KÜXXËÜÜÚ[Ù\Ý\\Â	ËØ\KÜXXËÜÜÚ[Ù\Ý\ÝYÙÙ\Ý[ÛÂ	ËØ\KÜXXËÜÜÜ[XØYØ\ÝÉÂ	ËØ\KÜXXËÝ\]\ËØ]ÛIÂ	ËØ\KÜXXËÝ\]\ËÜÜÉÂ	ËØ\KÜÛÝ\ZYÛØ]]ÉXÝ[ÛÂ	ËØ\KÜÛÝ\ZYÛÛ][ÚÉ\	Â	ËØ\KÜÛÝ\ZYÛÛÝKØÚ]	Â	ËÛÝXKÙ[XZ[Ü]Y]YKÜØÙ\ÜÉÂ	ËÛÝXKÙ[XZ[Ý[ØXÝ[Û[Ü]Y]ÉÂ	ËÛÝXKÙ[XZ[Ý[ØXÝ[Û[ÜÙ[	Â	ËØ\KÜXXËÙÙ[\]KØÜX]]K\ÝY[ËÜÜÝ\Â	ËØ\KÜXXËÜÜØÜÛØÜÜÜËX\\ØØ[Â	ËØ\KÜXXËÜÜØÜÛÛYX\Ý\K[Ý]ÛÛY\ÉÂY	××ÜÛÝ×ÉÂ	ËÉÂ	ËØÚ[Ù[ÙÉÂ	ËØÚXÚÛÝ]	Â	ËÙÛÝ\[ÙIÂ	ËÛÙÚ[Â	ËÛXÜ	Â	ËÛ^ZYIÂ	ËÜXÚ[ÉÂ	ËÜ]XÞIÂ	ËÜÙÙÂ	ËÜY[ÉÂ	ËÜÚ][X\[	Â	ËÝ\\ÉÂ	ËËXÜÛ\Ý]ÛÛÉÂ	ËËÙ[ZÛÝÛÛØ]]\ÝXÝY\\ÛÝ\ÙIÂ	ËØXØÛÝ[Ø[[ÉÂ	ËØXØÛÝ[ÙXYÉÂ	ËØXØÛÝ[Ú[ÚXÙ\ÉÂ	ËØXØÛÝ[ÜÝXØÜ\[ÛÉÂ	ËØYZ[ØXØÙ\ÜÉÂ	ËØYZ[Ø[[ÉÂ	ËØYZ[ØÚKZX[	Â	ËØYZ[ØÛÛÛXÙ[\Â	ËØYZ[ØÜY]ÉÂ	ËØYZ[Ù[XZ[YÛXZ[Â	ËØYZ[Ù[XZ[ÉÂ	ËØYZ[Ù[][Y[YXYÛÜÝXÜÉÂ	ËØYZ[Ú[ÚXÙ\ÉÂ	ËØYZ[ÛÙÚ[Â	ËØYZ[Ü^Y\ÝX]Y]	Â	ËØYZ[ÜÛ[Ý[ÛÂ	ËØYZ[ÜÛ[Ý[ÛXØ[\ZYÛÉÂ	ËØYZ[Ü\ËZX[	Â	ËØYZ[Ü][YIÂ	ËØYZ[ÜÜ	Â	ËØYZ[ÜÙXÝ\]K\ØØ[Â	ËØYZ[ÝÙXÛÚÜÉÂ	ËØÚXÚÛÝ]ØØ[Ù[	Â	ËØÚXÚÛÝ]ÜÝXØÙ\ÜÉÂ	ËØÜX]]K\ÝY[ËÜXÚ[ÉÂ	ËÙ[XZ[Ý[ÝXØÜXIÂ	ËÙ\X\Ú\ÜXÚ[ÉÂ	ËÙÛÝ\[ÙWËÝÛÜÜÜXÙIÂ	ËÛYØ[ÙÛÝ\[ÙIÂ	ËÜÞ[Ë]\Ú[ÛÜXÚ[ÉÂ	ËÝÛÛËÚ\ÜÝYK]XYÙIÂ	ËÝÛÛËÜ\Ý]\ÉÂ	ËÝÛÛËÜ[X\Ù\ÉÂ	ËÝ\]\ËÜ]Y]ÉÂ	ËÝKÙ[XY[ÜÉÂ	ËÝKÛ[Ù[ÉÂ	ËÞ[Ý]XK[Ü[Z^\ÜXÚ[ÉÂ	ËØYZ[ÉÂ	ËËÝXKÛØ]]ØÛÛÙ[	Â	ËËXÜÚ[ÚÙK]ÛÛÉÛÛ	Â	ËØXØÛf AdminBillingRoute
-  AdminCiHealthRoute: typeof AdminCiHealthRoute
-  AdminControlCenterRoute: typeof AdminControlCenterRoute
+    id: '/api/public/analytics/auth-gate',
+    path: '/api/public/analytics/auth-gate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAnalyticsAppSuggestionRoute =
+  ApiPublicAnalyticsAppSuggestionRouteImport.update({
+    id: '/api/public/analytics/app-suggestion',
+    path: '/api/public/analytics/app-suggestion',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AccountInvoicesByPaymentPfRoute =
+  AccountInvoicesByPaymentPfRouteImport.update({
+    id: '/by-payment/$pf',
+    path: '/by-payment/$pf',
+    getParentRoute: () => AccountInvoicesRoute,
+  } as any)
+const ApiPublicRopCronMeasureOutcomesRoute =
+  ApiPublicRopCronMeasureOutcomesRouteImport.update({
+    id: '/api/public/rop/cron/measure-outcomes',
+    path: '/api/public/rop/cron/measure-outcomes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicRopCronCrossAppScanRoute =
+  ApiPublicRopCronCrossAppScanRouteImport.update({
+    id: '/api/public/rop/cron/cross-app-scan',
+    path: '/api/public/rop/cron/cross-app-scan',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicGenerateCreativeStudioPosterRoute =
+  ApiPublicGenerateCreativeStudioPosterRouteImport.update({
+    id: '/api/public/generate/creative-studio/poster',
+    path: '/api/public/generate/creative-studio/poster',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/dependency-health': typeof DependencyHealthRoute
+  '/dependency-thresholds': typeof DependencyThresholdsRoute
+  '/governance': typeof GovernanceRouteWithChildren
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/rcgf': typeof RcgfRoute
+  '/redeem': typeof RedeemRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/account/billing': typeof AccountBillingRoute
+  '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRouteWithChildren
+  '/account/privacy': typeof AccountPrivacyRoute
+  '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/access': typeof AdminAccessRoute
+  '/admin/app-submissions': typeof AdminAppSubmissionsRoute
+  '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/credits': typeof AdminCreditsRoute
+  '/admin/email-domain': typeof AdminEmailDomainRoute
+  '/admin/emails': typeof AdminEmailsRoute
+  '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/governance': typeof AdminGovernanceRoute
+  '/admin/invoices': typeof AdminInvoicesRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
+  '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/roadmap': typeof AdminRoadmapRoute
+  '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
+  '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
+  '/apps/$appKey': typeof AppsAppKeyRoute
+  '/apps/submit': typeof AppsSubmitRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
+  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/entitlement-api': typeof DocsEntitlementApiRoute
+  '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/governance/log': typeof GovernanceLogRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/governance': typeof LegalGovernanceRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
+  '/status/apps': typeof StatusAppsRoute
+  '/status/meta-diff': typeof StatusMetaDiffRoute
+  '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/codex': typeof ToolsCodexRouteWithChildren
+  '/updates/preview': typeof UpdatesPreviewRoute
+  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/apps/': typeof AppsIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
+  '/docs/': typeof DocsIndexRoute
+  '/legal/': typeof LegalIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/account/invoices/$id': typeof AccountInvoicesIdRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
+  '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
+  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
+  '/api/public/analytics/app-suggestion': typeof ApiPublicAnalyticsAppSuggestionRoute
+  '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
+  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
+  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
+  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
+  '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/public/usage/complete': typeof ApiPublicUsageCompleteRoute
+  '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
+  '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
+  '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/dependency-health': typeof DependencyHealthRoute
+  '/dependency-thresholds': typeof DependencyThresholdsRoute
+  '/governance': typeof GovernanceRouteWithChildren
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/rcgf': typeof RcgfRoute
+  '/redeem': typeof RedeemRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/account/billing': typeof AccountBillingRoute
+  '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRouteWithChildren
+  '/account/privacy': typeof AccountPrivacyRoute
+  '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/access': typeof AdminAccessRoute
+  '/admin/app-submissions': typeof AdminAppSubmissionsRoute
+  '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/credits': typeof AdminCreditsRoute
+  '/admin/email-domain': typeof AdminEmailDomainRoute
+  '/admin/emails': typeof AdminEmailsRoute
+  '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/governance': typeof AdminGovernanceRoute
+  '/admin/invoices': typeof AdminInvoicesRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
+  '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/roadmap': typeof AdminRoadmapRoute
+  '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
+  '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
+  '/apps/$appKey': typeof AppsAppKeyRoute
+  '/apps/submit': typeof AppsSubmitRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
+  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/entitlement-api': typeof DocsEntitlementApiRoute
+  '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/governance/log': typeof GovernanceLogRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/governance': typeof LegalGovernanceRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
+  '/status/apps': typeof StatusAppsRoute
+  '/status/meta-diff': typeof StatusMetaDiffRoute
+  '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/codex': typeof ToolsCodexRouteWithChildren
+  '/updates/preview': typeof UpdatesPreviewRoute
+  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/account': typeof AccountIndexRoute
+  '/admin': typeof AdminIndexRoute
+  '/apps': typeof AppsIndexRoute
+  '/checkout': typeof CheckoutIndexRoute
+  '/docs': typeof DocsIndexRoute
+  '/legal': typeof LegalIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/account/invoices/$id': typeof AccountInvoicesIdRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
+  '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
+  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
+  '/api/public/analytics/app-suggestion': typeof ApiPublicAnalyticsAppSuggestionRoute
+  '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
+  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
+  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
+  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
+  '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/public/usage/complete': typeof ApiPublicUsageCompleteRoute
+  '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
+  '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
+  '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/changelog': typeof ChangelogRoute
+  '/dependency-health': typeof DependencyHealthRoute
+  '/dependency-thresholds': typeof DependencyThresholdsRoute
+  '/governance': typeof GovernanceRouteWithChildren
+  '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
+  '/rcgf': typeof RcgfRoute
+  '/redeem': typeof RedeemRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/account/billing': typeof AccountBillingRoute
+  '/account/debug': typeof AccountDebugRoute
+  '/account/invoices': typeof AccountInvoicesRouteWithChildren
+  '/account/privacy': typeof AccountPrivacyRoute
+  '/account/subscriptions': typeof AccountSubscriptionsRoute
+  '/admin/access': typeof AdminAccessRoute
+  '/admin/app-submissions': typeof AdminAppSubmissionsRoute
+  '/admin/billing': typeof AdminBillingRoute
+  '/admin/coupons': typeof AdminCouponsRoute
+  '/admin/credits': typeof AdminCreditsRoute
+  '/admin/email-domain': typeof AdminEmailDomainRoute
+  '/admin/emails': typeof AdminEmailsRoute
+  '/admin/entitlement-diagnostics': typeof AdminEntitlementDiagnosticsRoute
+  '/admin/governance': typeof AdminGovernanceRoute
+  '/admin/invoices': typeof AdminInvoicesRoute
+  '/admin/login': typeof AdminLoginRoute
+  '/admin/payfast-audit': typeof AdminPayfastAuditRoute
+  '/admin/reconciliation': typeof AdminReconciliationRoute
+  '/admin/return-to-allowlist': typeof AdminReturnToAllowlistRoute
+  '/admin/return-to-counterexamples': typeof AdminReturnToCounterexamplesRoute
+  '/admin/revenue': typeof AdminRevenueRoute
+  '/admin/roadmap': typeof AdminRoadmapRoute
+  '/admin/rop': typeof AdminRopRoute
+  '/admin/spoke-health': typeof AdminSpokeHealthRoute
+  '/admin/webhooks': typeof AdminWebhooksRoute
+  '/api/chat': typeof ApiChatRoute
+  '/apps/$appKey': typeof AppsAppKeyRoute
+  '/apps/submit': typeof AppsSubmitRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
+  '/creative-studio/pricing': typeof CreativeStudioPricingRoute
+  '/docs/entitlement-api': typeof DocsEntitlementApiRoute
+  '/docs/spoke-hub-control-contract': typeof DocsSpokeHubControlContractRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/epublisher/pricing': typeof EpublisherPricingRoute
+  '/governance/log': typeof GovernanceLogRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/governance': typeof LegalGovernanceRoute
+  '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/terms': typeof LegalTermsRoute
+  '/status/apps': typeof StatusAppsRoute
+  '/status/meta-diff': typeof StatusMetaDiffRoute
+  '/sync-vision/pricing': typeof SyncVisionPricingRoute
+  '/tools/codex': typeof ToolsCodexRouteWithChildren
+  '/updates/preview': typeof UpdatesPreviewRoute
+  '/youtube-optimizer/pricing': typeof YoutubeOptimizerPricingRoute
+  '/account/': typeof AccountIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/apps/': typeof AppsIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
+  '/docs/': typeof DocsIndexRoute
+  '/legal/': typeof LegalIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/account/invoices/$id': typeof AccountInvoicesIdRoute
+  '/api/public/entitlement': typeof ApiPublicEntitlementRouteWithChildren
+  '/apps/submissions/$id': typeof AppsSubmissionsIdRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/tools/codex/$threadId': typeof ToolsCodexThreadIdRoute
+  '/account/invoices/by-payment/$pf': typeof AccountInvoicesByPaymentPfRoute
+  '/api/public/analytics/app-suggestion': typeof ApiPublicAnalyticsAppSuggestionRoute
+  '/api/public/analytics/auth-gate': typeof ApiPublicAnalyticsAuthGateRoute
+  '/api/public/analytics/checkout-success': typeof ApiPublicAnalyticsCheckoutSuccessRoute
+  '/api/public/app-status/health': typeof ApiPublicAppStatusHealthRoute
+  '/api/public/entitlement/health': typeof ApiPublicEntitlementHealthRoute
+  '/api/public/hooks/process-subscription-emails': typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  '/api/public/hub-control/pull-config': typeof ApiPublicHubControlPullConfigRoute
+  '/api/public/payfast/itn': typeof ApiPublicPayfastItnRoute
+  '/api/public/rop/ingest-applied': typeof ApiPublicRopIngestAppliedRoute
+  '/api/public/rop/ingest-perf': typeof ApiPublicRopIngestPerfRoute
+  '/api/public/rop/ingest-suggestion': typeof ApiPublicRopIngestSuggestionRoute
+  '/api/public/rop/pull-broadcasts': typeof ApiPublicRopPullBroadcastsRoute
+  '/api/public/updates/atom': typeof ApiPublicUpdatesAtomRoute
+  '/api/public/updates/rss': typeof ApiPublicUpdatesRssRoute
+  '/api/public/usage/complete': typeof ApiPublicUsageCompleteRoute
+  '/api/public/usage/release': typeof ApiPublicUsageReleaseRoute
+  '/api/public/usage/reserve': typeof ApiPublicUsageReserveRoute
+  '/api/public/usage/wallet': typeof ApiPublicUsageWalletRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/generate/creative-studio/poster': typeof ApiPublicGenerateCreativeStudioPosterRoute
+  '/api/public/rop/cron/cross-app-scan': typeof ApiPublicRopCronCrossAppScanRoute
+  '/api/public/rop/cron/measure-outcomes': typeof ApiPublicRopCronMeasureOutcomesRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/changelog'
+    | '/dependency-health'
+    | '/dependency-thresholds'
+    | '/governance'
+    | '/login'
+    | '/mcp'
+    | '/pricing'
+    | '/rcgf'
+    | '/redeem'
+    | '/sitemap.xml'
+    | '/account/billing'
+    | '/account/debug'
+    | '/account/invoices'
+    | '/account/privacy'
+    | '/account/subscriptions'
+    | '/admin/access'
+    | '/admin/app-submissions'
+    | '/admin/billing'
+    | '/admin/coupons'
+    | '/admin/credits'
+    | '/admin/email-domain'
+    | '/admin/emails'
+    | '/admin/entitlement-diagnostics'
+    | '/admin/governance'
+    | '/admin/invoices'
+    | '/admin/login'
+    | '/admin/payfast-audit'
+    | '/admin/reconciliation'
+    | '/admin/return-to-allowlist'
+    | '/admin/return-to-counterexamples'
+    | '/admin/revenue'
+    | '/admin/roadmap'
+    | '/admin/rop'
+    | '/admin/spoke-health'
+    | '/admin/webhooks'
+    | '/api/chat'
+    | '/apps/$appKey'
+    | '/apps/submit'
+    | '/checkout/cancel'
+    | '/checkout/success'
+    | '/creative-studio/pricing'
+    | '/docs/entitlement-api'
+    | '/docs/spoke-hub-control-contract'
+    | '/email/unsubscribe'
+    | '/epublisher/pricing'
+    | '/governance/log'
+    | '/legal/cookies'
+    | '/legal/governance'
+    | '/legal/privacy'
+    | '/legal/terms'
+    | '/status/apps'
+    | '/status/meta-diff'
+    | '/sync-vision/pricing'
+    | '/tools/codex'
+    | '/updates/preview'
+    | '/youtube-optimizer/pricing'
+    | '/account/'
+    | '/admin/'
+    | '/apps/'
+    | '/checkout/'
+    | '/docs/'
+    | '/legal/'
+    | '/.lovable/oauth/consent'
+    | '/account/invoices/$id'
+    | '/api/public/entitlement'
+    | '/apps/submissions/$id'
+    | '/lovable/email/suppression'
+    | '/tools/codex/$threadId'
+    | '/account/invoices/by-payment/$pf'
+    | '/api/public/analytics/app-suggestion'
+    | '/api/public/analytics/auth-gate'
+    | '/api/public/analytics/checkout-success'
+    | '/api/public/app-status/health'
+    | '/api/public/entitlement/health'
+    | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
+    | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
+    | '/api/public/updates/atom'
+    | '/api/public/updates/rss'
+    | '/api/public/usage/complete'
+    | '/api/public/usage/release'
+    | '/api/public/usage/reserve'
+    | '/api/public/usage/wallet'
+    | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
+    | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/changelog'
+    | '/dependency-health'
+    | '/dependency-thresholds'
+    | '/governance'
+    | '/login'
+    | '/mcp'
+    | '/pricing'
+    | '/rcgf'
+    | '/redeem'
+    | '/sitemap.xml'
+    | '/account/billing'
+    | '/account/debug'
+    | '/account/invoices'
+    | '/account/privacy'
+    | '/account/subscriptions'
+    | '/admin/access'
+    | '/admin/app-submissions'
+    | '/admin/billing'
+    | '/admin/coupons'
+    | '/admin/credits'
+    | '/admin/email-domain'
+    | '/admin/emails'
+    | '/admin/entitlement-diagnostics'
+    | '/admin/governance'
+    | '/admin/invoices'
+    | '/admin/login'
+    | '/admin/payfast-audit'
+    | '/admin/reconciliation'
+    | '/admin/return-to-allowlist'
+    | '/admin/return-to-counterexamples'
+    | '/admin/revenue'
+    | '/admin/roadmap'
+    | '/admin/rop'
+    | '/admin/spoke-health'
+    | '/admin/webhooks'
+    | '/api/chat'
+    | '/apps/$appKey'
+    | '/apps/submit'
+    | '/checkout/cancel'
+    | '/checkout/success'
+    | '/creative-studio/pricing'
+    | '/docs/entitlement-api'
+    | '/docs/spoke-hub-control-contract'
+    | '/email/unsubscribe'
+    | '/epublisher/pricing'
+    | '/governance/log'
+    | '/legal/cookies'
+    | '/legal/governance'
+    | '/legal/privacy'
+    | '/legal/terms'
+    | '/status/apps'
+    | '/status/meta-diff'
+    | '/sync-vision/pricing'
+    | '/tools/codex'
+    | '/updates/preview'
+    | '/youtube-optimizer/pricing'
+    | '/account'
+    | '/admin'
+    | '/apps'
+    | '/checkout'
+    | '/docs'
+    | '/legal'
+    | '/.lovable/oauth/consent'
+    | '/account/invoices/$id'
+    | '/api/public/entitlement'
+    | '/apps/submissions/$id'
+    | '/lovable/email/suppression'
+    | '/tools/codex/$threadId'
+    | '/account/invoices/by-payment/$pf'
+    | '/api/public/analytics/app-suggestion'
+    | '/api/public/analytics/auth-gate'
+    | '/api/public/analytics/checkout-success'
+    | '/api/public/app-status/health'
+    | '/api/public/entitlement/health'
+    | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
+    | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
+    | '/api/public/updates/atom'
+    | '/api/public/updates/rss'
+    | '/api/public/usage/complete'
+    | '/api/public/usage/release'
+    | '/api/public/usage/reserve'
+    | '/api/public/usage/wallet'
+    | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
+    | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
+  id:
+    | '__root__'
+    | '/'
+    | '/changelog'
+    | '/dependency-health'
+    | '/dependency-thresholds'
+    | '/governance'
+    | '/login'
+    | '/mcp'
+    | '/pricing'
+    | '/rcgf'
+    | '/redeem'
+    | '/sitemap.xml'
+    | '/account/billing'
+    | '/account/debug'
+    | '/account/invoices'
+    | '/account/privacy'
+    | '/account/subscriptions'
+    | '/admin/access'
+    | '/admin/app-submissions'
+    | '/admin/billing'
+    | '/admin/coupons'
+    | '/admin/credits'
+    | '/admin/email-domain'
+    | '/admin/emails'
+    | '/admin/entitlement-diagnostics'
+    | '/admin/governance'
+    | '/admin/invoices'
+    | '/admin/login'
+    | '/admin/payfast-audit'
+    | '/admin/reconciliation'
+    | '/admin/return-to-allowlist'
+    | '/admin/return-to-counterexamples'
+    | '/admin/revenue'
+    | '/admin/roadmap'
+    | '/admin/rop'
+    | '/admin/spoke-health'
+    | '/admin/webhooks'
+    | '/api/chat'
+    | '/apps/$appKey'
+    | '/apps/submit'
+    | '/checkout/cancel'
+    | '/checkout/success'
+    | '/creative-studio/pricing'
+    | '/docs/entitlement-api'
+    | '/docs/spoke-hub-control-contract'
+    | '/email/unsubscribe'
+    | '/epublisher/pricing'
+    | '/governance/log'
+    | '/legal/cookies'
+    | '/legal/governance'
+    | '/legal/privacy'
+    | '/legal/terms'
+    | '/status/apps'
+    | '/status/meta-diff'
+    | '/sync-vision/pricing'
+    | '/tools/codex'
+    | '/updates/preview'
+    | '/youtube-optimizer/pricing'
+    | '/account/'
+    | '/admin/'
+    | '/apps/'
+    | '/checkout/'
+    | '/docs/'
+    | '/legal/'
+    | '/.lovable/oauth/consent'
+    | '/account/invoices/$id'
+    | '/api/public/entitlement'
+    | '/apps/submissions/$id'
+    | '/lovable/email/suppression'
+    | '/tools/codex/$threadId'
+    | '/account/invoices/by-payment/$pf'
+    | '/api/public/analytics/app-suggestion'
+    | '/api/public/analytics/auth-gate'
+    | '/api/public/analytics/checkout-success'
+    | '/api/public/app-status/health'
+    | '/api/public/entitlement/health'
+    | '/api/public/hooks/process-subscription-emails'
+    | '/api/public/hub-control/pull-config'
+    | '/api/public/payfast/itn'
+    | '/api/public/rop/ingest-applied'
+    | '/api/public/rop/ingest-perf'
+    | '/api/public/rop/ingest-suggestion'
+    | '/api/public/rop/pull-broadcasts'
+    | '/api/public/updates/atom'
+    | '/api/public/updates/rss'
+    | '/api/public/usage/complete'
+    | '/api/public/usage/release'
+    | '/api/public/usage/reserve'
+    | '/api/public/usage/wallet'
+    | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
+    | '/api/public/generate/creative-studio/poster'
+    | '/api/public/rop/cron/cross-app-scan'
+    | '/api/public/rop/cron/measure-outcomes'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  ChangelogRoute: typeof ChangelogRoute
+  DependencyHealthRoute: typeof DependencyHealthRoute
+  DependencyThresholdsRoute: typeof DependencyThresholdsRoute
+  GovernanceRoute: typeof GovernanceRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
+  RcgfRoute: typeof RcgfRoute
+  RedeemRoute: typeof RedeemRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AccountBillingRoute: typeof AccountBillingRoute
+  AccountDebugRoute: typeof AccountDebugRoute
+  AccountInvoicesRoute: typeof AccountInvoicesRouteWithChildren
+  AccountPrivacyRoute: typeof AccountPrivacyRoute
+  AccountSubscriptionsRoute: typeof AccountSubscriptionsRoute
+  AdminAccessRoute: typeof AdminAccessRoute
+  AdminAppSubmissionsRoute: typeof AdminAppSubmissionsRoute
+  AdminBillingRoute: typeof AdminBillingRoute
+  AdminCouponsRoute: typeof AdminCouponsRoute
   AdminCreditsRoute: typeof AdminCreditsRoute
   AdminEmailDomainRoute: typeof AdminEmailDomainRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminEntitlementDiagnosticsRoute: typeof AdminEntitlementDiagnosticsRoute
+  AdminGovernanceRoute: typeof AdminGovernanceRoute
   AdminInvoicesRoute: typeof AdminInvoicesRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminPayfastAuditRoute: typeof AdminPayfastAuditRoute
-  AdminPromotionRoute: typeof AdminPromotionRoute
-  AdminPromotionCampaignsRoute: typeof AdminPromotionCampaignsRoute
-  AdminRepoHealthRoute: typeof AdminRepoHealthRoute
+  AdminReconciliationRoute: typeof AdminReconciliationRoute
+  AdminReturnToAllowlistRoute: typeof AdminReturnToAllowlistRoute
+  AdminReturnToCounterexamplesRoute: typeof AdminReturnToCounterexamplesRoute
   AdminRevenueRoute: typeof AdminRevenueRoute
+  AdminRoadmapRoute: typeof AdminRoadmapRoute
   AdminRopRoute: typeof AdminRopRoute
-  AdminSecurityScanRoute: typeof AdminSecurityScanRoute
+  AdminSpokeHealthRoute: typeof AdminSpokeHealthRoute
   AdminWebhooksRoute: typeof AdminWebhooksRoute
+  ApiChatRoute: typeof ApiChatRoute
+  AppsAppKeyRoute: typeof AppsAppKeyRoute
+  AppsSubmitRoute: typeof AppsSubmitRoute
+  CheckoutCancelRoute: typeof CheckoutCancelRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   CreativeStudioPricingRoute: typeof CreativeStudioPricingRoute
+  DocsEntitlementApiRoute: typeof DocsEntitlementApiRoute
+  DocsSpokeHubControlContractRoute: typeof DocsSpokeHubControlContractRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   EpublisherPricingRoute: typeof EpublisherPricingRoute
-  GovernanceWorkspaceRoute: typeof GovernanceWorkspaceRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
   LegalGovernanceRoute: typeof LegalGovernanceRoute
+  LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalTermsRoute: typeof LegalTermsRoute
+  StatusAppsRoute: typeof StatusAppsRoute
+  StatusMetaDiffRoute: typeof StatusMetaDiffRoute
   SyncVisionPricingRoute: typeof SyncVisionPricingRoute
-  ToolsIssueTriageRoute: typeof ToolsIssueTriageRoute
-  ToolsPrStatusRoute: typeof ToolsPrStatusRoute
-  ToolsReleasesRoute: typeof ToolsReleasesRoute
+  ToolsCodexRoute: typeof ToolsCodexRouteWithChildren
   UpdatesPreviewRoute: typeof UpdatesPreviewRoute
-  V1EmbeddingsRoute: typeof V1EmbeddingsRoute
-  V1ModelsRoute: typeof V1ModelsRoute
   YoutubeOptimizerPricingRoute: typeof YoutubeOptimizerPricingRoute
+  AccountIndexRoute: typeof AccountIndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AppsIndexRoute: typeof AppsIndexRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
+  DocsIndexRoute: typeof DocsIndexRoute
+  LegalIndexRoute: typeof LegalIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  ApiBillingCatalogRoute: typeof ApiBillingCatalogRoute
-  ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRoute
+  ApiPublicEntitlementRoute: typeof ApiPublicEntitlementRouteWithChildren
+  AppsSubmissionsIdRoute: typeof AppsSubmissionsIdRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
-  V1ChatCompletionsRoute: typeof V1ChatCompletionsRoute
+  ApiPublicAnalyticsAppSuggestionRoute: typeof ApiPublicAnalyticsAppSuggestionRoute
   ApiPublicAnalyticsAuthGateRoute: typeof ApiPublicAnalyticsAuthGateRoute
+  ApiPublicAnalyticsCheckoutSuccessRoute: typeof ApiPublicAnalyticsCheckoutSuccessRoute
   ApiPublicAppStatusHealthRoute: typeof ApiPublicAppStatusHealthRoute
-  ApiPublicFormsCreateIssueRoute: typeof ApiPublicFormsCreateIssueRoute
-  ApiPublicHooksCiFailureAlertsRoute: typeof ApiPublicHooksCiFailureAlertsRoute
   ApiPublicHooksProcessSubscriptionEmailsRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRoute
+  ApiPublicHubControlPullConfigRoute: typeof ApiPublicHubControlPullConfigRoute
   ApiPublicPayfastItnRoute: typeof ApiPublicPayfastItnRoute
   ApiPublicRopIngestAppliedRoute: typeof ApiPublicRopIngestAppliedRoute
   ApiPublicRopIngestPerfRoute: typeof ApiPublicRopIngestPerfRoute
@@ -504,9 +1235,10 @@ const ApiPublicAnalyticsAuthGateRoute =
   ApiPublicRopPullBroadcastsRoute: typeof ApiPublicRopPullBroadcastsRoute
   ApiPublicUpdatesAtomRoute: typeof ApiPublicUpdatesAtomRoute
   ApiPublicUpdatesRssRoute: typeof ApiPublicUpdatesRssRoute
-  ApiSovereignAuthActionRoute: typeof ApiSovereignAuthActionRoute
-  ApiSovereignLaunchAppRoute: typeof ApiSovereignLaunchAppRoute
-  ApiSovereignNovaChatRoute: typeof ApiSovereignNovaChatRoute
+  ApiPublicUsageCompleteRoute: typeof ApiPublicUsageCompleteRoute
+  ApiPublicUsageReleaseRoute: typeof ApiPublicUsageReleaseRoute
+  ApiPublicUsageReserveRoute: typeof ApiPublicUsageReserveRoute
+  ApiPublicUsageWalletRoute: typeof ApiPublicUsageWalletRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -517,13 +1249,6 @@ const ApiPublicAnalyticsAuthGateRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -531,11 +1256,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/refunds': {
-      id: '/refunds'
-      path: '/refunds'
-      fullPath: '/refunds'
-      preLoaderRoute: typeof RefundsRouteImport
+    '/redeem': {
+      id: '/redeem'
+      path: '/redeem'
+      fullPath: '/redeem'
+      preLoaderRoute: typeof RedeemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rcgf': {
@@ -545,25 +1270,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RcgfRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/myify': {
-      id: '/myify'
-      path: '/myify'
-      fullPath: '/myify'
-      preLoaderRoute: typeof MyifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -580,11 +1291,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GovernanceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/checkout': {
-      id: '/checkout'
-      path: '/checkout'
-      fullPath: '/checkout'
-      preLoaderRoute: typeof CheckoutRouteImport
+    '/dependency-thresholds': {
+      id: '/dependency-thresholds'
+      path: '/dependency-thresholds'
+      fullPath: '/dependency-thresholds'
+      preLoaderRoute: typeof DependencyThresholdsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dependency-health': {
+      id: '/dependency-health'
+      path: '/dependency-health'
+      fullPath: '/dependency-health'
+      preLoaderRoute: typeof DependencyHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/changelog': {
@@ -601,11 +1319,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/': {
+      id: '/legal/'
+      path: '/legal'
+      fullPath: '/legal/'
+      preLoaderRoute: typeof LegalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/': {
+      id: '/apps/'
+      path: '/apps'
+      fullPath: '/apps/'
+      preLoaderRoute: typeof AppsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/youtube-optimizer/pricing': {
@@ -615,20 +1368,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YoutubeOptimizerPricingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/v1/models': {
-      id: '/v1/models'
-      path: '/v1/models'
-      fullPath: '/v1/models'
-      preLoaderRoute: typeof V1ModelsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/v1/embeddings': {
-      id: '/v1/embeddings'
-      path: '/v1/embeddings'
-      fullPath: '/v1/embeddings'
-      preLoaderRoute: typeof V1EmbeddingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/updates/preview': {
       id: '/updates/preview'
       path: '/updates/preview'
@@ -636,8 +1375,686 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UpdatesPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools/releases': {
-      id: '/tools/releases'
-      path: '/tools/releases'
-      fulm¥¥¹(ÁÑ è½ÉÑ¥ÙµÍÑÕ¥¼½ÁÉ¥¥¹(Õ±±AÑ è½ÉÑ¥ÙµÍÑÕ¥¼½ÁÉ¥¥¹(ÁÉ1½ÉI½ÕÑèÑåÁ½ÉÑ¥ÙMÑÕ¥½AÉ¥¥¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½¡­½ÕÐ½ÍÕÍÌèì(¥è½¡­½ÕÐ½ÍÕÍÌ(ÁÑ è½ÍÕÍÌ(Õ±±AÑ è½¡­½ÕÐ½ÍÕÍÌ(ÁÉ1½ÉI½ÕÑèÑåÁ½¡­½ÕÑMÕÍÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½¡­½ÕÑI½ÕÑ(ô(½¡­½ÕÐ½¹°èì(¥è½¡­½ÕÐ½¹°(ÁÑ è½¹°(Õ±±AÑ è½¡­½ÕÐ½¹°(ÁÉ1½ÉI½ÕÑèÑåÁ½¡­½ÕÑ¹±I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½¡­½ÕÑI½ÕÑ(ô(½µ¥¸½Ý¡½½­Ìèì(¥è½µ¥¸½Ý¡½½­Ì(ÁÑ è½µ¥¸½Ý¡½½­Ì(Õ±±AÑ è½µ¥¸½Ý¡½½­Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹]¡½½­ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÍÕÉ¥ÑäµÍ¸èì(¥è½µ¥¸½ÍÕÉ¥ÑäµÍ¸(ÁÑ è½µ¥¸½ÍÕÉ¥ÑäµÍ¸(Õ±±AÑ è½µ¥¸½ÍÕÉ¥ÑäµÍ¸(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹MÕÉ¥ÑåM¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½É½Àèì(¥è½µ¥¸½É½À(ÁÑ è½µ¥¸½É½À(Õ±±AÑ è½µ¥¸½É½À(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹I½ÁI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÉÙ¹Õèì(¥è½µ¥¸½ÉÙ¹Õ(ÁÑ è½µ¥¸½ÉÙ¹Õ(Õ±±AÑ è½µ¥¸½ÉÙ¹Õ(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹IÙ¹ÕI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÉÁ¼µ¡±Ñ èì(¥è½µ¥¸½ÉÁ¼µ¡±Ñ (ÁÑ è½µ¥¸½ÉÁ¼µ¡±Ñ (Õ±±AÑ è½µ¥¸½ÉÁ¼µ¡±Ñ (ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹IÁ½!±Ñ¡I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÁÉ½µ½Ñ¥½¸µµÁ¥¹Ìèì(¥è½µ¥¸½ÁÉ½µ½Ñ¥½¸µµÁ¥¹Ì(ÁÑ è½µ¥¸½ÁÉ½µ½Ñ¥½¸µµÁ¥¹Ì(Õ±±AÑ è½µ¥¸½ÁÉ½µ½Ñ¥½¸µµÁ¥¹Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹AÉ½µ½Ñ¥½¹µÁ¥¹ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÁÉ½µ½Ñ¥½¸èì(¥è½µ¥¸½ÁÉ½µ½Ñ¥½¸(ÁÑ è½µ¥¸½ÁÉ½µ½Ñ¥½¸(Õ±±AÑ è½µ¥¸½ÁÉ½µ½Ñ¥½¸(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹AÉ½µ½Ñ¥½¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÁåÍÐµÕ¥Ðèì(¥è½µ¥¸½ÁåÍÐµÕ¥Ð(ÁÑ è½µ¥¸½ÁåÍÐµÕ¥Ð(Õ±±AÑ è½µ¥¸½ÁåÍÐµÕ¥Ð(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹AåÍÑÕ¥ÑI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½±½¥¸èì(¥è½µ¥¸½±½¥¸(ÁÑ è½µ¥¸½±½¥¸(Õ±±AÑ è½µ¥¸½±½¥¸(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹1½¥¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½¥¹Ù½¥Ìèì(¥è½µ¥¸½¥¹Ù½¥Ì(ÁÑ è½µ¥¸½¥¹Ù½¥Ì(Õ±±AÑ è½µ¥¸½¥¹Ù½¥Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹%¹Ù½¥ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½¹Ñ¥Ñ±µ¹Ðµ¥¹½ÍÑ¥Ìèì(¥è½µ¥¸½¹Ñ¥Ñ±µ¹Ðµ¥¹½ÍÑ¥Ì(ÁÑ è½µ¥¸½¹Ñ¥Ñ±µ¹Ðµ¥¹½ÍÑ¥Ì(Õ±±AÑ è½µ¥¸½¹Ñ¥Ñ±µ¹Ðµ¥¹½ÍÑ¥Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹¹Ñ¥Ñ±µ¹Ñ¥¹½ÍÑ¥ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½µ¥±Ìèì(¥è½µ¥¸½µ¥±Ì(ÁÑ è½µ¥¸½µ¥±Ì(Õ±±AÑ è½µ¥¸½µ¥±Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹µ¥±ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½µ¥°µ½µ¥¸èì(¥è½µ¥¸½µ¥°µ½µ¥¸(ÁÑ è½µ¥¸½µ¥°µ½µ¥¸(Õ±±AÑ è½µ¥¸½µ¥°µ½µ¥¸(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹µ¥±½µ¥¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½É¥ÑÌèì(¥è½µ¥¸½É¥ÑÌ(ÁÑ è½µ¥¸½É¥ÑÌ(Õ±±AÑ è½µ¥¸½É¥ÑÌ(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹É¥ÑÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½½¹ÑÉ½°µ¹ÑÈèì(¥è½µ¥¸½½¹ÑÉ½°µ¹ÑÈ(ÁÑ è½µ¥¸½½¹ÑÉ½°µ¹ÑÈ(Õ±±AÑ è½µ¥¸½½¹ÑÉ½°µ¹ÑÈ(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹½¹ÑÉ½±¹ÑÉI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½¤µ¡±Ñ èì(¥è½µ¥¸½¤µ¡±Ñ (ÁÑ è½µ¥¸½¤µ¡±Ñ (Õ±±AÑ è½µ¥¸½¤µ¡±Ñ (ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹¥!±Ñ¡I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½¥±±¥¹èì(¥è½µ¥¸½¥±±¥¹(ÁÑ è½µ¥¸½¥±±¥¹(Õ±±AÑ è½µ¥¸½¥±±¥¹(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹	¥±±¥¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½µ¥¸½ÍÌèì(¥è½µ¥¸½ÍÌ(ÁÑ è½µ¥¸½ÍÌ(Õ±±AÑ è½µ¥¸½ÍÌ(ÁÉ1½ÉI½ÕÑèÑåÁ½µ¥¹ÍÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½½Õ¹Ð½ÍÕÍÉ¥ÁÑ¥½¹Ìèì(¥è½½Õ¹Ð½ÍÕÍÉ¥ÁÑ¥½¹Ì(ÁÑ è½½Õ¹Ð½ÍÕÍÉ¥ÁÑ¥½¹Ì(Õ±±AÑ è½½Õ¹Ð½ÍÕÍÉ¥ÁÑ¥½¹Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½½Õ¹ÑMÕÍÉ¥ÁÑ¥½¹ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½½Õ¹Ð½¥¹Ù½¥Ìèì(¥è½½Õ¹Ð½¥¹Ù½¥Ì(ÁÑ è½½Õ¹Ð½¥¹Ù½¥Ì(Õ±±AÑ è½½Õ¹Ð½¥¹Ù½¥Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½½Õ¹Ñ%¹Ù½¥ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½½Õ¹Ð½Õèì(¥è½½Õ¹Ð½Õ(ÁÑ è½½Õ¹Ð½Õ(Õ±±AÑ è½½Õ¹Ð½Õ(ÁÉ1½ÉI½ÕÑèÑåÁ½½Õ¹ÑÕI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½½Õ¹Ð½¥±±¥¹èì(¥è½½Õ¹Ð½¥±±¥¹(ÁÑ è½½Õ¹Ð½¥±±¥¹(Õ±±AÑ è½½Õ¹Ð½¥±±¥¹(ÁÉ1½ÉI½ÕÑèÑåÁ½½Õ¹Ñ	¥±±¥¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(¼¹Ý±°µ­¹½Ý¸½½ÕÑ µÁÉ½ÑÑµÉÍ½ÕÉèì(¥è¼¹Ý±°µ­¹½Ý¸½½ÕÑ µÁÉ½ÑÑµÉÍ½ÕÉ(ÁÑ è¼¹Ý±°µ­¹½Ý¸½½ÕÑ µÁÉ½ÑÑµÉÍ½ÕÉ(Õ±±AÑ è¼¹Ý±°µ­¹½Ý¸½½ÕÑ µÁÉ½ÑÑµÉÍ½ÕÉ(ÁÉ1½ÉI½ÕÑèÑåÁ½¡ÈäÅ½ÑÝ±±-¹½Ý¹¡ÈäÍ=ÕÑ¡AÉ½ÑÑIÍ½ÕÉI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(¼¹µÀ½±¥ÍÐµÑ½½±Ìèì(¥è¼¹µÀ½±¥ÍÐµÑ½½±Ì(ÁÑ è¼¹µÀ½±¥ÍÐµÑ½½±Ì(Õ±±AÑ è¼¹µÀ½±¥ÍÐµÑ½½±Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½¡ÈäÅ½ÑµÁ¡ÈäÍ1¥ÍÑQ½½±ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½ØÄ½¡Ð½½µÁ±Ñ¥½¹Ìèì(¥è½ØÄ½¡Ð½½µÁ±Ñ¥½¹Ì(ÁÑ è½ØÄ½¡Ð½½µÁ±Ñ¥½¹Ì(Õ±±AÑ è½ØÄ½¡Ð½½µÁ±Ñ¥½¹Ì(ÁÉ1½ÉI½ÕÑèÑåÁ½XÅ¡Ñ½µÁ±Ñ¥½¹ÍI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½±½Ù±½µ¥°½ÍÕÁÁÉÍÍ¥½¸èì(¥è½±½Ù±½µ¥°½ÍÕÁÁÉÍÍ¥½¸(ÁÑ è½±½Ù±½µ¥°½ÍÕÁÁÉÍÍ¥½¸(Õ±±AÑ è½±½Ù±½µ¥°½ÍÕÁÁÉÍÍ¥½¸(ÁÉ1½ÉI½ÕÑèÑåÁ½1½Ù±µ¥±MÕÁÁÉÍÍ¥½¹I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½Á¤½ÁÕ±¥½¹Ñ¥Ñ±µ¹Ðèì(¥è½Á¤½ÁÕ±¥½¹Ñ¥Ñ±µ¹Ð(ÁÑ è½Á¤½ÁÕ±¥½¹Ñ¥Ñ±µ¹Ð(Õ±±AÑ è½Á¤½ÁÕ±¥½¹Ñ¥Ñ±µ¹Ð(ÁÉ1½ÉI½ÕÑèÑåÁ½Á¥AÕ±¥¹Ñ¥Ñ±µ¹ÑI½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½Á¤½¥±±¥¹½Ñ±½èì(¥è½Á¤½¥±±¥¹½Ñ±½(ÁÑ è½Á¤½¥±±¥¹½Ñ±½(Õ±±AÑ è½Á¤½¥±±¥¹½Ñ±½(ÁÉ1½ÉI½ÕÑèÑåÁ½Á¥	¥±±¥¹Ñ±½I½ÕÑ%µÁ½ÉÐ(ÁÉ¹ÑI½ÕÑèÑåÁ½É½½ÑI½ÕÑ%µÁ½ÉÐ(ô(½½Õ¹Ð½¥¹Ù½¥Ì¼¥èì(¥è½½Õ¹Ð½¥¹Ù½¥Ì¼¥(ÁÑ è¼¥(Õ±±AÑ¦6Bp¢F¢rö÷6÷fW&Vvâöæ÷fö6Bp¢gVÆÅF¢rö÷6÷fW&Vvâöæ÷fö6Bp¢&TÆöFW%&÷WFS¢GVöb6÷fW&Vväæ÷f6E&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷6÷fW&VvâöÆVæ6òFs¢°¢C¢rö÷6÷fW&VvâöÆVæ6òFp¢F¢rö÷6÷fW&VvâöÆVæ6òFp¢gVÆÅF¢rö÷6÷fW&VvâöÆVæ6òFp¢&TÆöFW%&÷WFS¢GVöb6÷fW&VväÆVæ6&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷6÷fW&VvâöWFòF7Föâs¢°¢C¢rö÷6÷fW&VvâöWFòF7Föâp¢F¢rö÷6÷fW&VvâöWFòF7Föâp¢gVÆÅF¢rö÷6÷fW&VvâöWFòF7Föâp¢&TÆöFW%&÷WFS¢GVöb6÷fW&VväWF7Föå&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷WFFW2÷'72s¢°¢C¢rö÷V&Æ2÷WFFW2÷'72p¢F¢rö÷V&Æ2÷WFFW2÷'72p¢gVÆÅF¢rö÷V&Æ2÷WFFW2÷'72p¢&TÆöFW%&÷WFS¢GVöbV&Æ5WFFW5'75&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷WFFW2öFöÒs¢°¢C¢rö÷V&Æ2÷WFFW2öFöÒp¢F¢rö÷V&Æ2÷WFFW2öFöÒp¢gVÆÅF¢rö÷V&Æ2÷WFFW2öFöÒp¢&TÆöFW%&÷WFS¢GVöbV&Æ5WFFW4FöÕ&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷&÷÷VÆÂÖ'&öF67G2s¢°¢C¢rö÷V&Æ2÷&÷÷VÆÂÖ'&öF67G2p¢F¢rö÷V&Æ2÷&÷÷VÆÂÖ'&öF67G2p¢gVÆÅF¢rö÷V&Æ2÷&÷÷VÆÂÖ'&öF67G2p¢&TÆöFW%&÷WFS¢GVöbV&Æ5&÷VÆÄ'&öF67G5&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷&÷öævW7B×7VvvW7Föâs¢°¢C¢rö÷V&Æ2÷&÷öævW7B×7VvvW7Föâp¢F¢rö÷V&Æ2÷&÷öævW7B×7VvvW7Föâp¢gVÆÅF¢rö÷V&Æ2÷&÷öævW7B×7VvvW7Föâp¢&TÆöFW%&÷WFS¢GVöbV&Æ5&÷ævW7E7VvvW7Föå&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷&÷öævW7B×W&bs¢°¢C¢rö÷V&Æ2÷&÷öævW7B×W&bp¢F¢rö÷V&Æ2÷&÷öævW7B×W&bp¢gVÆÅF¢rö÷V&Æ2÷&÷öævW7B×W&bp¢&TÆöFW%&÷WFS¢GVöbV&Æ5&÷ævW7EW&e&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷&÷öævW7BÖÆVBs¢°¢C¢rö÷V&Æ2÷&÷öævW7BÖÆVBp¢F¢rö÷V&Æ2÷&÷öævW7BÖÆVBp¢gVÆÅF¢rö÷V&Æ2÷&÷öævW7BÖÆVBp¢&TÆöFW%&÷WFS¢GVöbV&Æ5&÷ævW7DÆVE&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷f7BöFâs¢°¢C¢rö÷V&Æ2÷f7BöFâp¢F¢rö÷V&Æ2÷f7BöFâp¢gVÆÅF¢rö÷V&Æ2÷f7BöFâp¢&TÆöFW%&÷WFS¢GVöbV&Æ5f7DFå&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2ööö·2÷&ö6W72×7V'67&FöâÖVÖÇ2s¢°¢C¢rö÷V&Æ2ööö·2÷&ö6W72×7V'67&FöâÖVÖÇ2p¢F¢rö÷V&Æ2ööö·2÷&ö6W72×7V'67&FöâÖVÖÇ2p¢gVÆÅF¢rö÷V&Æ2ööö·2÷&ö6W72×7V'67&FöâÖVÖÇ2p¢&TÆöFW%&÷WFS¢GVöbV&Æ4öö·5&ö6W757V'67&FöäVÖÇ5&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2ööö·2ö6ÖfÇW&RÖÆW'G2s¢°¢C¢rö÷V&Æ2ööö·2ö6ÖfÇW&RÖÆW'G2p¢F¢rö÷V&Æ2ööö·2ö6ÖfÇW&RÖÆW'G2p¢gVÆÅF¢rö÷V&Æ2ööö·2ö6ÖfÇW&RÖÆW'G2p¢&TÆöFW%&÷WFS¢GVöbV&Æ4öö·46fÇW&TÆW'G5&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2öf÷&×2ö7&VFRÖ77VRs¢°¢C¢rö÷V&Æ2öf÷&×2ö7&VFRÖ77VRp¢F¢rö÷V&Æ2öf÷&×2ö7&VFRÖ77VRp¢gVÆÅF¢rö÷V&Æ2öf÷&×2ö7&VFRÖ77VRp¢&TÆöFW%&÷WFS¢GVöbV&Æ4f÷&×47&VFT77VU&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2ö×7FGW2öVÇFs¢°¢C¢rö÷V&Æ2ö×7FGW2öVÇFp¢F¢rö÷V&Æ2ö×7FGW2öVÇFp¢gVÆÅF¢rö÷V&Æ2ö×7FGW2öVÇFp¢&TÆöFW%&÷WFS¢GVöbV&Æ47FGW4VÇF&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2öæÇF72öWFÖvFRs¢°¢C¢rö÷V&Æ2öæÇF72öWFÖvFRp¢F¢rö÷V&Æ2öæÇF72öWFÖvFRp¢gVÆÅF¢rö÷V&Æ2öæÇF72öWFÖvFRp¢&TÆöFW%&÷WFS¢GVöbV&Æ4æÇF74WFvFU&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö66÷VçBöçfö6W2ö'×ÖVçBòGbs¢°¢C¢rö66÷VçBöçfö6W2ö'×ÖVçBòGbp¢F¢rö'×ÖVçBòGbp¢gVÆÅF¢rö66÷VçBöçfö6W2ö'×ÖVçBòGbp¢&TÆöFW%&÷WFS¢GVöb66÷VçDçfö6W4'ÖVçEe&÷WFT×÷'@¢&VçE&÷WFS¢GVöb66÷VçDçfö6W5&÷WFP¢Ð¢rö÷V&Æ2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2s¢°¢C¢rö÷V&Æ2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2p¢F¢rö÷V&Æ2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2p¢gVÆÅF¢rö÷V&Æ2÷&÷ö7&öâöÖV7W&RÖ÷WF6öÖW2p¢&TÆöFW%&÷WFS¢GVöbV&Æ5&÷7&öäÖV7W&T÷WF6öÖW5&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2÷&÷ö7&öâö7&÷72Ö×66âs¢°¢C¢rö÷V&Æ2÷&÷ö7&öâö7&÷72Ö×66âp¢F¢rö÷V&Æ2÷&÷ö7&öâö7&÷72Ö×66âp¢gVÆÅF¢rö÷V&Æ2÷&÷ö7&öâö7&÷72Ö×66âp¢&TÆöFW%&÷WFS¢GVöbV&Æ5&÷7&öä7&÷7466å&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢rö÷V&Æ2övVæW&FRö7&VFfR×7GVFò÷÷7FW"s¢°¢C¢rö÷V&Æ2övVæW&FRö7&VFfR×7GVFò÷÷7FW"p¢F¢rö÷V&Æ2övVæW&FRö7&VFfR×7GVFò÷÷7FW"p¢gVÆÅF¢rö÷V&Æ2övVæW&FRö7&VFfR×7GVFò÷÷7FW"p¢&TÆöFW%&÷WFS¢GVöbV&Æ4vVæW&FT7&VFfU7GVFõ÷7FW%&÷WFT×÷'@¢&VçE&÷WFS¢GVöb&ö÷E&÷WFT×÷'@¢Ð¢Ð§Ð ¦çFW&f6R6V6¶÷WE&÷WFT6ÆG&Vâ°¢6V6¶÷WD6æ6VÅ&÷WFS¢GVöb6V6¶÷WD6æ6VÅ&÷WFP¢6V6¶÷WE7V66W75&÷WFS¢GVöb6V6¶÷WE7V66W75&÷WFP§Ð ¦6öç7B6V6¶÷WE&÷WFT6ÆG&Vã¢6V6¶÷WE&÷WFT6ÆG&VâÒ°¢6V6¶÷WD6æ6VÅ&÷WFS¢6V6¶÷WD6æ6VÅ&÷WFRÀ¢6V6¶÷WE7V66W75&÷WFS¢6V6¶÷WE7V66W75&÷WFRÀ§Ð ¦6öç7B6V6¶÷WE&÷WFUvF6ÆG&VâÒ6V6¶÷WE&÷WFRåöFDfÆT6ÆG&Vâ¢6V6¶÷WE&÷WFT6ÆG&VâÀ¢ ¦çFW&f6R66÷VçDçfö6W5&÷WFT6ÆG&Vâ°¢66÷VçDçfö6W4E&÷WFS¢GVöb66÷VçDçfö6W4E&÷WFP¢66÷VçDçfö6W4'ÖVçEe&÷WFS¢GVöb66÷VçDçfö6W4'ÖVçEe&÷WFP§Ð ¦6öç7B66÷VçDçfö6W5&÷WFT6ÆG&Vã¢66÷VçDçfö6W5&÷WFT6ÆG&VâÒ°¢66÷VçDçfö6W4E&÷WFS¢66÷VçDçfö6W4E&÷WFRÀ¢66÷VçDçfö6W4'ÖVçEe&÷WFS¢66÷VçDçfö6W4'ÖVçEe&÷WFRÀ§Ð ¦6öç7B66÷VçDçfö6W5&÷WFUvF6ÆG&VâÒ66÷VçDçfö6W5&÷WFRåöFDfÆT6ÆG&Vâ¢66÷VçDçfö6W5&÷WFT6ÆG&VâÀ¢ ¦6öç7B&ö÷E&÷WFT6ÆG&Vã¢&ö÷E&÷WFT6ÆG&VâÒ°¢æFW&÷WFS¢æFW&÷WFRÀ¢6ævVÆöu&÷WFS¢6ævVÆöu&÷WFRÀ¢6V6¶÷WE&÷WFS¢6V6¶÷WE&÷WFUvF6ÆG&VâÀ¢v÷fW&ææ6U&÷WFS¢v÷fW&ææ6U&÷WFRÀ¢Æövå&÷WFS¢Æövå&÷WFRÀ¢Ö7&÷WFS¢Ö7&÷WFRÀ¢×g&÷WFS¢×g&÷WFRÀ¢&6æu&÷WFS¢&6æu&÷WFRÀ¢&f7&÷WFS¢&f7&÷WFRÀ¢&6ve&÷WFS¢&6ve&÷WFRÀ¢&VgVæG5&÷WFS¢&VgVæG5&÷WFRÀ¢6FVÖF÷GÖÅ&÷WFS¢6FVÖF÷GÖÅ&÷WFRÀ¢FW&×5&÷WFS¢FW&×5&÷WFRÀ¢6#F÷FÖ76#4Æ7EFööÇ5&÷WFS¢6#F÷FÖ76#4Æ7EFööÇ5&÷WFRÀ¢6#F÷GvVÆÄ¶æ÷vä6#4öWF&÷FV7FVE&W6÷W&6U&÷WFS ¢6#F÷GvVÆÄ¶æ÷vä6#4öWF&÷FV7FVE&W6÷W&6U&÷WFRÀ¢66÷VçD&ÆÆæu&÷WFS¢66÷VçD&ÆÆæu&÷WFRÀ¢66÷VçDFV'Vu&÷WFS¢66÷VçDFV'Vu&÷WFRÀ¢66÷VçDçfö6W5&÷WFS¢66÷VçDçfö6W5&÷WFUvF6ÆG&VâÀ¢66÷VçE7V'67&Föç5&÷WFS¢66÷VçE7V'67&Föç5&÷WFRÀ¢FÖä66W75&÷WFS¢FÖä66W75&÷WFRÀ¢FÖä&ÆÆæu&÷WFS¢FÖä&ÆÆæu&÷WFRÀ¢FÖä6VÇF&÷WFS¢FÖä6VÇF&÷WFRÀ¢FÖä6öçG&öÄ6VçFW%&÷WFS¢FÖä6öçG&öÄ6VçFW%&÷WFRÀ¢FÖä7&VFG5&÷WFS¢FÖä7&VFG5&÷WFRÀ¢FÖäVÖÄFöÖå&÷WFS¢FÖäVÖÄFöÖå&÷WFRÀ¢FÖäVÖÇ5&÷WFS¢FÖäVÖÇ5&÷WFRÀ¢FÖäVçFFÆVÖVçDFvæ÷7F75&÷WFS¢FÖäVçFFÆVÝ[ÛÔÝ]NPÚ]ÛÛ\][ÛÔÝ]K\TXXÐ[[]XÜÐ]]Ø]TÝ]N\TXXÐ[[]XÜÐ]]Ø]TÝ]K\TXXÐ\Ý]\ÒX[Ý]N\TXXÐ\Ý]\ÒX[Ý]K\TXXÑÜ\ÐÜX]R\ÜÝYTÝ]N\TXXÑÜ\ÐÜX]R\ÜÝYTÝ]K\TXXÒÛÚÜÐÚQZ[\P[\ÔÝ]N\TXXÒÛÚÜÐÚQZ[\P[\ÔÝ]K\TXXÒÛÚÜÔØÙ\ÜÔÝXØÜ\[Û[XZ[ÔÝ]N\TXXÒÛÚÜÔØÙ\ÜÔÝXØÜ\[Û[XZ[ÔÝ]K\TXXÔ^Y\Ý]Ý]N\TXXÔ^Y\Ý]Ý]K\TXXÔÜ[Ù\Ý\YYÝ]N\TXXÔÜ[Ù\Ý\YYÝ]K\TXXÔÜ[Ù\Ý\Ý]N\TXXÔÜ[Ù\Ý\Ý]K\TXXÔÜ[Ù\ÝÝYÙÙ\Ý[ÛÝ]N\TXXÔÜ[Ù\ÝÝYÙÙ\Ý[ÛÝ]K\TXXÔÜ[ØYØ\ÝÔÝ]N\TXXÔÜ[ØYØ\ÝÔÝ]K\TXXÕ\]\Ð]ÛTÝ]N\TXXÕ\]\Ð]ÛTÝ]K\TXXÕ\]\ÔÜÔÝ]N\TXXÕ\]\ÔÜÔÝ]K\TÛÝ\ZYÛ]]XÝ[ÛÝ]N\TÛÝ\ZYÛ]]XÝ[ÛÝ]K\TÛÝ\ZYÛ][Ú\Ý]N\TÛÝ\ZYÛ][Ú\Ý]K\TÛÝ\ZYÛÝPÚ]Ý]N\TÛÝ\ZYÛÝPÚ]Ý]KÝXQ[XZ[]Y]YTØÙ\ÜÔÝ]NÝXQ[XZ[]Y]YTØÙ\ÜÔÝ]KÝXQ[XZ[[ØXÝ[Û[]Y]ÔÝ]NÝXQ[XZ[[ØXÝ[Û[]Y]ÔÝ]KÝXQ[XZ[[ØXÝ[Û[Ù[Ý]NÝXQ[XZ[[ØXÝ[Û[Ù[Ý]K\TXXÑÙ[\]PÜX]]TÝY[ÔÜÝ\Ý]N\TXXÑÙ[\]PÜX]]TÝY[ÔÜÝ\Ý]K\TXXÔÜÜÛÜÜÜÐ\ØØ[Ý]N\TXXÔÜÜÛÜÜÜÐ\ØØ[Ý]K\TXXÔÜÜÛYX\Ý\SÝ]ÛÛY\ÔÝ]N\TXXÔÜÜÛYX\Ý\SÝ]ÛÛY\ÔÝ]KB^ÜÛÛÝÝ]UYHHÛÝÝ]R[\ÜØY[PÚ[[ÛÝÝ]PÚ[[BØY[U\\Ï[TÝ]U\\Ï
-B[\Ü\HÈÙ]Ý]\HÛH	ËÜÝ]\Þ	Â[\Ü\HÈÝ\[Ý[ÙHHÛH	ËÜÝ\ÉÂXÛ\H[Ù[H	Ð[ÝXÚËÜXXÝ\Ý\	ÈÂ[\XÙHYÚ\Ý\ÂÜÜYBÝ]\]ØZ]Y]\\O\[ÙÙ]Ý]\ÛÛYÎ]ØZ]Y]\\O\[ÙÝ\[Ý[ÙKÙ]Ü[ÛÏBB
+    '/tools/codex': {
+      id: '/tools/codex'
+      path: '/tools/codex'
+      fullPath: '/tools/codex'
+      preLoaderRoute: typeof ToolsCodexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sync-vision/pricing': {
+      id: '/sync-vision/pricing'
+      path: '/sync-vision/pricing'
+      fullPath: '/sync-vision/pricing'
+      preLoaderRoute: typeof SyncVisionPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status/meta-diff': {
+      id: '/status/meta-diff'
+      path: '/status/meta-diff'
+      fullPath: '/status/meta-diff'
+      preLoaderRoute: typeof StatusMetaDiffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status/apps': {
+      id: '/status/apps'
+      path: '/status/apps'
+      fullPath: '/status/apps'
+      preLoaderRoute: typeof StatusAppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/terms': {
+      id: '/legal/terms'
+      path: '/legal/terms'
+      fullPath: '/legal/terms'
+      preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/privacy': {
+      id: '/legal/privacy'
+      path: '/legal/privacy'
+      fullPath: '/legal/privacy'
+      preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/governance': {
+      id: '/legal/governance'
+      path: '/legal/governance'
+      fullPath: '/legal/governance'
+      preLoaderRoute: typeof LegalGovernanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/governance/log': {
+      id: '/governance/log'
+      path: '/log'
+      fullPath: '/governance/log'
+      preLoaderRoute: typeof GovernanceLogRouteImport
+      parentRoute: typeof GovernanceRoute
+    }
+    '/epublisher/pricing': {
+      id: '/epublisher/pricing'
+      path: '/epublisher/pricing'
+      fullPath: '/epublisher/pricing'
+      preLoaderRoute: typeof EpublisherPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/spoke-hub-control-contract': {
+      id: '/docs/spoke-hub-control-contract'
+      path: '/docs/spoke-hub-control-contract'
+      fullPath: '/docs/spoke-hub-control-contract'
+      preLoaderRoute: typeof DocsSpokeHubControlContractRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/entitlement-api': {
+      id: '/docs/entitlement-api'
+      path: '/docs/entitlement-api'
+      fullPath: '/docs/entitlement-api'
+      preLoaderRoute: typeof DocsEntitlementApiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creative-studio/pricing': {
+      id: '/creative-studio/pricing'
+      path: '/creative-studio/pricing'
+      fullPath: '/creative-studio/pricing'
+      preLoaderRoute: typeof CreativeStudioPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/cancel': {
+      id: '/checkout/cancel'
+      path: '/checkout/cancel'
+      fullPath: '/checkout/cancel'
+      preLoaderRoute: typeof CheckoutCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/submit': {
+      id: '/apps/submit'
+      path: '/apps/submit'
+      fullPath: '/apps/submit'
+      preLoaderRoute: typeof AppsSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/$appKey': {
+      id: '/apps/$appKey'
+      path: '/apps/$appKey'
+      fullPath: '/apps/$appKey'
+      preLoaderRoute: typeof AppsAppKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/webhooks': {
+      id: '/admin/webhooks'
+      path: '/admin/webhooks'
+      fullPath: '/admin/webhooks'
+      preLoaderRoute: typeof AdminWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/spoke-health': {
+      id: '/admin/spoke-health'
+      path: '/admin/spoke-health'
+      fullPath: '/admin/spoke-health'
+      preLoaderRoute: typeof AdminSpokeHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/rop': {
+      id: '/admin/rop'
+      path: '/admin/rop'
+      fullPath: '/admin/rop'
+      preLoaderRoute: typeof AdminRopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/roadmap': {
+      id: '/admin/roadmap'
+      path: '/admin/roadmap'
+      fullPath: '/admin/roadmap'
+      preLoaderRoute: typeof AdminRoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/revenue': {
+      id: '/admin/revenue'
+      path: '/admin/revenue'
+      fullPath: '/admin/revenue'
+      preLoaderRoute: typeof AdminRevenueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/return-to-counterexamples': {
+      id: '/admin/return-to-counterexamples'
+      path: '/admin/return-to-counterexamples'
+      fullPath: '/admin/return-to-counterexamples'
+      preLoaderRoute: typeof AdminReturnToCounterexamplesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/return-to-allowlist': {
+      id: '/admin/return-to-allowlist'
+      path: '/admin/return-to-allowlist'
+      fullPath: '/admin/return-to-allowlist'
+      preLoaderRoute: typeof AdminReturnToAllowlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reconciliation': {
+      id: '/admin/reconciliation'
+      path: '/admin/reconciliation'
+      fullPath: '/admin/reconciliation'
+      preLoaderRoute: typeof AdminReconciliationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payfast-audit': {
+      id: '/admin/payfast-audit'
+      path: '/admin/payfast-audit'
+      fullPath: '/admin/payfast-audit'
+      preLoaderRoute: typeof AdminPayfastAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/login': {
+      id: '/admin/login'
+      path: '/admin/login'
+      fullPath: '/admin/login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/invoices': {
+      id: '/admin/invoices'
+      path: '/admin/invoices'
+      fullPath: '/admin/invoices'
+      preLoaderRoute: typeof AdminInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/governance': {
+      id: '/admin/governance'
+      path: '/admin/governance'
+      fullPath: '/admin/governance'
+      preLoaderRoute: typeof AdminGovernanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/entitlement-diagnostics': {
+      id: '/admin/entitlement-diagnostics'
+      path: '/admin/entitlement-diagnostics'
+      fullPath: '/admin/entitlement-diagnostics'
+      preLoaderRoute: typeof AdminEntitlementDiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/emails': {
+      id: '/admin/emails'
+      path: '/admin/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/email-domain': {
+      id: '/admin/email-domain'
+      path: '/admin/email-domain'
+      fullPath: '/admin/email-domain'
+      preLoaderRoute: typeof AdminEmailDomainRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/credits': {
+      id: '/admin/credits'
+      path: '/admin/credits'
+      fullPath: '/admin/credits'
+      preLoaderRoute: typeof AdminCreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/coupons': {
+      id: '/admin/coupons'
+      path: '/admin/coupons'
+      fullPath: '/admin/coupons'
+      preLoaderRoute: typeof AdminCouponsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/billing': {
+      id: '/admin/billing'
+      path: '/admin/billing'
+      fullPath: '/admin/billing'
+      preLoaderRoute: typeof AdminBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/app-submissions': {
+      id: '/admin/app-submissions'
+      path: '/admin/app-submissions'
+      fullPath: '/admin/app-submissions'
+      preLoaderRoute: typeof AdminAppSubmissionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/access': {
+      id: '/admin/access'
+      path: '/admin/access'
+      fullPath: '/admin/access'
+      preLoaderRoute: typeof AdminAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/subscriptions': {
+      id: '/account/subscriptions'
+      path: '/account/subscriptions'
+      fullPath: '/account/subscriptions'
+      preLoaderRoute: typeof AccountSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/privacy': {
+      id: '/account/privacy'
+      path: '/account/privacy'
+      fullPath: '/account/privacy'
+      preLoaderRoute: typeof AccountPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/invoices': {
+      id: '/account/invoices'
+      path: '/account/invoices'
+      fullPath: '/account/invoices'
+      preLoaderRoute: typeof AccountInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/debug': {
+      id: '/account/debug'
+      path: '/account/debug'
+      fullPath: '/account/debug'
+      preLoaderRoute: typeof AccountDebugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/billing': {
+      id: '/account/billing'
+      path: '/account/billing'
+      fullPath: '/account/billing'
+      preLoaderRoute: typeof AccountBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/codex/$threadId': {
+      id: '/tools/codex/$threadId'
+      path: '/$threadId'
+      fullPath: '/tools/codex/$threadId'
+      preLoaderRoute: typeof ToolsCodexThreadIdRouteImport
+      parentRoute: typeof ToolsCodexRoute
+    }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apps/submissions/$id': {
+      id: '/apps/submissions/$id'
+      path: '/apps/submissions/$id'
+      fullPath: '/apps/submissions/$id'
+      preLoaderRoute: typeof AppsSubmissionsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/entitlement': {
+      id: '/api/public/entitlement'
+      path: '/api/public/entitlement'
+      fullPath: '/api/public/entitlement'
+      preLoaderRoute: typeof ApiPublicEntitlementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/invoices/$id': {
+      id: '/account/invoices/$id'
+      path: '/$id'
+      fullPath: '/account/invoices/$id'
+      preLoaderRoute: typeof AccountInvoicesIdRouteImport
+      parentRoute: typeof AccountInvoicesRoute
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/wallet': {
+      id: '/api/public/usage/wallet'
+      path: '/api/public/usage/wallet'
+      fullPath: '/api/public/usage/wallet'
+      preLoaderRoute: typeof ApiPublicUsageWalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/reserve': {
+      id: '/api/public/usage/reserve'
+      path: '/api/public/usage/reserve'
+      fullPath: '/api/public/usage/reserve'
+      preLoaderRoute: typeof ApiPublicUsageReserveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/release': {
+      id: '/api/public/usage/release'
+      path: '/api/public/usage/release'
+      fullPath: '/api/public/usage/release'
+      preLoaderRoute: typeof ApiPublicUsageReleaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/usage/complete': {
+      id: '/api/public/usage/complete'
+      path: '/api/public/usage/complete'
+      fullPath: '/api/public/usage/complete'
+      preLoaderRoute: typeof ApiPublicUsageCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/updates/rss': {
+      id: '/api/public/updates/rss'
+      path: '/api/public/updates/rss'
+      fullPath: '/api/public/updates/rss'
+      preLoaderRoute: typeof ApiPublicUpdatesRssRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/updates/atom': {
+      id: '/api/public/updates/atom'
+      path: '/api/public/updates/atom'
+      fullPath: '/api/public/updates/atom'
+      preLoaderRoute: typeof ApiPublicUpdatesAtomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/pull-broadcasts': {
+      id: '/api/public/rop/pull-broadcasts'
+      path: '/api/public/rop/pull-broadcasts'
+      fullPath: '/api/public/rop/pull-broadcasts'
+      preLoaderRoute: typeof ApiPublicRopPullBroadcastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-suggestion': {
+      id: '/api/public/rop/ingest-suggestion'
+      path: '/api/public/rop/ingest-suggestion'
+      fullPath: '/api/public/rop/ingest-suggestion'
+      preLoaderRoute: typeof ApiPublicRopIngestSuggestionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-perf': {
+      id: '/api/public/rop/ingest-perf'
+      path: '/api/public/rop/ingest-perf'
+      fullPath: '/api/public/rop/ingest-perf'
+      preLoaderRoute: typeof ApiPublicRopIngestPerfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/ingest-applied': {
+      id: '/api/public/rop/ingest-applied'
+      path: '/api/public/rop/ingest-applied'
+      fullPath: '/api/public/rop/ingest-applied'
+      preLoaderRoute: typeof ApiPublicRopIngestAppliedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payfast/itn': {
+      id: '/api/public/payfast/itn'
+      path: '/api/public/payfast/itn'
+      fullPath: '/api/public/payfast/itn'
+      preLoaderRoute: typeof ApiPublicPayfastItnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hub-control/pull-config': {
+      id: '/api/public/hub-control/pull-config'
+      path: '/api/public/hub-control/pull-config'
+      fullPath: '/api/public/hub-control/pull-config'
+      preLoaderRoute: typeof ApiPublicHubControlPullConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-subscription-emails': {
+      id: '/api/public/hooks/process-subscription-emails'
+      path: '/api/public/hooks/process-subscription-emails'
+      fullPath: '/api/public/hooks/process-subscription-emails'
+      preLoaderRoute: typeof ApiPublicHooksProcessSubscriptionEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/entitlement/health': {
+      id: '/api/public/entitlement/health'
+      path: '/health'
+      fullPath: '/api/public/entitlement/health'
+      preLoaderRoute: typeof ApiPublicEntitlementHealthRouteImport
+      parentRoute: typeof ApiPublicEntitlementRoute
+    }
+    '/api/public/app-status/health': {
+      id: '/api/public/app-status/health'
+      path: '/api/public/app-status/health'
+      fullPath: '/api/public/app-status/health'
+      preLoaderRoute: typeof ApiPublicAppStatusHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/analytics/checkout-success': {
+      id: '/api/public/analytics/checkout-success'
+      path: '/api/public/analytics/checkout-success'
+      fullPath: '/api/public/analytics/checkout-success'
+      preLoaderRoute: typeof ApiPublicAnalyticsCheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/analytics/auth-gate': {
+      id: '/api/public/analytics/auth-gate'
+      path: '/api/public/analytics/auth-gate'
+      fullPath: '/api/public/analytics/auth-gate'
+      preLoaderRoute: typeof ApiPublicAnalyticsAuthGateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/analytics/app-suggestion': {
+      id: '/api/public/analytics/app-suggestion'
+      path: '/api/public/analytics/app-suggestion'
+      fullPath: '/api/public/analytics/app-suggestion'
+      preLoaderRoute: typeof ApiPublicAnalyticsAppSuggestionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account/invoices/by-payment/$pf': {
+      id: '/account/invoices/by-payment/$pf'
+      path: '/by-payment/$pf'
+      fullPath: '/account/invoices/by-payment/$pf'
+      preLoaderRoute: typeof AccountInvoicesByPaymentPfRouteImport
+      parentRoute: typeof AccountInvoicesRoute
+    }
+    '/api/public/rop/cron/measure-outcomes': {
+      id: '/api/public/rop/cron/measure-outcomes'
+      path: '/api/public/rop/cron/measure-outcomes'
+      fullPath: '/api/public/rop/cron/measure-outcomes'
+      preLoaderRoute: typeof ApiPublicRopCronMeasureOutcomesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/rop/cron/cross-app-scan': {
+      id: '/api/public/rop/cron/cross-app-scan'
+      path: '/api/public/rop/cron/cross-app-scan'
+      fullPath: '/api/public/rop/cron/cross-app-scan'
+      preLoaderRoute: typeof ApiPublicRopCronCrossAppScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/generate/creative-studio/poster': {
+      id: '/api/public/generate/creative-studio/poster'
+      path: '/api/public/generate/creative-studio/poster'
+      fullPath: '/api/public/generate/creative-studio/poster'
+      preLoaderRoute: typeof ApiPublicGenerateCreativeStudioPosterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
+}
+
+interface GovernanceRouteChildren {
+  GovernanceLogRoute: typeof GovernanceLogRoute
+}
+
+const GovernanceRouteChildren: GovernanceRouteChildren = {
+  GovernanceLogRoute: GovernanceLogRoute,
+}
+
+const GovernanceRouteWithChildren = GovernanceRoute._addFileChildren(
+  GovernanceRouteChildren,
+)
+
+interface AccountInvoicesRouteChildren {
+  AccountInvoicesIdRoute: typeof AccountInvoicesIdRoute
+  AccountInvoicesByPaymentPfRoute: typeof AccountInvoicesByPaymentPfRoute
+}
+
+const AccountInvoicesRouteChildren: AccountInvoicesRouteChildren = {
+  AccountInvoicesIdRoute: AccountInvoicesIdRoute,
+  AccountInvoicesByPaymentPfRoute: AccountInvoicesByPaymentPfRoute,
+}
+
+const AccountInvoicesRouteWithChildren = AccountInvoicesRoute._addFileChildren(
+  AccountInvoicesRouteChildren,
+)
+
+interface ToolsCodexRouteChildren {
+  ToolsCodexThreadIdRoute: typeof ToolsCodexThreadIdRoute
+}
+
+const ToolsCodexRouteChildren: ToolsCodexRouteChildren = {
+  ToolsCodexThreadIdRoute: ToolsCodexThreadIdRoute,
+}
+
+const ToolsCodexRouteWithChildren = ToolsCodexRoute._addFileChildren(
+  ToolsCodexRouteChildren,
+)
+
+interface ApiPublicEntitlementRouteChildren {
+  ApiPublicEntitlementHealthRoute: typeof ApiPublicEntitlementHealthRoute
+}
+
+const ApiPublicEntitlementRouteChildren: ApiPublicEntitlementRouteChildren = {
+  ApiPublicEntitlementHealthRoute: ApiPublicEntitlementHealthRoute,
+}
+
+const ApiPublicEntitlementRouteWithChildren =
+  ApiPublicEntitlementRoute._addFileChildren(ApiPublicEntitlementRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  ChangelogRoute: ChangelogRoute,
+  DependencyHealthRoute: DependencyHealthRoute,
+  DependencyThresholdsRoute: DependencyThresholdsRoute,
+  GovernanceRoute: GovernanceRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
+  RcgfRoute: RcgfRoute,
+  RedeemRoute: RedeemRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AccountBillingRoute: AccountBillingRoute,
+  AccountDebugRoute: AccountDebugRoute,
+  AccountInvoicesRoute: AccountInvoicesRouteWithChildren,
+  AccountPrivacyRoute: AccountPrivacyRoute,
+  AccountSubscriptionsRoute: AccountSubscriptionsRoute,
+  AdminAccessRoute: AdminAccessRoute,
+  AdminAppSubmissionsRoute: AdminAppSubmissionsRoute,
+  AdminBillingRoute: AdminBillingRoute,
+  AdminCouponsRoute: AdminCouponsRoute,
+  AdminCreditsRoute: AdminCreditsRoute,
+  AdminEmailDomainRoute: AdminEmailDomainRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
+  AdminEntitlementDiagnosticsRoute: AdminEntitlementDiagnosticsRoute,
+  AdminGovernanceRoute: AdminGovernanceRoute,
+  AdminInvoicesRoute: AdminInvoicesRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminPayfastAuditRoute: AdminPayfastAuditRoute,
+  AdminReconciliationRoute: AdminReconciliationRoute,
+  AdminReturnToAllowlistRoute: AdminReturnToAllowlistRoute,
+  AdminReturnToCounterexamplesRoute: AdminReturnToCounterexamplesRoute,
+  AdminRevenueRoute: AdminRevenueRoute,
+  AdminRoadmapRoute: AdminRoadmapRoute,
+  AdminRopRoute: AdminRopRoute,
+  AdminSpokeHealthRoute: AdminSpokeHealthRoute,
+  AdminWebhooksRoute: AdminWebhooksRoute,
+  ApiChatRoute: ApiChatRoute,
+  AppsAppKeyRoute: AppsAppKeyRoute,
+  AppsSubmitRoute: AppsSubmitRoute,
+  CheckoutCancelRoute: CheckoutCancelRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
+  CreativeStudioPricingRoute: CreativeStudioPricingRoute,
+  DocsEntitlementApiRoute: DocsEntitlementApiRoute,
+  DocsSpokeHubControlContractRoute: DocsSpokeHubControlContractRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  EpublisherPricingRoute: EpublisherPricingRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalGovernanceRoute: LegalGovernanceRoute,
+  LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalTermsRoute: LegalTermsRoute,
+  StatusAppsRoute: StatusAppsRoute,
+  StatusMetaDiffRoute: StatusMetaDiffRoute,
+  SyncVisionPricingRoute: SyncVisionPricingRoute,
+  ToolsCodexRoute: ToolsCodexRouteWithChildren,
+  UpdatesPreviewRoute: UpdatesPreviewRoute,
+  YoutubeOptimizerPricingRoute: YoutubeOptimizerPricingRoute,
+  AccountIndexRoute: AccountIndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  AppsIndexRoute: AppsIndexRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
+  DocsIndexRoute: DocsIndexRoute,
+  LegalIndexRoute: LegalIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  ApiPublicEntitlementRoute: ApiPublicEntitlementRouteWithChildren,
+  AppsSubmissionsIdRoute: AppsSubmissionsIdRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicAnalyticsAppSuggestionRoute: ApiPublicAnalyticsAppSuggestionRoute,
+  ApiPublicAnalyticsAuthGateRoute: ApiPublicAnalyticsAuthGateRoute,
+  ApiPublicAnalyticsCheckoutSuccessRoute:
+    ApiPublicAnalyticsCheckoutSuccessRoute,
+  ApiPublicAppStatusHealthRoute: ApiPublicAppStatusHealthRoute,
+  ApiPublicHooksProcessSubscriptionEmailsRoute:
+    ApiPublicHooksProcessSubscriptionEmailsRoute,
+  ApiPublicHubControlPullConfigRoute: ApiPublicHubControlPullConfigRoute,
+  ApiPublicPayfastItnRoute: ApiPublicPayfastItnRoute,
+  ApiPublicRopIngestAppliedRoute: ApiPublicRopIngestAppliedRoute,
+  ApiPublicRopIngestPerfRoute: ApiPublicRopIngestPerfRoute,
+  ApiPublicRopIngestSuggestionRoute: ApiPublicRopIngestSuggestionRoute,
+  ApiPublicRopPullBroadcastsRoute: ApiPublicRopPullBroadcastsRoute,
+  ApiPublicUpdatesAtomRoute: ApiPublicUpdatesAtomRoute,
+  ApiPublicUpdatesRssRoute: ApiPublicUpdatesRssRoute,
+  ApiPublicUsageCompleteRoute: ApiPublicUsageCompleteRoute,
+  ApiPublicUsageReleaseRoute: ApiPublicUsageReleaseRoute,
+  ApiPublicUsageReserveRoute: ApiPublicUsageReserveRoute,
+  ApiPublicUsageWalletRoute: ApiPublicUsageWalletRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  ApiPublicGenerateCreativeStudioPosterRoute:
+    ApiPublicGenerateCreativeStudioPosterRoute,
+  ApiPublicRopCronCrossAppScanRoute: ApiPublicRopCronCrossAppScanRoute,
+  ApiPublicRopCronMeasureOutcomesRoute: ApiPublicRopCronMeasureOutcomesRoute,
+}
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
