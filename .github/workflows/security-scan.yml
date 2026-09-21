@@ -93,24 +93,24 @@ jobs:
     name: SAST (semgrep)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    container:
-      image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v4
-      - name: semgrep ci
-        # Curated rulesets:
-        #   p/owasp-top-ten, p/javascript, p/typescript, p/react,
-        #   p/nodejsscan, p/secrets
+      - name: semgrep scan
+        # Run Semgrep in its maintained container, but keep the GitHub job on
+        # the normal host runner so Bun-based SARIF tooling remains available.
         run: |
-          semgrep ci \
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            semgrep/semgrep \
+            semgrep scan \
             --config p/owasp-top-ten \
             --config p/javascript \
             --config p/typescript \
             --config p/react \
             --config p/nodejsscan \
             --config p/secrets \
-            --error \
-            --sarif --output=semgrep.sarif || true
+            --sarif --output=semgrep.sarif
       - name: Upload SARIF to GitHub code scanning
         if: always()
         uses: github/codeql-action/upload-sarif@v3
