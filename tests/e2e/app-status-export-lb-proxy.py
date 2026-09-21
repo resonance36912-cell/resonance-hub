@@ -129,6 +129,26 @@ def fd_stats(pid: int) -> dict:
     return {"fds": total, "sockets": sockets, "threads": threads}
 
 
+def wait_stats_settled(pid: int, baseline: dict, timeout: float = 10.0) -> dict:
+    """Poll until fd/socket/thread usage returns inside the existing strict bands."""
+    deadline = time.monotonic() + timeout
+    last = fd_stats(pid)
+    while time.monotonic() < deadline:
+        if not Path(f"/proc/{pid}").exists():
+            return {
+                "fds": baseline["fds"] + FD_BAND + 1,
+                "sockets": baseline["sockets"] + SOCK_BAND + 1,
+                "threads": baseline["threads"] + THREAD_BAND + 1,
+            }
+        last = fd_stats(pid)
+        if (last["fds"] <= baseline["fds"] + FD_BAND
+                and last["sockets"] <= baseline["sockets"] + SOCK_BAND
+                and last["threads"] <= baseline["threads"] + THREAD_BAND):
+            return last
+        time.sleep(0.25)
+    return last
+
+
 def established(pid: int, local_port: int) -> int:
     """Established TCP rows on `pid` whose local port is `local_port`."""
     hexport = f"{local_port:04X}"
@@ -489,8 +509,7 @@ def run_mode(mode: str, upstreams: list, sizes: dict, t: Tally) -> dict:
             finally:
                 c.close()
 
-        time.sleep(2.5)
-        settled_proxy = fd_stats(proxy.pid)
+        settled_proxy = wait_stats_settled(proxy.pid, baseline_proxy)
         t.check(established(proxy.pid, PROXY_PORT) == 0,
                 f"[{mode}] no client sockets linger on the proxy after churn")
         t.check(settled_proxy["fds"] <= baseline_proxy["fds"] + FD_BAND,
@@ -505,9 +524,9 @@ def run_mode(mode: str, upstreams: list, sizes: dict, t: Tally) -> dict:
         settled_up = {}
         for u in upstreams:
             pid, port = u["proc"].pid, u["port"]
-            stats = fd_stats(pid)
-            settled_up[port] = stats
             base = baseline_up[port]
+            stats = wait_stats_settled(pid, base)
+            settled_up[port] = stats
             t.check(established(pid, port) <= POOL_LIMIT,
                     f"[{mode}] upstream :{port} holds no runaway sockets after churn")
             t.check(stats["fds"] <= base["fds"] + FD_BAND,
