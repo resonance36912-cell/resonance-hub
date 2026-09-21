@@ -13,6 +13,10 @@ id = "generic-api-key"
 description = "Known non-secret client identifiers"
 regexTarget = "line"
 regexes = [
-  '''(?i)^\s*(?:VITE_)?SUPABASE_PUBLISHABLE_KEY\s*=\s*["']?sb_publishable_[A-Za-z0-9_-]+["']?\s*$''',
+  '''(?i)^\s*(?:VITE_)?SUPABASE_PUBLISHABLE_KEY\s*=\s*["']?sb_publishable_[A-Za-z0-9_-]+["']?\s*
+  '''^\s*const\s+PREFS_STORAGE_KEY\s*=\s*["']ci-health\.prefs\.v1["'];?\s*$'''
+]
+'',
+  '''--var\s+SUPABASE_PUBLISHABLE_KEY:sb_publishable_[A-Za-z0-9_-]+''',
   '''^\s*const\s+PREFS_STORAGE_KEY\s*=\s*["']ci-health\.prefs\.v1["'];?\s*$'''
 ]
