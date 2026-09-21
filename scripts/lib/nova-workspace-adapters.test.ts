@@ -31,8 +31,8 @@ describe("Nova unified workspace planners", () => {
       project_id: "22222222-2222-4222-8222-222222222222",
       intent: "Develop a new consumer product",
     });
-    expect(plan.steps.map((step: { kind: string }) => step.kind).toContain("costing");
-    expect(plan.steps.map((step: { kind: string }) => step.kind).toContain("regulatory_checklist");
+    expect(plan.steps.map((step: { kind: string }) => step.kind)).toContain("costing");
+    expect(plan.steps.map((step: { kind: string }) => step.kind)).toContain("regulatory_checklist");
     expect(JSON.stringify(plan)).not.toContain("payments");
   });
 
