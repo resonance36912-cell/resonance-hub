@@ -16,10 +16,7 @@ const UNTRACKED_GENERATED = [
   "results.sarif",
 ] as const;
 
-const PRESERVED_CI_ARTIFACTS = [
-  "reports/junit.xml",
-  "reports/coverage",
-] as const;
+const PRESERVED_CI_ARTIFACTS = ["reports/junit.xml", "reports/coverage"] as const;
 
 function statusEntries(): Array<{ status: string; path: string }> {
   const raw = execFileSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], {
@@ -37,9 +34,7 @@ function statusEntries(): Array<{ status: string; path: string }> {
 }
 
 function matchesPath(path: string, candidates: readonly string[]): boolean {
-  return candidates.some(
-    (candidate) => path === candidate || path.startsWith(`${candidate}/`),
-  );
+  return candidates.some((candidate) => path === candidate || path.startsWith(`${candidate}/`));
 }
 
 function isAllowed(path: string): boolean {
