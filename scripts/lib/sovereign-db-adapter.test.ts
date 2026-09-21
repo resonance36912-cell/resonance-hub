@@ -18,15 +18,16 @@ afterEach(() => {
 describe("sovereign Nova/DataNest DB adapter", () => {
   test("routes select filters through the loopback gateway", async () => {
     process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = "http://127.0.0.1:58600";
-    let body: any;
+    let body: Record<string, unknown> | null = null;
+
     globalThis.fetch = (async (input, init) => {
       expect(String(input)).toBe("http://127.0.0.1:58600/v1/db/query");
-      body = JSON.parse(String(init?.body ?? "{}"));
+      body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
       return Response.json([{ id: "row-1", state: "active" }]);
     }) as typeof fetch;
 
-    const db = createSovereignDb();
-    const result = await db.from("nova_projects")
+    const result = await createSovereignDb()
+      .from("nova_projects")
       .select("id,state")
       .in("state", ["active", "paused"])
       .limit(10);
@@ -42,18 +43,44 @@ describe("sovereign Nova/DataNest DB adapter", () => {
     });
   });
 
+  test("preserves exact count and head semantics used by DataNest coverage", async () => {
+    let body: Record<string, unknown> | null = null;
+    globalThis.fetch = (async (_input, init) => {
+      body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      return Response.json({ data: [], count: 3 });
+    }) as typeof fetch;
+
+    const result = await createSovereignDb()
+      .from("datanest_memories")
+      .select("id", { count: "exact", head: true })
+      .eq("source_id", "source-1");
+
+    expect(result.error).toBeNull();
+    expect(result.data).toEqual([]);
+    expect(result.count).toBe(3);
+    expect(body).toMatchObject({
+      table: "datanest_memories",
+      action: "select",
+      columns: "id",
+      options: { count: "exact", head: true },
+    });
+  });
+
   test("sends governed procedures with the local procedure key", async () => {
     process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = "http://localhost:58600";
     const keyPath = join(tmpdir(), `rons-db-adapter-${crypto.randomUUID()}.key`);
     await Bun.write(keyPath, "p".repeat(64));
     process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE = keyPath;
 
-    let body: any;
+    let body: Record<string, unknown> | null = null;
     globalThis.fetch = (async (input, init) => {
       expect(String(input)).toBe("http://localhost:58600/v1/db/procedure");
       expect(new Headers(init?.headers).get("x-rons-procedure-key")).toBe("p".repeat(64));
-      body = JSON.parse(String(init?.body ?? "{}"));
-      return Response.json({ procedure: "nova_transition_job", job: { id: "job-1", state: "running" } });
+      body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
+      return Response.json({
+        procedure: "nova_transition_job",
+        job: { id: "job-1", state: "running" },
+      });
     }) as typeof fetch;
 
     const result = await createSovereignDb().rpc("nova_transition_job", {
@@ -66,7 +93,7 @@ describe("sovereign Nova/DataNest DB adapter", () => {
 
     expect(result.error).toBeNull();
     expect(result.data).toEqual({ id: "job-1", state: "running" });
-    expect(body.name).toBe("nova_transition_job");
+    expect(body).toMatchObject({ name: "nova_transition_job" });
   });
 
   test("rejects non-loopback gateway URLs before network access", async () => {
