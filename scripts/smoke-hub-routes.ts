@@ -17,18 +17,39 @@ type Check = {
   path: string;
   expectStatus?: number;
   expectRedirectTo?: string; // substring match on final URL
-  expectBody?: string;       // substring match on response body
+  expectBody?: string; // substring match on response body
 };
 
 const CHECKS: Check[] = [
   { name: "Homepage", path: "/", expectStatus: 200, expectBody: "Resonance" },
-  { name: "Free promotion hub", path: "/pricing", expectStatus: 200, expectBody: "All Resonance apps are free during the promotion" },
+  {
+    name: "Free promotion hub",
+    path: "/pricing",
+    expectStatus: 200,
+    expectBody: "All Resonance apps are free during the promotion",
+  },
 
   // Per-app pricing routes are server redirects to /pricing#<anchor>.
-  { name: "ePublisher pricing redirect", path: "/epublisher/pricing", expectRedirectTo: "/pricing#epublisher" },
-  { name: "Creative Studio pricing redirect", path: "/creative-studio/pricing", expectRedirectTo: "/pricing#creative-studio" },
-  { name: "Sync Vision pricing redirect", path: "/sync-vision/pricing", expectRedirectTo: "/pricing#sync-vision" },
-  { name: "YouTube Optimizer pricing redirect", path: "/youtube-optimizer/pricing", expectRedirectTo: "/pricing#youtube-optimizer" },
+  {
+    name: "ePublisher pricing redirect",
+    path: "/epublisher/pricing",
+    expectRedirectTo: "/pricing#epublisher",
+  },
+  {
+    name: "Creative Studio pricing redirect",
+    path: "/creative-studio/pricing",
+    expectRedirectTo: "/pricing#creative-studio",
+  },
+  {
+    name: "Sync Vision pricing redirect",
+    path: "/sync-vision/pricing",
+    expectRedirectTo: "/pricing#sync-vision",
+  },
+  {
+    name: "YouTube Optimizer pricing redirect",
+    path: "/youtube-optimizer/pricing",
+    expectRedirectTo: "/pricing#youtube-optimizer",
+  },
 ];
 
 type Result = { check: Check; ok: boolean; detail: string };
@@ -44,7 +65,11 @@ async function run(check: Check): Promise<Result> {
       return { check, ok: false, detail: `status ${res.status} (want ${check.expectStatus})` };
     }
     if (check.expectRedirectTo && !finalUrl.includes(check.expectRedirectTo)) {
-      return { check, ok: false, detail: `final URL ${finalUrl} missing "${check.expectRedirectTo}"` };
+      return {
+        check,
+        ok: false,
+        detail: `final URL ${finalUrl} missing "${check.expectRedirectTo}"`,
+      };
     }
     if (check.expectBody && !body.includes(check.expectBody)) {
       return { check, ok: false, detail: `body missing "${check.expectBody}"` };
@@ -115,4 +140,3 @@ const total = results.length + sitemapChecked;
 const totalFailed = failed + sitemapFailed;
 console.log(`\n${total - totalFailed}/${total} passed (base: ${BASE})`);
 if (totalFailed > 0) process.exit(1);
-
