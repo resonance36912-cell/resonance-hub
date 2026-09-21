@@ -1,0 +1,1 @@
+export default function ProductWorkspace(){return <section aria-label="Products workspace">Products</section>}

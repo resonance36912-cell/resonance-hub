@@ -1,2 +1,0 @@
-REVOKE EXECUTE ON FUNCTION public.coupon_preview(text, uuid, text, text, integer) FROM anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.coupon_redeem(text, uuid, text, text, integer, uuid, text) FROM anon, authenticated;

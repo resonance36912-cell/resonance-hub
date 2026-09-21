@@ -1,18 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { BackToHubHeader } from "@/components/BackToHubHeader";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   getMyInvoices,
   formatMoney,
   type InvoiceRow,
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
-
 
 export const Route = createFileRoute("/account/invoices")({
   head: () => ({
@@ -30,7 +26,7 @@ function InvoicesGate() {
   const [state, setState] = useState<"checking" | "authed" | "anon">("checking");
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (!mounted) return;
       setState(data.user ? "authed" : "anon");
     });
@@ -41,7 +37,7 @@ function InvoicesGate() {
   if (state === "anon") return (
     <Shell>
       <p className="text-sm">
-        <AppLink to={ROUTES.login} search={{ next: "/" }} className="text-primary underline">Sign in</AppLink> to view your invoices.
+        <Link to="/login" search={{ next: "/account/invoices" }} className="text-primary underline">Sign in</Link> to view your invoices.
       </p>
     </Shell>
   );
@@ -93,13 +89,13 @@ function InvoicesPage() {
                   <td className="py-2 px-3 font-mono">{formatMoney(row.amount_cents, row.currency)}</td>
                   <td className="py-2 px-3"><StatusPill status={row.status} /></td>
                   <td className="py-2 px-3">
-                    <AppLink
+                    <Link
                       to="/account/invoices/$id"
                       params={{ id: row.id }}
                       className="text-primary underline"
                     >
                       View
-                    </AppLink>
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -122,16 +118,11 @@ function Shell({ children }: { children: React.ReactNode }) {
               Payment history and downloadable receipts across the ecosystem.
             </p>
           </div>
-          <BackToHubHeader
-            extra={
-              <>
-                <AppLink to={ROUTES.accountBilling} className="text-primary underline">Billing</AppLink>
-                <AppLink to={ROUTES.accountSubscriptions} className="text-primary underline">Subscriptions</AppLink>
-              </>
-            }
-          />
+          <nav className="flex gap-3 text-sm">
+            <Link to="/account/billing" className="text-primary underline">Billing</Link>
+            <Link to="/account/subscriptions" className="text-primary underline">Subscriptions</Link>
+          </nav>
         </header>
-
         {children}
       </div>
     </div>

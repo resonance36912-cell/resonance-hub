@@ -1,10 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { checkEmailDomain, type RecordCheck } from "@/lib/email-domain.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/email-domain")({
   head: () => ({
@@ -14,15 +13,15 @@ export const Route = createFileRoute("/admin/email-domain")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
+    if (!roleRow) throw redirect({ to: "/admin/login" });
   },
   component: EmailDomainPage,
 });
@@ -56,15 +55,15 @@ function EmailDomainPage() {
               </code>
               . These records prove that PayFast subscription emails are
               authorized to be sent from your domain.{" "}
-              <AppLink to={ROUTES.adminEmails} className="text-primary hover:underline">
+              <Link to="/admin/emails" className="text-primary hover:underline">
                 Back to delivery log →
-              </AppLink>
+              </Link>
             </p>
           </div>
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="rounded-lg bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
           >
             {isFetching ? "Rechecking…" : "Recheck verification"}
           </button>

@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { BackToHubHeader } from "@/components/BackToHubHeader";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   getMyBilling,
   labelForApp,
   formatZar,
   type MyBilling,
 } from "@/lib/billing-portal.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
-
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
 
 export const Route = createFileRoute("/account/billing")({
   head: () => ({
     meta: [
-      { title: "Billing — The Resonance" },
-      { name: "description", content: "View subscriptions, credit balances, and payment history across every Resonance app." },
+      { title: "Free Access Promotion — The Resonance" },
+      { name: "description", content: FREE_PROMOTION.description },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -34,11 +31,11 @@ function BillingGate() {
 
   useEffect(() => {
     let alive = true;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (!alive) return;
       setState(data.user ? "authed" : "anon");
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: sub } = ronsAuth.onAuthStateChange((_e, session) => {
       if (!alive) return;
       setState(session?.user ? "authed" : "anon");
     });
@@ -47,7 +44,7 @@ function BillingGate() {
 
   useEffect(() => {
     if (state === "anon") {
-      navigate({ to: ROUTES.login, search: { next: ROUTES.accountBilling } as never });
+      navigate({ to: "/login", search: { next: "/account/billing" } });
     }
   }, [state, navigate]);
 
@@ -58,7 +55,28 @@ function BillingGate() {
       </div>
     );
   }
-  return <BillingPortal />;
+  return FREE_PROMOTION_ACTIVE ? <PromotionBillingNotice /> : <BillingPortal />;
+}
+
+function PromotionBillingNotice() {
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-3xl px-4 py-20">
+        <div className="rounded-3xl border border-primary/25 bg-card/60 p-8 text-center sm:p-12">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">{FREE_PROMOTION.shortLabel}</p>
+          <h1 className="mt-3 text-3xl font-bold sm:text-5xl">{FREE_PROMOTION.headline}</h1>
+          <p className="mt-5 text-muted-foreground">{FREE_PROMOTION.description}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Historical billing records remain preserved for audit and support, but no new payment, top-up, or checkout is required during the promotion.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/" className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Open Resonance Hub</Link>
+            <a href="/support" className="rounded-full border border-white/15 px-6 py-3 font-semibold">Support</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }
 
 function BillingPortal() {
@@ -79,20 +97,12 @@ function BillingPortal() {
               Subscriptions, credits, and payment history for {data?.email ?? "your account"}.
             </p>
           </div>
-          
-          <BackToHubHeader
-            className="flex gap-2 text-sm"
-            extra={
-              <>
-                <span className="text-muted-foreground">·</span>
-                <AppLink to={ROUTES.accountSubscriptions} className="text-primary underline">Manage subscriptions</AppLink>
-                <span className="text-muted-foreground">·</span>
-                <AppLink to={ROUTES.pricing} className="text-primary underline">Plans</AppLink>
-              </>
-            }
-          />
+          <div className="flex gap-2 text-sm">
+            <Link to="/account/subscriptions" className="text-primary underline">Manage subscriptions</Link>
+            <span className="text-muted-foreground">·</span>
+            <Link to="/pricing" className="text-primary underline">Plans</Link>
+          </div>
         </header>
-
 
         {isLoading && <p className="text-muted-foreground">Loading…</p>}
         {error && (
@@ -124,7 +134,7 @@ function SubscriptionsCard({ data }: { data: MyBilling }) {
         <span className="text-xs text-muted-foreground">{active.length} active</span>
       </div>
       {data.subscriptions.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No subscriptions yet. <AppLink to={ROUTES.pricing} className="underline">Browse plans</AppLink>.</p>
+        <p className="text-sm text-muted-foreground">No subscriptions yet. <Link to="/pricing" className="underline">Browse plans</Link>.</p>
       ) : (
         <div className="space-y-2">
           {[...active, ...other].map((s) => (
@@ -177,7 +187,7 @@ function ReceiptsCard({ data }: { data: MyBilling }) {
     <section className="rounded-lg border bg-card p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold">Payment history</h2>
-        <AppLink to={ROUTES.accountInvoices} className="text-sm text-primary underline">All invoices →</AppLink>
+        <Link to="/account/invoices" className="text-sm text-primary underline">All invoices →</Link>
       </div>
       {data.receipts.length === 0 ? (
         <p className="text-sm text-muted-foreground">No verified payments yet.</p>

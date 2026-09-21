@@ -86,7 +86,7 @@ async function resolveUser(
 
 export const lookupCreditUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { query: string }) =>
+  .validator((d: { query: string }) =>
     z.object({ query: z.string().trim().min(1).max(320) }).parse(d),
   )
   .handler(async ({ data, context }): Promise<CreditUserLookup> => {
@@ -137,7 +137,7 @@ export type AdjustCreditsResult = {
 
 export const adjustCredits = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => adjustSchema.parse(d))
+  .validator((d: unknown) => adjustSchema.parse(d))
   .handler(async ({ data, context }): Promise<AdjustCreditsResult> => {
     const supabaseAdmin = await assertAdmin(context.userId);
     const { userId, app, delta, reason, pfPaymentId, note } = data;
@@ -243,7 +243,7 @@ export type AdminLedgerPage = {
 
 export const queryUserLedger = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => ledgerQuerySchema.parse(d))
+  .validator((d: unknown) => ledgerQuerySchema.parse(d))
   .handler(async ({ data, context }): Promise<AdminLedgerPage> => {
     const supabaseAdmin = await assertAdmin(context.userId);
     const { userId, app, pfPaymentId, from, to, page, pageSize } = data;
@@ -298,7 +298,7 @@ export type AdminLedgerExport = {
 
 export const exportUserLedger = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => ledgerExportSchema.parse(d))
+  .validator((d: unknown) => ledgerExportSchema.parse(d))
   .handler(async ({ data, context }): Promise<AdminLedgerExport> => {
     const supabaseAdmin = await assertAdmin(context.userId);
     const { userId, app, pfPaymentId, from, to } = data;
@@ -336,7 +336,7 @@ const reverseSchema = z.object({
 
 export const reverseCreditAdjustment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => reverseSchema.parse(d))
+  .validator((d: unknown) => reverseSchema.parse(d))
   .handler(async ({ data, context }): Promise<AdjustCreditsResult> => {
     const supabaseAdmin = await assertAdmin(context.userId);
 

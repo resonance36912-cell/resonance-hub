@@ -1,8 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   lookupCreditUser,
   adjustCredits,
@@ -15,8 +16,6 @@ import {
   type AdminLedgerRow,
 } from "@/lib/admin-credits.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/credits")({
   head: () => ({
@@ -26,15 +25,15 @@ export const Route = createFileRoute("/admin/credits")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
+    if (!role) throw redirect({ to: "/admin/login" });
   },
   component: AdminCreditsPage,
 });
@@ -72,8 +71,8 @@ function AdminCreditsPage() {
             </p>
           </div>
           <div className="flex gap-3 text-sm">
-            <AppLink to={ROUTES.adminBilling} className="text-primary underline">Billing overview</AppLink>
-            <AppLink to={ROUTES.adminInvoices} className="text-primary underline">Invoices</AppLink>
+            <Link to="/admin/billing" className="text-primary underline">Billing overview</Link>
+            <Link to="/admin/invoices" className="text-primary underline">Invoices</Link>
           </div>
         </header>
 
@@ -98,7 +97,7 @@ function AdminCreditsPage() {
           </div>
           <button
             type="submit"
-            className="rounded bg-primary-surface text-primary-foreground px-4 py-2 text-sm font-medium"
+            className="rounded bg-primary text-primary-foreground px-4 py-2 text-sm font-medium"
           >
             Look up
           </button>
@@ -361,7 +360,7 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
         <div className="flex items-end gap-2">
           <button
             type="submit"
-            className="rounded bg-primary-surface text-primary-foreground px-3 py-2 text-sm font-medium"
+            className="rounded bg-primary text-primary-foreground px-3 py-2 text-sm font-medium"
           >
             Apply
           </button>
@@ -433,7 +432,7 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                     </td>
                     <td className="py-2 pr-3 text-xs font-mono">
                       {row.pf_payment_id ? (
-                        <AppLink
+                        <Link
                           to="/account/invoices/by-payment/$pf"
                           params={{ pf: row.pf_payment_id }}
                           target="_blank"
@@ -442,7 +441,7 @@ function LedgerPanel({ userId, wallets }: { userId: string; wallets: AdminWallet
                           title="Open linked receipt"
                         >
                           {row.pf_payment_id}
-                        </AppLink>
+                        </Link>
                       ) : (
                         "—"
                       )}
@@ -667,7 +666,7 @@ function AdjustForm({
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="rounded bg-primary-surface text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-60"
+            className="rounded bg-primary text-primary-foreground px-4 py-2 text-sm font-medium disabled:opacity-60"
           >
             {mutation.isPending ? "Applying…" : "Apply adjustment"}
           </button>

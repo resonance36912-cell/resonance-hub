@@ -1,0 +1,1 @@
+export default function ResearchWorkspace(){return <section aria-label="Research workspace">Research</section>}

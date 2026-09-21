@@ -39,13 +39,9 @@ while ((m = planRegex.exec(src))) {
   }
 }
 
-// Note: passes were removed from /pricing in 2026-06 when individual-app
-// once-off packs became the canonical commercial model. If future work
-// re-introduces pass CTAs on the pricing page they'll get picked up here.
 if (count === 0) {
-  console.log("✓ verify-pricing: no pass CTAs on /pricing (packs-only pricing page).");
+  failures.push("verify-pricing matched 0 plans — regex is broken or pricing layout changed.");
 }
-
 
 if (failures.length) {
   console.error("❌ verify-pricing failed:");

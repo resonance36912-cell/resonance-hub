@@ -27,10 +27,6 @@ Billing, entitlements, and ROP telemetry are centralized in this hub. Spokes cal
 - `/checkout?app=<slug>&plan=<sku>` — canonical checkout entry
 - `requireTier` gate — see `docs/snippets/requireTier.ts`
 
-### `return_to` allowlist
-
-The `/checkout` flow accepts a `return_to` URL that becomes the "Continue to your app" CTA and is forwarded to PayFast as `return_url` / `cancel_url`. Only origins in `ALLOWED_RETURN_TO_ORIGINS` (Hub + every spoke `url`/`fallbackUrl` from `APP_REGISTRY`) are accepted; everything else falls back to the canonical app URL or `/pricing#packs`. The comparison is origin-only on the WHATWG-normalized `.origin`, so trailing slashes, host casing, explicit default ports, and percent-encoded path/host characters are handled transparently, while non-http(s) schemes, userinfo smuggling, trailing-dot hosts, homoglyphs, TLD grafts, and non-default ports on allowlisted hosts are always rejected. Full contract: `docs/return-to-allowlist.md`. Implementation: `src/lib/return-to-allowlist.ts`.
-
 ## Governance
 
 This project implements the **Resonance Constitutional Governance Framework (RCGF) v1.0** (Apache-2.0). Upstream constitution and JSON schema live at `resonance36912-cell/RCGF`. Local mirror: `docs/governance/rcgf-v1.0.md`.
