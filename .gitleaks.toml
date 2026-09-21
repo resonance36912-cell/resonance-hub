@@ -1,0 +1,12 @@
+title = "RONSAS gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+  [rules.allowlist]
+  description = "Browser localStorage preference key; not a credential"
+  regexTarget = "line"
+  regexes = ['''PREFS_STORAGE_KEY\s*=\s*"ci-health\.prefs\.v1"''']
