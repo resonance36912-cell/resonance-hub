@@ -1,0 +1,1 @@
+export default function BrandWorkspace(){return <section aria-label="Brand workspace">Brand</section>
