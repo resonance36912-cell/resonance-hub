@@ -15,6 +15,7 @@ import { Route as RcgfRouteImport } from './routes/rcgf'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GovernanceRouteImport } from './routes/governance'
+import { Route as GovernanceWorkspaceRouteImport } from './routes/governance_.workspace'
 import { Route as DependencyThresholdsRouteImport } from './routes/dependency-thresholds'
 import { Route as DependencyHealthRouteImport } from './routes/dependency-health'
 import { Route as ChangelogRouteImport } from './routes/changelog'
@@ -131,6 +132,11 @@ const LoginRoute = LoginRouteImport.update({
 const GovernanceRoute = GovernanceRouteImport.update({
   id: '/governance',
   path: '/governance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GovernanceWorkspaceRoute = GovernanceWorkspaceRouteImport.update({
+  id: '/governance_/workspace',
+  path: '/governance/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DependencyThresholdsRoute = DependencyThresholdsRouteImport.update({
@@ -1157,6 +1163,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  GovernanceWorkspaceRoute: typeof GovernanceWorkspaceRoute
   IndexRoute: typeof IndexRoute
   ChangelogRoute: typeof ChangelogRoute
   DependencyHealthRoute: typeof DependencyHealthRoute
@@ -1958,6 +1965,7 @@ const rootRouteChildren: RootRouteChildren = {
   DependencyHealthRoute: DependencyHealthRoute,
   DependencyThresholdsRoute: DependencyThresholdsRoute,
   GovernanceRoute: GovernanceRouteWithChildren,
+  GovernanceWorkspaceRoute: GovernanceWorkspaceRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   RcgfRoute: RcgfRoute,
