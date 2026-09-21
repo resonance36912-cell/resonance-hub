@@ -22,7 +22,7 @@ type Check = {
 
 const CHECKS: Check[] = [
   { name: "Homepage", path: "/", expectStatus: 200, expectBody: "Resonance" },
-  { name: "Pricing hub", path: "/pricing", expectStatus: 200, expectBody: "youtube-optimizer" },
+  { name: "Pricing hub", path: "/pricing", expectStatus: 200, expectBody: "All Resonance apps are free during the promotion" },
 
   // Per-app pricing routes are server redirects to /pricing#<anchor>.
   { name: "ePublisher pricing redirect", path: "/epublisher/pricing", expectRedirectTo: "/pricing#epublisher" },
