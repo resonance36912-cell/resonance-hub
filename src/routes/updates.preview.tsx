@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 type UpdateLink = { label: string; href: string };
 type UpdateItem = {
@@ -110,9 +108,9 @@ function FeedPreview() {
               served by the RSS &amp; Atom feeds.
             </p>
           </div>
-          <AppLink to={ROUTES.home} className="text-xs font-mono uppercase tracking-[0.2em] text-white/70 hover:text-white">
+          <Link to="/" className="text-xs font-mono uppercase tracking-[0.2em] text-white/70 hover:text-white">
             ← Back to Hub
-          </AppLink>
+          </Link>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap mb-4">

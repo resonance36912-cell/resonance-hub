@@ -1,12 +1,12 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { listEmailSends } from "@/lib/email-sends.functions";
 import { sendTestSubscriptionEmail } from "@/lib/test-email.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
+import { listPromotionCampaigns } from "@/lib/promotion-campaign.functions";
 
 
 export const Route = createFileRoute("/admin/emails")({
@@ -17,15 +17,15 @@ export const Route = createFileRoute("/admin/emails")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!roleRow) throw redirect({ to: ROUTES.adminLogin });
+    if (!roleRow) throw redirect({ to: "/admin/login" });
   },
   component: EmailsAdminPage,
 });
@@ -68,11 +68,13 @@ const STATUS_STYLE: Record<string, string> = {
 
 function EmailsAdminPage() {
   const fetchSends = useServerFn(listEmailSends);
+  const fetchPromotionCampaigns = useServerFn(listPromotionCampaigns);
   const sendTest = useServerFn(sendTestSubscriptionEmail);
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["admin-email-sends"],
     queryFn: () => fetchSends(),
   });
+  const promotion = useQuery({ queryKey: ["promotion-campaign-handoffs"], queryFn: () => fetchPromotionCampaigns() });
   const [filter, setFilter] = useState<string>("all");
   const [testEmail, setTestEmail] = useState("");
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null);
@@ -106,13 +108,13 @@ function EmailsAdminPage() {
             <h1 className="mt-2 text-3xl font-semibold">Email Delivery</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Subscription confirmation email attempts, deduped by <code>pf_payment_id</code>.{" "}
-              <AppLink to={ROUTES.adminWebhooks} className="text-primary hover:underline">
+              <Link to="/admin/webhooks" className="text-primary hover:underline">
                 View ITN webhook logs →
-              </AppLink>
+              </Link>
               {" · "}
-              <AppLink to={ROUTES.adminEmailDomain} className="text-primary hover:underline">
+              <Link to="/admin/email-domain" className="text-primary hover:underline">
                 Sender domain verification →
-              </AppLink>
+              </Link>
             </p>
 
           </div>
@@ -124,6 +126,11 @@ function EmailsAdminPage() {
             {isFetching ? "Refreshing…" : "Refresh"}
           </button>
         </header>
+
+        <section className="mb-8 rounded-xl border border-border bg-card p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Promotion campaign handoffs</h2><p className="mt-1 text-sm text-muted-foreground">Sealed, human-approved campaign packages awaiting deliberate delivery review. Handoffs are not queued and are not sent from this screen.</p></div><Link to="/admin/promotion-campaigns" className="rounded-lg border border-border px-3 py-2 text-sm hover:bg-accent">Campaigns</Link></div>
+          <div className="mt-4 space-y-2">{(promotion.data?.handoffs ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No sealed promotion handoffs yet.</p> : (promotion.data?.handoffs ?? []).map((h:any)=><div key={h.id} className="rounded-lg border border-border bg-background p-3"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-medium">{h.subject}</p><p className="mt-1 text-xs text-muted-foreground">Audience {h.audience_snapshot?.length ?? 0} · approved {new Date(h.approval?.approved_at ?? h.created_at).toLocaleString()}</p></div><span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-[10px] uppercase tracking-wide text-amber-300">not queued / not sent</span></div><p className="mt-2 break-all font-mono text-[10px] text-muted-foreground">SHA-256 {h.content_sha256}</p><p className="mt-1 text-xs text-muted-foreground">Estimated cost: {h.approval?.estimated_cost_usd == null ? "not configured" : `$${Number(h.approval.estimated_cost_usd).toFixed(6)}`}</p></div>)}</div>
+        </section>
 
         <section className="mb-8 rounded-xl border border-border bg-card p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -151,7 +158,7 @@ function EmailsAdminPage() {
             <button
               type="submit"
               disabled={testMutation.isPending || !testEmail}
-              className="rounded-lg bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition disabled:opacity-50"
             >
               {testMutation.isPending ? "Sending…" : "Send test email"}
             </button>

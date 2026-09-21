@@ -1,0 +1,34 @@
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
+import { approvePromotionCampaign, createPromotionCampaignHandoff, listPromotionCampaigns, savePromotionCampaignDraft } from "@/lib/promotion-campaign.functions";
+
+export const Route=createFileRoute("/admin/promotion-campaigns")({
+  head:()=>({meta:[{title:"Promotion Campaigns — Resonance Admin"},{name:"robots",content:"noindex, nofollow"}]}),
+  beforeLoad:async()=>{ const {data,error}=await ronsAuth.getUser(); if(error||!data.user) throw redirect({to:"/admin/login"}); const {data:role}=await supabase.from("user_roles").select("role").eq("user_id",data.user.id).eq("role","admin").maybeSingle(); if(!role) throw redirect({to:"/admin/login"}); },
+  component:Campaigns,
+});
+
+const empty={name:"",segment:"all",template_key:"custom",subject:"",text_body:"",html_body:""};
+function Campaigns(){
+  const qc=useQueryClient(), list=useServerFn(listPromotionCampaigns), save=useServerFn(savePromotionCampaignDraft), approve=useServerFn(approvePromotionCampaign), handoff=useServerFn(createPromotionCampaignHandoff);
+  const q=useQuery({queryKey:["promotion-campaigns"],queryFn:()=>list()}); const [form,setForm]=useState(empty); const [note,setNote]=useState("Reviewed and approved for handoff.");
+  const saveMut=useMutation({mutationFn:()=>save({data:form}),onSuccess:()=>{setForm(empty);qc.invalidateQueries({queryKey:["promotion-campaigns"]});}});
+  const approveMut=useMutation({mutationFn:(id:string)=>approve({data:{id,approval_note:note}}),onSuccess:()=>qc.invalidateQueries({queryKey:["promotion-campaigns"]})});
+  const handoffMut=useMutation({mutationFn:(id:string)=>handoff({data:{id}}),onSuccess:()=>qc.invalidateQueries({queryKey:["promotion-campaigns"]})});
+  return <div className="min-h-screen bg-background text-foreground"><div className="mx-auto max-w-6xl px-6 py-12 space-y-8">
+    <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Resonance Admin</p><h1 className="mt-2 text-3xl font-semibold">Promotion Campaigns</h1><p className="mt-2 text-sm text-muted-foreground">Draft → approve → sealed handoff. No automatic send authority.</p></div><div className="flex gap-2"><Link to="/admin/promotion" className="rounded border border-border px-3 py-2 text-sm">Contacts</Link><Link to="/admin/emails" className="rounded border border-border px-3 py-2 text-sm">Email Delivery</Link></div></header>
+    <section className="rounded-xl border border-border bg-card p-5"><h2 className="font-semibold">New campaign draft</h2><div className="mt-4 grid md:grid-cols-2 gap-3">
+      <input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Campaign name" className="rounded border border-border bg-background px-3 py-2"/><input value={form.segment} onChange={e=>setForm({...form,segment:e.target.value})} placeholder="Segment or all" className="rounded border border-border bg-background px-3 py-2"/>
+      <input value={form.template_key} onChange={e=>setForm({...form,template_key:e.target.value})} placeholder="Template key" className="rounded border border-border bg-background px-3 py-2"/><input value={form.subject} onChange={e=>setForm({...form,subject:e.target.value})} placeholder="Subject" className="rounded border border-border bg-background px-3 py-2"/>
+    </div><textarea value={form.text_body} onChange={e=>setForm({...form,text_body:e.target.value})} placeholder="Plain-text body" className="mt-3 min-h-32 w-full rounded border border-border bg-background p-3"/><textarea value={form.html_body} onChange={e=>setForm({...form,html_body:e.target.value})} placeholder="Optional HTML body" className="mt-3 min-h-24 w-full rounded border border-border bg-background p-3"/>
+    <button onClick={()=>saveMut.mutate()} disabled={!form.name||!form.subject||!form.text_body||saveMut.isPending} className="mt-3 rounded bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50">Save draft</button>{saveMut.error&&<p className="mt-2 text-sm text-red-400">{(saveMut.error as Error).message}</p>}</section>
+    <section className="rounded-xl border border-border bg-card p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Approval note</h2><p className="text-sm text-muted-foreground">This note is sealed into the approval receipt.</p></div><input value={note} onChange={e=>setNote(e.target.value)} className="min-w-[320px] rounded border border-border bg-background px-3 py-2 text-sm"/></div></section>
+    <section><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Campaigns</h2><span className="text-xs text-muted-foreground">{q.data?.campaigns.length??0} records</span></div><div className="space-y-3">{(q.data?.campaigns??[]).map((c:any)=><div key={c.id} className="rounded-xl border border-border bg-card p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-semibold">{c.name}</p><p className="text-xs text-muted-foreground">{c.segment} · {c.status} · {c.template_key}</p><p className="mt-2 text-sm">{c.subject}</p></div><div className="flex gap-2">{c.status==="draft"&&<button onClick={()=>approveMut.mutate(c.id)} disabled={approveMut.isPending||note.trim().length<3} className="rounded border border-border px-3 py-1.5 text-xs">Approve + seal</button>}{c.status==="approved"&&<button onClick={()=>handoffMut.mutate(c.id)} disabled={handoffMut.isPending} className="rounded bg-primary px-3 py-1.5 text-xs text-primary-foreground">Create handoff</button>}</div></div>{c.approval&&<div className="mt-3 grid sm:grid-cols-3 gap-2 text-xs"><Mini label="Audience" value={String(c.approval.audience_count)}/><Mini label="Est. cost" value={c.approval.estimated_cost_usd==null?"Not configured":`$${Number(c.approval.estimated_cost_usd).toFixed(4)}`}/><Mini label="Hash" value={String(c.approval.content_sha256).slice(0,16)+"…"}/></div>}{c.handoff_id&&<p className="mt-3 text-xs text-emerald-400">Handoff {String(c.handoff_id).slice(0,12)}… created; delivery still requires separate review.</p>}</div>)}</div></section>
+    <p className="text-xs text-muted-foreground">RCGF guardrail: campaign approval and handoff never trigger a provider call or send email.</p>
+  </div></div>;
+}
+function Mini({label,value}:{label:string;value:string}){return <div className="rounded bg-background p-3"><p className="text-muted-foreground">{label}</p><p className="font-mono">{value}</p></div>}

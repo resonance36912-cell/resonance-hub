@@ -8,7 +8,7 @@ const InputSchema = z.object({
 });
 
 export const subscribeNewsletter = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .validator((input: unknown) => InputSchema.parse(input))
   .handler(async ({ data, context }) => {
     const req = (context as unknown as { request?: Request }).request;
     const user_agent = req?.headers.get("user-agent") ?? null;

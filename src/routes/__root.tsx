@@ -1,16 +1,17 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import {
   Outlet,
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 import { VisitTracker } from "@/components/VisitTracker";
-import { ROUTES } from "@/lib/routes";
 
 function NotFoundComponent() {
   return (
@@ -23,8 +24,8 @@ function NotFoundComponent() {
         </p>
         <div className="mt-6">
           <Link
-            to={ROUTES.home}
-            className="inline-flex items-center justify-center rounded-md bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-surface-hover"
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Go home
           </Link>
@@ -53,7 +54,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-surface-hover"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
           </button>
@@ -75,12 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "The Resonance" },
+      { property: "og:site_name", content: "RONSAS" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "google-site-verification", content: "cyauvD1JwPPom3ad_AbEip05fQr_BpFJF_Xfkcvblpw" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", type: "image/png", href: "/favicon-64.png", sizes: "64x64" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
@@ -109,12 +113,64 @@ function RootShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function BackToHubGlobal() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  if (pathname === "/") return null;
+
+  return (
+    <Link
+      to="/"
+      aria-label="Back to Hub"
+      className="fixed bottom-4 left-4 z-50 inline-flex items-center rounded-full border border-border bg-background/95 px-4 py-2 text-sm font-medium text-foreground shadow-lg backdrop-blur transition-colors hover:bg-accent"
+    >
+      Back to Hub
+    </Link>
+  );
+}
+
+function isPrivateDemoHost(host: string): boolean {
+  if (host === "localhost" || host === "127.0.0.1") return true;
+  if (host.startsWith("10.") || host.startsWith("192.168.")) return true;
+  const match = /^172\.(\d+)\./.exec(host);
+  return Boolean(match && Number(match[1]) >= 16 && Number(match[1]) <= 31);
+}
+
+function LocalDemoLauncher() {
+  const [host, setHost] = useState<string | null>(null);
+  useEffect(() => {
+    const current = window.location.hostname;
+    if (isPrivateDemoHost(current)) setHost(current);
+  }, []);
+  if (!host) return null;
+  const apps = [
+    ["ePublisher", 3101], ["Creative Studio", 3201], ["Sync Vision", 3301], ["YouTube Optimizer", 3401],
+  ] as const;
+  return (
+    <aside className="fixed bottom-4 right-4 z-50 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur">
+      <div className="mb-2 flex items-center justify-between gap-4">
+        <span className="text-xs font-semibold text-foreground">RONS Local Demo</span>
+        <span className="text-[10px] text-muted-foreground">public URLs unchanged</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {apps.map(([label, port]) => (
+          <a key={port} href={`http://${host}:${port}`} target="_blank" rel="noopener noreferrer"
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-accent">
+            {label}
+          </a>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
       <VisitTracker />
+      <BackToHubGlobal />
+      <LocalDemoLauncher />
       <Outlet />
     </QueryClientProvider>
   );

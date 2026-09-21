@@ -1,0 +1,1 @@
+export default function MediaWorkspace(){return <section aria-label="Media workspace">Media</section>}

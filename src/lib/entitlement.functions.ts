@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import { fetchSubscriptionRows, writeEntitlementAudit } from "@/lib/backend-provider.server";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION_TIER } from "@/lib/promotion";
 
 const AppSchema = z.enum([
   "epublisher",
@@ -33,6 +34,11 @@ export type Entitlement = {
   hasAccess: boolean;
   currentPeriodEnd: string | null;
 };
+
+const ENTITLEMENT_CACHE_TTL_MS = 60_000;
+const entitlementCache = new Map<string, { rows: Awaited<ReturnType<typeof fetchSubscriptionRows>>; expiresAt: number }>();
+const entitlementInflight = new Map<string, Promise<Awaited<ReturnType<typeof fetchSubscriptionRows>>>>();
+const entitlementCacheKey = (userId: string, app: AppKey) => `${userId}:${app}`;
 
 export function deriveFeatures(app: AppKey, tier: Tier): EntitlementFeatures {
   const isPro = tier === "pro" || tier === "business" || tier === "all_access";
@@ -84,7 +90,7 @@ export async function logEntitlementCheck(args: {
   userAgent?: string | null;
 }): Promise<void> {
   try {
-    await supabaseAdmin.from("entitlement_log").insert({
+    await writeEntitlementAudit({
       user_id: args.userId,
       app: args.app,
       tier: args.tier,
@@ -100,10 +106,10 @@ export async function logEntitlementCheck(args: {
 }
 
 export const getEntitlement = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { app: AppKey }) => ({ app: AppSchema.parse(input.app) }))
+  .middleware([requireRonsAuth])
+  .validator((input: { app: AppKey }) => ({ app: AppSchema.parse(input.app) }))
   .handler(async ({ data, context }): Promise<Entitlement> => {
-    const { supabase, userId } = context;
+    const { userId } = context;
     const checkedAt = new Date().toISOString();
     let req: ReturnType<typeof getRequest> | null = null;
     try {
@@ -114,65 +120,58 @@ export const getEntitlement = createServerFn({ method: "POST" })
     const sourceIp = req?.headers.get("x-forwarded-for") ?? null;
     const userAgent = req?.headers.get("user-agent") ?? null;
 
-    // ---------- Stage 3: prefer canonical `entitlements` table ----------
-    // Bundle grants are stored per-app (source='pass'), so `all_access`
-    // callers still fall through to the subscription-derived path below.
-    if (data.app !== "all_access") {
-      const nowIso = new Date().toISOString();
-      const { data: entRows, error: entErr } = await supabase
-        .from("entitlements")
-        .select("application_key,tier,source,expires_at,revoked_at")
-        .eq("user_id", userId)
-        .eq("application_key", data.app)
-        .is("revoked_at", null)
-        .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
-
-      if (!entErr && entRows && entRows.length > 0) {
-        // Pass beats subscription; longest expiry wins within the same source.
-        const ranked = [...entRows].sort((a, b) => {
-          if (a.source !== b.source) return a.source === "pass" ? -1 : 1;
-          const ax = a.expires_at ? Date.parse(a.expires_at) : Infinity;
-          const bx = b.expires_at ? Date.parse(b.expires_at) : Infinity;
-          return bx - ax;
-        });
-        const winner = ranked[0];
-        const source: EntitlementSource = winner.source === "pass" ? "all_access" : "direct";
-        const tier = winner.tier as Tier;
-        void logEntitlementCheck({
-          userId, app: data.app, tier, status: "active", source, sourceIp, userAgent,
-        });
-        return {
-          ok: true,
-          app: data.app,
-          userId,
-          tier,
-          status: "active",
-          source,
-          expiresAt: winner.expires_at,
-          features: deriveFeatures(data.app, tier),
-          checkedAt,
-          hasAccess: true,
-          currentPeriodEnd: winner.expires_at,
-        };
-      }
+    if (FREE_PROMOTION_ACTIVE) {
+      void logEntitlementCheck({
+        userId,
+        app: data.app,
+        tier: FREE_PROMOTION_TIER,
+        status: "active",
+        source: "trial",
+        sourceIp,
+        userAgent,
+      });
+      return {
+        ok: true,
+        app: data.app,
+        userId,
+        tier: FREE_PROMOTION_TIER,
+        status: "active",
+        source: "trial",
+        expiresAt: null,
+        features: deriveFeatures(data.app, FREE_PROMOTION_TIER),
+        checkedAt,
+        hasAccess: true,
+        currentPeriodEnd: null,
+      };
     }
 
-    // ---------- Fallback: derive from subscriptions ----------
-    const { data: rows, error } = await supabase
-      .from("subscriptions")
-      .select("app,tier,status,current_period_end")
-      .eq("user_id", userId)
-      .in("app", [data.app, "all_access"]);
-
-    if (error) {
-      console.error("getEntitlement query failed:", error);
+    const cacheKey = entitlementCacheKey(userId, data.app);
+    const cached = entitlementCache.get(cacheKey);
+    let rows: Awaited<ReturnType<typeof fetchSubscriptionRows>>;
+    if (cached && cached.expiresAt > Date.now()) {
+      rows = cached.rows;
+    } else {
+      const inflight = entitlementInflight.get(cacheKey);
+      const lookup = inflight ?? (async () => {
+        const credential = req ? resolveRonsRequestCredential(req) : null;
+        if (!credential) throw new Error("Authenticated request credential unavailable");
+        const fetched = await fetchSubscriptionRows(credential, userId, [data.app, "all_access"]);
+        entitlementCache.set(cacheKey, { rows: fetched, expiresAt: Date.now() + ENTITLEMENT_CACHE_TTL_MS });
+        return fetched;
+      })();
+      if (!inflight) entitlementInflight.set(cacheKey, lookup);
+      try {
+        rows = await lookup;
+      } catch (error) {
+      const message = error instanceof Error ? error.message : "provider lookup failed";
+      console.error("getEntitlement query failed:", message);
       void logEntitlementCheck({
         userId,
         app: data.app,
         tier: "free",
         status: "inactive",
         source: "none",
-        error: error.message,
+        error: message,
         sourceIp,
         userAgent,
       });
@@ -189,6 +188,9 @@ export const getEntitlement = createServerFn({ method: "POST" })
         hasAccess: false,
         currentPeriodEnd: null,
       };
+      } finally {
+        if (!inflight && entitlementInflight.get(cacheKey) === lookup) entitlementInflight.delete(cacheKey);
+      }
     }
 
     const active = (rows ?? []).filter((r) => r.status === "active");

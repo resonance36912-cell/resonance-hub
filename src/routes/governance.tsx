@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   RCGF_VERSION,
   RCGF_EFFECTIVE_DATE,
@@ -7,41 +7,26 @@ import {
   RCGF_CANONICAL_URL,
   RCGF_EXAMPLES_URL,
 } from "@/lib/rcgf";
-import { getRequestOrigin } from "@/lib/origin.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
-import { DocsLink } from "@/components/DocsLink";
 
 export const Route = createFileRoute("/governance")({
-  loader: async () => ({ origin: await getRequestOrigin() }),
-  head: ({ loaderData }) => {
-    const origin = loaderData?.origin ?? "https://reson8.life";
-    const title = "Resonance Constitutional Governance Framework v1.0 — The Resonance";
-    const description =
-      "The RCGF is the universal constitutional standard for human–AI collaboration across the Resonance ecosystem: truth, transparency, sovereignty, accountability and continuous improvement.";
-    return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: "Resonance Constitutional Governance Framework v1.0" },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "article" },
-        { property: "og:url", content: `${origin}/governance` },
-        { property: "og:image", content: `${origin}/og-logo.png` },
-        { property: "og:image:alt", content: "The Resonance logo" },
-        { property: "og:site_name", content: "The Resonance" },
-        { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: "RCGF v1.0 — Resonance Constitutional Governance Framework" },
-        { name: "twitter:description", content: description },
-        { name: "twitter:image", content: `${origin}/og-logo.png` },
-        { name: "twitter:image:alt", content: "The Resonance logo" },
-      ],
-      links: [{ rel: "canonical", href: `${origin}/governance` }],
-    };
-  },
+  head: () => ({
+    meta: [
+      { title: "Resonance Constitutional Governance Framework v1.0 — The Resonance" },
+      {
+        name: "description",
+        content:
+          "The RCGF is the universal constitutional standard for human–AI collaboration across the Resonance ecosystem: truth, transparency, sovereignty, accountability and continuous improvement.",
+      },
+      { property: "og:title", content: "Resonance Constitutional Governance Framework v1.0" },
+      {
+        property: "og:description",
+        content:
+          "The universal constitution for human–AI collaboration across the Resonance ecosystem. Human sovereignty remains the final authority.",
+      },
+    ],
+  }),
   component: GovernancePage,
 });
-
 
 const ARTICLES: Array<{ no: string; title: string; body: string }> = [
   { no: "I", title: "Human Sovereignty", body: "Humans retain ultimate authority. AI informs and assists; humans decide." },
@@ -69,7 +54,7 @@ function GovernancePage() {
     <div className="min-h-screen bg-black text-white">
       <main className="max-w-3xl mx-auto px-6 py-20">
         <nav className="mb-12 text-[10px] font-mono uppercase tracking-widest text-white/50">
-          <AppLink to={ROUTES.home} className="hover:text-white">← Back to Hub</AppLink>
+          <Link to="/" className="hover:text-white">← Back to Hub</Link>
         </nav>
 
         <header className="mb-16">
@@ -139,39 +124,43 @@ function GovernancePage() {
           <p className="text-white/75 leading-relaxed">
             The authoritative RCGF specification, standards, prompts and machine-readable
             schemas are published under {RCGF_LICENSE} at{" "}
-            <DocsLink href={RCGF_REPO_URL} className="underline hover:text-white">
+            <a href={RCGF_REPO_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
               resonance36912-cell/RCGF
-            </DocsLink>
+            </a>
             . Reference implementations live at{" "}
-            <DocsLink href={RCGF_EXAMPLES_URL} className="underline hover:text-white">
+            <a href={RCGF_EXAMPLES_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
               RCGF-Examples
-            </DocsLink>
+            </a>
             .
           </p>
           <ul className="mt-4 space-y-1 text-sm text-white/70">
             <li>
               →{" "}
-              <DocsLink href={RCGF_CANONICAL_URL} className="underline hover:text-white">
+              <a href={RCGF_CANONICAL_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
                 Constitution v{RCGF_VERSION} (canonical markdown)
-              </DocsLink>
+              </a>
             </li>
             <li>
               →{" "}
-              <DocsLink
-                href={`${RCGF_REPO_URL}/blob/main/prompts/Universal_System_Prompt.md` as `https://${string}`}
+              <a
+                href={`${RCGF_REPO_URL}/blob/main/prompts/Universal_System_Prompt.md`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="underline hover:text-white"
               >
                 Universal AI System Prompt
-              </DocsLink>
+              </a>
             </li>
             <li>
               →{" "}
-              <DocsLink
-                href={`${RCGF_REPO_URL}/blob/main/schemas/rcgf.json` as `https://${string}`}
+              <a
+                href={`${RCGF_REPO_URL}/blob/main/schemas/rcgf.json`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="underline hover:text-white"
               >
                 Machine-readable schema (JSON)
-              </DocsLink>
+              </a>
             </li>
           </ul>
         </section>

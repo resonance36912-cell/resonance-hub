@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type LaunchRow = {
@@ -54,7 +54,7 @@ async function requireAdmin(userId: string) {
 }
 
 export const listPayfastAudit = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }): Promise<{ traces: AuditTrace[] }> => {
     await requireAdmin(context.userId);
 

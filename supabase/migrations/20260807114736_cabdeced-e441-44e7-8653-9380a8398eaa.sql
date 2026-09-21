@@ -1,2 +1,0 @@
-DROP POLICY IF EXISTS "Signed-in reads flags" ON public.feature_flags;
-CREATE POLICY "Admins read flags" ON public.feature_flags FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'::app_role));

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getBackendProvider, recordPayfastItnAttempt, settlePayfastItn } from "@/lib/backend-provider.server";
 import { createHash } from "crypto";
 
 /**
@@ -12,43 +13,28 @@ import { createHash } from "crypto";
 // enforces this in CI.
 const SKU_CATALOG: Record<
   string,
-  { app: string; tier: string; amountCents: number; cycle: "monthly" | "once"; kind?: "pass" | "legacy_monthly" | "pack"; creditsGranted?: number }
+  { app: string; tier: string; amountCents: number; cycle: "monthly" }
 > = {
   // Active ecosystem passes (Hub only).
-  "all_access:creator_pass:monthly": { app: "all_access", tier: "creator_pass", amountCents: 49900,  cycle: "monthly", kind: "pass" },
-  "all_access:studio_pass:monthly":  { app: "all_access", tier: "studio_pass",  amountCents: 149900, cycle: "monthly", kind: "pass" },
+  "all_access:creator_pass:monthly": { app: "all_access", tier: "creator_pass", amountCents: 49900,  cycle: "monthly" },
+  "all_access:studio_pass:monthly":  { app: "all_access", tier: "studio_pass",  amountCents: 149900, cycle: "monthly" },
   // Legacy per-app monthly SKUs — retired from UI but kept live so existing
   // PayFast subscriptions keep renewing.
-  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly", kind: "legacy_monthly" },
-  "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly", kind: "legacy_monthly" },
-  "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly", kind: "legacy_monthly" },
-  "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 99900,  cycle: "monthly", kind: "legacy_monthly" },
-  "creative_studio:creator:monthly":  { app: "creative_studio", tier: "creator",  amountCents: 14900, cycle: "monthly", kind: "legacy_monthly" },
-  "creative_studio:pro:monthly":      { app: "creative_studio", tier: "pro",      amountCents: 29900, cycle: "monthly", kind: "legacy_monthly" },
-  "creative_studio:business:monthly": { app: "creative_studio", tier: "business", amountCents: 69900, cycle: "monthly", kind: "legacy_monthly" },
-  "sync_vision:creator:monthly":  { app: "sync_vision", tier: "creator",  amountCents: 54900,  cycle: "monthly", kind: "legacy_monthly" },
-  "sync_vision:pro:monthly":      { app: "sync_vision", tier: "pro",      amountCents: 139900, cycle: "monthly", kind: "legacy_monthly" },
-  "sync_vision:business:monthly": { app: "sync_vision", tier: "business", amountCents: 279900, cycle: "monthly", kind: "legacy_monthly" },
-  "youtube_optimizer:starter:monthly":  { app: "youtube_optimizer", tier: "starter",  amountCents: 14900,  cycle: "monthly", kind: "legacy_monthly" },
-  "youtube_optimizer:pro:monthly":      { app: "youtube_optimizer", tier: "pro",      amountCents: 59900,  cycle: "monthly", kind: "legacy_monthly" },
-  "youtube_optimizer:business:monthly": { app: "youtube_optimizer", tier: "business", amountCents: 299900, cycle: "monthly", kind: "legacy_monthly" },
-  "all_access:all_access:monthly": { app: "all_access", tier: "all_access", amountCents: 149900, cycle: "monthly", kind: "legacy_monthly" },
-  // One-off packs — PayFast one-time payments. COMPLETE credits `creditsGranted`
-  // into the buyer's wallet for `app`. Convention: 1 credit = R1.
-  "epublisher:starter_pack:once":         { app: "epublisher",        tier: "starter_pack",  amountCents: 9900,   cycle: "once", kind: "pack", creditsGranted: 99 },
-  "epublisher:creator_pack:once":         { app: "epublisher",        tier: "creator_pack",  amountCents: 29900,  cycle: "once", kind: "pack", creditsGranted: 299 },
-  "epublisher:studio_pack:once":          { app: "epublisher",        tier: "studio_pack",   amountCents: 69900,  cycle: "once", kind: "pack", creditsGranted: 699 },
-  "creative_studio:starter_pack:once":    { app: "creative_studio",   tier: "starter_pack",  amountCents: 14900,  cycle: "once", kind: "pack", creditsGranted: 149 },
-  "creative_studio:pro_pack:once":        { app: "creative_studio",   tier: "pro_pack",      amountCents: 39900,  cycle: "once", kind: "pack", creditsGranted: 399 },
-  "creative_studio:agency_pack:once":     { app: "creative_studio",   tier: "agency_pack",   amountCents: 89900,  cycle: "once", kind: "pack", creditsGranted: 899 },
-  "sync_vision:single_pack:once":         { app: "sync_vision",       tier: "single_pack",   amountCents: 34900,  cycle: "once", kind: "pack", creditsGranted: 349 },
-  "sync_vision:ep_pack:once":             { app: "sync_vision",       tier: "ep_pack",       amountCents: 99900,  cycle: "once", kind: "pack", creditsGranted: 999 },
-  "sync_vision:album_pack:once":          { app: "sync_vision",       tier: "album_pack",    amountCents: 249900, cycle: "once", kind: "pack", creditsGranted: 2499 },
-  "youtube_optimizer:channel_audit:once": { app: "youtube_optimizer", tier: "channel_audit", amountCents: 14900,  cycle: "once", kind: "pack", creditsGranted: 149 },
-  "youtube_optimizer:growth_pack:once":   { app: "youtube_optimizer", tier: "growth_pack",   amountCents: 59900,  cycle: "once", kind: "pack", creditsGranted: 599 },
-  "youtube_optimizer:agency_pack:once":   { app: "youtube_optimizer", tier: "agency_pack",   amountCents: 249900, cycle: "once", kind: "pack", creditsGranted: 2499 },
+  "epublisher:starter:monthly":  { app: "epublisher", tier: "starter",  amountCents: 9900,   cycle: "monthly" },
+  "epublisher:creator:monthly":  { app: "epublisher", tier: "creator",  amountCents: 19900,  cycle: "monthly" },
+  "epublisher:pro:monthly":      { app: "epublisher", tier: "pro",      amountCents: 44900,  cycle: "monthly" },
+  "epublisher:business:monthly": { app: "epublisher", tier: "business", amountCents: 99900,  cycle: "monthly" },
+  "creative_studio:creator:monthly":  { app: "creative_studio", tier: "creator",  amountCents: 14900, cycle: "monthly" },
+  "creative_studio:pro:monthly":      { app: "creative_studio", tier: "pro",      amountCents: 29900, cycle: "monthly" },
+  "creative_studio:business:monthly": { app: "creative_studio", tier: "business", amountCents: 69900, cycle: "monthly" },
+  "sync_vision:creator:monthly":  { app: "sync_vision", tier: "creator",  amountCents: 54900,  cycle: "monthly" },
+  "sync_vision:pro:monthly":      { app: "sync_vision", tier: "pro",      amountCents: 139900, cycle: "monthly" },
+  "sync_vision:business:monthly": { app: "sync_vision", tier: "business", amountCents: 279900, cycle: "monthly" },
+  "youtube_optimizer:starter:monthly":  { app: "youtube_optimizer", tier: "starter",  amountCents: 14900,  cycle: "monthly" },
+  "youtube_optimizer:pro:monthly":      { app: "youtube_optimizer", tier: "pro",      amountCents: 59900,  cycle: "monthly" },
+  "youtube_optimizer:business:monthly": { app: "youtube_optimizer", tier: "business", amountCents: 299900, cycle: "monthly" },
+  "all_access:all_access:monthly": { app: "all_access", tier: "all_access", amountCents: 149900, cycle: "monthly" },
 };
-
 
 function buildSignature(params: Record<string, string>, passphrase: string): string {
   const pairs = Object.entries(params)
@@ -88,11 +74,43 @@ async function logAttempt(row: {
   payment_status?: string | null;
   pf_payment_id?: string | null;
   source_ip?: string | null;
+  payload_hash: string;
   raw_payload: Record<string, string>;
   error_message?: string | null;
 }) {
   try {
-    await supabaseAdmin.from("payfast_itn_logs").insert(row);
+    if (getBackendProvider() === "sovereign") {
+      await recordPayfastItnAttempt({
+        signature_valid: row.signature_valid,
+        server_validated: row.server_validated,
+        outcome: row.outcome,
+        http_status: row.http_status,
+        sku: row.sku ?? null,
+        user_id: row.user_id ?? null,
+        amount_cents: row.amount_cents ?? null,
+        payment_status: row.payment_status ?? null,
+        pf_payment_id: row.pf_payment_id ?? null,
+        source_ip: row.source_ip ?? null,
+        payload_hash: row.payload_hash,
+        error_message: row.error_message ?? null,
+      });
+      return;
+    }
+    const hostedRow = {
+      signature_valid: row.signature_valid,
+      server_validated: row.server_validated,
+      outcome: row.outcome,
+      http_status: row.http_status,
+      sku: row.sku ?? null,
+      user_id: row.user_id ?? null,
+      amount_cents: row.amount_cents ?? null,
+      payment_status: row.payment_status ?? null,
+      pf_payment_id: row.pf_payment_id ?? null,
+      source_ip: row.source_ip ?? null,
+      raw_payload: row.raw_payload,
+      error_message: row.error_message ?? null,
+    };
+    await supabaseAdmin.from("payfast_itn_logs").insert(hostedRow);
   } catch (err) {
     console.error("Failed to write ITN log:", err);
   }
@@ -108,6 +126,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         const sourceIp = request.headers.get("x-forwarded-for") ?? null;
 
         const rawBody = await request.text();
+        const payloadHash = createHash("sha256").update(rawBody).digest("hex");
         const params = Object.fromEntries(new URLSearchParams(rawBody).entries());
         const sku = params.item_name ?? params.custom_str2 ?? null;
         const userId = params.custom_str1 || null;
@@ -135,86 +154,13 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         const baseLog = {
           sku, user_id: userId, amount_cents: grossCents,
           payment_status: paymentStatus, pf_payment_id: pfPaymentId,
-          source_ip: sourceIp, raw_payload: params,
+          source_ip: sourceIp, payload_hash: payloadHash, raw_payload: params,
         };
-
-        // ---------- Session correlation + append-only event ledger ----------
-        // buildLaunch() wrote a checkout_sessions row keyed by our
-        // m_payment_id. Every ITN — signature-invalid, duplicate, or terminal
-        // — appends to payment_events. Terminal outcomes also transition
-        // checkout_sessions.status so /checkout/success can poll it.
-        let sessionId: string | null = null;
-        let sessionUserId: string | null = null;
-        // A coupon-discounted launch recorded the charged amount + code on the
-        // session; the amount check below trusts that server-written row, never
-        // the ITN payload.
-        let sessionAmountCents: number | null = null;
-        let sessionCouponCode: string | null = null;
-        if (mPaymentId) {
-          const { data: sessRow } = await supabaseAdmin
-            .from("checkout_sessions" as never)
-            .select("id, user_id, amount_cents, metadata")
-            .eq("m_payment_id" as never, mPaymentId as never)
-            .maybeSingle();
-          const s = sessRow as unknown as {
-            id: string;
-            user_id: string;
-            amount_cents: number | null;
-            metadata: Record<string, unknown> | null;
-          } | null;
-          if (s) {
-            sessionId = s.id;
-            sessionUserId = s.user_id;
-            sessionAmountCents = s.amount_cents == null ? null : Number(s.amount_cents);
-            const code = s.metadata?.coupon_code;
-            sessionCouponCode = typeof code === "string" && code ? code : null;
-          }
-        }
-
-        const recordEvent = async (input: {
-          event_type: string; outcome?: string | null; http_status?: number | null;
-          include_payload?: boolean;
-        }) => {
-          try {
-            await supabaseAdmin.from("payment_events" as never).insert({
-              session_id: sessionId,
-              user_id: sessionUserId ?? userId ?? null,
-              provider: "payfast",
-              event_type: input.event_type,
-              payment_status: paymentStatus,
-              pf_payment_id: pfPaymentId,
-              m_payment_id: mPaymentId,
-              amount_cents: grossCents,
-              outcome: input.outcome ?? input.event_type,
-              http_status: input.http_status ?? null,
-              source_ip: sourceIp,
-              raw_payload: input.include_payload ? params : null,
-              metadata: { sku },
-            } as never);
-          } catch (err) { console.error("payment_events insert failed:", err); }
-        };
-
-        const updateSession = async (
-          status: "pending" | "succeeded" | "failed" | "cancelled" | "refunded" | "expired",
-          errorMessage?: string | null,
-        ) => {
-          if (!sessionId) return;
-          try {
-            await supabaseAdmin.from("checkout_sessions" as never).update({
-              status,
-              error_message: errorMessage ?? null,
-              pf_payment_id: pfPaymentId,
-              last_event_at: new Date().toISOString(),
-            } as never).eq("id" as never, sessionId as never);
-          } catch (err) { console.error("checkout_sessions update failed:", err); }
-        };
-
 
         // 1. Signature
         const expectedSig = buildSignature(params, passphrase);
         const sigOk = !!params.signature && params.signature.toLowerCase() === expectedSig.toLowerCase();
         if (!sigOk) {
-          await recordEvent({ event_type: "signature_invalid", http_status: 400, include_payload: true });
           await logAttempt({ ...baseLog, signature_valid: false, server_validated: false,
             outcome: "invalid_signature", http_status: 400, error_message: "Signature mismatch" });
           return new Response("invalid signature", { status: 400 });
@@ -223,13 +169,10 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // 2. Server-to-server validation
         const validated = await validateWithPayfast(rawBody, sandbox);
         if (!validated) {
-          await recordEvent({ event_type: "validation_failed", http_status: 400 });
-          await updateSession("failed", "PayFast did not return VALID");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: false,
             outcome: "validation_failed", http_status: 400, error_message: "PayFast did not return VALID" });
           return new Response("not validated", { status: 400 });
         }
-
 
         // 3. Webhook dedup / idempotency claim.
         //
@@ -242,8 +185,56 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         // (provider, event_id) fail is race-safe: only one concurrent worker
         // wins, all replays return the cached response without re-running the
         // subscription upsert or email enqueue.
-        const payloadHash = createHash("sha256").update(rawBody).digest("hex");
         const eventId = pfPaymentId || mPaymentId || `hash:${payloadHash}`;
+        const def = sku ? SKU_CATALOG[sku] : undefined;
+
+        // Sovereign mode terminates here: validated provider data crosses the
+        // keyed gateway procedure boundary and never enters direct Supabase
+        // settlement writes. Hosted mode falls through to the legacy path.
+        if (getBackendProvider() === "sovereign") {
+          if (!def) {
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
+            return new Response("unknown sku", { status: 400 });
+          }
+          if (!userId) {
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
+            return new Response("missing user", { status: 400 });
+          }
+          if (grossCents !== def.amountCents) {
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "amount_mismatch", http_status: 400,
+              error_message: `Got ${grossCents}, expected ${def.amountCents}` });
+            return new Response("amount mismatch", { status: 400 });
+          }
+
+          try {
+            const settled = await settlePayfastItn({
+              event_id: eventId,
+              payload_hash: payloadHash,
+              sku,
+              user_id: userId,
+              app: def.app,
+              tier: def.tier,
+              amount_cents: def.amountCents,
+              currency: "ZAR",
+              billing_cycle: def.cycle,
+              payment_status: paymentStatus ?? "PENDING",
+              pf_payment_id: pfPaymentId,
+              m_payment_id: mPaymentId,
+              payfast_token: params.token ?? null,
+              recipient_email: params.email_address ?? null,
+              source_ip: sourceIp,
+            });
+            return new Response(settled.response_body, { status: settled.http_status });
+          } catch (err) {
+            const message = err instanceof Error ? err.message.slice(0, 1000) : "Sovereign ITN settlement failed";
+            await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
+              outcome: "db_error", http_status: 500, error_message: message });
+            return new Response("db error", { status: 500 });
+          }
+        }
 
         const { data: claimed, error: claimErr } = await supabaseAdmin
           .from("webhook_events")
@@ -270,10 +261,6 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
             .eq("event_id", eventId)
             .maybeSingle();
 
-          await recordEvent({
-            event_type: "duplicate", outcome: `replay:${prior?.outcome ?? "unknown"}`,
-            http_status: prior?.http_status ?? 200,
-          });
           await logAttempt({
             ...baseLog, signature_valid: true, server_validated: true,
             outcome: "duplicate_webhook", http_status: prior?.http_status ?? 200,
@@ -284,13 +271,11 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         if (claimErr) {
           // Claim insert failed for a non-dedup reason — fail closed so
           // PayFast retries rather than silently dropping the event.
-          await recordEvent({ event_type: "dedup_claim_failed", http_status: 500 });
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "dedup_claim_failed", http_status: 500, error_message: claimErr.message });
           return new Response("dedup claim failed", { status: 500 });
         }
         const webhookRowId = claimed?.id ?? null;
-
 
         // Helper: finalize the webhook_events row with the response we're
         // about to return, so future replays get the same answer.
@@ -311,150 +296,25 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           }
         };
 
-        const def = sku ? SKU_CATALOG[sku] : undefined;
         if (!def) {
-          await recordEvent({ event_type: "unknown_sku", http_status: 400 });
-          await updateSession("failed", `Unknown SKU: ${sku}`);
           await finalize("unknown_sku", 400, "unknown sku");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "unknown_sku", http_status: 400, error_message: `Unknown SKU: ${sku}` });
           return new Response("unknown sku", { status: 400 });
         }
         if (!userId) {
-          await recordEvent({ event_type: "missing_user", http_status: 400 });
-          await updateSession("failed", "custom_str1 missing");
           await finalize("missing_user", 400, "missing user");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "missing_user", http_status: 400, error_message: "custom_str1 missing" });
           return new Response("missing user", { status: 400 });
         }
-        // With a coupon the charged amount is the discounted session amount.
-        const chargedCents =
-          sessionCouponCode && sessionAmountCents != null ? sessionAmountCents : def.amountCents;
-        if (grossCents !== chargedCents) {
-          await recordEvent({ event_type: "amount_mismatch", http_status: 400 });
-          await updateSession("failed", `Got ${grossCents}, expected ${chargedCents}`);
+        if (grossCents !== def.amountCents) {
           await finalize("amount_mismatch", 400, "amount mismatch");
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "amount_mismatch", http_status: 400,
-            error_message: `Got ${grossCents}, expected ${chargedCents}` });
+            error_message: `Got ${grossCents}, expected ${def.amountCents}` });
           return new Response("amount mismatch", { status: 400 });
         }
-
-        // ---------- Coupon consumption ----------
-        // Only consume the code once the payment actually completed, keyed on
-        // m_payment_id so PayFast retries never double-count a redemption.
-        if (sessionCouponCode && paymentStatus === "COMPLETE" && mPaymentId) {
-          try {
-            const { data: already } = await supabaseAdmin
-              .from("coupon_redemptions")
-              .select("id")
-              .eq("m_payment_id", mPaymentId)
-              .maybeSingle();
-            if (!already) {
-              const { error: redeemErr } = await supabaseAdmin.rpc("coupon_redeem", {
-                _code: sessionCouponCode,
-                _user_id: userId,
-                _sku: sku ?? undefined,
-                _app: def.app,
-                _amount_cents: def.amountCents,
-                _checkout_session_id: sessionId ?? undefined,
-                _m_payment_id: mPaymentId,
-              });
-              // A coupon that expired between launch and settlement must never
-              // block a paid order — log and continue.
-              if (redeemErr) console.error("coupon_redeem failed (non-fatal):", redeemErr.message);
-            }
-          } catch (err) {
-            console.error("coupon redemption write failed (non-fatal):", err);
-          }
-        }
-
-
-        // ---------- One-off pack fulfillment ----------
-        // Packs are once-off PayFast payments. On COMPLETE we credit the
-        // buyer's wallet via grant_pack_credits (idempotent on pf_payment_id)
-        // and write an invoice. No subscription row, no email retry queue.
-        if (def.kind === "pack") {
-          const isPackRefund = paymentStatus === "REFUND" || paymentStatus === "REFUNDED";
-          const packSuccess = paymentStatus === "COMPLETE";
-
-          if (packSuccess && def.creditsGranted && def.creditsGranted > 0) {
-            const { error: grantErr } = await supabaseAdmin.rpc(
-              "grant_pack_credits" as never,
-              {
-                _user_id: userId,
-                _app: def.app,
-                _amount: def.creditsGranted,
-                _sku: sku!,
-                _pf_payment_id: pfPaymentId,
-                _idempotency_key: `pack:${pfPaymentId}`,
-                _metadata: { source: "payfast_itn", tier: def.tier },
-              } as never,
-            );
-            if (grantErr) {
-              // Fail-open so PayFast retries; clear webhook claim.
-              if (webhookRowId) {
-                await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
-              }
-              await recordEvent({ event_type: "pack_grant_failed", http_status: 500 });
-              await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
-                outcome: "pack_grant_failed", http_status: 500, error_message: grantErr.message });
-              return new Response("grant failed", { status: 500 });
-            }
-          }
-
-          // Invoice (packs still get a receipt). subscription_id null for packs.
-          if (pfPaymentId && (packSuccess || isPackRefund)) {
-            try {
-              const { data: recipientRec } = await supabaseAdmin.auth.admin.getUserById(userId);
-              const recipient = recipientRec?.user?.email ?? null;
-              const { error: invErr } = await supabaseAdmin
-                .from("invoices" as never)
-                .upsert(
-                  {
-                    user_id: userId,
-                    subscription_id: null,
-                    number: `INV-${pfPaymentId}`,
-                    sku,
-                    app: def.app,
-                    tier: def.tier,
-                    billing_cycle: def.cycle,
-                    amount_cents: chargedCents,
-                    currency: "ZAR",
-                    status: isPackRefund ? "refunded" : "paid",
-                    recipient_email: recipient,
-                    pf_payment_id: pfPaymentId,
-                    m_payment_id: mPaymentId,
-                    provider: "payfast",
-                    issued_at: new Date().toISOString(),
-                    refunded_at: isPackRefund ? new Date().toISOString() : null,
-                    metadata: { payment_status: paymentStatus, source: "payfast_itn", pack: true, credits_granted: def.creditsGranted ?? 0 },
-                  } as never,
-                  { onConflict: "provider,pf_payment_id" },
-                );
-              if (invErr) console.error("pack invoice upsert failed (non-fatal):", invErr);
-            } catch (err) {
-              console.error("pack invoice write failed (non-fatal):", err);
-            }
-          }
-
-          const outcomeTag = isPackRefund
-            ? "pack_refunded"
-            : packSuccess
-              ? "pack_purchase_complete"
-              : `pack_${paymentStatus.toLowerCase()}`;
-          await recordEvent({ event_type: outcomeTag, http_status: 200 });
-          await updateSession(
-            isPackRefund ? "refunded" : packSuccess ? "succeeded" : "pending",
-          );
-          await finalize(outcomeTag, 200, "ok");
-          await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
-            outcome: outcomeTag, http_status: 200 });
-          return new Response("ok", { status: 200 });
-        }
-
-
 
         // PayFast payment_status values we care about:
         //   COMPLETE  → activate
@@ -505,7 +365,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
               status: nextStatus as never,
               payfast_token: params.token ?? null,
               payfast_payment_id: pfPaymentId,
-              amount_cents: chargedCents,
+              amount_cents: def.amountCents,
               currency: "ZAR",
               billing_cycle: def.cycle,
               current_period_end: nextStatus === "active" ? periodEnd.toISOString() : null,
@@ -527,12 +387,10 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
           if (webhookRowId) {
             await supabaseAdmin.from("webhook_events").delete().eq("id", webhookRowId);
           }
-          await recordEvent({ event_type: "db_error", http_status: 500 });
           await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
             outcome: "db_error", http_status: 500, error_message: error.message });
           return new Response("db error", { status: 500 });
         }
-
 
         const newSubId = (upserted as { id: string } | null)?.id ?? null;
 
@@ -639,7 +497,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
                   app: def.app,
                   tier: def.tier,
                   billing_cycle: def.cycle,
-                  amount_cents: chargedCents,
+                  amount_cents: def.amountCents,
                   currency: "ZAR",
                   status: invoiceStatus,
                   recipient_email: recipient,
@@ -683,7 +541,7 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
                   sku: sku!,
                   app: def.app,
                   tier: def.tier,
-                  amount_cents: chargedCents,
+                  amount_cents: def.amountCents,
                   status: suppressed ? "suppressed" : "queued",
                   skipped_reason: suppressed ? `suppressed:${suppressed.reason}` : null,
                 });
@@ -698,20 +556,11 @@ export const Route = createFileRoute("/api/public/payfast/itn")({
         }
 
         const outcomeTag = isRefund ? "subscription_refunded" : `subscription_${nextStatus}`;
-        const sessionStatus: "succeeded" | "cancelled" | "refunded" | "failed" | "pending" =
-          isRefund ? "refunded"
-          : nextStatus === "active" ? "succeeded"
-          : nextStatus === "cancelled" ? "cancelled"
-          : nextStatus === "past_due" ? "failed"
-          : "pending";
-        await recordEvent({ event_type: outcomeTag, http_status: 200 });
-        await updateSession(sessionStatus);
         await finalize(outcomeTag, 200, "ok");
         await logAttempt({ ...baseLog, signature_valid: true, server_validated: true,
           outcome: outcomeTag, http_status: 200 });
 
         return new Response("ok", { status: 200 });
-
 
       },
     },

@@ -1,0 +1,1 @@
+export default function ContentWorkspace(){return <section aria-label="Content workspace">Content</section>}

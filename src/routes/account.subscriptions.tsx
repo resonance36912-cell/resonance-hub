@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   APP_META,
   getMySubscriptions,
@@ -10,21 +10,15 @@ import {
   type SubscriptionRow,
 } from "@/lib/subscriptions.functions";
 import { retryPayfastLaunch } from "@/lib/checkout.functions";
-import {
-  cancelSubscriptionAtPeriodEnd,
-  reactivateSubscription,
-} from "@/lib/subscriptions.functions";
-import { useQueryClient } from "@tanstack/react-query";
 import { recordAuthGateEvent } from "@/lib/auth-gate-debug";
+import { FREE_PROMOTION_ACTIVE, FREE_PROMOTION } from "@/lib/promotion";
 import { emitAuthGateAnalytics } from "@/lib/auth-gate-analytics";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/account/subscriptions")({
   head: () => ({
     meta: [
-      { title: "My Subscriptions — The Resonance" },
-      { name: "description", content: "Manage your Resonance subscriptions and entitlements." },
+      { title: "Free Access Promotion — The Resonance" },
+      { name: "description", content: FREE_PROMOTION.description },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -152,7 +146,7 @@ function SubscriptionsGate() {
     log("gate_mounted");
 
     // 1. Subscribe FIRST so we don't miss INITIAL_SESSION.
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: sub } = ronsAuth.onAuthStateChange((event, session) => {
       if (cancelled) return;
       const elapsedMs = Math.round(performance.now() - mountedAt);
       diagnostics.lastAuthEvent = { event, hasSession: !!session, elapsedMs };
@@ -172,7 +166,7 @@ function SubscriptionsGate() {
     });
 
     // 2. Probe current session (local, sync-ish).
-    supabase.auth.getSession().then(({ data, error }) => {
+    ronsAuth.getSession().then(({ data, error }) => {
       if (cancelled) return;
       const elapsedMs = Math.round(performance.now() - mountedAt);
       diagnostics.sessionProbe = {
@@ -194,7 +188,7 @@ function SubscriptionsGate() {
     //    this is the closest analogue to the old beforeLoad getUser() call
     //    and gives us a definitive signal if a stale local session ever
     //    lies about being signed in.
-    supabase.auth.getUser().then(({ data, error }) => {
+    ronsAuth.getUser().then(({ data, error }) => {
       if (cancelled) return;
       const elapsedMs = Math.round(performance.now() - mountedAt);
       const isSessionMissing = error?.message === "Auth session missing!";
@@ -298,7 +292,7 @@ function SubscriptionsGate() {
           userId: diagnostics.userId,
         });
       }
-      navigate({ to: ROUTES.home, replace: true });
+      navigate({ to: "/", replace: true });
     } else if (status === "authed") {
       log("gate_authed_render");
       if (!diagnostics.analyticsEmitted) {
@@ -332,9 +326,30 @@ function SubscriptionsGate() {
     );
   }
   if (status === "anon") return null;
-  return <SubscriptionsPage />;
+  return FREE_PROMOTION_ACTIVE ? <PromotionSubscriptionsNotice /> : <SubscriptionsPage />;
 }
 
+
+function PromotionSubscriptionsNotice() {
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-3xl px-4 py-20">
+        <div className="rounded-3xl border border-primary/25 bg-card/60 p-8 text-center sm:p-12">
+          <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">{FREE_PROMOTION.shortLabel}</p>
+          <h1 className="mt-3 text-3xl font-bold sm:text-5xl">Subscriptions are not required during the promotion</h1>
+          <p className="mt-5 text-muted-foreground">{FREE_PROMOTION.description}</p>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Existing subscription records remain preserved for audit and support. New checkout and payment retry actions are disabled.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/" className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground">Open Resonance Hub</Link>
+            <a href="/support" className="rounded-full border border-white/15 px-6 py-3 font-semibold">Support</a>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
 const ALL_APPS: AppKey[] = ["epublisher", "creative_studio", "sync_vision", "youtube_optimizer"];
 
@@ -401,52 +416,6 @@ function RetryPaymentButton({ subscriptionId }: { subscriptionId: string }) {
   );
 }
 
-function CancelReactivateButton({ sub }: { sub: SubscriptionRow }) {
-  const cancel = useServerFn(cancelSubscriptionAtPeriodEnd);
-  const reactivate = useServerFn(reactivateSubscription);
-  const qc = useQueryClient();
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  const pendingCancel = sub.cancel_at_period_end && sub.status !== "cancelled";
-  const label = loading
-    ? "Working…"
-    : pendingCancel
-    ? "Keep subscription"
-    : "Cancel at period end";
-
-  async function onClick() {
-    if (!confirm(pendingCancel
-      ? "Resume automatic renewal for this subscription?"
-      : "Cancel at end of paid period? You keep access until then."
-    )) return;
-    setLoading(true);
-    setErr(null);
-    try {
-      const fn = pendingCancel ? reactivate : cancel;
-      await fn({ data: { subscriptionId: sub.id } });
-      await qc.invalidateQueries({ queryKey: ["my-subscriptions"] });
-    } catch (e) {
-      setErr((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="flex flex-col items-end gap-1">
-      <button
-        onClick={onClick}
-        disabled={loading}
-        className="rounded border border-border bg-transparent px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60"
-      >
-        {label}
-      </button>
-      {err && <span className="text-[10px] text-red-400 max-w-[160px] text-right">{err}</span>}
-    </div>
-  );
-}
-
 function SubscriptionsPage() {
   const fetchSubs = useServerFn(getMySubscriptions);
   const { data, isLoading, error } = useQuery({
@@ -504,12 +473,12 @@ function SubscriptionsPage() {
       <div className="mx-auto max-w-5xl px-6 py-12">
         <header className="mb-10">
           <div className="mb-6">
-            <AppLink
-              to={ROUTES.home}
+            <Link
+              to="/"
               className="inline-flex items-center text-[11px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-full border border-white/15 hover:border-white/40 transition-colors"
             >
               ← Back to Hub
-            </AppLink>
+            </Link>
           </div>
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">My Account</p>
           <h1 className="mt-2 text-4xl font-semibold tracking-tight">Subscriptions</h1>
@@ -554,12 +523,12 @@ function SubscriptionsPage() {
                       Active · {formatPrice(bundle!.amount_cents)}/mo
                     </span>
                   ) : (
-                    <AppLink
-                      to={ROUTES.pricing}
+                    <Link
+                      to="/pricing"
                       className="inline-block rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2 text-sm font-medium text-black hover:opacity-90 transition"
                     >
                       Upgrade — R1,499/mo
-                    </AppLink>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -613,9 +582,9 @@ function SubscriptionsPage() {
                           </span>
                         ) : (
                           !coveredByBundle && (
-                            <AppLink to={ROUTES.pricing} className="text-xs text-primary hover:underline">
+                            <Link to="/pricing" className="text-xs text-primary hover:underline">
                               Upgrade
-                            </AppLink>
+                            </Link>
                           )
                         )}
                       </div>
@@ -647,7 +616,6 @@ function SubscriptionsPage() {
                     <tbody>
                       {subs.map((s) => {
                         const retryable = s.status === "pending" || s.status === "past_due" || s.status === "cancelled";
-                        const cancellable = s.status === "active" || s.status === "past_due";
                         return (
                         <tr key={`${s.app}-${s.updated_at}`} className="border-t border-border">
                           <td className="px-4 py-3">{APP_META[s.app as AppKey]?.label ?? s.app}</td>
@@ -656,26 +624,12 @@ function SubscriptionsPage() {
                             <span className={`inline-block rounded border px-2 py-0.5 text-xs capitalize ${statusBadge(s.status)}`}>
                               {s.status.replace("_", " ")}
                             </span>
-                            {s.cancel_at_period_end && s.status !== "cancelled" && (
-                              <div className="mt-1 text-[10px] text-amber-400">
-                                Ends {formatDate(s.current_period_end)}
-                              </div>
-                            )}
-                            {s.status === "past_due" && s.grace_period_ends_at && (
-                              <div className="mt-1 text-[10px] text-red-400">
-                                Grace until {formatDate(s.grace_period_ends_at)}
-                              </div>
-                            )}
                           </td>
                           <td className="px-4 py-3 capitalize">{s.billing_cycle}</td>
                           <td className="px-4 py-3 text-xs">{formatDate(s.current_period_end)}</td>
                           <td className="px-4 py-3 text-right font-mono text-xs">{formatPrice(s.amount_cents)}</td>
                           <td className="px-4 py-3 text-right">
-                            <div className="flex flex-col items-end gap-2">
-                              {retryable && <RetryPaymentButton subscriptionId={s.id} />}
-                              {cancellable && <CancelReactivateButton sub={s} />}
-                              {!retryable && !cancellable && <span className="text-xs text-muted-foreground">—</span>}
-                            </div>
+                            {retryable ? <RetryPaymentButton subscriptionId={s.id} /> : <span className="text-xs text-muted-foreground">—</span>}
                           </td>
                         </tr>
                         );
@@ -689,12 +643,12 @@ function SubscriptionsPage() {
             {subs.length === 0 && (
               <div className="rounded-xl border border-dashed border-border bg-card/50 p-8 text-center">
                 <p className="text-muted-foreground">No subscriptions yet.</p>
-                <AppLink
-                  to={ROUTES.pricing}
-                  className="mt-4 inline-block rounded-lg bg-primary-surface px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
+                <Link
+                  to="/pricing"
+                  className="mt-4 inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition"
                 >
                   View pricing
-                </AppLink>
+                </Link>
               </div>
             )}
           </>

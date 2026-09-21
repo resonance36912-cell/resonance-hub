@@ -66,7 +66,7 @@ for (const r of results) {
 
 // --- Sitemap check: every Hub-domain entry must return 200 ------------------
 console.log("\nSitemap URL checks:");
-const HUB_HOSTS = ["reson8.life", "www.reson8.life", "resonance-hub.lovable.app"];
+const HUB_HOSTS = ["reson8.life", "www.reson8.life"];
 let sitemapChecked = 0;
 let sitemapFailed = 0;
 

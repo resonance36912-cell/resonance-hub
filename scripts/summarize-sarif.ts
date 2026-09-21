@@ -1,107 +1,157 @@
 #!/usr/bin/env bun
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+/**
+ * Summarize a SARIF file into a compact Markdown table for a GitHub Actions
+ * job summary. Writes to $GITHUB_STEP_SUMMARY when available, otherwise stdout.
+ *
+ * Usage:
+ *   bun run scripts/summarize-sarif.ts <sarif-file-or-dir> [--label CodeQL] [--top 10]
+ *
+ * - Accepts a single .sarif file OR a directory (all *.sarif inside are merged).
+ * - Groups findings by rule ID, counts occurrences, and lists the top file:line
+ *   locations for each rule so alerts can be triaged from the run log alone.
+ * - Never fails the build — a missing/empty SARIF is reported as "no findings".
+ */
+import { readFileSync, existsSync, statSync, readdirSync, appendFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 
+type SarifLocation = {
+  physicalLocation?: {
+    artifactLocation?: { uri?: string };
+    region?: { startLine?: number };
+  };
+};
 type SarifResult = {
   ruleId?: string;
+  rule?: { id?: string };
   level?: string;
-  locations?: Array<{
-    physicalLocation?: {
-      artifactLocation?: { uri?: string };
-      region?: { startLine?: number };
-    };
-  }>;
+  message?: { text?: string };
+  locations?: SarifLocation[];
 };
 type SarifRun = {
-  tool?: { driver?: { rules?: Array<{ id?: string; defaultConfiguration?: { level?: string } }> } };
+  tool?: { driver?: { name?: string; rules?: Array<{ id?: string; shortDescription?: { text?: string } }> } };
   results?: SarifResult[];
 };
+type Sarif = { runs?: SarifRun[] };
 
-const argv = process.argv.slice(2);
-const input = argv[0] ?? "";
-const labelIndex = argv.indexOf("--label");
-const topIndex = argv.indexOf("--top");
-const label = labelIndex >= 0 ? (argv[labelIndex + 1] ?? "SARIF") : "SARIF";
-const top = Math.max(1, Number(topIndex >= 0 ? argv[topIndex + 1] : 10) || 10);
+const args = process.argv.slice(2);
+const target = args[0];
+const label = argValue("--label") ?? "SARIF";
+const top = Number(argValue("--top") ?? "10");
 
-function sarifFiles(path: string): string[] {
-  if (!path || !existsSync(path)) return [];
-  const st = statSync(path);
-  if (st.isFile()) return path.endsWith(".sarif") ? [path] : [];
-  const found: string[] = [];
-  for (const name of readdirSync(path)) found.push(...sarifFiles(join(path, name)));
-  return found;
+if (!target) {
+  console.error("usage: summarize-sarif.ts <file-or-dir> [--label X] [--top N]");
+  process.exit(0); // never fail the build from a summary step
 }
 
-function esc(value: unknown): string {
-  return String(value ?? "")
-    .replaceAll("|", "\\|")
-    .replaceAll("\n", " ");
+const files = collectSarifFiles(target);
+const summary = buildSummary(files, label, top);
+
+const out = process.env.GITHUB_STEP_SUMMARY;
+if (out) appendFileSync(out, summary + "\n");
+else process.stdout.write(summary + "\n");
+
+// ---------- helpers ----------
+
+function argValue(name: string): string | undefined {
+  const i = args.indexOf(name);
+  return i >= 0 ? args[i + 1] : undefined;
 }
 
-const findings: Array<{ rule: string; level: string; path: string; line: number }> = [];
-for (const file of sarifFiles(input)) {
-  let doc: { runs?: SarifRun[] };
-  try {
-    doc = JSON.parse(readFileSync(file, "utf8"));
-  } catch (error) {
-    console.warn(
-      `Could not parse SARIF ${file}: ${error instanceof Error ? error.message : error}`,
-    );
-    continue;
+function collectSarifFiles(path: string): string[] {
+  const abs = resolve(path);
+  if (!existsSync(abs)) return [];
+  if (statSync(abs).isDirectory()) {
+    return readdirSync(abs)
+      .filter((f) => f.endsWith(".sarif"))
+      .map((f) => join(abs, f));
   }
-  for (const run of doc.runs ?? []) {
-    const defaults = new Map(
-      (run.tool?.driver?.rules ?? []).map((rule) => [
-        rule.id ?? "",
-        rule.defaultConfiguration?.level ?? "warning",
-      ]),
-    );
-    for (const result of run.results ?? []) {
-      const loc = result.locations?.[0]?.physicalLocation;
-      const rule = result.ruleId ?? "unclassified";
-      findings.push({
-        rule,
-        level: result.level ?? defaults.get(rule) ?? "warning",
-        path: loc?.artifactLocation?.uri ?? "",
-        line: loc?.region?.startLine ?? 1,
-      });
+  return [abs];
+}
+
+type RuleAgg = {
+  count: number;
+  level: string;
+  description: string;
+  locations: Array<{ path: string; line: number }>;
+};
+
+function buildSummary(sarifFiles: string[], label: string, topN: number): string {
+  const header = `## ${label} findings`;
+
+  if (sarifFiles.length === 0) {
+    return `${header}\n\n_No SARIF file found — nothing to summarize._`;
+  }
+
+  const byRule = new Map<string, RuleAgg>();
+  let totalResults = 0;
+  let toolName = label;
+
+  for (const file of sarifFiles) {
+    let sarif: Sarif;
+    try {
+      sarif = JSON.parse(readFileSync(file, "utf8")) as Sarif;
+    } catch (err) {
+      return `${header}\n\n_Failed to parse SARIF at \`${file}\`: ${(err as Error).message}_`;
+    }
+    for (const run of sarif.runs ?? []) {
+      if (run.tool?.driver?.name) toolName = run.tool.driver.name;
+      const ruleDescriptions = new Map<string, string>();
+      for (const r of run.tool?.driver?.rules ?? []) {
+        if (r.id) ruleDescriptions.set(r.id, r.shortDescription?.text ?? "");
+      }
+      for (const result of run.results ?? []) {
+        totalResults++;
+        const ruleId = result.ruleId ?? result.rule?.id ?? "(unknown-rule)";
+        const agg = byRule.get(ruleId) ?? {
+          count: 0,
+          level: result.level ?? "warning",
+          description: ruleDescriptions.get(ruleId) ?? result.message?.text ?? "",
+          locations: [],
+        };
+        agg.count++;
+        for (const loc of result.locations ?? []) {
+          const uri = loc.physicalLocation?.artifactLocation?.uri;
+          const line = loc.physicalLocation?.region?.startLine ?? 0;
+          if (uri) agg.locations.push({ path: uri, line });
+        }
+        byRule.set(ruleId, agg);
+      }
     }
   }
-}
 
-const byRule = new Map<string, { count: number; level: string; sample: string }>();
-for (const finding of findings) {
-  const key = finding.rule;
-  const prior = byRule.get(key) ?? { count: 0, level: finding.level, sample: "" };
-  prior.count += 1;
-  if (!prior.sample && finding.path) prior.sample = `${finding.path}:${finding.line}`;
-  if (finding.level === "error") prior.level = "error";
-  byRule.set(key, prior);
-}
+  if (totalResults === 0) {
+    return `${header}\n\n✅ **${toolName}**: 0 findings.`;
+  }
 
-const rows = [...byRule.entries()]
-  .sort((a, b) => b[1].count - a[1].count || a[0].localeCompare(b[0]))
-  .slice(0, top);
-const markdown = [
-  `### ${label} SARIF summary`,
-  "",
-  `Findings: **${findings.length}** across **${sarifFiles(input).length}** SARIF file(s).`,
-  "",
-  ...(rows.length
-    ? [
-        "| Rule | Level | Count | Sample location |",
-        "| --- | --- | ---: | --- |",
-        ...rows.map(
-          ([rule, info]) =>
-            `| ${esc(rule)} | ${esc(info.level)} | ${info.count} | ${esc(info.sample)} |`,
-        ),
-      ]
-    : ["No SARIF findings were present."]),
-  "",
-].join("\n");
+  const ranked = Array.from(byRule.entries())
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, topN);
 
-console.log(markdown);
-if (process.env.GITHUB_STEP_SUMMARY) {
-  writeFileSync(process.env.GITHUB_STEP_SUMMARY, markdown, { flag: "a" });
+  const lines: string[] = [];
+  lines.push(header);
+  lines.push("");
+  lines.push(`**${toolName}** — ${totalResults} finding${totalResults === 1 ? "" : "s"} across ${byRule.size} rule${byRule.size === 1 ? "" : "s"}. Top ${ranked.length}:`);
+  lines.push("");
+  lines.push("| # | Rule | Level | Count | Top locations |");
+  lines.push("| - | ---- | ----- | ----- | ------------- |");
+  ranked.forEach(([ruleId, agg], i) => {
+    const uniqueLocs: string[] = [];
+    const seen = new Set<string>();
+    for (const l of agg.locations) {
+      const key = `${l.path}:${l.line}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      uniqueLocs.push(`\`${l.path}:${l.line}\``);
+      if (uniqueLocs.length >= 3) break;
+    }
+    lines.push(
+      `| ${i + 1} | \`${ruleId}\` | ${agg.level} | ${agg.count} | ${uniqueLocs.join("<br>") || "_(no location)_"} |`,
+    );
+  });
+
+  if (byRule.size > topN) {
+    lines.push("");
+    lines.push(`_…and ${byRule.size - topN} more rule${byRule.size - topN === 1 ? "" : "s"}. Download the SARIF artifact for the full list._`);
+  }
+  return lines.join("\n");
 }
