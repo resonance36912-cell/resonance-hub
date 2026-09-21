@@ -38,7 +38,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 const SORT_OPTIONS = ["failing_desc", "failing_asc", "name_asc", "name_desc"] as const;
 type SortOrder = (typeof SORT_OPTIONS)[number];
 const REFRESH_OPTIONS = [0, 15, 30, 60, 120, 300] as const;
-const PREFS_STORAGE_NAME = "ci-health.prefs.v1";
+const PREFS_STORAGE_KEY = "ci-health.prefs.v1";
 
 const searchSchema = z.object({
   repos: fallback(z.string(), "").default(""),
@@ -61,7 +61,7 @@ type Prefs = { filter: "all" | "failing"; sort: SortOrder; refresh: number };
 function readStoredPrefs(): Partial<Prefs> | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(PREFS_STORAGE_NAME);
+    const raw = window.localStorage.getItem(PREFS_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<Prefs>;
     return {
@@ -76,7 +76,7 @@ function readStoredPrefs(): Partial<Prefs> | null {
 function writeStoredPrefs(prefs: Prefs) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(PREFS_STORAGE_NAME, JSON.stringify(prefs));
+    window.localStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(prefs));
   } catch {
     /* ignore */
   }
