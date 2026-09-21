@@ -14,7 +14,7 @@ jobs:
   verify:
     name: Run all prebuild verification scripts
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
