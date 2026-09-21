@@ -162,9 +162,7 @@ class SovereignQuery implements PromiseLike<QueryResult> {
           .split(",")
           .map((column) => column.trim())
           .filter(Boolean);
-        data = rows.map((row) =>
-          Object.fromEntries(wanted.map((column) => [column, row[column]])),
-        );
+        data = rows.map((row) => Object.fromEntries(wanted.map((column) => [column, row[column]])));
       }
 
       const result: QueryResult = {
