@@ -15,8 +15,9 @@ describe("governance workspace routing", () => {
     expect(routeTree).toMatch(
       /GovernanceWorkspaceRouteImport\.update\(\{[\s\S]*?path: '\/governance\/workspace',[\s\S]*?getParentRoute: \(\) => rootRouteImport/,
     );
-    expect(routeTree).not.toContain("GovernanceRouteWithChildren");
-    expect(routeTree).not.toContain("GovernanceRouteChildren");
+    expect(routeTree).not.toMatch(
+      /GovernanceWorkspaceRoute[\s\S]*?parentRoute: typeof GovernanceRoute/,
+    );
   });
 });
 
