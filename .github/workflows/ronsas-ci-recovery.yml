@@ -20,7 +20,7 @@ on:
 
 permissions:
   actions: write
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
 
@@ -82,6 +82,11 @@ jobs:
             classification="security-analysis"
           fi
 
+          if [ "$classification" = "transient-infrastructure" ] && [ "$action" = "automatic failed-job rerun requested once" ]; then
+            echo "::notice::RONSAS CI recovery classified ${WORKFLOW_NAME} as ${classification}; ${action}"
+            exit 0
+          fi
+
           marker='<!-- ronsas-ci-recovery -->'
           body=$(cat <<EOF
           ${marker}
@@ -122,3 +127,101 @@ jobs:
 
           echo "::notice::RONSAS CI recovery classified ${WORKFLOW_NAME} as ${classification}; ${action}"
           exit 0
+
+  autofix-formatting:
+    if: >-
+      ${{ github.event.workflow_run.name == 'Verify prebuild' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Inspect failed log for formatting-only repair signal
+        id: inspect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/ronsas-format-autofix-${RUN_ID}.log"
+          gh run view "$RUN_ID" --repo "$REPO" --log-failed >"$log" 2>&1 || true
+          if grep -Eq 'prettier/prettier|Code style issues found|prettier --check' "$log"; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+            echo "No formatting repair signal found; skipping safe autofix."
+          fi
+
+      - name: Check out trusted failing main SHA
+        if: steps.inspect.outputs.needed == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 2
+
+      - name: Set up Bun for safe formatter repair
+        if: steps.inspect.outputs.needed == 'true'
+        id: autofix_bun
+        continue-on-error: true
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.3"
+
+      - name: Retry Bun setup for safe formatter repair
+        if: steps.inspect.outputs.needed == 'true' && steps.autofix_bun.outcome == 'failure'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.3"
+
+      - name: Format only files changed by the failing main commit
+        if: steps.inspect.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          bun install --frozen-lockfile
+          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMRTUXB HEAD^ HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.md' '*.yml' '*.yaml' | grep -Ev '^(dist|\.output|\.vinxi|src/routeTree\.gen\.ts)' || true)
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
+            echo "No formatter-eligible changed files."
+            exit 0
+          fi
+          printf 'Safe formatting repair candidates:\n'
+          printf '  %s\n' "${CHANGED[@]}"
+          bunx prettier --write "${CHANGED[@]}"
+
+      - name: Publish bounded formatter repair PR
+        if: steps.inspect.outputs.needed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "Formatter produced no changes; no repair PR required."
+            exit 0
+          fi
+          repair_branch="ronsas/ci-autofix-format-${RUN_ID}"
+          git config user.name "RONSAS CI recovery"
+          git config user.email "actions@users.noreply.github.com"
+          git switch -c "$repair_branch"
+          git add -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.md' '*.yml' '*.yaml'
+          git commit -m "style: auto-repair formatting after CI failure"
+          git push origin "$repair_branch"
+          existing=$(gh pr list --repo "$REPO" --head "$repair_branch" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$existing" ]; then
+            gh pr create --repo "$REPO" --base main --head "$repair_branch" \
+              --title "style: RONSAS CI formatting self-heal" \
+              --body "Automated bounded formatter-only repair for failed Verify prebuild run ${RUN_URL}. Source main SHA: `${HEAD_SHA}`. No semantic autofix is attempted."
+          else
+            echo "Repair PR already exists: #$existing"
+          fi
