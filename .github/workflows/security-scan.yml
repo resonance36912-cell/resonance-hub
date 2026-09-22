@@ -39,10 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: latest
+          bun-version: "1.3.3"
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Run verify-security-invariants
@@ -56,11 +56,11 @@ jobs:
     # the action shouldn't block security-events uploads from CodeQL/Semgrep.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
       - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No license required for public repos or personal private repos.
@@ -75,10 +75,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: latest
+          bun-version: "1.3.3"
       - name: Verify pinned dependency versions
         # Fails if package.json uses range specifiers (^, ~, >=) or if
         # bun.lock resolved a different version than package.json declares.
@@ -99,18 +99,18 @@ jobs:
     timeout-minutes: 15
     # NOTE: Previously ran inside `container: semgrep/semgrep`, but that
     # minimal Alpine image lacks the glibc / unzip tooling that
-    # oven-sh/setup-bun@v2 and other node-based actions need, breaking the
+    # oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 and other node-based actions need, breaking the
     # whole job before Semgrep even ran. Install Semgrep via pip on the
     # standard ubuntu-latest runner instead — same rulesets, working actions.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
       - name: Install Semgrep
-        run: python -m pip install --upgrade "semgrep>=1.90"
-      - name: semgrep ci
+        run: python -m pip install semgrep==1.177.0
+      - name: semgrep scan
         # Curated rulesets:
         #   p/owasp-top-ten, p/javascript, p/typescript, p/react,
         #   p/nodejsscan, p/secrets
@@ -122,22 +122,22 @@ jobs:
             --config p/react \
             --config p/nodejsscan \
             --config p/secrets \
-            --sarif --output=semgrep.sarif || true
+            --error --sarif --output=semgrep.sarif
       - name: Upload SARIF to GitHub code scanning
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('semgrep.sarif') != ''
+        uses: github/codeql-action/upload-sarif@3ea06614dafe36dec890db3446326e0d40ce53d4 # v3
         with:
           sarif_file: semgrep.sarif
           category: semgrep
       - name: Setup Bun (for SARIF summarizer)
         if: always()
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: latest
+          bun-version: "1.3.3"
       - name: Summarize Semgrep findings to job summary
         # Parses semgrep.sarif and appends top rule IDs + file:line to
         # $GITHUB_STEP_SUMMARY so alerts are visible in the run log.
-        if: always()
+        if: always() && hashFiles('semgrep.sarif') != ''
         run: bun run scripts/summarize-sarif.ts semgrep.sarif --label "Semgrep" --top "$SARIF_SUMMARY_TOP_N"
       - name: Upload Semgrep SARIF artifact (always)
         # Uploads SARIF on every run — success or failure — so alerts can be
@@ -145,7 +145,7 @@ jobs:
         # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
         id: upload-semgrep-sarif
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           # Artifact name includes the short SHA and workflow run ID so multiple
           # runs (e.g. re-runs, matrix retries) don't collide and each artifact
@@ -174,23 +174,23 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@3ea06614dafe36dec890db3446326e0d40ce53d4 # v3
         with:
           languages: javascript-typescript
           queries: security-extended,security-and-quality
       - name: Analyze
         id: codeql-analyze
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@3ea06614dafe36dec890db3446326e0d40ce53d4 # v3
         with:
           category: "/language:javascript-typescript"
           output: codeql-results
       - name: Setup Bun (for SARIF summarizer)
         if: always()
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
-          bun-version: latest
+          bun-version: "1.3.3"
       - name: Write CodeQL summary
         if: always()
         run: bun run scripts/summarize-sarif.ts codeql-results --label "CodeQL" --top "$SARIF_SUMMARY_TOP_N"
@@ -200,7 +200,7 @@ jobs:
         # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
         id: upload-codeql-sarif
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           # Artifact name includes the workflow run ID and commit SHA for easy
           # correlation across re-runs and branches.
@@ -233,7 +233,7 @@ jobs:
       contents: read
     steps:
       - name: Post/update sticky SARIF-artifacts comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           RUN_ID: ${{ github.run_id }}
           SHA: ${{ github.sha }}
