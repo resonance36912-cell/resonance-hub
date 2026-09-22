@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-// Dedicated Railway build. Keep Railway on Node so server-side process.env
+// Dedicated Railway fallback production build. Keep Railway on Node so server-side process.env
 // values come from Railway directly. The existing Cloudflare target remains
 // isolated in vite.config.ts / wrangler.jsonc.
 export default defineConfig({
