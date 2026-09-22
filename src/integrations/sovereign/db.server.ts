@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-
 const DEFAULT_GATEWAY = "http://127.0.0.1:58600";
 
 type QueryRow = Record<string, unknown>;
@@ -23,6 +21,8 @@ function gatewayUrl(): string {
 async function procedureKey(): Promise<string> {
   const path = process.env.RONS_GATEWAY_PROCEDURE_KEY_FILE?.trim();
   if (!path) throw new Error("Sovereign gateway procedure key path is not configured");
+  const nodeFsPromises = "node:fs/promises";
+  const { readFile } = await import(/* @vite-ignore */ nodeFsPromises);
   const key = (await readFile(path, "utf8")).trim();
   if (key.length < 32 || key.length > 4096) {
     throw new Error("Sovereign gateway procedure key is invalid");
