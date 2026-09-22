@@ -13,6 +13,17 @@ import {
 import { getCostingStudy } from "@/lib/costing-study.functions";
 import { useState } from "react";
 
+type CouncilResult = {
+  provider?: unknown;
+  text?: unknown;
+  model?: unknown;
+  receipt_id?: unknown;
+  ok?: boolean;
+  cost_usd?: number | null;
+  latency_ms?: number | null;
+  error?: unknown;
+};
+
 export const Route = createFileRoute("/admin/control-center")({
   head: () => ({
     meta: [
