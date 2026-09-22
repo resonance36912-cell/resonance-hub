@@ -48,12 +48,15 @@ async function request<T>(
 
   const response = await fetch(endpoint, {
     method: "POST",
-    // Validate every destination by refusing redirects, including same-host ones.
-    // Otherwise fetch can forward the procedure key and query body off loopback.
-    redirect: "error",
+    // Workers does not implement redirect: "error". Use manual redirects and
+    // reject every 3xx below so credentials and request bodies never leave loopback.
+    redirect: "manual",
     headers,
     body: JSON.stringify(body),
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`Sovereign database request rejected redirect (${response.status})`);
+  }
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     throw new Error(
