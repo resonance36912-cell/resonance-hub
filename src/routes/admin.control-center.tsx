@@ -90,13 +90,12 @@ function ControlCenter() {
           {costing.error && <p className="mt-4 text-sm text-red-400">{(costing.error as Error).message}</p>}
 
           {costing.data && <div className="mt-5 space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               <Card label="Checkout" value={costing.data.promotion.checkoutLocked ? "LOCKED" : "OPEN"} sub="Commercial guard" />
               <Card label="Broker calls" value={String(costing.data.observedAllTime.calls)} sub="Legacy AI receipts · all time" />
               <Card label="Broker API spend" value={`$${Number(costing.data.observedAllTime.cost_usd ?? 0).toFixed(6)}`} sub="Legacy AI receipts · all time" />
               <Card label="Sovereign events" value={String(costing.data.sovereignLedgerAll.events)} sub="RONS v0.12 ledger · all time" />
               <Card label="Sovereign API spend" value={`$${Number(costing.data.sovereignLedgerAll.provider_api_cost_usd ?? 0).toFixed(6)}`} sub="Provider API charge only" />
-              <Card label="Workload samples" value={String(costing.data.promotionWorkload.total_samples)} sub={`Authenticated · ${costing.data.promotionWorkload.unknown_samples} unattributed`} />
               <Card label="Manual cost rows" value={String(costing.data.manualCostAssumptions.length)} sub="SKU assumptions retained" />
             </div>
 
@@ -106,9 +105,7 @@ function ControlCenter() {
                 <div className="mt-3 space-y-2">
                   {costing.data.appCoverage.map((app) => <div key={app.key} className="flex items-center justify-between gap-3 text-sm">
                     <span>{app.label}</span>
-                    <span className="text-right text-xs text-muted-foreground">
-                      {app.configuredSkuCount} cost row(s) · {app.promotionSamples} workload sample(s) · {app.promotionFailures} failure(s) · avg {(app.promotionAvgDurationMs / 1000).toFixed(1)}s · p95 {(app.promotionP95DurationMs / 1000).toFixed(1)}s
-                    </span>
+                    <span className="text-xs text-muted-foreground">{app.configuredSkuCount} cost row(s) · {app.hasManualCostAssumptions ? "assumptions present" : "needs assumptions"}</span>
                   </div>)}
                 </div>
               </div>
@@ -119,7 +116,6 @@ function ControlCenter() {
                   <div>Provider registry: {costing.data.sourceHealth.aiBrokerProviders ? "online" : "unavailable"}</div>
                   <div>SKU costs: {costing.data.sourceHealth.skuCosts ? "online" : "unavailable"}</div>
                   <div>Sovereign ledger: {costing.data.sourceHealth.sovereignCostLedger ? "online" : "unavailable"}</div>
-                  <div>Promotion workload: {costing.data.sourceHealth.promotionWorkload ? "online" : "unavailable"}</div>
                   <div>Unverified active providers: {costing.data.unverifiedActiveProviderCount}</div>
                 </div>
               </div>
@@ -140,24 +136,6 @@ function ControlCenter() {
                       <span className="text-muted-foreground">{row.events} event(s) · $${Number(row.provider_api_cost_usd).toFixed(6)} API · infra {row.infrastructure_cost_status}</span>
                     </div>)}
                   </div>}
-            </div>
-
-            <div className="rounded-lg border border-border bg-background p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-semibold">Promotion workload telemetry</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Authenticated operational samples only. No prompts, content, user IDs, or prices are exposed here; workload telemetry supports costing but does not replace the sovereign cost ledger.</p>
-                </div>
-                <span className="text-xs text-muted-foreground">{costing.data.promotionWorkload.total_samples} sample(s)</span>
-              </div>
-              <div className="mt-3 space-y-2">
-                {costing.data.promotionWorkload.apps.map((row) => <div key={row.app} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 p-3 text-xs">
-                  <span className="font-medium text-foreground">{row.app.split("_").join(" ")}</span>
-                  <span className="text-muted-foreground">
-                    {row.samples} sample(s) · {row.samples ? ((row.failures / row.samples) * 100).toFixed(1) : "0.0"}% failures · avg {(row.avg_duration_ms / 1000).toFixed(1)}s · p95 {(row.p95_duration_ms / 1000).toFixed(1)}s
-                  </span>
-                </div>)}
-              </div>
             </div>
 
             <div className="rounded-lg border border-border bg-background p-4">
