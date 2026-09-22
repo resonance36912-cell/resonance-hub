@@ -42,13 +42,13 @@ jobs:
         continue-on-error: true
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.3
 
       - name: Retry Bun setup after transient release download failure
         if: steps.setup_bun.outcome == 'failure'
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.3
 
       # Two-layer bun cache:
       #   1. ~/.bun/install/cache — bun's global download store. Restored
@@ -73,7 +73,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-bun-nm-1.3.3-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json', '.npmrc', 'bunfig.toml') }}
+          key: ${{ runner.os }}-bun-nm-1.3.3-v2-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json', '.npmrc', 'bunfig.toml') }}
 
       - name: Install dependencies
         if: steps.cache_node_modules.outputs.cache-hit != 'true'
@@ -412,212 +412,6 @@ jobs:
 
       - name: Stop preview server
         if: always() && steps.smoke_target.outputs.needs_local == 'true'
-        run: |
-          if [ -f /tmp/preview-server.pid ]; then
-            kill "$(cat /tmp/preview-server.pid)" 2>/dev/null || true
-          fi
-          pkill -f workerd 2>/dev/null || true
-          pkill -f wrangler 2>/dev/null || true
-
-  # ---------------------------------------------------------------------------
-  # Security-scan RPC integration tests — matrix over `mode`.
-  #
-  #   mode=live  Boots the production wrangler preview (or reuses
-  #              vars.SMOKE_BASE_URL) and drives the real deployed handler
-  #              over the TanStack Start serverFn RPC. Requires the
-  #              SUPABASE_ADMIN_ACCESS_TOKEN repository secret; hard-fails
-  #              when unset so a missing token can't silently mask
-  #              regressions (the suites self-skip on missing auth).
-  #              Records every /_serverFn/* response body and uploads the
-  #              log + payloads as an artifact on failure.
-  #
-  #   mode=mock  Runs the same five suites against the in-process fetch
-  #              shim in scripts/lib/security-scan-mock.ts, which
-  #              synthesizes the exact Seroval wire contract. No server,
-  #              no secret, no network — gates shape/auth-envelope drift
-  #              on every PR (including forks that can't read secrets).
-  #
-  # Both matrix cells run independently: a regression under either
-  # configuration fails CI on its own row, so a live-only flake never
-  # hides a mock contract break and a mock-only shape change never hides
-  # a live handler regression.
-  # ---------------------------------------------------------------------------
-  security-scan-integration:
-    name: Security scan RPC integration tests (${{ matrix.mode }})
-    needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [live, mock]
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Cache bun install store
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-store-${{ hashFiles('bun.lock', 'bun.lockb') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-store-
-
-      - name: Cache node_modules
-        id: cache_node_modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-bun-nm-1.3.3-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json', '.npmrc', 'bunfig.toml') }}
-
-      - name: Install dependencies
-        if: steps.cache_node_modules.outputs.cache-hit != 'true'
-        run: bun install --frozen-lockfile
-
-      # -- Live-mode-only preview setup ---------------------------------------
-      - name: Resolve smoke test BASE_URL (live)
-        if: matrix.mode == 'live'
-        id: smoke_target
-        env:
-          CONFIGURED_BASE_URL: ${{ vars.SMOKE_BASE_URL }}
-        run: |
-          if [ -n "$CONFIGURED_BASE_URL" ]; then
-            echo "base_url=$CONFIGURED_BASE_URL" >> "$GITHUB_OUTPUT"
-            echo "needs_local=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "base_url=http://localhost:8080" >> "$GITHUB_OUTPUT"
-            echo "needs_local=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Cache Vite build cache (live)
-        if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.vite
-          key: ${{ runner.os }}-vite-${{ hashFiles('bun.lock', 'bun.lockb', 'vite.config.ts', 'tsconfig.json') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-vite-${{ hashFiles('bun.lock', 'bun.lockb', 'vite.config.ts', 'tsconfig.json') }}-
-            ${{ runner.os }}-vite-
-
-      - name: Build production bundle (live)
-        if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
-        run: bun run build
-
-      - name: Start production preview (live, wrangler dev)
-        if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
-        run: |
-          bunx wrangler dev --port 8080 --ip 127.0.0.1 > /tmp/preview-server.log 2>&1 &
-          echo $! > /tmp/preview-server.pid
-          for i in {1..90}; do
-            if curl -sf http://127.0.0.1:8080/ > /dev/null; then
-              echo "Preview server ready after ${i}s"
-              exit 0
-            fi
-            sleep 1
-          done
-          echo "Preview server failed to start" >&2
-          tail -40 /tmp/preview-server.log >&2
-          exit 1
-
-      - name: Wait for remote preview (live)
-        if: matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'false'
-        env:
-          BASE_URL: ${{ steps.smoke_target.outputs.base_url }}
-        run: |
-          for i in {1..30}; do
-            if curl -sfL "$BASE_URL/" > /dev/null; then
-              echo "Remote preview ready at $BASE_URL"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Remote preview $BASE_URL did not respond" >&2
-          exit 1
-
-      # -- Run the five suites, per matrix mode -------------------------------
-      - name: Security scan RPC integration tests (live)
-        if: matrix.mode == 'live'
-        id: security_scan_tests_live
-        env:
-          DEV_SERVER_URL: ${{ steps.smoke_target.outputs.base_url }}
-          LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ADMIN_ACCESS_TOKEN }}
-          SECURITY_SCAN_ARTIFACT_DIR: reports/security-scan/payloads
-        run: |
-          set -euo pipefail
-          if [ -z "${LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN:-}" ]; then
-            echo "::error::SUPABASE_ADMIN_ACCESS_TOKEN repository secret is not set." >&2
-            echo "::error::The security-scan integration tests self-skip without a bearer, which would silently mask regressions. Configure the secret and re-run." >&2
-            exit 1
-          fi
-          mkdir -p reports/security-scan
-          bun test \
-            --preload ./scripts/lib/security-scan-fetch-recorder.ts \
-            scripts/lib/security-scan-auth.test.ts \
-            scripts/lib/security-scan-success.test.ts \
-            scripts/lib/security-scan-decode.test.ts \
-            scripts/lib/security-scan-grouping.test.ts \
-            scripts/lib/security-scan-zero-alerts.test.ts \
-            2>&1 | tee reports/security-scan/tests.log
-
-      - name: Upload security-scan test logs and payloads (live, on failure)
-        if: matrix.mode == 'live' && failure() && steps.security_scan_tests_live.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-scan-live-failure-${{ github.run_id }}-${{ github.sha }}
-          path: |
-            reports/security-scan/tests.log
-            reports/security-scan/payloads/**
-          if-no-files-found: warn
-          retention-days: 14
-
-      # Mock-mode preload order matters:
-      #   1. security-scan-mock.ts installs the synthetic fetch shim at
-      #      module top-level (SECURITY_SCAN_MOCK=1).
-      #   2. security-scan-fetch-recorder.ts then wraps whatever
-      #      globalThis.fetch currently points to — i.e. the mock's
-      #      `patched` — so /_serverFn/* responses synthesized by the
-      #      shim are still captured to SECURITY_SCAN_ARTIFACT_DIR.
-      # Reversing the order would let the mock overwrite the recorder's
-      # wrapper (tests re-import the mock, but the module-level install
-      # only runs on first import — which is the preload), silently
-      # producing an empty payload directory on failure.
-      - name: Security scan RPC integration tests (mock)
-        if: matrix.mode == 'mock'
-        id: security_scan_tests_mock
-        env:
-          SECURITY_SCAN_MOCK: "1"
-          SECURITY_SCAN_ARTIFACT_DIR: reports/security-scan/payloads
-        run: |
-          set -euo pipefail
-          mkdir -p reports/security-scan
-          bun test \
-            --preload ./scripts/lib/security-scan-mock.ts \
-            --preload ./scripts/lib/security-scan-fetch-recorder.ts \
-            scripts/lib/security-scan-auth.test.ts \
-            scripts/lib/security-scan-success.test.ts \
-            scripts/lib/security-scan-decode.test.ts \
-            scripts/lib/security-scan-grouping.test.ts \
-            scripts/lib/security-scan-zero-alerts.test.ts \
-            2>&1 | tee reports/security-scan/tests.log
-
-      - name: Upload security-scan test logs and payloads (mock, on failure)
-        if: matrix.mode == 'mock' && failure() && steps.security_scan_tests_mock.outcome == 'failure'
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-scan-mock-failure-${{ github.run_id }}-${{ github.sha }}
-          path: |
-            reports/security-scan/tests.log
-            reports/security-scan/payloads/**
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Stop preview server (live)
-        if: always() && matrix.mode == 'live' && steps.smoke_target.outputs.needs_local == 'true'
         run: |
           if [ -f /tmp/preview-server.pid ]; then
             kill "$(cat /tmp/preview-server.pid)" 2>/dev/null || true

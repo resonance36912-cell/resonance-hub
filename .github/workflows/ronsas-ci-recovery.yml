@@ -20,7 +20,7 @@ on:
 
 permissions:
   actions: write
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
 
@@ -82,6 +82,11 @@ jobs:
             classification="security-analysis"
           fi
 
+          if [ "$classification" = "transient-infrastructure" ] && [ "$action" = "automatic failed-job rerun requested once" ]; then
+            echo "::notice::RONSAS CI recovery classified ${WORKFLOW_NAME} as ${classification}; ${action}"
+            exit 0
+          fi
+
           marker='<!-- ronsas-ci-recovery -->'
           body=$(cat <<EOF
           ${marker}
@@ -122,3 +127,42 @@ jobs:
 
           echo "::notice::RONSAS CI recovery classified ${WORKFLOW_NAME} as ${classification}; ${action}"
           exit 0
+
+  dispatch-format-autofix:
+    if: >-
+      ${{ github.event.workflow_run.name == 'Verify prebuild' &&
+          github.event.workflow_run.event == 'push' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Inspect failure and dispatch trusted formatter workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/ronsas-format-dispatch-${RUN_ID}.log"
+          gh run view "$RUN_ID" --repo "$REPO" --log-failed >"$log" 2>&1 || true
+          if ! grep -Eq 'prettier/prettier|Code style issues found|prettier --check' "$log"; then
+            echo "No formatting repair signal found; no formatter workflow dispatched."
+            exit 0
+          fi
+
+          current_main_sha="$(gh api "repos/$REPO/commits/main" --jq '.sha')"
+          if [ "$current_main_sha" != "$HEAD_SHA" ]; then
+            echo "Failed main SHA is no longer current main; refusing stale formatter repair."
+            exit 0
+          fi
+
+          gh workflow run ronsas-format-autofix.yml             --repo "$REPO"             --ref main             -f failed_sha="$HEAD_SHA"             -f source_run_url="$RUN_URL"
+          echo "::notice::Dispatched trusted formatter-only repair for current main SHA $HEAD_SHA"
+
