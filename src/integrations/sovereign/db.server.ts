@@ -48,12 +48,15 @@ async function request<T>(
 
   const response = await fetch(endpoint, {
     method: "POST",
-    // Validate every destination by refusing redirects, including same-host ones.
-    // Otherwise fetch can forward the procedure key and query body off loopback.
-    redirect: "error",
+    // Never follow redirects: the query body and procedure key must stay on loopback.
+    // Cloudflare Workers supports manual redirect handling, but not redirect: "error".
+    redirect: "manual",
     headers,
     body: JSON.stringify(body),
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`Sovereign database gateway redirect refused (${response.status})`);
+  }
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     throw new Error(

@@ -57,3 +57,19 @@ test("a lost decision update cannot record a successful approval event", async (
   await assert.rejects(resolveDecision);
   assert.deepEqual(tables, ["nova_decisions"]);
 });
+
+test("sovereign database requests reject redirects without following them", async () => {
+  let redirectMode: RequestRedirect | undefined;
+  globalThis.fetch = (async (_input, init) => {
+    redirectMode = init?.redirect;
+    return new Response(null, {
+      status: 302,
+      headers: { Location: "https://example.invalid/not-loopback" },
+    });
+  }) as typeof fetch;
+
+  const result = await createSovereignDb().from("nova_projects").select("*");
+  assert.equal(redirectMode, "manual");
+  assert.equal(result.data, null);
+  assert.match(result.error?.message ?? "", /redirect refused \(302\)/);
+});
