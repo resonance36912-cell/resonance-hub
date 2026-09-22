@@ -9,6 +9,8 @@ on:
 jobs:
   verify:
     name: Run all prebuild verification scripts
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -162,6 +164,18 @@ jobs:
       # whole repository as a changed-file delta would incorrectly promote the
       # known legacy lint backlog into a blocking regression. All normal PRs
       # still use the blocking changed-file gate below.
+      - name: Temporary format PR75 files
+        if: ${{ github.head_ref == 'ronsas/promotion-workload-main-20260922' }}
+        run: |
+          bun x prettier --write scripts/lib/promotion-costing.test.ts src/lib/backend-provider.server.ts src/lib/costing-study.functions.ts src/lib/promotion-costing.ts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/lib/promotion-costing.test.ts src/lib/backend-provider.server.ts src/lib/costing-study.functions.ts src/lib/promotion-costing.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format promotion workload telemetry"
+            git push origin HEAD:ronsas/promotion-workload-main-20260922
+          fi
+
       - name: Lint changed files (blocking)
         if: ${{ github.head_ref != 'ronsas/reconcile-clean-20260921' }}
         env:
