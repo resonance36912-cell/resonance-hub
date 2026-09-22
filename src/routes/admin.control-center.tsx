@@ -599,7 +599,7 @@ function ControlCenter() {
                       <pre className="mt-3 whitespace-pre-wrap text-sm font-sans">
                         {r.ok ? String(r.text ?? "") : String(r.error ?? "No output")}
                       </pre>
-                      {r.ok && (
+                      {Boolean(r.ok) && (
                         <div className="mt-3 flex flex-wrap items-center gap-3">
                           <button
                             onClick={() => promote.mutate(r)}
