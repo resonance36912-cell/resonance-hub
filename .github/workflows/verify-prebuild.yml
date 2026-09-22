@@ -556,11 +556,11 @@ jobs:
           mkdir -p reports/security-scan
           bun test \
             --preload ./scripts/lib/security-scan-fetch-recorder.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-auth.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-success.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-decode.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-grouping.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-zero-alerts.test.ts \
+            scripts/lib/security-scan-auth.test.ts \
+            scripts/lib/security-scan-success.test.ts \
+            scripts/lib/security-scan-decode.test.ts \
+            scripts/lib/security-scan-grouping.test.ts \
+            scripts/lib/security-scan-zero-alerts.test.ts \
             2>&1 | tee reports/security-scan/tests.log
 
       - name: Upload security-scan test logs and payloads (live, on failure)
@@ -597,11 +597,11 @@ jobs:
           bun test \
             --preload ./scripts/lib/security-scan-mock.ts \
             --preload ./scripts/lib/security-scan-fetch-recorder.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-auth.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-success.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-decode.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-grouping.test.ts \
-            ${GITHUB_WORKSPACE}/scripts/lib/security-scan-zero-alerts.test.ts \
+            scripts/lib/security-scan-auth.test.ts \
+            scripts/lib/security-scan-success.test.ts \
+            scripts/lib/security-scan-decode.test.ts \
+            scripts/lib/security-scan-grouping.test.ts \
+            scripts/lib/security-scan-zero-alerts.test.ts \
             2>&1 | tee reports/security-scan/tests.log
 
       - name: Upload security-scan test logs and payloads (mock, on failure)
