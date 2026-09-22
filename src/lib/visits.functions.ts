@@ -36,18 +36,25 @@ export const recordVisit = createServerFn({ method: "POST" })
       /* ignore */
     }
 
-    const { error } = await supabaseAdmin.from("site_visits").insert({
-      path: data.path,
-      referrer: data.referrer ?? null,
-      session_id: data.session_id ?? null,
-      user_agent: userAgent,
-      source_ip: sourceIp,
-    });
-    if (error) {
-      console.error("[visits] insert failed", error);
+    try {
+      const { error } = await supabaseAdmin.from("site_visits").insert({
+        path: data.path,
+        referrer: data.referrer ?? null,
+        session_id: data.session_id ?? null,
+        user_agent: userAgent,
+        source_ip: sourceIp,
+      });
+      if (error) {
+        console.error("[visits] insert failed", error);
+        return { ok: false };
+      }
+      turn { ok: true };
+    } catch (error) {
+      // Anonymous visit telemetry is optional and must never make a public page unavailable
+      // when the selected backend provider is not configured on a fallback deployment.
+      console.error("[visits] backend unavailable", error);
       return { ok: false };
     }
-    return { ok: true };
   });
 
 export type VisitRow = {
