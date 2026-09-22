@@ -50,7 +50,7 @@ type CouncilResult = {
   error?: unknown;
 };
 
-const usd = (v: number | null) => (v == null ? "Configure" : `${v.toFixed(v < 1 ? 2 : 0)} / 1M`);
+const usd = (v: number | null) => (v == null ? "Configure" : "$" + v.toFixed(v < 1 ? 2 : 0) + " / 1M");
 
 function ControlCenter() {
   const fetchState = useServerFn(getRonsControlState);
