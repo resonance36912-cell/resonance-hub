@@ -93,7 +93,7 @@ function ControlCenter() {
     onSuccess: () => setApproveExternalRun(false),
   });
   const promote = useMutation({
-    mutationFn: (r: Record<string, unknown>) =>
+    mutationFn: (r: CouncilResult) =>
       promoteRecommendation({
         data: {
           title: `AI Council: ${String(r.provider)}`,
@@ -583,7 +583,7 @@ function ControlCenter() {
               )}
               {council.data && (
                 <div className="mt-4 space-y-3">
-                  {(council.data.results ?? []).map((r: Record<string, unknown>) => (
+                  {(council.data.results ?? []).map((r: CouncilResult) => (
                     <div
                       key={String(r.provider)}
                       className="rounded-lg border border-border bg-background p-4"
