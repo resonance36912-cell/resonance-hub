@@ -58,7 +58,6 @@ test("a lost decision update cannot record a successful approval event", async (
   assert.deepEqual(tables, ["nova_decisions"]);
 });
 
-
 test("sovereign database requests reject redirects without following them", async () => {
   let redirectMode: RequestRedirect | undefined;
   globalThis.fetch = (async (_input, init) => {
