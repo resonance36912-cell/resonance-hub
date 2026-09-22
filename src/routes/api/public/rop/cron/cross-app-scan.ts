@@ -83,6 +83,8 @@ Rules:
 
   let res: Response;
   try {
+    // Intentional loopback-only inference service; no traffic leaves this host.
+    // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
     res = await fetch("http://127.0.0.1:7868/v1/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
