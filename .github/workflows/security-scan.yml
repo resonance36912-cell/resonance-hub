@@ -115,7 +115,7 @@ jobs:
         #   p/owasp-top-ten, p/javascript, p/typescript, p/react,
         #   p/nodejsscan, p/secrets
         run: |
-          semgrep ci \
+          semgrep scan \
             --config p/owasp-top-ten \
             --config p/javascript \
             --config p/typescript \
