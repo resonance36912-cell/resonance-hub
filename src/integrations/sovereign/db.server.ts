@@ -48,6 +48,9 @@ async function request<T>(
 
   const response = await fetch(endpoint, {
     method: "POST",
+    // Validate every destination by refusing redirects, including same-host ones.
+    // Otherwise fetch can forward the procedure key and query body off loopback.
+    redirect: "error",
     headers,
     body: JSON.stringify(body),
   });
