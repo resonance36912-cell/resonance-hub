@@ -82,7 +82,7 @@ function ControlCenter() {
     onSuccess: () => setApproveExternalRun(false),
   });
   const promote = useMutation({
-    mutationFn: (r: any) =>
+    mutationFn: (r: Record<string, unknown>) =>
       promoteRecommendation({
         data: {
           title: `AI Council: ${String(r.provider)}`,
@@ -135,8 +135,8 @@ function ControlCenter() {
               />
               <Card
                 label="Local AI"
-                value={(d.localHealth as any).ok ? "ONLINE" : "OFFLINE"}
-                sub={String((d.localHealth as any).model ?? "RONS local model")}
+                value={(d.localHealth as { ok?: boolean }).ok ? "ONLINE" : "OFFLINE"}
+                sub={String((d.localHealth as { model?: unknown }).model ?? "RONS local model")}
               />
               <Card label="External AI" value="APPROVAL GATED" sub="Disabled by default" />
               <Card
@@ -572,7 +572,7 @@ function ControlCenter() {
               )}
               {council.data && (
                 <div className="mt-4 space-y-3">
-                  {(council.data.results ?? []).map((r: any) => (
+                  {(council.data.results ?? []).map((r: Record<string, unknown>) => (
                     <div
                       key={String(r.provider)}
                       className="rounded-lg border border-border bg-background p-4"
