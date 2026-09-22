@@ -32,6 +32,14 @@ type ProviderRow = {
   free_tier?: boolean;
 };
 
+type BrokerSpendResponse = {
+  summary?: Record<string, SpendWindow>;
+};
+
+type BrokerHealthResponse = {
+  providers?: ProviderRow[];
+};
+
 const COSTED_APPS = [
   { key: "epublisher", label: "Resonance ePublisher" },
   { key: "creative_studio", label: "Resonance Creative Studio" },
@@ -92,8 +100,8 @@ export const getCostingStudy = createServerFn({ method: "GET" })
 
     const [spendResult, healthResult, costResult, ledgerResult, workloadResult] =
       await Promise.allSettled([
-        brokerJson<{ summary?: Record<string, SpendWindow> }>("/v1/spend"),
-        brokerJson<{ providers?: ProviderRow[] }>("/health"),
+        brokerJson<BrokerSpendResponse>("/v1/spend"),
+        brokerJson<BrokerHealthResponse>("/health"),
         supabaseAdmin
           .from("sku_costs")
           .select("sku,cost_cents,currency,notes,updated_at")
