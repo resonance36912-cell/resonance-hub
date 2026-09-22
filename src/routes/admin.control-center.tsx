@@ -19,7 +19,23 @@ export const Route = createFileRoute("/admin/control-center")({
   component: ControlCenter,
 });
 
-const usd = (v: number | null) => v == null ? "Configure" : `$${v.toFixed(v < 1 ? 2 : 0)} / 1M`;
+type LocalHealth = {
+  ok?: boolean;
+  model?: string;
+};
+
+type CouncilResult = {
+  provider?: unknown;
+  text?: unknown;
+  model?: unknown;
+  receipt_id?: unknown;
+  ok?: boolean;
+  cost_usd?: number;
+  latency_ms?: number;
+  error?: unknown;
+};
+
+const usd = (v: number | null) => v == null ? "Configure" : `${v.toFixed(v < 1 ? 2 : 0)} / 1M`;
 
 function ControlCenter() {
   const fetchState = useServerFn(getRonsControlState);
@@ -37,7 +53,7 @@ function ControlCenter() {
   const [selectedProviders, setSelectedProviders] = useState<string[]>(["rons-local"]);
   const [approveExternalRun, setApproveExternalRun] = useState(false);
   const council = useMutation({ mutationFn: () => compare({ data: { prompt, system: "Apply RCGF v1.0. Analyze this RONS optimization request. Return recommendations only; no production authority.", providers: selectedProviders, human_approved_external: approveExternalRun } }), onSuccess: () => setApproveExternalRun(false) });
-  const promote = useMutation({ mutationFn: (r: any) => promoteRecommendation({ data: { title: `AI Council: ${String(r.provider)}`, rationale: String(r.text ?? ""), target_scope: "rons", provider: String(r.provider), model: String(r.model ?? ""), receipt_id: String(r.receipt_id ?? ""), prompt } }) });
+  const promote = useMutation({ mutationFn: (r: CouncilResult) => promoteRecommendation({ data: { title: `AI Council: ${String(r.provider)}`, rationale: String(r.text ?? ""), target_scope: "rons", provider: String(r.provider), model: String(r.model ?? ""), receipt_id: String(r.receipt_id ?? ""), prompt } }) });
   return <div className="min-h-screen bg-background text-foreground">
     <div className="mx-auto max-w-7xl px-6 py-12 space-y-10">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -52,7 +68,7 @@ function ControlCenter() {
       {d && <>
         <section className="grid md:grid-cols-4 gap-3">
           <Card label="Governance" value={d.governance.framework} sub="Human sovereignty: enforced" />
-          <Card label="Local AI" value={(d.localHealth as any).ok ? "ONLINE" : "OFFLINE"} sub={String((d.localHealth as any).model ?? "RONS local model")} />
+          <Card label="Local AI" value={(d.localHealth as LocalHealth).ok ? "ONLINE" : "OFFLINE"} sub={String((d.localHealth as LocalHealth).model ?? "RONS local model")} />
           <Card label="External AI" value="APPROVAL GATED" sub="Disabled by default" />
           <Card label="Cost feed" value="5s refresh" sub={`Updated ${new Date(d.generatedAt).toLocaleTimeString()}`} />
         </section>
@@ -90,12 +106,13 @@ function ControlCenter() {
           {costing.error && <p className="mt-4 text-sm text-red-400">{(costing.error as Error).message}</p>}
 
           {costing.data && <div className="mt-5 space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
               <Card label="Checkout" value={costing.data.promotion.checkoutLocked ? "LOCKED" : "OPEN"} sub="Commercial guard" />
               <Card label="Broker calls" value={String(costing.data.observedAllTime.calls)} sub="Legacy AI receipts · all time" />
-              <Card label="Broker API spend" value={`$${Number(costing.data.observedAllTime.cost_usd ?? 0).toFixed(6)}`} sub="Legacy AI receipts · all time" />
+              <Card label="Broker API spend" value={`${Number(costing.data.observedAllTime.cost_usd ?? 0).toFixed(6)}`} sub="Legacy AI receipts · all time" />
               <Card label="Sovereign events" value={String(costing.data.sovereignLedgerAll.events)} sub="RONS v0.12 ledger · all time" />
-              <Card label="Sovereign API spend" value={`$${Number(costing.data.sovereignLedgerAll.provider_api_cost_usd ?? 0).toFixed(6)}`} sub="Provider API charge only" />
+              <Card label="Sovereign API spend" value={`${Number(costing.data.sovereignLedgerAll.provider_api_cost_usd ?? 0).toFixed(6)}`} sub="Provider API charge only" />
+              <Card label="Workload samples" value={String(costing.data.promotionWorkload.total_samples)} sub={`Authenticated · ${costing.data.promotionWorkload.unknown_samples} unattributed`} />
               <Card label="Manual cost rows" value={String(costing.data.manualCostAssumptions.length)} sub="SKU assumptions retained" />
             </div>
 
@@ -105,7 +122,9 @@ function ControlCenter() {
                 <div className="mt-3 space-y-2">
                   {costing.data.appCoverage.map((app) => <div key={app.key} className="flex items-center justify-between gap-3 text-sm">
                     <span>{app.label}</span>
-                    <span className="text-xs text-muted-foreground">{app.configuredSkuCount} cost row(s) · {app.hasManualCostAssumptions ? "assumptions present" : "needs assumptions"}</span>
+                    <span className="text-right text-xs text-muted-foreground">
+                      {app.configuredSkuCount} cost row(s) · {app.promotionSamples} workload sample(s) · {app.promotionFailures} failure(s) · avg {(app.promotionAvgDurationMs / 1000).toFixed(1)}s · p95 {(app.promotionP95DurationMs / 1000).toFixed(1)}s
+                    </span>
                   </div>)}
                 </div>
               </div>
@@ -116,6 +135,7 @@ function ControlCenter() {
                   <div>Provider registry: {costing.data.sourceHealth.aiBrokerProviders ? "online" : "unavailable"}</div>
                   <div>SKU costs: {costing.data.sourceHealth.skuCosts ? "online" : "unavailable"}</div>
                   <div>Sovereign ledger: {costing.data.sourceHealth.sovereignCostLedger ? "online" : "unavailable"}</div>
+                  <div>Promotion workload: {costing.data.sourceHealth.promotionWorkload ? "online" : "unavailable"}</div>
                   <div>Unverified active providers: {costing.data.unverifiedActiveProviderCount}</div>
                 </div>
               </div>
@@ -136,6 +156,24 @@ function ControlCenter() {
                       <span className="text-muted-foreground">{row.events} event(s) · $${Number(row.provider_api_cost_usd).toFixed(6)} API · infra {row.infrastructure_cost_status}</span>
                     </div>)}
                   </div>}
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold">Promotion workload telemetry</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Authenticated operational samples only. No prompts, content, user IDs, or prices are exposed here; workload telemetry supports costing but does not replace the sovereign cost ledger.</p>
+                </div>
+                <span className="text-xs text-muted-foreground">{costing.data.promotionWorkload.total_samples} sample(s)</span>
+              </div>
+              <div className="mt-3 space-y-2">
+                {costing.data.promotionWorkload.apps.map((row) => <div key={row.app} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 p-3 text-xs">
+                  <span className="font-medium text-foreground">{row.app.split("_").join(" ")}</span>
+                  <span className="text-muted-foreground">
+                    {row.samples} sample(s) · {row.samples ? ((row.failures / row.samples) * 100).toFixed(1) : "0.0"}% failures · avg {(row.avg_duration_ms / 1000).toFixed(1)}s · p95 {(row.p95_duration_ms / 1000).toFixed(1)}s
+                  </span>
+                </div>)}
+              </div>
             </div>
 
             <div className="rounded-lg border border-border bg-background p-4">
@@ -162,7 +200,7 @@ function ControlCenter() {
           </div>}
         </section>
 
-        <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Governed AI Council</h2><p className="mt-2 text-sm text-muted-foreground">Choose one or more approved providers, submit one optimization request, and compare responses under the same RCGF instruction. Every successful provider response receives an append-only cost receipt.</p><div className="mt-4 flex flex-wrap gap-2">{(broker.data?.providers??[]).map((p)=>{const available=p.kind==="local"||(p.enabled&&p.approved&&p.secret_ready); const checked=selectedProviders.includes(p.id); return <label key={p.id} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${available?"border-border":"border-border opacity-40"}`}><input type="checkbox" disabled={!available||(p.kind==="local"&&checked)} checked={checked} onChange={(e)=>setSelectedProviders((cur)=>e.target.checked?[...new Set([...cur,p.id])]:cur.filter((x)=>x!==p.id))}/><span>{p.name}</span></label>})}</div>{selectedProviders.some((id)=>id!=="rons-local")&&<label className="mt-4 flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs"><input type="checkbox" checked={approveExternalRun} onChange={(e)=>setApproveExternalRun(e.target.checked)}/><span>I approve this external AI request and its provider cost for this run only. RONS will not retain this approval for future runs.</span></label>}<textarea value={prompt} onChange={(e)=>setPrompt(e.target.value)} placeholder="e.g. Audit Sync Vision rendering flow and recommend the highest-impact local optimization" className="mt-4 min-h-28 w-full rounded-lg border border-border bg-background p-3 text-sm"/><div className="mt-3 flex flex-wrap items-center gap-3"><button onClick={()=>council.mutate()} disabled={!prompt.trim()||council.isPending||selectedProviders.length===0||(selectedProviders.some((id)=>id!=="rons-local")&&!approveExternalRun)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{council.isPending?"Consulting council…":`Run ${selectedProviders.length}-provider review`}</button><span className="text-xs text-muted-foreground">Selected: {selectedProviders.join(", ")}</span></div>{council.error&&<p className="mt-3 text-sm text-red-400">{(council.error as Error).message}</p>}{council.data&&<div className="mt-4 space-y-3">{(council.data.results??[]).map((r:any)=><div key={String(r.provider)} className="rounded-lg border border-border bg-background p-4"><div className="flex flex-wrap justify-between gap-2"><p className="font-semibold">{String(r.provider)}</p><p className="text-xs text-muted-foreground">{r.ok?`$${Number(r.cost_usd??0).toFixed(6)} · ${String(r.latency_ms??0)} ms · receipt ${String(r.receipt_id??"").slice(0,10)}`:"blocked / unavailable"}</p></div><pre className="mt-3 whitespace-pre-wrap text-sm font-sans">{r.ok?String(r.text??""):String(r.error??"No output")}</pre>{r.ok&&<div className="mt-3 flex flex-wrap items-center gap-3"><button onClick={()=>promote.mutate(r)} disabled={promote.isPending} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50">Promote to ROP</button><span className="text-xs text-muted-foreground">Creates pending proposal only; separate human approval required.</span></div>}</div>)}</div>}</section>
+        <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Governed AI Council</h2><p className="mt-2 text-sm text-muted-foreground">Choose one or more approved providers, submit one optimization request, and compare responses under the same RCGF instruction. Every successful provider response receives an append-only cost receipt.</p><div className="mt-4 flex flex-wrap gap-2">{(broker.data?.providers??[]).map((p)=>{const available=p.kind==="local"||(p.enabled&&p.approved&&p.secret_ready); const checked=selectedProviders.includes(p.id); return <label key={p.id} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-xs ${available?"border-border":"border-border opacity-40"}`}><input type="checkbox" disabled={!available||(p.kind==="local"&&checked)} checked={checked} onChange={(e)=>setSelectedProviders((cur)=>e.target.checked?[...new Set([...cur,p.id])]:cur.filter((x)=>x!==p.id))}/><span>{p.name}</span></label>})}</div>{selectedProviders.some((id)=>id!=="rons-local")&&<label className="mt-4 flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs"><input type="checkbox" checked={approveExternalRun} onChange={(e)=>setApproveExternalRun(e.target.checked)}/><span>I approve this external AI request and its provider cost for this run only. RONS will not retain this approval for future runs.</span></label>}<textarea value={prompt} onChange={(e)=>setPrompt(e.target.value)} placeholder="e.g. Audit Sync Vision rendering flow and recommend the highest-impact local optimization" className="mt-4 min-h-28 w-full rounded-lg border border-border bg-background p-3 text-sm"/><div className="mt-3 flex flex-wrap items-center gap-3"><button onClick={()=>council.mutate()} disabled={!prompt.trim()||council.isPending||selectedProviders.length===0||(selectedProviders.some((id)=>id!=="rons-local")&&!approveExternalRun)} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">{council.isPending?"Consulting council…":`Run ${selectedProviders.length}-provider review`}</button><span className="text-xs text-muted-foreground">Selected: {selectedProviders.join(", ")}</span></div>{council.error&&<p className="mt-3 text-sm text-red-400">{(council.error as Error).message}</p>}{council.data&&<div className="mt-4 space-y-3">{(council.data.results??[]).map((r: CouncilResult)=><div key={String(r.provider)} className="rounded-lg border border-border bg-background p-4"><div className="flex flex-wrap justify-between gap-2"><p className="font-semibold">{String(r.provider)}</p><p className="text-xs text-muted-foreground">{r.ok?`$${Number(r.cost_usd??0).toFixed(6)} · ${String(r.latency_ms??0)} ms · receipt ${String(r.receipt_id??"").slice(0,10)}`:"blocked / unavailable"}</p></div><pre className="mt-3 whitespace-pre-wrap text-sm font-sans">{r.ok?String(r.text??""):String(r.error??"No output")}</pre>{r.ok&&<div className="mt-3 flex flex-wrap items-center gap-3"><button onClick={()=>promote.mutate(r)} disabled={promote.isPending} className="rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50">Promote to ROP</button><span className="text-xs text-muted-foreground">Creates pending proposal only; separate human approval required.</span></div>}</div>)}</div>}</section>
 
         <section className="grid lg:grid-cols-2 gap-6">
           <div className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Development council</h2><p className="mt-2 text-sm text-muted-foreground">Recommended routing: local RONS first; use OpenAI/ChatGPT, Claude, Poe or another provider only for a defined review task after approval. Compare outputs, preserve evidence, then promote only the reviewed change.</p>
