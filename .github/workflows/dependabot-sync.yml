@@ -77,7 +77,7 @@ jobs:
       #   - pull_request → the PR head branch (from the fork or same repo).
       #   - workflow_dispatch → the user-supplied `ref` input, falling back to
       #     the branch the workflow was dispatched on (github.ref_name).
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
@@ -126,7 +126,7 @@ jobs:
       - name: Upload drift diffs on failure
         id: upload_drift
         if: steps.lockfile_consistency.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dependabot-sync-drift
           path: drift-artifacts/
@@ -232,7 +232,7 @@ jobs:
         # to comment on; inspect the run Summary tab + drift artifact instead.
         if: always() && github.event_name == 'pull_request'
 
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           DRIFT_LOCK_INSTALL: ${{ steps.drift_summary.outputs.bun_lock_after_install_status }}
           DRIFT_LOCK_INSTALL_SNIPPET: ${{ steps.drift_summary.outputs.bun_lock_after_install_snippet }}
