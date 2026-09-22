@@ -19,6 +19,8 @@ export function redactForIndex(text: string): string {
     "$1[REDACTED:API_KEY]",
   );
 
+  // This replacement removes secrets; the replacement text is a public redaction marker.
+  // nosemgrep: ajinabraham.njsscan.generic.hardcoded_secrets.node_secret
   redacted = redacted.replace(
     /(\b(?:token|secret)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s;&]+)/gi,
     "$1[REDACTED:TOKEN]",
