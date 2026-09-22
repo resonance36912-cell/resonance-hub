@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -56,11 +56,11 @@ jobs:
     # the action shouldn't block security-events uploads from CodeQL/Semgrep.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # No license required for public repos or personal private repos.
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -103,9 +103,9 @@ jobs:
     # whole job before Semgrep even ran. Install Semgrep via pip on the
     # standard ubuntu-latest runner instead — same rulesets, working actions.
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install Semgrep
@@ -125,7 +125,7 @@ jobs:
             --sarif --output=semgrep.sarif || true
       - name: Upload SARIF to GitHub code scanning
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
           category: semgrep
@@ -145,7 +145,7 @@ jobs:
         # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
         id: upload-semgrep-sarif
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Artifact name includes the short SHA and workflow run ID so multiple
           # runs (e.g. re-runs, matrix retries) don't collide and each artifact
@@ -174,15 +174,15 @@ jobs:
       actions: read
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
           queries: security-extended,security-and-quality
       - name: Analyze
         id: codeql-analyze
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:javascript-typescript"
           output: codeql-results
@@ -200,7 +200,7 @@ jobs:
         # controlled by the SARIF_RETENTION_DAYS repo variable (default 14).
         id: upload-codeql-sarif
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           # Artifact name includes the workflow run ID and commit SHA for easy
           # correlation across re-runs and branches.
@@ -233,7 +233,7 @@ jobs:
       contents: read
     steps:
       - name: Post/update sticky SARIF-artifacts comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RUN_ID: ${{ github.run_id }}
           SHA: ${{ github.sha }}
