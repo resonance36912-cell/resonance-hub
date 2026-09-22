@@ -1,9 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import {
+  summarizePromotionCostingRows,
+  type PromotionCostingRawRow,
+  type PromotionWorkloadSummary,
+} from "@/lib/promotion-costing";
 
 export type BackendProvider = "supabase" | "sovereign";
 
-export type SubscriptionApp = "epublisher" | "creative_studio" | "sync_vision" | "youtube_optimizer" | "all_access";
+export type SubscriptionApp =
+  | "epublisher"
+  | "creative_studio"
+  | "sync_vision"
+  | "youtube_optimizer"
+  | "all_access";
 
 export type SubscriptionRow = {
   app: string;
@@ -21,7 +31,10 @@ export function getBackendProvider(): BackendProvider {
 }
 
 function sovereignGatewayUrl(): string {
-  return (process.env.RESONANCE_SOVEREIGN_GATEWAY_URL ?? DEFAULT_SOVEREIGN_GATEWAY).replace(/\/$/, "");
+  return (process.env.RESONANCE_SOVEREIGN_GATEWAY_URL ?? DEFAULT_SOVEREIGN_GATEWAY).replace(
+    /\/$/,
+    "",
+  );
 }
 function supabaseClient(accessToken: string) {
   const url = process.env.SUPABASE_URL;
@@ -88,7 +101,6 @@ export async function fetchSubscriptionRows(
   return (data ?? []) as SubscriptionRow[];
 }
 
-
 export async function fetchBackendUserEmail(accessToken: string): Promise<string | null> {
   if (getBackendProvider() === "sovereign") {
     const response = await fetch(`${sovereignGatewayUrl()}/v1/auth/user`, {
@@ -118,41 +130,66 @@ export async function fetchSubscriptionDetails(
   accessToken: string,
   userId: string,
 ): Promise<SubscriptionDetailRow[]> {
-  const columns = "id,app,tier,status,billing_cycle,amount_cents,currency,current_period_end,cancelled_at,updated_at";
+  const columns =
+    "id,app,tier,status,billing_cycle,amount_cents,currency,current_period_end,cancelled_at,updated_at";
   if (getBackendProvider() === "sovereign") {
     const result = await sovereignProcedure<{ rows: SubscriptionDetailRow[] }>(
-      "read_subscription_account", { user_id: userId },
+      "read_subscription_account",
+      { user_id: userId },
     );
     return result.rows;
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("subscriptions").select(columns)
-    .eq("user_id", userId).order("updated_at", { ascending: false });
+  const { data, error } = await client
+    .from("subscriptions")
+    .select(columns)
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as SubscriptionDetailRow[];
 }
 
-
 export type PlanChangeBackendRow = {
-  id: string; from_app: string | null; from_tier: string | null; to_app: string; to_tier: string;
-  change_type: string; reason: string | null; pf_payment_id: string | null; created_at: string;
+  id: string;
+  from_app: string | null;
+  from_tier: string | null;
+  to_app: string;
+  to_tier: string;
+  change_type: string;
+  reason: string | null;
+  pf_payment_id: string | null;
+  created_at: string;
 };
 
-export async function fetchPlanChangeRows(accessToken: string, userId: string): Promise<PlanChangeBackendRow[]> {
-  const columns = "id,from_app,from_tier,to_app,to_tier,change_type,reason,pf_payment_id,created_at";
+export async function fetchPlanChangeRows(
+  accessToken: string,
+  userId: string,
+): Promise<PlanChangeBackendRow[]> {
+  const columns =
+    "id,from_app,from_tier,to_app,to_tier,change_type,reason,pf_payment_id,created_at";
   if (getBackendProvider() === "sovereign") {
     const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table: "plan_changes", action: "select", columns,
-        filters: [{ column: "user_id", op: "eq", value: userId }], options: { limit: 50 } }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        table: "plan_changes",
+        action: "select",
+        columns,
+        filters: [{ column: "user_id", op: "eq", value: userId }],
+        options: { limit: 50 },
+      }),
     });
     if (!response.ok) throw new Error(`Sovereign plan-change lookup failed (${response.status})`);
     const rows = (await response.json()) as PlanChangeBackendRow[];
     return rows.sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)).slice(0, 50);
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("plan_changes").select(columns)
-    .eq("user_id", userId).order("created_at", { ascending: false }).limit(50);
+  const { data, error } = await client
+    .from("plan_changes")
+    .select(columns)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as PlanChangeBackendRow[];
 }
@@ -186,17 +223,26 @@ export async function callSovereignGovernanceProcedure<T>(
   return sovereignProcedure<T>(name, args);
 }
 
-export async function fetchCiAlertConfigRow(accessToken: string): Promise<CiAlertConfigBackendRow | null> {
+export async function fetchCiAlertConfigRow(
+  accessToken: string,
+): Promise<CiAlertConfigBackendRow | null> {
   const columns = "recipient_email,repos,enabled,default_branch_only,slack_webhook_url,updated_at";
   if (getBackendProvider() === "sovereign") {
     const rows = await sovereignDbQuery<CiAlertConfigBackendRow[]>({
-      table: "ci_alert_config", action: "select", columns,
-      filters: [{ column: "id", op: "eq", value: 1 }], options: { limit: 1 },
+      table: "ci_alert_config",
+      action: "select",
+      columns,
+      filters: [{ column: "id", op: "eq", value: 1 }],
+      options: { limit: 1 },
     });
     return rows[0] ?? null;
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("ci_alert_config").select(columns).eq("id", 1).maybeSingle();
+  const { data, error } = await client
+    .from("ci_alert_config")
+    .select(columns)
+    .eq("id", 1)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return (data ?? null) as unknown as CiAlertConfigBackendRow | null;
 }
@@ -209,19 +255,29 @@ export async function saveCiAlertConfigRow(
   const values = { id: 1, ...input, updated_at: new Date().toISOString() };
   if (getBackendProvider() === "sovereign") {
     const updated = await sovereignDbQuery<CiAlertConfigBackendRow[]>({
-      table: "ci_alert_config", action: "update", values,
-      filters: [{ column: "id", op: "eq", value: 1 }], options: {},
+      table: "ci_alert_config",
+      action: "update",
+      values,
+      filters: [{ column: "id", op: "eq", value: 1 }],
+      options: {},
     });
     if (updated[0]) return updated[0];
     const inserted = await sovereignDbQuery<CiAlertConfigBackendRow[]>({
-      table: "ci_alert_config", action: "insert", values, filters: [], options: {},
+      table: "ci_alert_config",
+      action: "insert",
+      values,
+      filters: [],
+      options: {},
     });
     if (!inserted[0]) throw new Error("Sovereign CI alert configuration write returned no row");
     return inserted[0];
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("ci_alert_config").upsert(values, { onConflict: "id" })
-    .select(columns).single();
+  const { data, error } = await client
+    .from("ci_alert_config")
+    .upsert(values, { onConflict: "id" })
+    .select(columns)
+    .single();
   if (error) throw new Error(error.message);
   return data as unknown as CiAlertConfigBackendRow;
 }
@@ -240,22 +296,32 @@ export async function listCiRepoPresetRows(
   const columns = "id,name,repos,updated_at";
   if (getBackendProvider() === "sovereign") {
     return sovereignDbQuery<CiRepoPresetBackendRow[]>({
-      table: "ci_repo_presets", action: "select", columns,
+      table: "ci_repo_presets",
+      action: "select",
+      columns,
       filters: [{ column: "user_id", op: "eq", value: userId }],
       options: { order: { column: "name", ascending: true }, limit: 100 },
     });
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("ci_repo_presets").select(columns)
-    .eq("user_id", userId).order("name", { ascending: true });
+  const { data, error } = await client
+    .from("ci_repo_presets")
+    .select(columns)
+    .eq("user_id", userId)
+    .order("name", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as CiRepoPresetBackendRow[];
 }
 
 async function findSovereignPresetId(userId: string, name: string): Promise<string | null> {
   const rows = await sovereignDbQuery<Array<{ id: string }>>({
-    table: "ci_repo_presets", action: "select", columns: "id",
-    filters: [{ column: "user_id", op: "eq", value: userId }, { column: "name", op: "eq", value: name }],
+    table: "ci_repo_presets",
+    action: "select",
+    columns: "id",
+    filters: [
+      { column: "user_id", op: "eq", value: userId },
+      { column: "name", op: "eq", value: name },
+    ],
     options: { limit: 1 },
   });
   return rows[0]?.id ?? null;
@@ -273,31 +339,46 @@ export async function saveCiRepoPresetRow(
     const existingId = await findSovereignPresetId(userId, name);
     if (existingId) {
       const updated = await sovereignDbQuery<CiRepoPresetBackendRow[]>({
-        table: "ci_repo_presets", action: "update", values: { repos, updated_at },
-        filters: [{ column: "user_id", op: "eq", value: userId }, { column: "id", op: "eq", value: existingId }],
+        table: "ci_repo_presets",
+        action: "update",
+        values: { repos, updated_at },
+        filters: [
+          { column: "user_id", op: "eq", value: userId },
+          { column: "id", op: "eq", value: existingId },
+        ],
         options: {},
       });
       if (updated[0]) return updated[0];
     }
     const inserted = await sovereignDbQuery<CiRepoPresetBackendRow[]>({
-      table: "ci_repo_presets", action: "upsert",
-      values: { user_id: userId, name, repos, updated_at }, filters: [], options: {},
+      table: "ci_repo_presets",
+      action: "upsert",
+      values: { user_id: userId, name, repos, updated_at },
+      filters: [],
+      options: {},
     });
     if (inserted[0]) return inserted[0];
     const retryId = await findSovereignPresetId(userId, name);
     if (!retryId) throw new Error("Sovereign CI preset write returned no row");
     const retried = await sovereignDbQuery<CiRepoPresetBackendRow[]>({
-      table: "ci_repo_presets", action: "update", values: { repos, updated_at },
-      filters: [{ column: "user_id", op: "eq", value: userId }, { column: "id", op: "eq", value: retryId }], options: {},
+      table: "ci_repo_presets",
+      action: "update",
+      values: { repos, updated_at },
+      filters: [
+        { column: "user_id", op: "eq", value: userId },
+        { column: "id", op: "eq", value: retryId },
+      ],
+      options: {},
     });
     if (!retried[0]) throw new Error("Sovereign CI preset update returned no row");
     return retried[0];
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("ci_repo_presets").upsert(
-    { user_id: userId, name, repos, updated_at },
-    { onConflict: "user_id,name" },
-  ).select(columns).single();
+  const { data, error } = await client
+    .from("ci_repo_presets")
+    .upsert({ user_id: userId, name, repos, updated_at }, { onConflict: "user_id,name" })
+    .select(columns)
+    .single();
   if (error) throw new Error(error.message);
   return data as unknown as CiRepoPresetBackendRow;
 }
@@ -309,13 +390,24 @@ export async function deleteCiRepoPresetRow(
 ): Promise<void> {
   if (getBackendProvider() === "sovereign") {
     await sovereignDbQuery<CiRepoPresetBackendRow[]>({
-      table: "ci_repo_presets", action: "delete", columns: "*", values: null,
-      filters: [{ column: "user_id", op: "eq", value: userId }, { column: "id", op: "eq", value: id }], options: {},
+      table: "ci_repo_presets",
+      action: "delete",
+      columns: "*",
+      values: null,
+      filters: [
+        { column: "user_id", op: "eq", value: userId },
+        { column: "id", op: "eq", value: id },
+      ],
+      options: {},
     });
     return;
   }
   const client = supabaseClient(accessToken);
-  const { error } = await client.from("ci_repo_presets").delete().eq("user_id", userId).eq("id", id);
+  const { error } = await client
+    .from("ci_repo_presets")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", id);
   if (error) throw new Error(error.message);
 }
 
@@ -336,9 +428,12 @@ async function sovereignProcedure<T>(name: string, args: Record<string, unknown>
   const nodeFsPromises = "node:fs/promises";
   const { readFile } = await import(/* @vite-ignore */ nodeFsPromises);
   const key = (await readFile(path, "utf8")).trim();
-  if (key.length < 32 || key.length > 4096) throw new Error("Sovereign gateway procedure key is invalid");
+  if (key.length < 32 || key.length > 4096)
+    throw new Error("Sovereign gateway procedure key is invalid");
   const endpoint = new URL(`${sovereignGatewayUrl()}/v1/db/procedure`);
-  const loopback = endpoint.protocol === "http:" && ["127.0.0.1", "localhost", "[::1]"].includes(endpoint.hostname);
+  const loopback =
+    endpoint.protocol === "http:" &&
+    ["127.0.0.1", "localhost", "[::1]"].includes(endpoint.hostname);
   if (!loopback) throw new Error("Sovereign procedure gateway must be loopback HTTP");
   const response = await fetch(endpoint, {
     method: "POST",
@@ -370,10 +465,21 @@ export type CostUsageSummaryWindow = {
   rows: CostUsageSummaryRow[];
 };
 
-export type SovereignCostUsageSummary = Record<"today" | "7d" | "30d" | "all", CostUsageSummaryWindow>;
+export type SovereignCostUsageSummary = Record<
+  "today" | "7d" | "30d" | "all",
+  CostUsageSummaryWindow
+>;
 
 export type SovereignCostUsageEvent = {
-  app: "epublisher" | "creative_studio" | "sync_vision" | "youtube_optimizer" | "all_access" | "hub" | "rons" | "unknown";
+  app:
+    | "epublisher"
+    | "creative_studio"
+    | "sync_vision"
+    | "youtube_optimizer"
+    | "all_access"
+    | "hub"
+    | "rons"
+    | "unknown";
   operation: string;
   provider: string;
   model: string | null;
@@ -381,7 +487,15 @@ export type SovereignCostUsageEvent = {
   infrastructure_cost_status: "unmeasured" | "measured" | "not_applicable";
   input_units: number | null;
   output_units: number | null;
-  unit_kind: "tokens" | "bytes" | "seconds" | "frames" | "operations" | "requests" | "pixels" | null;
+  unit_kind:
+    | "tokens"
+    | "bytes"
+    | "seconds"
+    | "frames"
+    | "operations"
+    | "requests"
+    | "pixels"
+    | null;
   duration_ms: number | null;
   evidence_source: string;
   external_provider: boolean;
@@ -400,6 +514,20 @@ export async function fetchSovereignCostUsageSummary(): Promise<SovereignCostUsa
   return result.summary;
 }
 
+export async function fetchPromotionCostingSummary(): Promise<PromotionWorkloadSummary> {
+  if (getBackendProvider() !== "sovereign") {
+    throw new Error("Promotion costing workload requires sovereign backend mode");
+  }
+  const rows = await sovereignDbQuery<PromotionCostingRawRow[]>({
+    table: "feature_usage",
+    action: "select",
+    columns: "feature,metadata,created_at",
+    filters: [{ column: "feature", op: "eq", value: "promotion_costing" }],
+    options: { order: { column: "created_at", ascending: false }, limit: 10000 },
+  });
+  return summarizePromotionCostingRows(rows);
+}
+
 export async function recordSovereignCostUsage(
   event: SovereignCostUsageEvent,
 ): Promise<{ id: string; occurred_at: string; request_id: string; duplicate: boolean }> {
@@ -413,53 +541,107 @@ const INVOICE_COLS =
   "id,number,user_id,subscription_id,sku,app,tier,billing_cycle,amount_cents,currency,status,recipient_email,pf_payment_id,m_payment_id,provider,issued_at,refunded_at,pdf_path,metadata,created_at,updated_at";
 
 export type InvoiceBackendRow = {
-  id: string; number: string; user_id: string; subscription_id: string | null;
-  sku: string | null; app: string | null; tier: string | null; billing_cycle: string | null;
-  amount_cents: number; currency: string;
+  id: string;
+  number: string;
+  user_id: string;
+  subscription_id: string | null;
+  sku: string | null;
+  app: string | null;
+  tier: string | null;
+  billing_cycle: string | null;
+  amount_cents: number;
+  currency: string;
   status: "paid" | "pending" | "refunded" | "failed" | "cancelled";
-  recipient_email: string | null; pf_payment_id: string | null; m_payment_id: string | null;
-  provider: string; issued_at: string; refunded_at: string | null; pdf_path: string | null;
+  recipient_email: string | null;
+  pf_payment_id: string | null;
+  m_payment_id: string | null;
+  provider: string;
+  issued_at: string;
+  refunded_at: string | null;
+  pdf_path: string | null;
   metadata: Record<string, string | number | boolean | null> | null;
-  created_at: string; updated_at: string;
+  created_at: string;
+  updated_at: string;
 };
-export async function fetchAccountInvoiceRows(accessToken: string, userId: string): Promise<InvoiceBackendRow[]> {
+export async function fetchAccountInvoiceRows(
+  accessToken: string,
+  userId: string,
+): Promise<InvoiceBackendRow[]> {
   if (getBackendProvider() === "sovereign") {
-    const result = await sovereignProcedure<{ rows: InvoiceBackendRow[] }>("read_account_invoices", {
-      user_id: userId, id: null, pf_payment_id: null, limit: 200,
-    });
+    const result = await sovereignProcedure<{ rows: InvoiceBackendRow[] }>(
+      "read_account_invoices",
+      {
+        user_id: userId,
+        id: null,
+        pf_payment_id: null,
+        limit: 200,
+      },
+    );
     return result.rows;
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("invoices" as never).select(INVOICE_COLS)
-    .eq("user_id", userId).order("issued_at", { ascending: false }).limit(200);
+  const { data, error } = await client
+    .from("invoices" as never)
+    .select(INVOICE_COLS)
+    .eq("user_id", userId)
+    .order("issued_at", { ascending: false })
+    .limit(200);
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as InvoiceBackendRow[];
 }
 
-async function sovereignInvoiceLookup(userId: string, key: { id?: string; pfPaymentId?: string }): Promise<InvoiceBackendRow | null> {
+async function sovereignInvoiceLookup(
+  userId: string,
+  key: { id?: string; pfPaymentId?: string },
+): Promise<InvoiceBackendRow | null> {
   const admin = await hasServerBackendRole(userId, "admin");
   const args = { id: key.id ?? null, pf_payment_id: key.pfPaymentId ?? null, limit: 1 };
   const result = admin
-    ? await sovereignProcedure<{ rows: InvoiceBackendRow[] }>("read_admin_invoices", { status: null, app: null, q: null, ...args })
-    : await sovereignProcedure<{ rows: InvoiceBackendRow[] }>("read_account_invoices", { user_id: userId, ...args });
+    ? await sovereignProcedure<{ rows: InvoiceBackendRow[] }>("read_admin_invoices", {
+        status: null,
+        app: null,
+        q: null,
+        ...args,
+      })
+    : await sovereignProcedure<{ rows: InvoiceBackendRow[] }>("read_account_invoices", {
+        user_id: userId,
+        ...args,
+      });
   return result.rows[0] ?? null;
 }
 
-export async function fetchInvoiceByIdRow(accessToken: string, userId: string, id: string): Promise<InvoiceBackendRow | null> {
+export async function fetchInvoiceByIdRow(
+  accessToken: string,
+  userId: string,
+  id: string,
+): Promise<InvoiceBackendRow | null> {
   if (getBackendProvider() === "sovereign") return sovereignInvoiceLookup(userId, { id });
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("invoices" as never).select(INVOICE_COLS).eq("id", id).maybeSingle();
+  const { data, error } = await client
+    .from("invoices" as never)
+    .select(INVOICE_COLS)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return (data as unknown as InvoiceBackendRow) ?? null;
 }
-export async function findInvoiceByPfPaymentIdRow(accessToken: string, userId: string, pfPaymentId: string): Promise<{ id: string } | null> {
+export async function findInvoiceByPfPaymentIdRow(
+  accessToken: string,
+  userId: string,
+  pfPaymentId: string,
+): Promise<{ id: string } | null> {
   if (getBackendProvider() === "sovereign") {
     const row = await sovereignInvoiceLookup(userId, { pfPaymentId });
     return row ? { id: row.id } : null;
   }
   const client = supabaseClient(accessToken);
-  const { data, error } = await client.from("invoices" as never).select("id")
-    .eq("pf_payment_id", pfPaymentId).order("issued_at", { ascending: false }).limit(1).maybeSingle();
+  const { data, error } = await client
+    .from("invoices" as never)
+    .select("id")
+    .eq("pf_payment_id", pfPaymentId)
+    .order("issued_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return (data as { id: string } | null) ?? null;
 }
@@ -470,29 +652,55 @@ export async function fetchAdminInvoiceRows(
 ): Promise<InvoiceBackendRow[]> {
   if (getBackendProvider() === "sovereign") {
     const result = await sovereignProcedure<{ rows: InvoiceBackendRow[] }>("read_admin_invoices", {
-      status: filters.status ?? null, app: filters.app ?? null, q: filters.q ?? null,
-      id: null, pf_payment_id: null, limit: 500,
+      status: filters.status ?? null,
+      app: filters.app ?? null,
+      q: filters.q ?? null,
+      id: null,
+      pf_payment_id: null,
+      limit: 500,
     });
     return result.rows;
   }
   const client = supabaseClient(accessToken);
-  let query = client.from("invoices" as never).select(INVOICE_COLS)
-    .order("issued_at", { ascending: false }).limit(500);
+  let query = client
+    .from("invoices" as never)
+    .select(INVOICE_COLS)
+    .order("issued_at", { ascending: false })
+    .limit(500);
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.app) query = query.eq("app", filters.app);
-  if (filters.q) query = query.or(`number.ilike.%${filters.q}%,pf_payment_id.ilike.%${filters.q}%,recipient_email.ilike.%${filters.q}%`);
+  if (filters.q)
+    query = query.or(
+      `number.ilike.%${filters.q}%,pf_payment_id.ilike.%${filters.q}%,recipient_email.ilike.%${filters.q}%`,
+    );
   const { data, error } = await query;
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as InvoiceBackendRow[];
 }
-export type CreditWalletBackendRow = { app: string; balance: number; currency: string; updated_at: string };
+export type CreditWalletBackendRow = {
+  app: string;
+  balance: number;
+  currency: string;
+  updated_at: string;
+};
 export type ReceiptBackendRow = {
-  id: string; received_at: string; sku: string | null; app: string | null;
-  amount_cents: number | null; pf_payment_id: string | null; payment_status: string | null;
+  id: string;
+  received_at: string;
+  sku: string | null;
+  app: string | null;
+  amount_cents: number | null;
+  pf_payment_id: string | null;
+  payment_status: string | null;
 };
 export type AdminLedgerBackendRow = {
-  id: string; user_id: string; app: string; delta: number; balance_after: number;
-  reason: string; sku: string | null; created_at: string;
+  id: string;
+  user_id: string;
+  app: string;
+  delta: number;
+  balance_after: number;
+  reason: string;
+  sku: string | null;
+  created_at: string;
 };
 
 export async function fetchBillingAccountRows(
@@ -500,24 +708,39 @@ export async function fetchBillingAccountRows(
   userId: string,
 ): Promise<{ wallets: CreditWalletBackendRow[]; receipts: ReceiptBackendRow[] }> {
   if (getBackendProvider() === "sovereign") {
-    const result = await sovereignProcedure<{ wallets: CreditWalletBackendRow[]; receipts: ReceiptBackendRow[] }>(
-      "read_billing_account", { user_id: userId },
-    );
+    const result = await sovereignProcedure<{
+      wallets: CreditWalletBackendRow[];
+      receipts: ReceiptBackendRow[];
+    }>("read_billing_account", { user_id: userId });
     return { wallets: result.wallets, receipts: result.receipts };
   }
   const client = supabaseClient(accessToken);
   const [walletsRes, receiptsRes] = await Promise.all([
-    client.from("credit_wallets").select("app,balance,currency,updated_at")
-      .eq("user_id", userId).order("app", { ascending: true }),
-    client.from("payfast_itn_logs").select("id,received_at,sku,amount_cents,pf_payment_id,payment_status,raw_payload")
-      .eq("user_id", userId).eq("http_status", 200).order("received_at", { ascending: false }).limit(25),
+    client
+      .from("credit_wallets")
+      .select("app,balance,currency,updated_at")
+      .eq("user_id", userId)
+      .order("app", { ascending: true }),
+    client
+      .from("payfast_itn_logs")
+      .select("id,received_at,sku,amount_cents,pf_payment_id,payment_status,raw_payload")
+      .eq("user_id", userId)
+      .eq("http_status", 200)
+      .order("received_at", { ascending: false })
+      .limit(25),
   ]);
   if (walletsRes.error) throw new Error(walletsRes.error.message);
   const receipts = (receiptsRes.data ?? []).map((r) => {
     const payload = (r.raw_payload ?? {}) as Record<string, string>;
-    return { id: r.id, received_at: r.received_at, sku: r.sku,
+    return {
+      id: r.id,
+      received_at: r.received_at,
+      sku: r.sku,
       app: payload.custom_str3 ?? r.sku?.split(":")[0] ?? null,
-      amount_cents: r.amount_cents, pf_payment_id: r.pf_payment_id, payment_status: r.payment_status };
+      amount_cents: r.amount_cents,
+      pf_payment_id: r.pf_payment_id,
+      payment_status: r.payment_status,
+    };
   });
   return { wallets: (walletsRes.data ?? []) as CreditWalletBackendRow[], receipts };
 }
@@ -528,7 +751,8 @@ export async function fetchAdminBillingRows(): Promise<{
 }> {
   if (getBackendProvider() === "sovereign") {
     const result = await sovereignProcedure<{
-      subscriptions: Array<{ app: string; status: string }>; wallets: Array<{ app: string; balance: number }>;
+      subscriptions: Array<{ app: string; status: string }>;
+      wallets: Array<{ app: string; balance: number }>;
       ledger: AdminLedgerBackendRow[];
     }>("read_billing_admin", {});
     return { subscriptions: result.subscriptions, wallets: result.wallets, ledger: result.ledger };
@@ -537,8 +761,11 @@ export async function fetchAdminBillingRows(): Promise<{
   const [subs, wallets, ledger] = await Promise.all([
     supabaseAdmin.from("subscriptions").select("app,status").eq("status", "active"),
     supabaseAdmin.from("credit_wallets").select("app,balance"),
-    supabaseAdmin.from("credit_ledger").select("id,user_id,app,delta,balance_after,reason,sku,created_at")
-      .order("created_at", { ascending: false }).limit(50),
+    supabaseAdmin
+      .from("credit_ledger")
+      .select("id,user_id,app,delta,balance_after,reason,sku,created_at")
+      .order("created_at", { ascending: false })
+      .limit(50),
   ]);
   if (subs.error) throw new Error(subs.error.message);
   if (wallets.error) throw new Error(wallets.error.message);
@@ -551,8 +778,16 @@ export async function fetchAdminBillingRows(): Promise<{
 }
 
 export type PayfastLaunchAuditRow = {
-  user_id: string; sku: string; m_payment_id: string; amount_cents: number; currency: "ZAR";
-  action_url: string; sandbox: boolean; source_ip: string | null; user_agent: string | null; return_to: string | null;
+  user_id: string;
+  sku: string;
+  m_payment_id: string;
+  amount_cents: number;
+  currency: "ZAR";
+  action_url: string;
+  sandbox: boolean;
+  source_ip: string | null;
+  user_agent: string | null;
+  return_to: string | null;
 };
 
 export type PayfastItnAttemptRow = {
@@ -601,15 +836,20 @@ export async function recordPayfastItnAttempt(row: PayfastItnAttemptRow): Promis
   if (getBackendProvider() !== "sovereign") {
     throw new Error("Sovereign PayFast ITN audit is only available with the sovereign backend");
   }
-  await sovereignProcedure<{ procedure: "record_payfast_itn_attempt"; id: string; received_at: string }>(
-    "record_payfast_itn_attempt",
-    { row },
-  );
+  await sovereignProcedure<{
+    procedure: "record_payfast_itn_attempt";
+    id: string;
+    received_at: string;
+  }>("record_payfast_itn_attempt", { row });
 }
 
-export async function settlePayfastItn(event: PayfastItnSettlementEvent): Promise<PayfastItnSettlementResult> {
+export async function settlePayfastItn(
+  event: PayfastItnSettlementEvent,
+): Promise<PayfastItnSettlementResult> {
   if (getBackendProvider() !== "sovereign") {
-    throw new Error("Sovereign PayFast ITN settlement is only available with the sovereign backend");
+    throw new Error(
+      "Sovereign PayFast ITN settlement is only available with the sovereign backend",
+    );
   }
   return sovereignProcedure<PayfastItnSettlementResult>("settle_payfast_itn", { event });
 }
@@ -640,7 +880,12 @@ export async function writeEntitlementAudit(record: EntitlementAuditRecord): Pro
     const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table: "entitlement_log", action: "insert", values: record, filters: [] }),
+      body: JSON.stringify({
+        table: "entitlement_log",
+        action: "insert",
+        values: record,
+        filters: [],
+      }),
     });
     if (!response.ok) throw new Error(`Sovereign entitlement audit failed (${response.status})`);
     return;
@@ -654,28 +899,67 @@ export type BackendRole = "admin" | "user";
 
 async function hasSovereignRole(userId: string, role: BackendRole): Promise<boolean> {
   const response = await fetch(`${sovereignGatewayUrl()}/v1/db/query`, {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ table: "user_roles", action: "select", columns: "role",
-      filters: [{ column: "user_id", op: "eq", value: userId }, { column: "role", op: "eq", value: role }],
-      options: { limit: 1 } }),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      table: "user_roles",
+      action: "select",
+      columns: "role",
+      filters: [
+        { column: "user_id", op: "eq", value: userId },
+        { column: "role", op: "eq", value: role },
+      ],
+      options: { limit: 1 },
+    }),
   });
   if (!response.ok) throw new Error(`Sovereign role lookup failed (${response.status})`);
   const rows = (await response.json()) as Array<{ role?: string }>;
   return rows.some((row) => row.role === role);
 }
 
-export async function hasBackendRole(userId: string, role: BackendRole, hostedClient?: unknown): Promise<boolean> {
+type HostedRoleQueryResult = {
+  data: Array<{ role?: string }> | null;
+  error: { message?: string } | null;
+};
+
+type HostedRoleQuery = {
+  select(columns: string): HostedRoleQuery;
+  eq(column: string, value: unknown): HostedRoleQuery;
+  limit(count: number): Promise<HostedRoleQueryResult>;
+};
+
+type HostedRoleClient = {
+  from(table: string): HostedRoleQuery;
+};
+
+export async function hasBackendRole(
+  userId: string,
+  role: BackendRole,
+  hostedClient?: unknown,
+): Promise<boolean> {
   if (getBackendProvider() === "sovereign") return hasSovereignRole(userId, role);
   if (!hostedClient) throw new Error("Hosted role client is required");
-  const client = hostedClient as any;
-  const { data, error } = await client.from("user_roles").select("role").eq("user_id", userId).eq("role", role).limit(1);
+  const client = hostedClient as HostedRoleClient;
+  const { data, error } = await client
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", role)
+    .limit(1);
   if (error) throw new Error(error.message ?? "Hosted role lookup failed");
   const authoritative = Boolean(data?.some((row: { role?: string }) => row.role === role));
   if (process.env.RONS_ROLE_SHADOW === "1") {
     try {
       const sovereign = await hasSovereignRole(userId, role);
-      console.info("[RONS role shadow]", { role, match: authoritative === sovereign, authoritative, sovereign });
-    } catch { console.info("[RONS role shadow]", { role, unavailable: true }); }
+      console.info("[RONS role shadow]", {
+        role,
+        match: authoritative === sovereign,
+        authoritative,
+        sovereign,
+      });
+    } catch {
+      console.info("[RONS role shadow]", { role, unavailable: true });
+    }
   }
   return authoritative;
 }
@@ -694,18 +978,32 @@ export async function recordSovereignIdentityObservation(userId: string): Promis
   const base = `${sovereignGatewayUrl()}/v1/db/query`;
   const headers = { "Content-Type": "application/json" };
   const observed = {
-    provider: "supabase", provider_subject: userId, sovereign_user_id: null,
-    status: "observed", first_seen_at: now, last_seen_at: now, claimed_at: null,
+    provider: "supabase",
+    provider_subject: userId,
+    sovereign_user_id: null,
+    status: "observed",
+    first_seen_at: now,
+    last_seen_at: now,
+    claimed_at: null,
   };
   const inserted = await fetch(base, {
-    method: "POST", headers,
-    body: JSON.stringify({ table: "identity_links", action: "upsert", values: observed, filters: [] }),
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      table: "identity_links",
+      action: "upsert",
+      values: observed,
+      filters: [],
+    }),
   });
   if (!inserted.ok) throw new Error(`Identity shadow insert failed (${inserted.status})`);
   const touched = await fetch(base, {
-    method: "POST", headers,
+    method: "POST",
+    headers,
     body: JSON.stringify({
-      table: "identity_links", action: "update", values: { last_seen_at: now },
+      table: "identity_links",
+      action: "update",
+      values: { last_seen_at: now },
       filters: [
         { column: "provider", op: "eq", value: "supabase" },
         { column: "provider_subject", op: "eq", value: userId },
@@ -723,12 +1021,7 @@ export type SubscriptionShadowComparison = {
 
 function normalizedSubscriptionRows(rows: readonly SubscriptionRow[]): string[] {
   return rows
-    .map((row) => JSON.stringify([
-      row.app,
-      row.tier,
-      row.status,
-      row.current_period_end ?? null,
-    ]))
+    .map((row) => JSON.stringify([row.app, row.tier, row.status, row.current_period_end ?? null]))
     .sort();
 }
 
@@ -739,7 +1032,9 @@ export function compareSubscriptionShadow(
   const authoritative = normalizedSubscriptionRows(authoritativeRows);
   const sovereign = normalizedSubscriptionRows(sovereignRows);
   return {
-    match: authoritative.length === sovereign.length && authoritative.every((value, index) => value === sovereign[index]),
+    match:
+      authoritative.length === sovereign.length &&
+      authoritative.every((value, index) => value === sovereign[index]),
     authoritativeCount: authoritative.length,
     sovereignCount: sovereign.length,
   };
