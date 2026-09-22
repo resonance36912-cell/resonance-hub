@@ -9,9 +9,7 @@ function getOrCreateSessionId(): string {
     const KEY = "resonance_sid";
     let sid = sessionStorage.getItem(KEY);
     if (!sid) {
-      sid =
-        // nosemgrep: ajinabraham.njsscan.crypto.crypto_node.node_insecure_random_generator -- non-security session id fallback for anonymous visit tracking.
-        (crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      sid = crypto.randomUUID();
       sessionStorage.setItem(KEY, sid);
     }
     return sid;
