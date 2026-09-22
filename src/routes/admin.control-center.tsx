@@ -9,6 +9,7 @@ import {
   getAiBrokerState,
   setAiProviderState,
   promoteCouncilRecommendation,
+  type CouncilResult,
 } from "@/lib/ai-broker.functions";
 import { getCostingStudy } from "@/lib/costing-study.functions";
 import { useState } from "react";
@@ -37,17 +38,6 @@ export const Route = createFileRoute("/admin/control-center")({
 type LocalHealth = {
   ok?: boolean;
   model?: string;
-};
-
-type CouncilResult = {
-  provider?: unknown;
-  text?: unknown;
-  model?: unknown;
-  receipt_id?: unknown;
-  ok?: boolean;
-  cost_usd?: number;
-  latency_ms?: number;
-  error?: unknown;
 };
 
 const usd = (v: number | null) =>
