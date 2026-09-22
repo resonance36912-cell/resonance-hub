@@ -6,7 +6,46 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  security-scan-profile:
+    name: Detect security-scan RPC source profile
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.profile.outputs.present }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            src/lib/github-security.functions.ts
+            scripts/lib/security-scan-auth.test.ts
+            scripts/lib/security-scan-success.test.ts
+            scripts/lib/security-scan-decode.test.ts
+            scripts/lib/security-scan-grouping.test.ts
+            scripts/lib/security-scan-zero-alerts.test.ts
+            scripts/lib/security-scan-mock.ts
+            scripts/lib/security-scan-fetch-recorder.ts
+          )
+          present=0
+          for file in "${files[@]}"; do
+            if [ -f "$file" ]; then present=$((present + 1)); fi
+          done
+          if [ "$present" -eq 0 ]; then
+            echo 'present=false' >> "$GITHUB_OUTPUT"
+            echo 'Security-scan RPC feature and suites are absent from this source profile; RPC integration is not applicable.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$present" -eq "${#files[@]}" ]; then
+            echo 'present=true' >> "$GITHUB_OUTPUT"
+          else
+            echo '::error::Incomplete security-scan RPC feature/test set. Restore the missing files.'
+            exit 1
+          fi
+
   verify:
     name: Run all prebuild verification scripts
     runs-on: ubuntu-latest
@@ -339,7 +378,8 @@ jobs:
   # ---------------------------------------------------------------------------
   security-scan-integration:
     name: Security scan RPC integration tests (${{ matrix.mode }})
-    needs: verify
+    needs: [verify, security-scan-profile]
+    if: needs.security-scan-profile.outputs.present == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
