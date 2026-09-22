@@ -7,6 +7,7 @@ import {
 
 const SESSION_COOKIE = "rons_sovereign_session";
 const DEFAULT_GATEWAY = "http://127.0.0.1:58600";
+const DEFAULT_AUTH = "http://127.0.0.1:58601";
 
 function bearerToken(request: Request): string | null {
   const header = request.headers.get("authorization") ?? "";
@@ -38,7 +39,8 @@ async function resolveSovereignCookieUserId(
   const token = cookieToken(request) ?? bearerToken(request);
   if (!token) return null;
   const gateway = (process.env.RESONANCE_SOVEREIGN_GATEWAY_URL ?? DEFAULT_GATEWAY).replace(/\/$/, "");
-  const response = await fetchImpl(`${gateway}/v1/auth/user`, {
+  const auth = (process.env.RESONANCE_SOVEREIGN_AUTH_URL ?? gateway).replace(/\/$/, "");
+  const response = await fetchImpl(`${auth}/v1/auth/user`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!response.ok) return null;
