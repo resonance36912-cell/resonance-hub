@@ -48,7 +48,7 @@ export const recordVisit = createServerFn({ method: "POST" })
         console.error("[visits] insert failed", error);
         return { ok: false };
       }
-      turn { ok: true };
+      return { ok: true };
     } catch (error) {
       // Anonymous visit telemetry is optional and must never make a public page unavailable
       // when the selected backend provider is not configured on a fallback deployment.
