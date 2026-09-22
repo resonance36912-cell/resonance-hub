@@ -66,8 +66,7 @@ const LOCAL_IMAGE_SERVICE = "http://127.0.0.1:7865/v1/images/generate";
 export const Route = createFileRoute("/api/public/generate/creative-studio/poster")({
   server: {
     handlers: {
-      OPTIONS: async () =>
-        new Response(null, { status: 204, headers: CORS }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
       POST: async ({ request }) => {
         // 1. Parse + validate body BEFORE the gate so we 400 cheaply on
@@ -116,6 +115,8 @@ export const Route = createFileRoute("/api/public/generate/creative-studio/poste
 
         let imageRes: Response;
         try {
+          // LOCAL_IMAGE_SERVICE is the fixed loopback image service, not a remote HTTP endpoint.
+          // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
           imageRes = await fetch(LOCAL_IMAGE_SERVICE, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

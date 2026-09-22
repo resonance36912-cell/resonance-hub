@@ -27,7 +27,10 @@ function p95(values: number[]): number {
 }
 
 function summarise(rows: PerfRow[]): Bucket[] {
-  const map = new Map<string, { app_id: string; event_type: string; durs: number[]; errs: number; n: number }>();
+  const map = new Map<
+    string,
+    { app_id: string; event_type: string; durs: number[]; errs: number; n: number }
+  >();
   for (const r of rows) {
     const key = `${r.app_id}::${r.event_type}`;
     let b = map.get(key);
@@ -83,6 +86,8 @@ Rules:
 
   let res: Response;
   try {
+    // Intentional loopback-only inference service; no traffic leaves this host.
+    // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
     res = await fetch("http://127.0.0.1:7868/v1/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -138,7 +143,9 @@ export const Route = createFileRoute("/api/public/rop/cron/cross-app-scan")({
           .limit(20000);
         if (perfErr) {
           console.error("[rop] perf read failed", perfErr);
-          return new Response(JSON.stringify({ ok: false, error: perfErr.message }), { status: 500 });
+          return new Response(JSON.stringify({ ok: false, error: perfErr.message }), {
+            status: 500,
+          });
         }
 
         const { data: apps } = await supabaseAdmin
@@ -153,7 +160,7 @@ export const Route = createFileRoute("/api/public/rop/cron/cross-app-scan")({
         const today = new Date().toISOString().slice(0, 10);
         let inserted = 0;
         for (const s of suggestions) {
-          const appId = s.app ? slugToId.get(s.app) ?? null : null;
+          const appId = s.app ? (slugToId.get(s.app) ?? null) : null;
           const localId = `cross_app:${s.target_scope ?? s.title}:${today}`;
           // dedupe via evidence->>local_id
           const { data: existing } = await supabaseAdmin
