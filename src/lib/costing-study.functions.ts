@@ -79,10 +79,10 @@ async function assertAdmin(userId: string) {
   }
 }
 
-async function brokerJson(path: string) {
+async function brokerJson<T>(path: string): Promise<T> {
   const response = await fetch(BROKER + path, { signal: AbortSignal.timeout(8000) });
   if (!response.ok) throw new Error(`AI broker HTTP ${response.status}`);
-  return response.json() as Promise<any>;
+  return response.json() as Promise<T>;
 }
 
 export const getCostingStudy = createServerFn({ method: "GET" })
@@ -92,8 +92,8 @@ export const getCostingStudy = createServerFn({ method: "GET" })
 
     const [spendResult, healthResult, costResult, ledgerResult, workloadResult] =
       await Promise.allSettled([
-        brokerJson("/v1/spend"),
-        brokerJson("/health"),
+        brokerJson<{ summary?: Record<string, SpendWindow> }>("/v1/spend"),
+        brokerJson<{ providers?: ProviderRow[] }>("/health"),
         supabaseAdmin
           .from("sku_costs")
           .select("sku,cost_cents,currency,notes,updated_at")
