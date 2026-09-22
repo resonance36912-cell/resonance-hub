@@ -1,6 +1,11 @@
 import { authorizeNovaAction, type NovaActionDescriptor } from "@/lib/nova/autonomy";
 
-export type NovaSpecialist = "nova.core" | "nova.architect" | "nova.builder" | "nova.guardian" | "nova.operator";
+export type NovaSpecialist =
+  | "nova.core"
+  | "nova.architect"
+  | "nova.builder"
+  | "nova.guardian"
+  | "nova.operator";
 export type NovaPlanStep = {
   specialist: NovaSpecialist;
   kind: string;
@@ -18,7 +23,8 @@ export function planNovaIntent(intent: string, projectId: string) {
   const normalized = intent.trim().toLowerCase();
   const destructive = /\b(delete|drop|destroy|wipe|purge|truncate)\b/.test(normalized);
   const production = /\b(production|prod)\b/.test(normalized);
-  const appBuild = hasAny(normalized, ["build ", "create ", "develop "]) &&
+  const appBuild =
+    hasAny(normalized, ["build ", "create ", "develop "]) &&
     hasAny(normalized, [" app", "application", "dashboard", "website", "portal"]);
 
   const action: NovaActionDescriptor = {
@@ -35,15 +41,42 @@ export function planNovaIntent(intent: string, projectId: string) {
   });
   const plan: NovaPlanStep[] = appBuild
     ? [
-        { specialist: "nova.architect", kind: "architecture", capability_id: "capability.model.reason", action: { ...action, kind: "plan.create", destructive: false, production: false } },
-        { specialist: "nova.builder", kind: "implementation", capability_id: "capability.model.code", action },
+        {
+          specialist: "nova.architect",
+          kind: "architecture",
+          capability_id: "capability.model.reason",
+          action: { ...action, kind: "plan.create", destructive: false, production: false },
+        },
+        {
+          specialist: "nova.builder",
+          kind: "implementation",
+          capability_id: "capability.model.code",
+          action,
+        },
       ]
     : destructive
       ? [
-          { specialist: "nova.guardian", kind: "governance_review", capability_id: "capability.model.reason", action: { ...action, kind: "plan.create", destructive: false, production: false } },
-          { specialist: "nova.operator", kind: "consequential_action", capability_id: "capability.database.migrate", action },
+          {
+            specialist: "nova.guardian",
+            kind: "governance_review",
+            capability_id: "capability.model.reason",
+            action: { ...action, kind: "plan.create", destructive: false, production: false },
+          },
+          {
+            specialist: "nova.operator",
+            kind: "consequential_action",
+            capability_id: "capability.database.migrate",
+            action,
+          },
         ]
-      : [{ specialist: "nova.core", kind: "collaboration", capability_id: "capability.model.reason", action }];
+      : [
+          {
+            specialist: "nova.core",
+            kind: "collaboration",
+            capability_id: "capability.model.reason",
+            action,
+          },
+        ];
 
   return {
     intent,

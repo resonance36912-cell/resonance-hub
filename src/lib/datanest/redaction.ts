@@ -4,10 +4,7 @@ const PRIVATE_KEY_RE =
 export function redactForIndex(text: string): string {
   let redacted = text.replace(PRIVATE_KEY_RE, "[REDACTED:PRIVATE_KEY]");
 
-  redacted = redacted.replace(
-    /(Authorization\s*:\s*Bearer\s+)([^\s]+)/gi,
-    "$1[REDACTED:TOKEN]",
-  );
+  redacted = redacted.replace(/(Authorization\s*:\s*Bearer\s+)([^\s]+)/gi, "$1[REDACTED:TOKEN]");
 
   redacted = redacted.replace(
     /(\bpassword\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s;&]+)/gi,

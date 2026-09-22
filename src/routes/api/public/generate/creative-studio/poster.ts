@@ -66,8 +66,7 @@ const LOCAL_IMAGE_SERVICE = "http://127.0.0.1:7865/v1/images/generate";
 export const Route = createFileRoute("/api/public/generate/creative-studio/poster")({
   server: {
     handlers: {
-      OPTIONS: async () =>
-        new Response(null, { status: 204, headers: CORS }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
       POST: async ({ request }) => {
         // 1. Parse + validate body BEFORE the gate so we 400 cheaply on
