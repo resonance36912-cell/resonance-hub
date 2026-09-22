@@ -57,6 +57,8 @@ export const getRonsControlState = createServerFn({ method: "GET" })
     await assertAdmin(context.userId);
     let localHealth = { ok: false, model: "", error: "" };
     try {
+      // Intentional loopback-only health probe; no traffic leaves this host.
+      // nosemgrep: typescript.react.security.react-insecure-request.react-insecure-request
       const response = await fetch("http://127.0.0.1:7866/health", { signal: AbortSignal.timeout(1200) });
       if (response.ok) {
         const body = await response.json() as { ok?: boolean; model?: string };
