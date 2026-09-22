@@ -48,5 +48,6 @@ export default defineConfig({
     }),
     react(),
   ],
-  server: { host: "::", port: 8080 },
+  server: { host: "::", port: 8080, allowedHosts: [".railway.app", ".railway.internal"] },
+  preview: { allowedHosts: [".railway.app", ".railway.internal"] },
 });
