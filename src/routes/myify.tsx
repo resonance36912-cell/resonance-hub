@@ -11,10 +11,7 @@ import {
   releaseMyifyAllocation,
   settleMyifyAllocation,
 } from "@/lib/myify/functions";
-import {
-  getDataNestCoverage,
-  ingestDataNestArtifact,
-} from "@/lib/datanest/functions";
+import { getDataNestCoverage, ingestDataNestArtifact } from "@/lib/datanest/functions";
 import {
   availableMb,
   expiryBand,
@@ -733,7 +730,9 @@ function MyifyWorkspace() {
                     disabled={archiveMutation.isPending}
                     className="mt-3 w-full rounded-md border px-3 py-2 text-xs hover:bg-accent disabled:opacity-50"
                   >
-                    {archiveMutation.isPending ? "Archiving…" : "Archive private workspace snapshot"}
+                    {archiveMutation.isPending
+                      ? "Archiving…"
+                      : "Archive private workspace snapshot"}
                   </button>
                 </section>
 
