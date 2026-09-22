@@ -13,11 +13,10 @@ import {
 } from "@/lib/datanest/contracts";
 import { fingerprintArtifact } from "@/lib/datanest/ingestion";
 import { redactForIndex } from "@/lib/datanest/redaction";
+import { createSovereignDb } from "@/integrations/sovereign/db.server";
 
 async function datanestDb() {
-  if (getBackendProvider() !== "supabase") {
-    throw new Error("DataNest sovereign database adapter is not configured");
-  }
+  if (getBackendProvider() === "sovereign") return createSovereignDb() as any;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as any;
 }
