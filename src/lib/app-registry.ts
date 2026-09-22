@@ -180,6 +180,15 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     tagline: "May Your Intentions Find You — preserve eligible unused data value through DataNest.",
     includedInSuite: false,
   },
+  nova_studio: {
+    key: "nova_studio",
+    label: "RONSAS Nova Studio",
+    url: `${HUB_URL}/nova`,
+    status: "pilot",
+    tagline: "Governed AI-human collaboration for projects, apps, products, content, research, and media.",
+    includedInSuite: false,
+  },
+
   resonance_app_dev: {
     key: "resonance_app_dev",
     label: "The Resonance App Dev",

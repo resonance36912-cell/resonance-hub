@@ -52,3 +52,7 @@ supabase/.temp/
 .output-candidate-local/
 .output-rollback-*/
 .output-failed-*/
+
+src/routeTree.gen.ts
+
+reports/discernment-violations.json

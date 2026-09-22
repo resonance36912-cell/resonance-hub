@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "2026-08-06",
+  "capturedAt": "2026-09-19T19:44:45.972Z",
+  "apps": [
+    {
+      "key": "all_access",
+      "label": "Resonance All-Access",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
+      "accessible": true
+    },
+    {
+      "key": "creative_studio",
+      "label": "Resonance Creative Studio",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
+      "accessible": true
+    },
+    {
+      "key": "epublisher",
+      "label": "Resonance ePublisher",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
+      "accessible": true
+    },
+    {
+      "key": "sync_vision",
+      "label": "Resonance Sync Vision",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
+      "accessible": true
+    },
+    {
+      "key": "youtube_optimizer",
+      "label": "YouTube Optimizer",
+      "status": "pilot",
+      "badgeLabel": "Pilot",
+      "access": "Pilot badge, live access",
+      "accessible": true
+    }
+  ],
+  "ecosystem": [
+    {
+      "key": "career_compass",
+      "label": "Career Compass",
+      "status": "pilot",
+      "badgeLabel": "Pilot",
+      "access": "Pilot badge, live access",
+      "accessible": true
+    },
+    {
+      "key": "myify",
+      "label": "MYIFY · DataNest",
+      "status": "pilot",
+      "badgeLabel": "Pilot",
+      "access": "Pilot badge, live access",
+      "accessible": true
+    },
+    {
+      "key": "podcast",
+      "label": "The Resonance Podcast",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
+      "accessible": true
+    },
+    {
+      "key": "resonance_app_dev",
+      "label": "The Resonance App Dev",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
+      "accessible": true
+    }
+  ],
+  "legend": [
+    {
+      "status": "beta",
+      "label": "Beta",
+      "access": "Beta badge, live access",
+      "accessible": true
+    },
+    {
+      "status": "coming_soon",
+      "label": "Coming soon",
+      "access": "Not yet available",
+      "accessible": false
+    },
+    {
+      "status": "live",
+      "label": "Live",
+      "access": "Live access",
+      "accessible": true
+    },
+    {
+      "status": "pilot",
+      "label": "Pilot",
+      "access": "Pilot badge, live access",
+      "accessible": true
+    }
+  ]
+}

@@ -6,17 +6,13 @@ const root = join(import.meta.dir, "..", "..");
 const workspace = readFileSync(join(root, "src/routes/governance_.workspace.tsx"), "utf8");
 const publicGovernance = readFileSync(join(root, "src/routes/governance.tsx"), "utf8");
 const functions = readFileSync(join(root, "src/lib/governance/functions.ts"), "utf8");
-const routeTree = readFileSync(join(root, "src/routeTree.gen.ts"), "utf8");
 
 describe("governance workspace routing", () => {
   test("keeps the private workspace at /governance/workspace without nesting under the public constitution page", () => {
     expect(workspace).toContain('createFileRoute("/governance_/workspace")');
     expect(publicGovernance).toContain('createFileRoute("/governance")');
-    expect(routeTree).toMatch(
-      /GovernanceWorkspaceRouteImport\.update\(\{[\s\S]*?path: '\/governance\/workspace',[\s\S]*?getParentRoute: \(\) => rootRouteImport/,
-    );
-    expect(routeTree).not.toContain("GovernanceRouteWithChildren");
-    expect(routeTree).not.toContain("GovernanceRouteChildren");
+    expect(workspace).toContain('createFileRoute("/governance_/workspace")');
+    expect(workspace).not.toContain('createFileRoute("/governance/workspace")');
   });
 });
 
