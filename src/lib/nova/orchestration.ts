@@ -13,6 +13,8 @@ function hasAny(value: string, words: readonly string[]): boolean {
 }
 
 export function planNovaIntent(intent: string, projectId: string) {
+  // The two regexes below contain fixed alternatives and word boundaries, with no repeated groups or backtracking quantifiers.
+  // nosemgrep: ajinabraham.njsscan.dos.regex_dos.regex_dos
   const normalized = intent.trim().toLowerCase();
   const destructive = /\b(delete|drop|destroy|wipe|purge|truncate)\b/.test(normalized);
   const production = /\b(production|prod)\b/.test(normalized);
