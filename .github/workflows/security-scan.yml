@@ -99,7 +99,7 @@ jobs:
     timeout-minutes: 15
     # NOTE: Previously ran inside `container: semgrep/semgrep`, but that
     # minimal Alpine image lacks the glibc / unzip tooling that
-    # oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2 and other node-based actions need, breaking the
+    # setup-bun and other node-based actions need, breaking the
     # whole job before Semgrep even ran. Install Semgrep via pip on the
     # standard ubuntu-latest runner instead — same rulesets, working actions.
     steps:
