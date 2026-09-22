@@ -12,6 +12,10 @@ import {
   settleMyifyAllocation,
 } from "@/lib/myify/functions";
 import {
+  getDataNestCoverage,
+  ingestDataNestArtifact,
+} from "@/lib/datanest/functions";
+import {
   availableMb,
   expiryBand,
   hoursUntilUtc,
@@ -117,6 +121,8 @@ function MyifyWorkspace() {
   const queueReallocation = useServerFn(queueMyifyReallocation);
   const settleAllocation = useServerFn(settleMyifyAllocation);
   const releaseAllocation = useServerFn(releaseMyifyAllocation);
+  const loadDataNestCoverage = useServerFn(getDataNestCoverage);
+  const archiveDataNestArtifact = useServerFn(ingestDataNestArtifact);
 
   const [carrier, setCarrier] = useState("");
   const [packageLabel, setPackageLabel] = useState("");
@@ -137,6 +143,10 @@ function MyifyWorkspace() {
   const dashboardQ = useQuery({
     queryKey: ["myify-dashboard"],
     queryFn: async () => (await loadDashboard()) as Dashboard,
+  });
+  const dataNestCoverageQ = useQuery({
+    queryKey: ["datanest-coverage"],
+    queryFn: () => loadDataNestCoverage(),
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["myify-dashboard"] });
@@ -212,6 +222,39 @@ function MyifyWorkspace() {
     onSuccess: refresh,
   });
 
+  const archiveMutation = useMutation({
+    mutationFn: async () => {
+      const dashboard = dashboardQ.data;
+      if (!dashboard) throw new Error("MYIFY dashboard is not ready.");
+      const capturedAt = new Date().toISOString();
+      return archiveDataNestArtifact({
+        data: {
+          source_key: "myify-workspace",
+          source_kind: "myify",
+          display_name: "MYIFY DataNest workspace",
+          external_id: `snapshot-${capturedAt}`,
+          content_type: "application/json",
+          visibility: "private",
+          content: JSON.stringify({
+            captured_at: capturedAt,
+            settled_mb: dashboard.nest.settled_mb,
+            participation_units: Number(dashboard.nest.participation_units),
+            package_count: dashboard.packages.length,
+            router_count: dashboard.routers.length,
+            active_allocation_count: dashboard.allocations.filter((item) =>
+              ["reserved", "partially_settled"].includes(item.status),
+            ).length,
+            queued_reallocation_count: dashboard.reallocationQueue.filter((item) =>
+              ["queued", "claimed"].includes(item.status),
+            ).length,
+          }),
+          metadata: { kind: "myify_summary", schema: "v1" },
+        },
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["datanest-coverage"] }),
+  });
+
   const dashboard = dashboardQ.data;
   const activeAllocations =
     dashboard?.allocations.filter((item) =>
@@ -225,7 +268,8 @@ function MyifyWorkspace() {
     routerMutation.error ||
     queueMutation.error ||
     settleMutation.error ||
-    releaseMutation.error;
+    releaseMutation.error ||
+    archiveMutation.error;
 
   return (
     <div className="workspace-shell bg-background text-foreground">
@@ -651,6 +695,46 @@ function MyifyWorkspace() {
                       </div>
                     ))}
                   </div>
+                </section>
+
+                <section className="rounded-xl border bg-card p-5">
+                  <h2 className="font-semibold">DataNest archive</h2>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Persist a private aggregate MYIFY workspace snapshot through the authenticated
+                    DataNest ingestion path. Raw package identifiers and router credentials are not
+                    included.
+                  </p>
+                  <div className="mt-3 rounded-lg border p-3 text-xs">
+                    {(() => {
+                      const coverage = dataNestCoverageQ.data?.coverage?.find(
+                        (entry) => entry.source_key === "myify-workspace",
+                      );
+                      if (!coverage) {
+                        return (
+                          <p className="text-muted-foreground">
+                            No MYIFY workspace snapshots archived yet.
+                          </p>
+                        );
+                      }
+                      return (
+                        <>
+                          <p className="font-medium">
+                            {coverage.ingested} archived · {coverage.duplicates} duplicates
+                          </p>
+                          <p className="mt-1 text-muted-foreground">
+                            {coverage.indexed} indexed · {coverage.completeness}
+                          </p>
+                        </>
+                      );
+                    })()}
+                  </div>
+                  <button
+                    onClick={() => archiveMutation.mutate()}
+                    disabled={archiveMutation.isPending}
+                    className="mt-3 w-full rounded-md border px-3 py-2 text-xs hover:bg-accent disabled:opacity-50"
+                  >
+                    {archiveMutation.isPending ? "Archiving…" : "Archive private workspace snapshot"}
+                  </button>
                 </section>
 
                 <section className="rounded-xl border bg-card p-5 text-sm leading-6">
