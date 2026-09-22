@@ -8,6 +8,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 const railwayPreviewAllowedHosts = [
   "healthcheck.railway.app",
   process.env.RAILWAY_PUBLIC_DOMAIN,
+  process.env.RAILWAY_PRIVATE_DOMAIN,
 ].filter((host): host is string => Boolean(host));
 
 export default defineConfig({
