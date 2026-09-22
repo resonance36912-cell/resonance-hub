@@ -73,7 +73,7 @@ class SovereignQuery implements PromiseLike<QueryResult> {
   private values: unknown = null;
   private filters: Filter[] = [];
   private options: Record<string, unknown> = {};
-  private singleMode = false;
+  private singleMode: "single" | "maybeSingle" | null = null;
 
   constructor(private readonly table: string) {}
 
@@ -134,12 +134,12 @@ class SovereignQuery implements PromiseLike<QueryResult> {
   }
 
   single() {
-    this.singleMode = true;
+    this.singleMode = "single";
     return this;
   }
 
   maybeSingle() {
-    this.singleMode = true;
+    this.singleMode = "maybeSingle";
     return this;
   }
 
@@ -158,6 +158,14 @@ class SovereignQuery implements PromiseLike<QueryResult> {
       });
 
       const rows = isQueryEnvelope(raw) ? raw.data : raw;
+      if (
+        (this.singleMode === "single" && rows.length !== 1) ||
+        (this.singleMode === "maybeSingle" && rows.length > 1)
+      ) {
+        throw new Error(
+          `Sovereign database ${this.singleMode} expected ${this.singleMode === "single" ? "exactly one row" : "at most one row"}; received ${rows.length}`,
+        );
+      }
       let data: QueryData = this.singleMode ? (rows[0] ?? null) : rows;
 
       if (!this.singleMode && this.columns !== "*") {
