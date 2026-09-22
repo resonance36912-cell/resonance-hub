@@ -114,8 +114,7 @@ export const getCostingStudy = createServerFn({ method: "GET" })
         ? (costResult.value.data ?? [])
         : [];
 
-    const sovereignCostLedger =
-      ledgerResult.status === "fulfilled" ? ledgerResult.value : null;
+    const sovereignCostLedger = ledgerResult.status === "fulfilled" ? ledgerResult.value : null;
     const sovereignLedgerAll = sovereignCostLedger?.all ?? {
       events: 0,
       costed_events: 0,
@@ -199,8 +198,7 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       decision: {
         status: "costing_in_progress" as const,
         automatedPricingAllowed: false,
-        note:
-          "Public pricing remains disabled. Cost telemetry and assumptions are evidence only; re-enabling checkout requires a governed human pricing decision.",
+        note: "Public pricing remains disabled. Cost telemetry and assumptions are evidence only; re-enabling checkout requires a governed human pricing decision.",
       },
       sourceHealth: {
         aiBrokerSpend: spendResult.status === "fulfilled",
@@ -211,4 +209,3 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       },
     };
   });
-
