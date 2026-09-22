@@ -5,6 +5,11 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
+const railwayPreviewAllowedHosts = [
+  "healthcheck.railway.app",
+  process.env.RAILWAY_PUBLIC_DOMAIN,
+].filter((host): host is string => Boolean(host));
+
 export default defineConfig({
   css: { transformer: "lightningcss" },
   resolve: {
@@ -49,4 +54,5 @@ export default defineConfig({
     react(),
   ],
   server: { host: "::", port: 8080 },
+  preview: { allowedHosts: railwayPreviewAllowedHosts },
 });
