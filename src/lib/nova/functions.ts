@@ -19,11 +19,10 @@ import { classifyNovaAction, fingerprintNovaAction } from "@/lib/nova/autonomy";
 import { resolveDecisionState } from "@/lib/nova/decision-tray";
 import { assertJobProjectScope, resumeTargetForState, transitionState } from "@/lib/nova/jobs";
 import { AppendNovaMessageInput, CreateNovaConversationInput, hashNovaMessage } from "@/lib/nova/conversations";
+import { createSovereignDb } from "@/integrations/sovereign/db.server";
 
 async function novaDb() {
-  if (getBackendProvider() !== "supabase") {
-    throw new Error("Nova Project Graph sovereign database adapter is not configured");
-  }
+  if (getBackendProvider() === "sovereign") return createSovereignDb() as any;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as any;
 }
