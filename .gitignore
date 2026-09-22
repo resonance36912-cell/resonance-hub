@@ -52,6 +52,7 @@ supabase/.temp/
 .output-candidate-local/
 .output-rollback-*/
 .output-failed-*/
+.output-railway/
 
 src/routeTree.gen.ts
 
