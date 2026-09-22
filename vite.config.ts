@@ -24,14 +24,23 @@ export default defineConfig({
     ],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"],
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+    ],
     ignoreOutdatedRequests: true,
   },
   build: {
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes("/node_modules/@supabase/") || id.includes("\\node_modules\\@supabase\\")) {
+          if (
+            id.includes("/node_modules/@supabase/") ||
+            id.includes("\\node_modules\\@supabase\\")
+          ) {
             return "vendor-supabase";
           }
         },
