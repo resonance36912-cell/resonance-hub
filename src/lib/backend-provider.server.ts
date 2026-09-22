@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import {
   summarizePromotionCostingRows,
@@ -924,7 +924,7 @@ export async function hasBackendRole(
 ): Promise<boolean> {
   if (getBackendProvider() === "sovereign") return hasSovereignRole(userId, role);
   if (!hostedClient) throw new Error("Hosted role client is required");
-  const client = hostedClient as any;
+  const client = hostedClient as SupabaseClient<Database>;
   const { data, error } = await client
     .from("user_roles")
     .select("role")
