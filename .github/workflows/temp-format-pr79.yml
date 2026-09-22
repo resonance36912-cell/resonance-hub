@@ -1,0 +1,36 @@
+name: Temporary format PR79
+
+on:
+  push:
+    branches:
+      - ronsas/control-center-workload-ui-20260922
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ronsas/control-center-workload-ui-20260922
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+      - run: bun install --frozen-lockfile
+      - name: Format Control Center only
+        run: bun x prettier --write src/routes/admin.control-center.tsx
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/routes/admin.control-center.tsx
+          if git diff --cached --quiet; then
+            echo "No formatting changes"
+            exit 0
+          fi
+          git commit -m "style: format Control Center workload telemetry"
+          git push origin HEAD:ronsas/control-center-workload-ui-20260922
