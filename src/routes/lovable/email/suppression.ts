@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { WebhookError, verifyWebhookRequest } from '@lovable.dev/webhooks-js'
+import { WebhookError, verifyWebhookRequest } from '@/lib/webhook-verifier.server'
 import { createFileRoute } from '@tanstack/react-router'
 
 // Suppression event payload sent by the Go API when Mailgun reports
@@ -55,21 +55,21 @@ export const Route = createFileRoute("/lovable/email/suppression")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.LOVABLE_API_KEY
+        const webhookSecret = process.env.RONS_EMAIL_WEBHOOK_SECRET ?? process.env.RONS_EMAIL_API_KEY ?? process.env.LOVABLE_API_KEY
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-        if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
+        if (!webhookSecret || !supabaseUrl || !supabaseServiceKey) {
           console.error('Missing required environment variables')
           return Response.json({ error: 'Server configuration error' }, { status: 500 })
         }
 
-        // Verify HMAC signature using the Lovable API Key (same as auth-email-hook)
+        // Verify HMAC signature using the dedicated RONS webhook secret; legacy keys remain a compatibility fallback.
         let payload: SuppressionPayload
         try {
           const verified = await verifyWebhookRequest({
             req: request,
-            secret: apiKey,
+            secret: webhookSecret,
             parser: parseSuppressionPayload,
           })
           payload = verified.payload

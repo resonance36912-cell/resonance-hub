@@ -1,1 +1,0 @@
-DROP TABLE IF EXISTS public.github_webhook_events CASCADE;

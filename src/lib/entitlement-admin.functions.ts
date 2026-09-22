@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireRonsAuth } from "@/lib/rons-auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export type EntitlementLogRow = {
@@ -19,7 +19,7 @@ export type EntitlementLogRow = {
  * Admin: list the most recent entitlement checks for diagnostics.
  */
 export const listEntitlementChecks = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }): Promise<{ rows: EntitlementLogRow[] }> => {
     const { userId } = context;
     const { data: role } = await supabaseAdmin

@@ -1,7 +1,7 @@
 /**
  * Canonical Resonance App Suite registry — v2.2 alignment.
  *
- * Source of truth for every PAID spoke in the Resonance ecosystem. The
+ * Source of truth for every core spoke in the Resonance ecosystem. The
  * canonical schema (per the v2.2 spec) uses the following fields:
  *   - key, label, url, fallbackUrl?, status, accentColor, includedInSuite
  *   - pricingPath, manageBillingPath, backToHubPath, entitlementAppKey
@@ -15,6 +15,8 @@
  * These live in ECOSYSTEM_REGISTRY below and must never appear in paid
  * pricing tables, checkout, entitlement, SKU catalog, or All-Access copy.
  */
+
+import { FREE_PROMOTION_ACTIVE } from "@/lib/promotion";
 
 export type ResonanceAppKey =
   | "epublisher"
@@ -42,7 +44,7 @@ export type AppRegistryEntry = {
   status: AppStatus;
   /** Accent color (hex) — one per app. */
   accentColor: string;
-  /** True for every entry in APP_REGISTRY (all paid suite members). */
+  /** True for every entry in APP_REGISTRY (all governed suite members). */
   includedInSuite: true;
   pricingPath: string;
   manageBillingPath: string;
@@ -59,8 +61,8 @@ export type AppRegistryEntry = {
   publicUrl: string;
   /** @deprecated use `url`. */
   appUrl: string;
-  /** @deprecated all entries here are billable; non-paid apps live in ECOSYSTEM_REGISTRY. */
-  hasBilling: true;
+  /** Billing capability is disabled while the free-access promotion is active. */
+  hasBilling: boolean;
 };
 
 function entry(
@@ -70,11 +72,11 @@ function entry(
     ...e,
     includedInSuite: true,
     pricingPath: PRICING_PATH,
-    manageBillingPath: MANAGE_BILLING_PATH,
+    manageBillingPath: FREE_PROMOTION_ACTIVE ? PRICING_PATH : MANAGE_BILLING_PATH,
     backToHubPath: HUB_URL,
     publicUrl: e.url,
     appUrl: e.url,
-    hasBilling: true,
+    hasBilling: !FREE_PROMOTION_ACTIVE,
   };
 }
 
@@ -82,7 +84,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   epublisher: entry({
     key: "epublisher",
     label: "Resonance ePublisher",
-    url: "https://www.resonanceonline.life",
+    url: "https://epublisher.reson8.life",
     status: "live",
     accentColor: "#8B5CF6",
     entitlementAppKey: "epublisher",
@@ -92,7 +94,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   creative_studio: entry({
     key: "creative_studio",
     label: "Resonance Creative Studio",
-    url: "https://www.creativestudio.life",
+    url: "https://creative.reson8.life",
     status: "live",
     accentColor: "#EC4899",
     entitlementAppKey: "creative_studio",
@@ -102,7 +104,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   sync_vision: entry({
     key: "sync_vision",
     label: "Resonance Sync Vision",
-    url: "https://www.syncvision.life",
+    url: "https://sync.reson8.life",
     status: "live",
     accentColor: "#06B6D4",
     entitlementAppKey: "sync_vision",
@@ -112,8 +114,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
   youtube_optimizer: entry({
     key: "youtube_optimizer",
     label: "YouTube Optimizer",
-    url: "https://www.youtubeoptimizer.life",
-    fallbackUrl: "https://resonanceoptimizer.lovable.app",
+    url: "https://youtube.reson8.life",
     status: "pilot",
     accentColor: "#F97316",
     entitlementAppKey: "youtube_optimizer",
@@ -136,46 +137,9 @@ export type AppKey = ResonanceAppKey;
 
 export const BILLABLE_APP_KEYS: AppKey[] = Object.keys(APP_REGISTRY) as AppKey[];
 
-/**
- * Canonical form used for slug matching: lowercase, alphanumeric only.
- * "Sync-Vision", "sync vision", "syncVision", "SYNC_VISION" all fold to
- * "syncvision", which is the canonical key "sync_vision" folded the same way.
- */
-export function normalizeAppSlug(input: string): string {
-  return input
-    .normalize("NFKD")
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // split camelCase
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "");
-}
-
-/** Folded slug -> canonical registry key, built for every registry key. */
-const SLUG_INDEX: Record<string, AppKey> = Object.fromEntries(
-  (Object.keys(APP_REGISTRY) as AppKey[]).map((key) => [normalizeAppSlug(key), key]),
-);
-
-/**
- * Resolve any URL slug to a canonical registry key.
- * Accepts hyphenated, spaced, camelCase and mixed-case forms
- * (e.g. "sync-vision", "Sync Vision", "syncVision" -> "sync_vision").
- */
-export function resolveAppKey(slug: string): AppKey | null {
-  if (!slug) return null;
-  const folded = normalizeAppSlug(slug);
-  return SLUG_INDEX[folded] ?? null;
-}
-
-/** True when the slug is already the canonical registry key. */
-export function isCanonicalAppSlug(slug: string): boolean {
-  return resolveAppKey(slug) === slug;
-}
-
 export function getAppEntry(key: string): AppRegistryEntry | null {
-  const resolved = resolveAppKey(key);
-  return resolved ? (APP_REGISTRY as Record<string, AppRegistryEntry>)[resolved] : null;
+  return (APP_REGISTRY as Record<string, AppRegistryEntry>)[key] ?? null;
 }
-
-
 
 /**
  * Wider ecosystem — informational/media only. NEVER reference these from
@@ -208,6 +172,23 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     tagline: "Discover your career path with a rewards-based pilot.",
     includedInSuite: false,
   },
+  myify: {
+    key: "myify",
+    label: "MYIFY · DataNest",
+    url: `${HUB_URL}/myify`,
+    status: "pilot",
+    tagline: "May Your Intentions Find You — preserve eligible unused data value through DataNest.",
+    includedInSuite: false,
+  },
+  nova_studio: {
+    key: "nova_studio",
+    label: "RONSAS Nova Studio",
+    url: `${HUB_URL}/nova`,
+    status: "pilot",
+    tagline: "Governed AI-human collaboration for projects, apps, products, content, research, and media.",
+    includedInSuite: false,
+  },
+
   resonance_app_dev: {
     key: "resonance_app_dev",
     label: "The Resonance App Dev",

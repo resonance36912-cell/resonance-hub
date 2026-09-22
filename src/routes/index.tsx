@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { subscribeNewsletter } from "@/lib/newsletter.functions";
 import { getRequestOrigin } from "@/lib/origin.functions";
+
+const CANONICAL_ORIGIN = "https://reson8.life";
 import resonanceLogo from "@/assets/resonance-logo.png";
 import resonanceLockup from "@/assets/resonance-lockup.png";
 import logoEpublisher from "@/assets/logo-epublisher.png";
@@ -11,7 +13,6 @@ import logoSyncVision from "@/assets/logo-sync-vision.png";
 import logoPodcast from "@/assets/logo-podcast.png";
 import logoCareerCompass from "@/assets/logo-career-compass.png";
 import logoYouTubeOptimizer from "@/assets/logo-youtube-optimizer.png";
-import resonanceAppDevAsset from "@/assets/resonance-app-dev.jpg.asset.json";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -28,38 +27,38 @@ export const Route = createFileRoute("/")({
     return { origin };
   },
   head: ({ loaderData }) => {
-    const origin = loaderData?.origin ?? "https://resonance-hub-life.lovable.app";
+    const origin = CANONICAL_ORIGIN;
     return {
       meta: [
-        { title: "The Resonance — One ecosystem for the aligned mind" },
+        { title: "Reson8.life | South African AI Apps for Creators, Publishers & Schools" },
         {
           name: "description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. Full product access is temporarily free while Resonance measures real usage and establishes sustainable pricing.",
         },
         {
           property: "og:title",
-          content: "The Resonance — One ecosystem for the aligned mind",
+          content: "Reson8.life | South African AI Apps for Creators, Publishers & Schools",
         },
         {
           property: "og:description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. Full product access is temporarily free while Resonance measures real usage and establishes sustainable pricing.",
         },
         { property: "og:type", content: "website" },
         { property: "og:url", content: `${origin}/` },
         { property: "og:image", content: `${origin}/og-logo.png` },
         { property: "og:image:alt", content: "The Resonance logo" },
-        { property: "og:site_name", content: "The Resonance" },
+        { property: "og:site_name", content: "RONSAS" },
         { name: "twitter:card", content: "summary_large_image" },
         {
           name: "twitter:title",
-          content: "The Resonance — One ecosystem for the aligned mind",
+          content: "Reson8.life | South African AI Apps for Creators, Publishers & Schools",
         },
         {
           name: "twitter:description",
           content:
-            "The Resonance hub: discover ePublisher, Creative Studio, Sync Vision, YouTube Optimizer and The Resonance Podcast. One brand, one frequency.",
+            "Explore Resonance AI tools for eBooks, design, music-video storyboards, YouTube growth, and career guidance. Full product access is temporarily free while Resonance measures real usage and establishes sustainable pricing.",
         },
         { name: "twitter:image", content: `${origin}/og-logo.png` },
         { name: "twitter:image:alt", content: "The Resonance logo" },
@@ -69,13 +68,13 @@ export const Route = createFileRoute("/")({
         {
           rel: "alternate",
           type: "application/rss+xml",
-          title: "Resonance — Latest Updates (RSS)",
+          title: "RONSAS | Latest Updates (RSS)",
           href: `${origin}/api/public/updates/rss`,
         },
         {
           rel: "alternate",
           type: "application/atom+xml",
-          title: "Resonance — Latest Updates (Atom)",
+          title: "RONSAS | Latest Updates (Atom)",
           href: `${origin}/api/public/updates/atom`,
         },
 
@@ -88,20 +87,22 @@ export const Route = createFileRoute("/")({
             "@graph": [
               {
                 "@type": "Organization",
-                name: "The Resonance",
+                name: "RONSAS",
+                alternateName: "The Resonance",
                 url: `${origin}/`,
                 logo: `${origin}/og-logo.png`,
                 sameAs: [
-                  "https://www.resonanceonline.life",
-                  "https://www.creativestudio.life",
-                  "https://www.syncvision.life",
+                  "https://epublisher.reson8.life",
+                  "https://creative.reson8.life",
+                  "https://sync.reson8.life",
                   "https://www.resonance-podcast.com",
                   "https://www.career-compass.org",
                 ],
               },
               {
                 "@type": "WebSite",
-                name: "The Resonance",
+                name: "RONSAS",
+                alternateName: "The Resonance",
                 url: `${origin}/`,
               },
               {
@@ -109,41 +110,41 @@ export const Route = createFileRoute("/")({
                 name: "Resonance ePublisher",
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
-                url: "https://www.resonanceonline.life",
-                offers: { "@type": "Offer", price: "99", priceCurrency: "ZAR" },
+                url: "https://epublisher.reson8.life",
+                offers: { "@type": "Offer", price: "0", priceCurrency: "ZAR", availability: "https://schema.org/InStock", description: "Free promotional access" },
               },
               {
                 "@type": "SoftwareApplication",
                 name: "Creative Studio",
                 applicationCategory: "DesignApplication",
                 operatingSystem: "Web",
-                url: "https://www.creativestudio.life",
-                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
+                url: "https://creative.reson8.life",
+                offers: { "@type": "Offer", price: "0", priceCurrency: "ZAR", availability: "https://schema.org/InStock", description: "Free promotional access" },
               },
               {
                 "@type": "SoftwareApplication",
                 name: "Sync Vision",
                 applicationCategory: "MultimediaApplication",
                 operatingSystem: "Web",
-                url: "https://www.syncvision.life",
-                offers: { "@type": "Offer", price: "549", priceCurrency: "ZAR" },
+                url: "https://sync.reson8.life",
+                offers: { "@type": "Offer", price: "0", priceCurrency: "ZAR", availability: "https://schema.org/InStock", description: "Free promotional access" },
               },
               {
                 "@type": "SoftwareApplication",
                 name: "YouTube Optimizer",
                 applicationCategory: "BusinessApplication",
                 operatingSystem: "Web",
-                url: "https://www.youtubeoptimizer.life",
-                offers: { "@type": "Offer", price: "149", priceCurrency: "ZAR" },
+                url: "https://youtube.reson8.life",
+                offers: { "@type": "Offer", price: "0", priceCurrency: "ZAR", availability: "https://schema.org/InStock", description: "Free promotional access" },
               },
               {
                 "@type": "FAQPage",
                 mainEntity: [
-                  ["Do individual apps have monthly subscriptions?", "No. Individual Resonance apps use once-off credits and project packs. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps."],
-                  ["Can I use Resonance tools for free?", "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits."],
-                  ["Is there a single login across every app?", "One Hub billing account today — packs and ecosystem passes live in one place. Unified app login is on the roadmap."],
-                  ["Can I cancel an ecosystem pass anytime?", "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases."],
-                  ["Are prices in South African Rand?", "All prices are in ZAR and processed locally through PayFast (card and EFT)."],
+                  ["Is billing active during the promotion?", "No. New billing and checkout are paused while Resonance provides full promotional access and measures real usage to determine sustainable pricing."],
+                  ["Can I use Resonance tools for free?", "Yes. During the current promotion, Resonance ePublisher, Creative Studio, Sync Vision, YouTube Optimizer, Career Compass, and ecosystem media are available without payment. Sign-in may still be required so usage can be measured."],
+                  ["Why is sign-in still required?", "Sign-in keeps projects and usage attributable during the free-access promotion so Resonance can measure demand and provider costs before setting future pricing."],
+                  ["When will pricing return?", "Pricing will be introduced only after Resonance has enough real usage and cost data to set sustainable rates. No future price is implied by the promotion."],
+                  ["Will I be charged during the promotion?", "No new checkout is available during the promotion. Promotional access does not require a new payment."],
                   ["Can schools use Career Compass?", "Yes — schools can join the free pilot."],
 
                   ["Does Sync Vision generate final videos or AI-ready storyboards?", "Sync Vision produces AI-ready music-video storyboards and scene prompts."],
@@ -168,6 +169,7 @@ type App = {
   tagline: string;
   domain: string;
   href: string;
+  localPort?: number;
   subscribeHref: string;
   priceLabel: string;
   priceNote: string;
@@ -182,11 +184,12 @@ const apps: App[] = [
     name: "Resonance ePublisher",
     tagline:
       "Turn topics, manuscripts, PDFs, and research into polished audiovisual eBooks.",
-    domain: "resonanceonline.life",
-    href: "https://www.resonanceonline.life",
-    subscribeHref: "/pricing#epublisher",
-    priceLabel: "from R99 once-off",
-    priceNote: "Once-off credit / project packs · no recurring app fees",
+    domain: "epublisher.reson8.life",
+    href: "https://epublisher.reson8.life",
+    localPort: 3101,
+    subscribeHref: "https://epublisher.reson8.life",
+    priceLabel: "Free promotion",
+    priceNote: "Full access during the costing study · no payment required",
 
     logo: logoEpublisher,
     accent: "magenta",
@@ -201,11 +204,12 @@ const apps: App[] = [
     name: "Creative Studio",
     tagline:
       "Design posters, ads, product visuals, brochures, and campaign media instantly.",
-    domain: "creativestudio.life",
-    href: "https://www.creativestudio.life",
-    subscribeHref: "/pricing#creative-studio",
-    priceLabel: "from R149 once-off",
-    priceNote: "Once-off creative credit packs · no recurring app fees",
+    domain: "creative.reson8.life",
+    href: "https://creative.reson8.life",
+    localPort: 3201,
+    subscribeHref: "https://creative.reson8.life",
+    priceLabel: "Free promotion",
+    priceNote: "Full access during the costing study · no payment required",
     logo: logoCreativeStudio,
     accent: "violet",
     status: "live",
@@ -219,18 +223,19 @@ const apps: App[] = [
     name: "Sync Vision",
     tagline:
       "Turn songs into cinematic storyboards, character concepts, captions, and video-generation prompts.",
-    domain: "syncvision.life",
-    href: "https://www.syncvision.life",
-    subscribeHref: "/pricing#sync-vision",
-    priceLabel: "from R349 once-off",
-    priceNote: "Once-off music-video packs · no recurring app fees",
+    domain: "sync.reson8.life",
+    href: "https://sync.reson8.life",
+    localPort: 3301,
+    subscribeHref: "https://sync.reson8.life",
+    priceLabel: "Free promotion",
+    priceNote: "Full access during the costing study · no payment required",
     logo: logoSyncVision,
     accent: "pink",
     status: "live",
     attribute: {
       icon: "🏃",
       label: "Musicians, labels & video creators",
-      body: "High-fidelity video generation, precise character consistency, and frame-by-frame production.",
+      body: "Cinematic story planning, character continuity, and AI-ready scene direction.",
     },
   },
   {
@@ -238,8 +243,8 @@ const apps: App[] = [
     tagline:
       "Free ecosystem media, thought leadership, conversations, and community content.",
     domain: "resonance-podcast.com",
-    href: "https://www.resonance-podcast.com",
-    subscribeHref: "https://www.resonance-podcast.com",
+    href: "https://www.resonance-podcast.com/episodes",
+    subscribeHref: "https://www.resonance-podcast.com/episodes",
     priceLabel: "Free",
     priceNote: "Listen and watch — not a SaaS subscription",
     logo: logoPodcast,
@@ -259,7 +264,7 @@ const apps: App[] = [
     href: "https://www.career-compass.org",
     subscribeHref: "https://www.career-compass.org/#how",
     priceLabel: "Free pilot",
-    priceNote: "Free pilot now · per-report and school packages later",
+    priceNote: "Free promotional access while usage and delivery costs are measured",
     logo: logoCareerCompass,
     accent: "emerald",
     status: "free",
@@ -273,11 +278,12 @@ const apps: App[] = [
     name: "YouTube Optimizer",
     tagline:
       "Audit channels, improve thumbnails, titles, content strategy, and growth planning.",
-    domain: "youtubeoptimizer.life",
-    href: "https://www.youtubeoptimizer.life",
-    subscribeHref: "/pricing#youtube-optimizer",
-    priceLabel: "from R149 once-off",
-    priceNote: "Once-off audit and growth packs · no recurring app fees",
+    domain: "youtube.reson8.life",
+    href: "https://youtube.reson8.life",
+    localPort: 3401,
+    subscribeHref: "https://youtube.reson8.life",
+    priceLabel: "Free promotion",
+    priceNote: "Full access during the costing study · no payment required",
     logo: logoYouTubeOptimizer,
     accent: "gold",
     status: "live",
@@ -526,6 +532,19 @@ function useScrollReveal() {
   }, []);
 }
 
+function withRuntimeAppLinks(origin: string): App[] {
+  try {
+    const host = new URL(origin).hostname;
+    const isLocal = host === "localhost" || host === "127.0.0.1" || host === "::1" ||
+      host.startsWith("10.") || host.startsWith("192.168.") || /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+    if (!isLocal) return apps;
+    return apps.map((app) => app.localPort
+      ? { ...app, href: `http://${host}:${app.localPort}/`, domain: `${host}:${app.localPort}` }
+      : app);
+  } catch {
+    return apps;
+  }
+}
 function Index() {
   const active = useActiveSection(NAV_LINKS.map((l) => l.id));
   useScrollReveal();
@@ -535,7 +554,9 @@ function Index() {
   const [joinMsg, setJoinMsg] = useState<string | null>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  void apps[carouselIndex];
+  const { origin } = Route.useLoaderData();
+  const runtimeApps = withRuntimeAppLinks(origin);
+  void runtimeApps[carouselIndex];
 
 
   async function onJoinSubmit(e: React.FormEvent) {
@@ -556,7 +577,7 @@ function Index() {
 
   return (
     <div className="min-h-screen text-foreground selection:bg-[hsl(295_90%_60%/0.3)]">
-      <nav aria-label="Primary" className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 px-6 py-3.5 backdrop-blur-xl bg-background/70 border-b border-white/5">
         <div className="flex justify-between items-center gap-3">
           <a href="#" className="flex items-center gap-2.5 group min-w-0" aria-label="The Resonance — Home">
             <img
@@ -592,12 +613,10 @@ function Index() {
           </div>
           <div className="flex items-center gap-2">
             <a
-              href="https://www.resonanceonline.life"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#who"
               className="inline-flex text-[10px] sm:text-[11px] font-bold tracking-[0.15em] uppercase px-3 sm:px-4 py-2 rounded-full bg-gradient-brand text-white shadow-[0_0_30px_-5px_hsl(295_90%_60%/0.7)] hover:shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.9)] transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
-              Launch
+              Start
             </a>
             <button
               type="button"
@@ -626,13 +645,13 @@ function Index() {
                 {l.label}
               </a>
             ))}
-            <AppLink
-              to={ROUTES.pricing}
+            <Link
+              to="/pricing"
               onClick={() => setMobileMenuOpen(false)}
               className="px-2 py-3 rounded-md hover:bg-white/5 text-white/80 hover:text-white"
             >
-              Pricing
-            </AppLink>
+              Free promotion
+            </Link>
           </div>
         )}
       </nav>
@@ -644,41 +663,43 @@ function Index() {
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              Reson8.life · Source of truth
+              Reson8.life · South African AI app hub
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
-              The Resonance{" "}
-              <span className="text-gradient-brand">Hub</span>
+              AI tools for South African creators, publishers, schools, and small businesses.
             </h1>
             <p className="text-base md:text-lg text-white/75 leading-[1.65] text-pretty max-w-[58ch] mb-6">
-              The source of truth for every Resonance app, update, pricing plan, checkout, and
-              ecosystem package.
+              Create eBooks, posters, campaigns, music-video storyboards, YouTube audits, and career reports from one Resonance hub.
             </p>
             <p className="text-sm text-white/65 leading-relaxed max-w-[58ch] mb-4">
-              Buy once-off app credits, discover new tools, follow product updates, and manage
-              ecosystem bundles from one South African-built AI hub.
+              Open every Resonance product at no charge during the promotion, then help us learn from real usage so future pricing reflects actual operating cost.
             </p>
             <p className="text-[13px] text-white/60 leading-relaxed max-w-[58ch] mb-10">
-              Individual apps use once-off credits and project packs. Optional ecosystem passes
-              are available for creators and teams using multiple tools every month.
+              All Resonance products are temporarily free during this promotion while real usage, provider consumption, and support demand are measured.
             </p>
             <div className="flex flex-wrap gap-3">
+              <Link
+                to="/nova"
+                className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              >
+                Open Nova Studio
+              </Link>
               <a
                 href="#apps"
                 className="px-7 py-3.5 rounded-full bg-gradient-brand text-white font-bold text-sm shadow-[0_0_40px_-5px_hsl(295_90%_60%/0.8)] hover:scale-[1.02] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
               >
-                Explore apps
+                Start creating
               </a>
-              <AppLink
-                to={ROUTES.pricing}
+              <Link
+                to="/pricing"
                 className="px-6 py-3.5 rounded-full border border-white/15 hover:border-white/40 font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(295_90%_60%)]"
               >
-                View pricing
-              </AppLink>
+                Promotion details
+              </Link>
             </div>
           </div>
           <div className="md:pl-4">
-            <HeroCarousel items={apps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
+            <HeroCarousel items={runtimeApps} activeIndex={carouselIndex} onChange={setCarouselIndex} />
           </div>
         </section>
 
@@ -688,12 +709,12 @@ function Index() {
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-[11px] font-mono uppercase tracking-[0.18em] text-white/65">
 
             {[
-              "🇿🇦 Built in South Africa",
-              "ZAR pricing",
-              "PayFast secure checkout",
-              "Cancel anytime",
+              "Built in South Africa",
+              "Free promotional access",
+              "No payment required",
+              "Cost study active",
               "POPIA-conscious",
-              "Free tiers & pilots",
+              "Measured usage & cost",
             ].map((t) => (
               <li key={t} className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.02]">
                 {t}
@@ -745,7 +766,7 @@ function Index() {
                   <span className="text-white/65 group-hover:text-white transition-colors">↗</span>
                 </a>
                 <a
-                  href="https://www.resonance-podcast.com"
+                  href="https://www.resonance-podcast.com/episodes"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-[hsl(190_90%_60%/0.4)] px-3.5 py-3 transition-all"
@@ -814,40 +835,50 @@ function Index() {
         <section id="who" data-reveal className="mb-32">
           <div className="text-center mb-12">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              00 / Who it's for
+              00 / Start with a goal
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
-              Find your pathway
+              What do you want to create today?
             </h2>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-              Four kinds of creators meet the Resonance ecosystem first. Pick the one that sounds like you.
+              Pick an outcome and go directly to the Resonance tool built for it.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {[
               {
-                title: "Authors & Publishers",
+                title: "Publish an eBook",
                 body: "Turn manuscripts, PDFs, and stories into polished audiovisual books.",
-                href: "https://www.resonanceonline.life",
+                href: "https://epublisher.reson8.life",
+    localPort: 3101,
                 cta: "Open ePublisher",
               },
               {
-                title: "Creators & Small Businesses",
+                title: "Create campaign visuals",
                 body: "Generate posters, ads, brochures, videos, and product campaigns.",
-                href: "https://www.creativestudio.life",
+                href: "https://creative.reson8.life",
+    localPort: 3201,
                 cta: "Open Creative Studio",
               },
               {
-                title: "Musicians & Artists",
+                title: "Build a music-video concept",
                 body: "Build music-video storyboards, character concepts, and AI-ready scene prompts.",
-                href: "https://www.syncvision.life",
+                href: "https://sync.reson8.life",
+    localPort: 3301,
                 cta: "Open Sync Vision",
               },
               {
-                title: "Students & Schools",
+                title: "Explore a career path",
                 body: "Discover career paths, skills, bursaries, and role-fit insights.",
                 href: "https://www.career-compass.org",
                 cta: "Open Career Compass",
+              },
+              {
+                title: "Grow a YouTube channel",
+                body: "Audit thumbnails, titles, content strategy, and channel growth opportunities.",
+                href: "https://youtube.reson8.life",
+                localPort: 3401,
+                cta: "Open YouTube Optimizer",
               },
             ].map((p) => (
               <article
@@ -870,41 +901,6 @@ function Index() {
         </section>
 
 
-        {/* LATEST UPDATES */}
-        <section id="updates" data-reveal className="mb-24">
-          <div className="flex items-end justify-between mb-8 gap-6 flex-wrap">
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-                Latest updates
-              </div>
-              <h2 className="font-display text-2xl md:text-4xl font-bold tracking-[-0.025em]">What&apos;s new across the ecosystem</h2>
-            </div>
-            <div className="flex flex-col items-start md:items-end gap-3 max-w-md">
-              <p className="text-white/60 text-sm leading-relaxed">
-                The Hub is the source of truth for every product change, status update, and rollout.
-              </p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <a
-                  href="/api/public/updates/rss"
-                  className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
-                  aria-label="Subscribe to Resonance updates via RSS"
-                >
-                  <span aria-hidden>📡</span> Subscribe · RSS
-                </a>
-                <a
-                  href="/api/public/updates/atom"
-                  className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
-                  aria-label="Subscribe to Resonance updates via Atom"
-                >
-                  <span aria-hidden>⚛️</span> Subscribe · Atom
-                </a>
-              </div>
-
-            </div>
-          </div>
-          <UpdatesGrid />
-        </section>
-
         {/* APPS */}
         <section id="apps" data-reveal className="mb-32">
           <div className="flex items-end justify-between mb-10 gap-6 flex-wrap">
@@ -912,17 +908,16 @@ function Index() {
               <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
                 01 / The Apps
               </div>
-              <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">The Ecosystem</h2>
+              <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em]">Choose a Resonance tool</h2>
             </div>
             <p className="text-white/60 max-w-md text-sm leading-relaxed">
-              Each app is independently deployed. Individual apps use once-off credits and project
-              packs — optional ecosystem passes live on the Hub for teams using multiple tools every month.
+              Each app is independently deployed. Full access is temporarily free across the suite while usage and provider costs are measured.
             </p>
           </div>
 
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {apps.map((app, i) => {
+            {runtimeApps.map((app, i) => {
               const a = accentMap[app.accent];
               const disabled = app.status === "soon";
               return (
@@ -986,20 +981,16 @@ function Index() {
                           href={app.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest text-center transition-colors"
+                          className="px-3 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest text-center shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)] hover:shadow-[0_0_35px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
                         >
-                          Visit
+                          {app.name === "The Resonance Podcast" ? "Listen" : app.name === "Career Compass" ? "Try pilot" : "Try it"}
                         </a>
                         <a
                           href={app.subscribeHref}
                           {...(app.subscribeHref.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}
-                          className="px-3 py-2.5 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest text-center shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)] hover:shadow-[0_0_35px_-5px_hsl(295_90%_60%/0.9)] transition-shadow"
+                          className="px-3 py-2.5 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest text-center transition-colors"
                         >
-                          {app.status === "free"
-                            ? "Open"
-                            : app.subscribeHref.startsWith("/pricing")
-                              ? "View packs"
-                              : "Learn more"}
+                          {app.status === "free" ? "Learn more" : "Open free"}
                         </a>
 
                       </div>
@@ -1011,153 +1002,142 @@ function Index() {
           </div>
         </section>
 
-        {/* PRICING TABLE */}
-        {/* PRICING CALLOUT */}
+        {/* FREE PROMOTION */}
         <section id="pricing" data-reveal className="mb-24">
           <div className="rounded-3xl border border-white/10 bg-card/50 backdrop-blur-xl p-8 md:p-12 text-center">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              02 / Pricing
+              02 / Free access promotion
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
-              Once-off packs. Optional passes.
+              All Resonance products are free during the promotion.
             </h2>
-            <p className="text-white/70 max-w-2xl mx-auto text-sm leading-relaxed mb-8">
-              Individual apps use once-off credits and project packs — no recurring app fees. The Hub
-              offers optional monthly ecosystem passes for creators and teams using multiple Resonance
-              tools every month.
+            <p className="text-white/70 max-w-2xl mx-auto text-sm leading-relaxed mb-5">
+              Billing, checkout, subscriptions, passes, paid packs, and credit purchases are paused while we measure
+              real provider consumption, infrastructure cost, support demand, and feature usage.
             </p>
+            <div className="flex flex-wrap justify-center gap-2 mb-8 text-[11px] font-mono uppercase tracking-wider text-white/70">
+              <span className="px-3 py-1.5 rounded-full border border-white/10">Full app access</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">No checkout</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">No subscription</span>
+              <span className="px-3 py-1.5 rounded-full border border-white/10">Usage & cost measured</span>
+            </div>
             <div className="flex flex-wrap justify-center gap-3">
-              <AppLink
-                to={ROUTES.pricing}
+              <a
+                href="#apps"
                 className="px-6 py-3 rounded-full bg-gradient-brand text-white font-bold text-xs uppercase tracking-widest shadow-[0_0_40px_-10px_hsl(295_90%_60%/0.8)]"
               >
-                View full pricing →
-              </AppLink>
-              <a href="#bundles" className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest">
-                See ecosystem passes
+                Explore free products
               </a>
+              <Link
+                to="/pricing"
+                className="px-6 py-3 rounded-full border border-white/15 hover:border-white/40 text-xs font-bold uppercase tracking-widest"
+              >
+                Promotion details →
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* BUNDLES / ECOSYSTEM PASSES */}
+        {/* PROMOTION ACCESS */}
         <section id="bundles" data-reveal className="mb-32">
           <div className="text-center mb-10">
             <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              Optional ecosystem passes
+              Promotion access
             </div>
             <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
-              For creators and teams using multiple tools every month
+              Use the full suite while we learn what sustainable pricing should be
             </h3>
             <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">
-              Passes are optional. If you only need one app, just buy the once-off pack.
+              The promotion temporarily removes commercial feature gates. Sign in where requested so usage can be measured accurately.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               {
-                name: "Creator Pass",
-                price: "R499",
-                period: "/ month",
-                body: "Monthly allowance across ePublisher, Creative Studio, and YouTube Optimizer. Best for solo creators publishing and promoting regularly.",
-                href: "/checkout?app=all_access&plan=creator_pass",
-                cta: "Subscribe",
-                featured: false,
+                name: "Creators",
+                body: "Create, publish, design, optimise, and prototype across the Resonance suite with full promotional access.",
               },
               {
-                name: "Studio Pass",
-                price: "R1,499",
-                period: "/ month",
-                body: "Monthly allowance across ePublisher, Creative Studio, Sync Vision, and YouTube Optimizer. Best for musicians, media teams, and high-output creators.",
-                href: "/checkout?app=all_access&plan=studio_pass",
-                cta: "Subscribe",
-                featured: true,
+                name: "Teams",
+                body: "Evaluate higher-capability workflows and collaboration needs without buying a pass or pack during the promotion.",
               },
               {
-                name: "Business Pass",
-                price: "Custom",
-                period: "/ month",
-                body: "Multi-seat access, onboarding, priority support, invoice support, and custom app allowances. Best for agencies, schools, publishers, and businesses.",
-                href: "mailto:hello@reson8.life?subject=Business%20Pass%20enquiry",
-                cta: "Request quote",
-                featured: false,
+                name: "Schools & businesses",
+                body: "Pilot suitable Resonance tools and help establish real support, infrastructure, and provider-cost requirements.",
               },
-            ].map((b) => (
+            ].map((item) => (
               <article
-                key={b.name}
-                className={`rounded-2xl border p-6 flex flex-col backdrop-blur-xl ${
-                  b.featured
-                    ? "border-[hsl(295_90%_60%/0.4)] bg-card/80 shadow-[0_0_60px_-15px_hsl(295_90%_60%/0.6)]"
-                    : "border-white/10 bg-card/50"
-                }`}
+                key={item.name}
+                className="rounded-2xl border border-white/10 bg-card/50 p-6 flex flex-col backdrop-blur-xl"
               >
-                <span className={`self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border ${b.featured ? "border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]" : "border-white/15 bg-white/[0.04] text-white/60"}`}>
-                  {b.featured ? "Most popular" : "Optional pass"}
+                <span className="self-start mb-3 text-[10px] font-mono uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[hsl(295_90%_60%/0.3)] bg-[hsl(295_90%_60%/0.12)] text-[hsl(295_90%_80%)]">
+                  Free during promotion
                 </span>
-                <h4 className="text-base font-bold tracking-tight mb-2">{b.name}</h4>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-3xl font-extrabold">{b.price}</span>
-                  <span className="text-xs text-white/65">{b.period}</span>
-                </div>
-                <p className="text-sm text-white/65 leading-relaxed mb-6 flex-1">{b.body}</p>
-                <a
-                  href={b.href}
-                  className={`inline-block w-full px-4 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest text-center transition-all ${
-                    b.featured
-                      ? "bg-gradient-brand text-white shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
-                      : "border border-white/15 hover:border-white/40"
-                  }`}
-                >
-                  {b.cta}
-                </a>
+                <h4 className="text-base font-bold tracking-tight mb-2">{item.name}</h4>
+                <p className="text-sm text-white/65 leading-relaxed">{item.body}</p>
               </article>
             ))}
           </div>
           <p className="text-center text-xs text-white/60 mt-6">
-            Ecosystem passes are optional and billed monthly via PayFast — cancel anytime. Individual
-            apps remain available as once-off credit and project packs with no recurring app fees.
+            No card, checkout, recurring plan, pass, pack, or credit purchase is required during this promotion.
           </p>
         </section>
-
         {/* ROADMAP */}
         <section id="roadmap" data-reveal className="mb-24">
           <div className="text-center mb-8">
-            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
-              Roadmap
-            </div>
-            <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">
-              What&apos;s coming next
-            </h3>
+            <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">Roadmap</div>
+            <h3 className="text-2xl md:text-4xl font-bold tracking-tight mb-3">What&apos;s coming next</h3>
+            <p className="text-white/60 max-w-2xl mx-auto text-sm leading-relaxed">Current lifecycle status without speculative delivery dates.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              {
-                title: "Unified Hub login",
-                body: "Single sign-on across every Resonance app.",
-                status: "In development",
-                note: "Broker + Supabase session already flows via the Hub; per-spoke handoff rollout begins after Phase 8 QA.",
-              },
-              {
-                title: "Pack redemption inside spokes",
-                body: "Once-off packs redeemable inside each app dashboard.",
-                status: "Rolling out",
-                note: "Live in Creative Studio proxy; ePublisher and Sync Vision wiring in progress.",
-              },
-              {
-                title: "Career Compass paid tiers",
-                body: "Per-report, school, and district packages.",
-                status: "Planned",
-                note: "Pilot stays free-to-use while paid packaging is scoped.",
-              },
+              { title: "Unified Hub login", body: "Single sign-on across every Resonance app.", status: "In rollout" },
+              { title: "Cost instrumentation", body: "Provider consumption and operational cost signals captured across app workflows.", status: "In development" },
+              { title: "Career Compass pilot scaling", body: "Measure school, learner, support, and report-delivery demand before setting a post-pilot model.", status: "Planned" },
             ].map((r) => (
               <article key={r.title} className="rounded-2xl border border-white/10 bg-card/50 backdrop-blur-xl p-5">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-white/60 mb-2">{r.status}</div>
+                <div className="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-2">{r.status}</div>
                 <h4 className="text-sm font-bold tracking-tight mb-2">{r.title}</h4>
-                <p className="text-xs text-white/65 leading-relaxed mb-2">{r.body}</p>
-                <p className="text-[11px] text-white/70 leading-relaxed">{r.note}</p>
+                <p className="text-xs text-white/65 leading-relaxed">{r.body}</p>
               </article>
             ))}
           </div>
+        </section>
+
+
+        {/* LATEST UPDATES */}
+        <section id="updates" data-reveal className="mb-24">
+          <div className="flex items-end justify-between mb-8 gap-6 flex-wrap">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 mb-3">
+                Latest updates
+              </div>
+              <h2 className="font-display text-2xl md:text-4xl font-bold tracking-[-0.025em]">What&apos;s new across the ecosystem</h2>
+            </div>
+            <div className="flex flex-col items-start md:items-end gap-3 max-w-md">
+              <p className="text-white/60 text-sm leading-relaxed">
+                See what has shipped, what is changing, and what is coming next across the Resonance ecosystem.
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <a
+                  href="/api/public/updates/rss"
+                  className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+                  aria-label="Subscribe to Resonance updates via RSS"
+                >
+                  <span aria-hidden>📡</span> Subscribe · RSS
+                </a>
+                <a
+                  href="/api/public/updates/atom"
+                  className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1.5 rounded-full border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+                  aria-label="Subscribe to Resonance updates via Atom"
+                >
+                  <span aria-hidden>⚛️</span> Subscribe · Atom
+                </a>
+              </div>
+
+            </div>
+          </div>
+          <UpdatesGrid />
         </section>
 
 
@@ -1198,47 +1178,38 @@ function Index() {
               04 / Questions
             </div>
             <h2 className="font-display text-3xl md:text-5xl font-bold tracking-[-0.025em] mb-4">
-              Frequently asked
+              Free promotion questions
             </h2>
           </div>
           <div className="max-w-3xl mx-auto divide-y divide-white/10 rounded-2xl border border-white/10 bg-card/40 backdrop-blur-xl">
             {[
               {
-                q: "Do individual apps have monthly subscriptions?",
-                a: "No. Individual Resonance apps use once-off credits and project packs — no recurring app fees. Only the Hub offers optional monthly ecosystem passes (Creator, Studio, Business) that combine multiple apps.",
+                q: "Are all Resonance products free during the promotion?",
+                a: "Yes. Commercial feature gates are paused across the promoted Resonance app suite while we measure real operating cost and usage patterns.",
               },
               {
-                q: "Can I use Resonance tools for free?",
-                a: "Yes. The Resonance Podcast is free, Career Compass is in free pilot, and most apps offer trial credits before you buy a pack.",
+                q: "Do I need a card, checkout, pack, pass, or subscription?",
+                a: "No. No payment method or purchase is required during the promotion. Checkout and new billing are disabled.",
               },
               {
-                q: "Is there a single login across every app?",
-                a: "One Hub billing account today — packs and passes live in one place. Unified app login is on the roadmap, so some apps may still require their own login during the transition.",
+                q: "Why should I sign in if access is free?",
+                a: "Signing in lets your work persist and lets Resonance attribute usage accurately enough to understand provider, infrastructure, and support cost before setting future prices.",
               },
               {
-                q: "Can I cancel an ecosystem pass anytime?",
-                a: "Yes. Ecosystem passes are cancel-anytime via PayFast. Once-off packs are one-time purchases with no recurring billing.",
+                q: "Will the products always remain free?",
+                a: "This is a temporary promotion. Future pricing will be based on measured costs and usage evidence, and any commercial relaunch will be communicated before new charges are introduced.",
               },
               {
-                q: "Are prices in South African Rand?",
-                a: "All prices are in ZAR and processed locally through PayFast (card and EFT).",
-              },
-
-              {
-                q: "Can schools use Career Compass?",
-                a: "Yes — schools can join the rewards-based pilot. Post-pilot tiers include per-school and per-district licensing.",
+                q: "What happens to previous purchase and billing records?",
+                a: "Historical records are retained for reconciliation and audit purposes. They do not create a new charge or restrict promotional access.",
               },
               {
-                q: "Can publishers test ePublisher with one title first?",
-                a: "Absolutely. Start with a single title on the free or Starter tier, then upgrade for full audiovisual exports and backlist conversion.",
+                q: "Can schools, publishers, creators, and businesses participate?",
+                a: "Yes. The promotion is intended to support real-world pilots across these groups so capability, support demand, and sustainable future pricing can be evaluated.",
               },
               {
-                q: "Does Sync Vision generate final videos or AI-ready storyboards?",
-                a: "Sync Vision produces AI-ready music-video storyboards, character performances, and scene prompts — ready to feed into your video generation pipeline.",
-              },
-              {
-                q: "Can Creative Studio create ads and product visuals?",
-                a: "Yes — posters, brochures, social ads, product mockups, and short marketing videos from a single prompt or upload.",
+                q: "Is usage still measured during free access?",
+                a: "Yes. Product usage, provider consumption, operational performance, and relevant cost signals continue to be measured under Resonance governance so pricing can later reflect real service cost.",
               },
             ].map((item) => (
               <details key={item.q} className="group p-6">
@@ -1251,7 +1222,6 @@ function Index() {
             ))}
           </div>
         </section>
-
         {/* JOIN */}
         <section
           id="join"
@@ -1296,9 +1266,9 @@ function Index() {
             <p className="mt-4 text-[11px] text-white/65 max-w-md mx-auto">
               We store your email to send occasional updates about new Resonance apps and pilots. No
               spam, unsubscribe anytime. See our{" "}
-              <AppLink to={ROUTES.governance} className="underline hover:text-white">
+              <Link to="/governance" className="underline hover:text-white">
                 governance policy
-              </AppLink>{" "}
+              </Link>{" "}
               for how we handle data (POPIA-conscious).
             </p>
             {joinMsg && (
@@ -1317,35 +1287,6 @@ function Index() {
       </main>
 
       <footer className="py-12 px-6 border-t border-white/5 max-w-7xl mx-auto">
-        <div className="mb-10 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.02] p-6 text-center md:flex-row md:justify-between md:text-left">
-          <div className="flex items-center gap-4">
-            <img
-              src={resonanceAppDevAsset.url}
-              alt="The Resonance App Dev — brand mark"
-              width={96}
-              height={96}
-              loading="lazy"
-              className="h-16 w-16 rounded-xl object-cover shadow-[0_0_24px_rgba(217,70,239,0.35)]"
-            />
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-white/60">
-                Built by
-              </div>
-              <div className="text-lg font-semibold text-white">
-                The Resonance App Dev
-              </div>
-              <div className="text-xs text-white/70">
-                The in-house dev team designing, shipping, and maintaining every app in the Resonance ecosystem.
-              </div>
-            </div>
-          </div>
-          <a
-            href="mailto:hello@reson8.life"
-            className="text-[10px] font-mono uppercase tracking-widest text-white/70 hover:text-white transition-colors"
-          >
-            Work with the team →
-          </a>
-        </div>
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
             <img
@@ -1361,28 +1302,28 @@ function Index() {
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] font-mono uppercase tracking-widest text-white/70 justify-center md:justify-end">
             <a href="/#apps" className="hover:text-white transition-colors">Apps</a>
-            <AppLink to={ROUTES.pricing} className="hover:text-white transition-colors">Pricing</AppLink>
+            <Link to="/pricing" className="hover:text-white transition-colors">Free promotion</Link>
             <a href="/#updates" className="hover:text-white transition-colors">Updates</a>
             <a href="/#bundles" className="hover:text-white transition-colors">Bundles</a>
             <a href="/#roadmap" className="hover:text-white transition-colors">Roadmap</a>
-            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Governance</AppLink>
-            <AppLink to={ROUTES.changelog} className="hover:text-white transition-colors">Changelog</AppLink>
-            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Privacy &amp; POPIA</AppLink>
-            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Terms</AppLink>
-            <AppLink to={ROUTES.governance} className="hover:text-white transition-colors">Refunds</AppLink>
+            <Link to="/governance" className="hover:text-white transition-colors">Governance</Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy &amp; POPIA</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/refunds" className="hover:text-white transition-colors">Refunds</Link>
+            <Link to="/changelog" className="hover:text-white transition-colors">Changelog</Link>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Support</a>
             <a href="mailto:hello@reson8.life" className="hover:text-white transition-colors">Contact</a>
 
-            <a href="https://www.resonance-podcast.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://www.resonance-podcast.com/episodes" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Podcast
             </a>
-            <a href="https://www.resonanceonline.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://epublisher.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               ePublisher
             </a>
-            <a href="https://www.creativestudio.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://creative.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               Studio
             </a>
-            <a href="https://www.syncvision.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+            <a href="https://sync.reson8.life" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               SyncVision
             </a>
           </div>
@@ -1412,13 +1353,13 @@ type UpdateItem = {
 // Source of truth for editing lives in public/content/updates.json — no code
 // changes required to add / edit / reorder cards.
 const FALLBACK_UPDATES: UpdateItem[] = [
-  { app: "Reson8 Hub", status: "Live", tone: "live", change: "All Resonance apps are now once-off packs — pay for what you use, no recurring app subscriptions.", date: "Jun 2026", href: "/pricing#packs", cta: "See packs" },
-  { app: "Resonance ePublisher", status: "Live", tone: "live", change: "Once-off credit and project packs replace the old monthly plan. New R149 starter pack for first-time authors.", date: "May 2026", href: "/pricing#epublisher", cta: "View packs" },
-  { app: "Creative Studio", status: "Live", tone: "live", change: "Creative credit packs launched with faster poster + social-kit generation via the Hub proxy.", date: "Apr 2026", href: "/pricing#creative-studio", cta: "View packs" },
-  { app: "Sync Vision", status: "Live", tone: "live", change: "Music-video packs live with a new storyboarding flow and ZAR PayFast checkout on the Hub.", date: "Mar 2026", href: "/pricing#sync-vision", cta: "View packs" },
-  { app: "YouTube Optimizer", status: "Updating", tone: "updating", change: "Migrating to youtubeoptimizer.life with new audit, thumbnail, and growth packs. Existing users keep access.", date: "Jun 2026", href: "/pricing#youtube-optimizer", cta: "View packs" },
-  { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners. Per-report and district packages arrive later in 2026.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
-  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live — free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com", cta: "Listen" },
+  { app: "Reson8 Hub", status: "Free Promotion", tone: "pilot", change: "New billing and checkout are paused while the ecosystem measures real usage and provider cost for sustainable future pricing.", date: "Sep 2026", href: "/pricing", cta: "Promotion details" },
+  { app: "Resonance ePublisher", status: "Free Promotion", tone: "pilot", change: "Full ePublisher access is included during the promotion while generation and publishing costs are measured.", date: "Sep 2026", href: "https://epublisher.reson8.life", cta: "Open free" },
+  { app: "Creative Studio", status: "Free Promotion", tone: "pilot", change: "Creative Studio generation access is temporarily free while image and media provider costs are measured.", date: "Sep 2026", href: "https://creative.reson8.life", cta: "Open free" },
+  { app: "Sync Vision", status: "Free Promotion", tone: "pilot", change: "Storyboard, lipsync, rendering, and export access are included while video-provider costs are measured.", date: "Sep 2026", href: "https://sync.reson8.life", cta: "Open free" },
+  { app: "YouTube Optimizer", status: "Free Promotion", tone: "pilot", change: "Audits, thumbnail generation, and optimizer tools are temporarily free while usage and AI costs are measured.", date: "Sep 2026", href: "https://youtube.reson8.life", cta: "Open free" },
+  { app: "Career Compass", status: "Free Pilot", tone: "pilot", change: "Free pilot open to schools and learners while delivery, support, and report-generation costs are measured.", date: "Feb 2026", href: "https://www.career-compass.org/#how", cta: "Join pilot" },
+  { app: "The Resonance Podcast", status: "Live", tone: "live", change: "New season live — free episodes, media kits, and shop. Never a subscription.", date: "Jun 2026", href: "https://www.resonance-podcast.com/episodes", cta: "Listen" },
   { app: "Reson8 Governance", status: "New", tone: "new", change: "Resonance Constitutional Governance Framework v1.0 published — how we build, price, and evolve every app.", date: "May 2026", href: "/governance", cta: "Read RCGF" },
 ];
 
@@ -1537,7 +1478,7 @@ function UpdatesGrid() {
                   {external ? (
                     <a href={u.href} target="_blank" rel="noopener noreferrer" className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</a>
                   ) : (
-                    <AppLink to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</AppLink>
+                    <Link to={u.href} className="text-xs font-bold uppercase tracking-widest text-white/85 hover:text-white">{u.cta} →</Link>
                   )}
                   {hasMore && (
                     <button
@@ -1596,9 +1537,9 @@ function UpdatesGrid() {
                               {l.label} ↗
                             </a>
                           ) : (
-                            <AppLink to={l.href} onClick={() => setOpenIndex(null)} className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
+                            <Link to={l.href} onClick={() => setOpenIndex(null)} className="text-sm text-white/85 hover:text-white underline underline-offset-4 decoration-white/25 hover:decoration-white/60">
                               {l.label} →
-                            </AppLink>
+                            </Link>
                           )}
                         </li>
                       );
@@ -1618,13 +1559,13 @@ function UpdatesGrid() {
                     {active.cta} ↗
                   </a>
                 ) : (
-                  <AppLink
+                  <Link
                     to={active.href}
                     onClick={() => setOpenIndex(null)}
                     className="px-4 py-2 rounded-full bg-gradient-brand text-white text-xs font-bold uppercase tracking-widest shadow-[0_0_25px_-8px_hsl(295_90%_60%/0.8)]"
                   >
                     {active.cta} →
-                  </AppLink>
+                  </Link>
                 )}
               </div>
             </>
@@ -1634,6 +1575,3 @@ function UpdatesGrid() {
     </>
   );
 }
-
-
-

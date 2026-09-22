@@ -10,7 +10,16 @@ DROP TABLE IF EXISTS public.hub_apps          CASCADE;
 DROP TABLE IF EXISTS public.hub_user_roles    CASCADE;
 
 DROP FUNCTION IF EXISTS public.hub_user_app_access(uuid, uuid)         CASCADE;
-DROP FUNCTION IF EXISTS public.hub_has_role(uuid, public.hub_app_role) CASCADE;
+-- A fresh database has never had hub_app_role. PostgreSQL resolves function
+-- argument types before applying IF EXISTS, so guard this legacy cleanup.
+DO $drop_legacy_hub_has_role$
+BEGIN
+  IF to_regtype('public.hub_app_role') IS NOT NULL THEN
+    EXECUTE
+      'DROP FUNCTION IF EXISTS public.hub_has_role(uuid, public.hub_app_role) CASCADE';
+  END IF;
+END
+$drop_legacy_hub_has_role$;
 DROP FUNCTION IF EXISTS public.hub_suggestion_lifecycle_guard()        CASCADE;
 DROP FUNCTION IF EXISTS public.hub_touch_updated_at()                  CASCADE;
 

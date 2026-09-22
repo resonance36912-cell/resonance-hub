@@ -105,7 +105,7 @@ let linkCount = 0;
 let dynamicLinks = 0;
 
 for (const path of allFiles) {
-  const rel = relative(".", path);
+  const rel = relative(".", path).replaceAll("\\", "/");
   const src = stripComments(readFileSync(path, "utf8"));
   let m: RegExpExecArray | null;
   while ((m = linkRegex.exec(src))) {
@@ -199,7 +199,7 @@ for (const [contractFile, contract] of Object.entries(DYNAMIC_CTA_CONTRACTS)) {
 
   let foundAnyCall = false;
   for (const path of allFiles) {
-    const rel = relative(".", path);
+    const rel = relative(".", path).replaceAll("\\", "/");
     if (rel === contractFile) continue; // skip the definition itself
     const src = stripComments(readFileSync(path, "utf8"));
     let m: RegExpExecArray | null;

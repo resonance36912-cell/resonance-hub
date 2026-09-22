@@ -25,7 +25,7 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 
 const ROUTES_DIR = "src/routes";
 
@@ -39,8 +39,12 @@ const SKIP_PREFIXES = ["admin."];
 const SKIP_DIRS = new Set(["api", "email", "lovable"]);
 
 const OPT_OUT_MARKER = "@no-back-to-hub";
-const REQUIRED_TARGET = /(?:to|href)\s*=\s*(?:["']\/["']|\{ROUTES\.home\})/;
+const REQUIRED_TARGET = /(?:to|href)\s*=\s*["']\/["']/;
 const REQUIRED_LABEL = /Back to Hub/;
+
+const ROOT_ROUTE = "src/routes/__root.tsx";
+const rootSource = readFileSync(ROOT_ROUTE, "utf8");
+const GLOBAL_BACK_TO_HUB = REQUIRED_TARGET.test(rootSource) && REQUIRED_LABEL.test(rootSource);
 
 function* walk(dir: string): Generator<string> {
   for (const entry of readdirSync(dir)) {
@@ -63,7 +67,7 @@ const failures: Diag[] = [];
 
 for (const path of walk(ROUTES_DIR)) {
   const rel = relative(".", path);
-  const name = path.split("/").pop()!;
+  const name = basename(path);
 
   if (!/\.(t|j)sx?$/.test(name)) continue;
   if (SKIP_FILENAMES.has(name)) { skipped.push({ file: rel, reason: "infra" }); continue; }
@@ -74,7 +78,7 @@ for (const path of walk(ROUTES_DIR)) {
 
   const src = readFileSync(path, "utf8");
 
-  // Skip auto-generated files (e.g. @lovable.dev/mcp-js emitted routes).
+  // Skip generated route files that are not user-facing pages.
   if (src.includes("AUTO-GENERATED")) {
     skipped.push({ file: rel, reason: "auto-generated" });
     continue;
@@ -92,22 +96,17 @@ for (const path of walk(ROUTES_DIR)) {
     continue;
   }
 
-  // Files that render the shared <BackToHubHeader /> component satisfy the
-  // requirement automatically — the component itself contains the canonical
-  // link + label.
-  const usesSharedHeader =
-    /\bBackToHubHeader\b/.test(src) &&
-    /from\s+["'][^"']*components\/BackToHubHeader["']/.test(src);
+  if (GLOBAL_BACK_TO_HUB) {
+    checked.push(`${rel} (global shell)`);
+    continue;
+  }
 
   const reasons: string[] = [];
-  if (!usesSharedHeader) {
-    if (!REQUIRED_TARGET.test(src)) reasons.push(`missing link target to "/"`);
-    if (!REQUIRED_LABEL.test(src)) reasons.push(`missing "Back to Hub" label`);
-  }
+  if (!REQUIRED_TARGET.test(src)) reasons.push(`missing link target to "/"`);
+  if (!REQUIRED_LABEL.test(src)) reasons.push(`missing "Back to Hub" label`);
 
   if (reasons.length > 0) failures.push({ file: rel, reasons });
   else checked.push(rel);
-
 }
 
 const line = (s: string) => `  ${s}`;

@@ -1,9 +1,8 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { BackToHubHeader } from "@/components/BackToHubHeader";
+import { ronsAuth } from "@/lib/auth-provider";
 import {
   getInvoiceById,
   formatMoney,
@@ -11,9 +10,6 @@ import {
 } from "@/lib/invoices.functions";
 import { labelForApp } from "@/lib/billing-portal.functions";
 import { StatusPill } from "./account.invoices";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
-
 
 export const Route = createFileRoute("/account/invoices/$id")({
   head: () => ({
@@ -35,7 +31,7 @@ function ReceiptGate() {
   const [state, setState] = useState<"checking" | "authed" | "anon">("checking");
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
+    ronsAuth.getUser().then(({ data }) => {
       if (!mounted) return;
       setState(data.user ? "authed" : "anon");
     });
@@ -45,7 +41,7 @@ function ReceiptGate() {
   if (state === "checking") return <div className="p-8 text-muted-foreground">Loading…</div>;
   if (state === "anon") return (
     <div className="p-8 text-sm">
-      <AppLink to={ROUTES.login} search={{ next: "/" }} className="text-primary underline">Sign in</AppLink> to view this receipt.
+      <Link to="/login" search={{ next: `/account/invoices/${id}` }} className="text-primary underline">Sign in</Link> to view this receipt.
     </div>
   );
   return <ReceiptPage id={id} />;
@@ -70,11 +66,7 @@ function ReceiptPage({ id }: { id: string }) {
     <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
         <div className="flex items-center justify-between print:hidden">
-          <BackToHubHeader
-            className="flex gap-4 text-sm"
-            extra={<AppLink to={ROUTES.accountInvoices} className="text-primary underline">← Back to invoices</AppLink>}
-          />
-
+          <Link to="/account/invoices" className="text-sm text-primary underline">← Back to invoices</Link>
           <div className="flex gap-3">
             <button
               onClick={() => window.print()}

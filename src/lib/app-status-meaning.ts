@@ -31,7 +31,7 @@ export const APP_STATUS_MEANING: Record<AppStatus, AppStatusMeaning> = {
     label: "Beta",
     access: "Beta badge, live access",
     explanation:
-      "Deployed and open to everyone right now — the beta badge only means features are still being added and refined, not that access is restricted.",
+      "Deployed and open to everyone right now ΓÇö the beta badge only means features are still being added and refined, not that access is restricted.",
     accessible: true,
   },
   pilot: {
@@ -45,7 +45,7 @@ export const APP_STATUS_MEANING: Record<AppStatus, AppStatusMeaning> = {
     label: "Coming soon",
     access: "Not yet available",
     explanation:
-      "Announced but not deployed yet. There is nothing to sign in to — follow the roadmap for the release date.",
+      "Announced but not deployed yet. There is nothing to sign in to ΓÇö follow the roadmap for the release date.",
     accessible: false,
   },
 };

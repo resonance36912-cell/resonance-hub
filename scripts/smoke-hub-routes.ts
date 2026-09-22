@@ -22,7 +22,7 @@ type Check = {
 
 const CHECKS: Check[] = [
   { name: "Homepage", path: "/", expectStatus: 200, expectBody: "Resonance" },
-  { name: "Pricing hub", path: "/pricing", expectStatus: 200, expectBody: "youtube-optimizer" },
+  { name: "Pricing hub", path: "/pricing", expectStatus: 200, expectBody: "YouTube Optimizer" },
 
   // Per-app pricing routes are server redirects to /pricing#<anchor>.
   { name: "ePublisher pricing redirect", path: "/epublisher/pricing", expectRedirectTo: "/pricing#epublisher" },
@@ -66,7 +66,7 @@ for (const r of results) {
 
 // --- Sitemap check: every Hub-domain entry must return 200 ------------------
 console.log("\nSitemap URL checks:");
-const HUB_HOSTS = ["reson8.life", "www.reson8.life", "resonance-hub.lovable.app"];
+const HUB_HOSTS = ["reson8.life", "www.reson8.life"];
 let sitemapChecked = 0;
 let sitemapFailed = 0;
 

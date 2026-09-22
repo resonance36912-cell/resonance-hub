@@ -1,10 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { ronsAuth } from "@/lib/auth-provider";
 import { listEntitlementChecks } from "@/lib/entitlement-admin.functions";
-import { ROUTES } from "@/lib/routes";
-import { AppLink } from "@/components/AppLink";
 
 export const Route = createFileRoute("/admin/entitlement-diagnostics")({
   head: () => ({
@@ -14,15 +13,15 @@ export const Route = createFileRoute("/admin/entitlement-diagnostics")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: ROUTES.adminLogin });
+    const { data, error } = await ronsAuth.getUser();
+    if (error || !data.user) throw redirect({ to: "/admin/login" });
     const { data: role } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw redirect({ to: ROUTES.adminLogin });
+    if (!role) throw redirect({ to: "/admin/login" });
   },
   component: Page,
 });
@@ -48,12 +47,12 @@ function Page() {
               Last 50 entitlement checks across all spoke apps. Refreshes every 15s.
             </p>
           </div>
-          <AppLink
-            to={ROUTES.admin}
+          <Link
+            to="/admin"
             className="rounded-lg border border-border bg-card px-4 py-2 text-sm hover:bg-accent"
           >
             ← Admin home
-          </AppLink>
+          </Link>
         </div>
 
         {isLoading && <p className="text-muted-foreground">Loading…</p>}

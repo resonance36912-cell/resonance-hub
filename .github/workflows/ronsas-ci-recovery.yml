@@ -6,16 +6,9 @@ on:
       - Verify prebuild
       - CodeQL
       - Security scan
-      - Verify checkout links
       - Verify commercial mode
       - Verify ePublisher checkout
-      - Verify Manifest Integrity
-      - Verify pinned dependencies
-      - Verify route strings
       - Dependabot lockfile sync
-      - Outdated pinned dependencies
-      - App status drift watch
-      - return_to coverage report
     types: [completed]
 
 permissions:
