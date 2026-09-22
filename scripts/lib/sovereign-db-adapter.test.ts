@@ -22,7 +22,7 @@ describe("sovereign Nova/DataNest DB adapter", () => {
 
     globalThis.fetch = (async (input, init) => {
       expect(String(input)).toBe("http://127.0.0.1:58600/v1/db/query");
-      expect(init?.redirect).toBe("error");
+      expect(init?.redirect).toBe("manual");
       body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
       return Response.json([{ id: "row-1", state: "active" }]);
     }) as typeof fetch;
@@ -76,7 +76,7 @@ describe("sovereign Nova/DataNest DB adapter", () => {
     let body: Record<string, unknown> | null = null;
     globalThis.fetch = (async (input, init) => {
       expect(String(input)).toBe("http://localhost:58600/v1/db/procedure");
-      expect(init?.redirect).toBe("error");
+      expect(init?.redirect).toBe("manual");
       expect(new Headers(init?.headers).get("x-rons-procedure-key")).toBe("p".repeat(64));
       body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
       return Response.json({
@@ -96,6 +96,21 @@ describe("sovereign Nova/DataNest DB adapter", () => {
     expect(result.error).toBeNull();
     expect(result.data).toEqual({ id: "job-1", state: "running" });
     expect(body).toMatchObject({ name: "nova_transition_job" });
+  });
+
+  test("rejects redirect responses without following them", async () => {
+    process.env.RESONANCE_SOVEREIGN_GATEWAY_URL = "http://127.0.0.1:58600";
+    globalThis.fetch = (async (_input, init) => {
+      expect(init?.redirect).toBe("manual");
+      return new Response(null, {
+        status: 302,
+        headers: { Location: "https://example.com/off-loopback" },
+      });
+    }) as typeof fetch;
+
+    const result = await createSovereignDb().from("nova_projects").select("id");
+    expect(result.data).toBeNull();
+    expect(result.error?.message).toContain("rejected redirect (302)");
   });
 
   test("rejects non-loopback gateway URLs before network access", async () => {
