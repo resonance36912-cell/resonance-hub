@@ -1,0 +1,5 @@
+FROM ghcr.io/resonance36912-cell/rons-epublisher-sovereign-source:f89d5560109f0de92cd079fc20a1be96999a39d2
+
+LABEL org.opencontainers.image.source="https://github.com/resonance36912-cell/rons-epublisher-sovereign-source"
+LABEL org.opencontainers.image.revision="f89d5560109f0de92cd079fc20a1be96999a39d2"
+LABEL org.opencontainers.image.description="RONSAS Railway validation wrapper for exact ePublisher + hosted STT artifact"
