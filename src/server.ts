@@ -1,4 +1,6 @@
 import "./lib/error-capture";
+// Register authenticated DataNest server functions in the production TanStack server manifest.
+import "./lib/datanest/functions";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
