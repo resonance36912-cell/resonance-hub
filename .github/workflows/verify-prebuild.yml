@@ -34,6 +34,14 @@ jobs:
           GITLEAKS_ENABLE_SUMMARY: "true"
 
       - name: Set up Bun
+        id: setup_bun
+        continue-on-error: true
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Retry Bun setup after transient release download failure
+        if: steps.setup_bun.outcome == 'failure'
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.3
@@ -61,7 +69,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-bun-nm-1.3.3-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json', '.npmrc', 'bunfig.toml') }}
+          key: ${{ runner.os }}-bun-nm-1.3.3-v2-${{ hashFiles('bun.lock', 'bun.lockb', 'package.json', '.npmrc', 'bunfig.toml') }}
 
       - name: Install dependencies
         if: steps.cache_node_modules.outputs.cache-hit != 'true'
