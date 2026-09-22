@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireRonsAuth } from "@/lib/rons-auth-middleware";
-import { fetchPromotionCostingSummary, fetchSovereignCostUsageSummary, hasBackendRole } from "@/lib/backend-provider.server";
+import {
+  fetchPromotionCostingSummary,
+  fetchSovereignCostUsageSummary,
+  hasBackendRole,
+} from "@/lib/backend-provider.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { FREE_PROMOTION, FREE_PROMOTION_ACTIVE } from "@/lib/promotion";
 
@@ -54,14 +58,16 @@ const EXTERNAL_COST_SOURCES = [
   {
     key: "creative_studio",
     label: "Resonance Creative Studio",
-    evidence: "RONS v0.12 cost ledger + authenticated feature_usage promotion_costing via the source-authoritative spoke broker",
+    evidence:
+      "RONS v0.12 cost ledger + authenticated feature_usage promotion_costing via the source-authoritative spoke broker",
     authority: "RONS sovereign backend",
     status: "central_ledger_ready_workload_telemetry_live",
   },
   {
     key: "youtube_optimizer",
     label: "YouTube Optimizer",
-    evidence: "RONS v0.12 /v1/ai/chat usage receipts + server-proxied feature_usage promotion_costing",
+    evidence:
+      "RONS v0.12 /v1/ai/chat usage receipts + server-proxied feature_usage promotion_costing",
     authority: "RONS sovereign backend",
     status: "central_ledger_ready_workload_telemetry_live",
   },
@@ -84,16 +90,17 @@ export const getCostingStudy = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
 
-    const [spendResult, healthResult, costResult, ledgerResult, workloadResult] = await Promise.allSettled([
-      brokerJson("/v1/spend"),
-      brokerJson("/health"),
-      supabaseAdmin
-        .from("sku_costs")
-        .select("sku,cost_cents,currency,notes,updated_at")
-        .order("sku", { ascending: true }),
-      fetchSovereignCostUsageSummary(),
-      fetchPromotionCostingSummary(),
-    ]);
+    const [spendResult, healthResult, costResult, ledgerResult, workloadResult] =
+      await Promise.allSettled([
+        brokerJson("/v1/spend"),
+        brokerJson("/health"),
+        supabaseAdmin
+          .from("sku_costs")
+          .select("sku,cost_cents,currency,notes,updated_at")
+          .order("sku", { ascending: true }),
+        fetchSovereignCostUsageSummary(),
+        fetchPromotionCostingSummary(),
+      ]);
 
     const spend =
       spendResult.status === "fulfilled"
@@ -110,8 +117,7 @@ export const getCostingStudy = createServerFn({ method: "GET" })
         ? (costResult.value.data ?? [])
         : [];
 
-    const sovereignCostLedger =
-      ledgerResult.status === "fulfilled" ? ledgerResult.value : null;
+    const sovereignCostLedger = ledgerResult.status === "fulfilled" ? ledgerResult.value : null;
     const sovereignLedgerAll = sovereignCostLedger?.all ?? {
       events: 0,
       costed_events: 0,
@@ -119,27 +125,28 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       rows: [],
     };
 
-    const promotionWorkload = workloadResult.status === "fulfilled"
-      ? workloadResult.value
-      : {
-          total_samples: 0,
-          unknown_samples: 0,
-          apps: COSTED_APPS.map((app) => ({
-            app: app.key,
-            samples: 0,
-            successes: 0,
-            failures: 0,
-            cancelled: 0,
-            avg_duration_ms: 0,
-            p95_duration_ms: 0,
-            input_units: 0,
-            output_units: 0,
-            input_bytes: 0,
-            output_bytes: 0,
-            by_operation: {},
-            by_provider: {},
-          })),
-        };
+    const promotionWorkload =
+      workloadResult.status === "fulfilled"
+        ? workloadResult.value
+        : {
+            total_samples: 0,
+            unknown_samples: 0,
+            apps: COSTED_APPS.map((app) => ({
+              app: app.key,
+              samples: 0,
+              successes: 0,
+              failures: 0,
+              cancelled: 0,
+              avg_duration_ms: 0,
+              p95_duration_ms: 0,
+              input_units: 0,
+              output_units: 0,
+              input_bytes: 0,
+              output_bytes: 0,
+              by_operation: {},
+              by_provider: {},
+            })),
+          };
 
     const appCoverage = COSTED_APPS.map((app) => {
       const rows = costRows.filter((row) => String(row.sku ?? "").startsWith(`${app.key}:`));
@@ -194,8 +201,7 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       decision: {
         status: "costing_in_progress" as const,
         automatedPricingAllowed: false,
-        note:
-          "Public pricing remains disabled. Cost telemetry and assumptions are evidence only; re-enabling checkout requires a governed human pricing decision.",
+        note: "Public pricing remains disabled. Cost telemetry and assumptions are evidence only; re-enabling checkout requires a governed human pricing decision.",
       },
       sourceHealth: {
         aiBrokerSpend: spendResult.status === "fulfilled",
@@ -206,4 +212,3 @@ export const getCostingStudy = createServerFn({ method: "GET" })
       },
     };
   });
-

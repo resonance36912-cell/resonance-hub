@@ -58,19 +58,24 @@ function percentile95(values: number[]): number {
   return Math.round(sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1)] ?? 0);
 }
 
-export function summarizePromotionCostingRows(rows: PromotionCostingRawRow[]): PromotionWorkloadSummary {
-  const buckets = new Map<PromotionCostingApp, {
-    durations: number[];
-    successes: number;
-    failures: number;
-    cancelled: number;
-    input_units: number;
-    output_units: number;
-    input_bytes: number;
-    output_bytes: number;
-    by_operation: Record<string, number>;
-    by_provider: Record<string, number>;
-  }>();
+export function summarizePromotionCostingRows(
+  rows: PromotionCostingRawRow[],
+): PromotionWorkloadSummary {
+  const buckets = new Map<
+    PromotionCostingApp,
+    {
+      durations: number[];
+      successes: number;
+      failures: number;
+      cancelled: number;
+      input_units: number;
+      output_units: number;
+      input_bytes: number;
+      output_bytes: number;
+      by_operation: Record<string, number>;
+      by_provider: Record<string, number>;
+    }
+  >();
   for (const app of PROMOTION_COSTING_APPS) {
     buckets.set(app, {
       durations: [],
@@ -90,9 +95,10 @@ export function summarizePromotionCostingRows(rows: PromotionCostingRawRow[]): P
   let unknownSamples = 0;
   for (const row of rows) {
     if (row.feature !== "promotion_costing") continue;
-    const metadata = row.metadata && typeof row.metadata === "object"
-      ? row.metadata as Record<string, unknown>
-      : {};
+    const metadata =
+      row.metadata && typeof row.metadata === "object"
+        ? (row.metadata as Record<string, unknown>)
+        : {};
     if (metadata["promotion"] !== "free_access_costing") continue;
 
     totalSamples += 1;

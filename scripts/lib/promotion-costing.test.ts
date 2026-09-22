@@ -4,21 +4,42 @@ import { summarizePromotionCostingRows } from "../../src/lib/promotion-costing";
 describe("summarizePromotionCostingRows", () => {
   it("aggregates fixed promotion workload evidence without exposing raw metadata", () => {
     const summary = summarizePromotionCostingRows([
-      { feature: "promotion_costing", metadata: {
-        promotion: "free_access_costing", app: "creative_studio",
-        operation: "analyze-content", provider: "sovereign_local",
-        outcome: "success", duration_ms: 100, input_units: 1, output_units: 1,
-        user_id: "must-not-be-returned", arbitrary_content: "must-not-be-returned",
-      }},
-      { feature: "promotion_costing", metadata: {
-        promotion: "free_access_costing", app: "creative_studio",
-        operation: "edit-poster", provider: "sovereign_local",
-        outcome: "failure", duration_ms: 300,
-      }},
-      { feature: "promotion_costing", metadata: {
-        promotion: "free_access_costing", source: "EpisodeAnalysis",
-        operation: "episode_analysis", outcome: "success", duration_ms: 200,
-      }},
+      {
+        feature: "promotion_costing",
+        metadata: {
+          promotion: "free_access_costing",
+          app: "creative_studio",
+          operation: "analyze-content",
+          provider: "sovereign_local",
+          outcome: "success",
+          duration_ms: 100,
+          input_units: 1,
+          output_units: 1,
+          user_id: "must-not-be-returned",
+          arbitrary_content: "must-not-be-returned",
+        },
+      },
+      {
+        feature: "promotion_costing",
+        metadata: {
+          promotion: "free_access_costing",
+          app: "creative_studio",
+          operation: "edit-poster",
+          provider: "sovereign_local",
+          outcome: "failure",
+          duration_ms: 300,
+        },
+      },
+      {
+        feature: "promotion_costing",
+        metadata: {
+          promotion: "free_access_costing",
+          source: "EpisodeAnalysis",
+          operation: "episode_analysis",
+          outcome: "success",
+          duration_ms: 200,
+        },
+      },
       { feature: "other", metadata: { app: "creative_studio" } },
     ]);
 
@@ -40,9 +61,15 @@ describe("summarizePromotionCostingRows", () => {
 
   it("counts unrecognized app samples without attributing them", () => {
     const summary = summarizePromotionCostingRows([
-      { feature: "promotion_costing", metadata: {
-        promotion: "free_access_costing", operation: "unknown", outcome: "success", duration_ms: 1,
-      }},
+      {
+        feature: "promotion_costing",
+        metadata: {
+          promotion: "free_access_costing",
+          operation: "unknown",
+          outcome: "success",
+          duration_ms: 1,
+        },
+      },
     ]);
     expect(summary.total_samples).toBe(1);
     expect(summary.unknown_samples).toBe(1);
