@@ -37,9 +37,7 @@ export async function fetchPromotionCostingSummary(): Promise<PromotionWorkloadS
   const raw = (await response.json()) as unknown;
   const rows = Array.isArray(raw)
     ? (raw as PromotionCostingRawRow[])
-    : raw &&
-        typeof raw === "object" &&
-        Array.isArray((raw as { data?: unknown }).data)
+    : raw && typeof raw === "object" && Array.isArray((raw as { data?: unknown }).data)
       ? ((raw as { data: PromotionCostingRawRow[] }).data ?? [])
       : [];
 
