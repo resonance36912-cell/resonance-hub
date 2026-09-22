@@ -5,7 +5,7 @@
         "http://127.0.0.1:8080/",
         "http://127.0.0.1:8080/pricing"
       ],
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "preset": "desktop",
         "chromeFlags": "--no-sandbox --headless=new --disable-gpu"
