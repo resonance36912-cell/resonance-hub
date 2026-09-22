@@ -48,12 +48,15 @@ async function request<T>(
 
   const response = await fetch(endpoint, {
     method: "POST",
-    // Validate every destination by refusing redirects, including same-host ones.
-    // Otherwise fetch can forward the procedure key and query body off loopback.
-    redirect: "error",
+    // Keep redirect handling in this adapter so Cloudflare Workers can run the request.
+    // Manual mode prevents fetch from forwarding the procedure key or query body.
+    redirect: "manual",
     headers,
     body: JSON.stringify(body),
   });
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error(`Sovereign database request rejected redirect (${response.status})`);
+  }
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     throw new Error(
