@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  resolveRonsRequestCredential,
-  resolveRonsRequestUserId,
+  resolveSovereignRequestCredential,
+  resolveSovereignRequestUserId,
 } from "@/lib/rons-auth-middleware";
 import {
-  backendUserHasRole,
-  fetchBackendUserEmail,
+  fetchSovereignUserEmail,
+  sovereignUserHasRole,
 } from "@/lib/backend-provider.server";
 
 function allowedEmails(): Set<string> {
@@ -30,20 +30,20 @@ async function authorize(request: Request) {
     return noStore({ ok: false, error: "rnd_allowlist_unconfigured" }, 503);
   }
 
-  const credential = resolveRonsRequestCredential(request);
+  const credential = resolveSovereignRequestCredential(request);
   if (!credential) return noStore({ ok: false, error: "unauthorized" }, 401);
 
   let userId: string | null = null;
   try {
-    userId = await resolveRonsRequestUserId(request);
+    userId = await resolveSovereignRequestUserId(request);
   } catch {
     return noStore({ ok: false, error: "auth_provider_unavailable" }, 503);
   }
   if (!userId) return noStore({ ok: false, error: "unauthorized" }, 401);
 
   const [email, isAdmin] = await Promise.all([
-    fetchBackendUserEmail(credential),
-    backendUserHasRole(credential, userId, "admin"),
+    fetchSovereignUserEmail(credential),
+    sovereignUserHasRole(userId, "admin"),
   ]);
   if (!email || !isAdmin || !allowlist.has(email.trim().toLowerCase())) {
     return noStore({ ok: false, error: "forbidden" }, 403);
