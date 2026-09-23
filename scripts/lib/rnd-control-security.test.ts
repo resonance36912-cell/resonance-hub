@@ -81,7 +81,9 @@ describe("server-side R&D controls", () => {
     expect(functions).toContain("RONSAS_RND_ALLOWED_EMAILS");
     expect(functions).toContain("Forbidden: R&D control center email is not allowlisted");
     expect(functions).toContain("export const checkRndAccess");
+    expect(route).toContain("ronsAuth.getUser()");
     expect(route).toContain("await checkRndAccess()");
+    expect(route).not.toContain('.from("user_roles")');
   });
 
   test("uses a short mutation window, emergency kill, local agent gate, and second approval", () => {
