@@ -1,6 +1,20 @@
 BEGIN;
 
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+DO $
+DECLARE
+  current_schema text;
+BEGIN
+  SELECT n.nspname INTO current_schema
+  FROM pg_extension e
+  JOIN pg_namespace n ON n.oid=e.extnamespace
+  WHERE e.extname='pgcrypto';
+  IF current_schema IS DISTINCT FROM 'extensions' THEN
+    EXECUTE 'ALTER EXTENSION pgcrypto SET SCHEMA extensions';
+  END IF;
+END;
+$;
 
 ALTER TABLE public.bridge_devices
   ADD COLUMN IF NOT EXISTS rnd_token_sha256 text,
@@ -368,7 +382,7 @@ AS $$
     SELECT 1 FROM public.bridge_devices d
     WHERE d.id=_device_id AND d.enabled
       AND d.rnd_token_sha256 IS NOT NULL
-      AND d.rnd_token_sha256 = public.encode(public.digest(COALESCE(_token,'')::text,'sha256'::text),'hex')
+      AND d.rnd_token_sha256 = pg_catalog.encode(extensions.digest(COALESCE(_token,'')::text,'sha256'::text),'hex'::text)
   );
 $$;
 
