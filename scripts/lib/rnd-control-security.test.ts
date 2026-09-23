@@ -178,7 +178,8 @@ describe("agent credential handling", () => {
 
   test("database stores only the device token SHA-256", () => {
     expect(tokenMigration).toContain("rnd_token_sha256");
-    expect(tokenMigration).toContain("digest(COALESCE(_token,''),'sha256')");
+    expect(tokenMigration).toContain("extensions.digest(COALESCE(_token,'')::text,'sha256'::text)");
+    expect(tokenMigration).toContain("pg_catalog.encode");
     expect(tokenMigration).not.toContain("rnd_token_plaintext");
     expect(functions).toContain("tokenHash = await sha256Hex(token)");
     expect(functions).toContain("_token_sha256: tokenHash");
