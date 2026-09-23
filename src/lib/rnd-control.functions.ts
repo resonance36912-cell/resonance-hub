@@ -327,12 +327,14 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
         githubRecovery: {
           state: "hold",
           activeRuns: [],
-          error: "Privileged recovery integration is intentionally disabled on the browser/MCP runtime.",
+          error:
+            "Privileged recovery integration is intentionally disabled on the browser/MCP runtime.",
         },
         approvedAgent: {
           sha256: null,
           sourceBlobSha: null,
-          error: "Agent execution remains locked until the privileged production control database is explicitly connected.",
+          error:
+            "Agent execution remains locked until the privileged production control database is explicitly connected.",
         },
         fetchedAt: new Date().toISOString(),
       };
