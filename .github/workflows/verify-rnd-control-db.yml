@@ -63,7 +63,7 @@ jobs:
               refs = set()
               try:
                   html = urllib.request.urlopen(base, timeout=20).read().decode("utf-8", "replace")
-                  urls = [urllib.parse.urljoin(base, src) for src in re.findall(r'<script[^>]+src=["\\']([^"\\']+)', html)]
+                  urls = [urllib.parse.urljoin(base, src) for src in re.findall(r"""<script[^>]+src=["']([^"']+)""", html)]
                   refs.update(re.findall(r'https://([a-z0-9]+)\\.supabase\\.co', html))
                   for url in urls[:40]:
                       try:
