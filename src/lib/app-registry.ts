@@ -115,7 +115,7 @@ export const APP_REGISTRY: Record<ResonanceAppKey, AppRegistryEntry> = {
     key: "youtube_optimizer",
     label: "YouTube Optimizer",
     url: "https://youtube.reson8.life",
-    status: "pilot",
+    status: "live",
     accentColor: "#F97316",
     entitlementAppKey: "youtube_optimizer",
     tagline: "Audit, optimise, and scale your YouTube channel.",
