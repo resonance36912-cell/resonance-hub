@@ -368,7 +368,7 @@ AS $$
     SELECT 1 FROM public.bridge_devices d
     WHERE d.id=_device_id AND d.enabled
       AND d.rnd_token_sha256 IS NOT NULL
-      AND d.rnd_token_sha256 = encode(digest(COALESCE(_token,''),'sha256'),'hex')
+      AND d.rnd_token_sha256 = public.encode(public.digest(COALESCE(_token,'')::text,'sha256'::text),'hex')
   );
 $$;
 
