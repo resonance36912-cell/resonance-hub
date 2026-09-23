@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -144,6 +145,7 @@ function RndControlCenter() {
   });
 
   const data = snapshot.data;
+  const browserOnly = data?.runtimeMode === "browser_mcp";
   const device = useMemo(
     () => data?.devices?.find((item: any) => item.slug === "ealiophin") ?? null,
     [data?.devices],
@@ -154,9 +156,7 @@ function RndControlCenter() {
   const deployedAgentSha =
     typeof agentMeta?.agent_sha256 === "string" ? agentMeta.agent_sha256 : null;
   const agentHashMatches =
-    approvedAgentSha !== null &&
-    deployedAgentSha !== null &&
-    approvedAgentSha === deployedAgentSha;
+    approvedAgentSha !== null && deployedAgentSha !== null && approvedAgentSha === deployedAgentSha;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -168,9 +168,8 @@ function RndControlCenter() {
             </p>
             <h1 className="mt-2 text-3xl font-semibold">RONSAS Control Center</h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Sovereign diagnostics and allowlisted optimization jobs. No arbitrary shell, no
-              Remote Desktop Commander, and no TRIGGERcmd dependency after the local Ops Agent is
-              enrolled.
+              Sovereign diagnostics and allowlisted optimization jobs. No arbitrary shell, no Remote
+              Desktop Commander, and no TRIGGERcmd dependency after the local Ops Agent is enrolled.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 text-sm">
@@ -200,15 +199,54 @@ function RndControlCenter() {
           </section>
         )}
 
+        {data?.runtimeMode === "browser_mcp" && (
+          <section className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-emerald-200">Browser/MCP R&D mode is active</h2>
+                <p className="mt-1 max-w-3xl text-sm text-emerald-100/80">
+                  Continue RONSAS development from a compatible ChatGPT browser extension or MCP
+                  client without Remote Desktop Commander or TRIGGERcmd. Privileged machine
+                  mutations remain locked on this deployment.
+                </p>
+              </div>
+              <Link
+                to="/admin/rd"
+                className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
+              >
+                Open MCP setup
+              </Link>
+            </div>
+            <dl className="mt-4 grid gap-3 text-xs md:grid-cols-2">
+              <div>
+                <dt className="uppercase tracking-wider text-muted-foreground">
+                  Custom MCP endpoint
+                </dt>
+                <dd className="mt-1 break-all font-mono">{data.browserMcp.endpoint}</dd>
+                <p className="mt-1 text-muted-foreground">
+                  Becomes canonical after the reson8.life DNS record validates.
+                </p>
+              </div>
+              <div>
+                <dt className="uppercase tracking-wider text-muted-foreground">
+                  Railway live origin
+                </dt>
+                <dd className="mt-1 break-all font-mono">{data.browserMcp.railwayFallback}</dd>
+                <p className="mt-1 text-muted-foreground">
+                  Current deployed origin for health and login verification.
+                </p>
+              </div>
+            </dl>
+          </section>
+        )}
+
         {data && (
           <>
             <section className="mb-8 grid gap-3 md:grid-cols-4">
               <div className="rounded-xl border border-border bg-card p-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">Recovery</p>
                 <div className="mt-2">
-                  <Badge tone="border-red-500/40 bg-red-500/10 text-red-300">
-                    HOLD enforced
-                  </Badge>
+                  <Badge tone="border-red-500/40 bg-red-500/10 text-red-300">HOLD enforced</Badge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
                   Runner recovery is excluded from the R&D operation allowlist.
@@ -302,12 +340,10 @@ function RndControlCenter() {
                       </span>
                     </p>
                     <p className="break-all font-mono" title={agentMeta.agent_sha256 ?? undefined}>
-                      Deployed SHA:{" "}
-                      {deployedAgentSha ? deployedAgentSha.slice(0, 16) : "unknown"}
+                      Deployed SHA: {deployedAgentSha ? deployedAgentSha.slice(0, 16) : "unknown"}
                     </p>
                     <p className="break-all font-mono" title={approvedAgentSha ?? undefined}>
-                      Approved SHA:{" "}
-                      {approvedAgentSha ? approvedAgentSha.slice(0, 16) : "unknown"}
+                      Approved SHA: {approvedAgentSha ? approvedAgentSha.slice(0, 16) : "unknown"}
                     </p>
                     <p>
                       Identity:{" "}
@@ -338,7 +374,7 @@ function RndControlCenter() {
               </div>
             </section>
 
-            {!device && (
+            {!device && !browserOnly && (
               <section className="mb-8 rounded-xl border border-border bg-card p-5">
                 <h2 className="text-lg font-semibold">Enroll Ealiophin Ops Agent</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -385,15 +421,15 @@ function RndControlCenter() {
                   argument.
                 </p>
                 <pre className="mt-3 overflow-x-auto rounded-lg border border-border bg-background p-3 text-[11px]">
-                  {"powershell -NoProfile -ExecutionPolicy Bypass -File .\\ops\\ealiophin\\control-center\\INSTALL-RONS-RND-AGENT.ps1 -SupabaseUrl \"" +
+                  {'powershell -NoProfile -ExecutionPolicy Bypass -File .\\ops\\ealiophin\\control-center\\INSTALL-RONS-RND-AGENT.ps1 -SupabaseUrl "' +
                     credentials.supabaseUrl +
-                    "\" -PublishableKey \"" +
+                    '" -PublishableKey "' +
                     credentials.publishableKey +
-                    "\" -AgentEmail \"" +
+                    '" -AgentEmail "' +
                     credentials.email +
-                    "\" -DeviceId \"" +
+                    '" -DeviceId "' +
                     device.id +
-                    "\" -EnableMutations"}
+                    '" -EnableMutations'}
                 </pre>
               </section>
             )}
@@ -425,26 +461,19 @@ function RndControlCenter() {
                     agentMeta?.recovery_hold === true &&
                     agentHashMatches;
                   const blocked =
+                    browserOnly ||
                     !device ||
-                    (!dryRun &&
-                      operation.mutates &&
-                      (!data.mutationsEnabled || !localLiveGate)) ||
+                    (!dryRun && operation.mutates && (!data.mutationsEnabled || !localLiveGate)) ||
                     queue.isPending;
                   return (
                     <article key={operation.key} className="rounded-lg border border-border p-4">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="font-medium">{operation.label}</h3>
                         <Badge>
-                          {operation.mutates
-                            ? dryRun
-                              ? "dry-run"
-                              : "mutation"
-                            : "read-only"}
+                          {operation.mutates ? (dryRun ? "dry-run" : "mutation") : "read-only"}
                         </Badge>
                       </div>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {operation.description}
-                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">{operation.description}</p>
                       <button
                         type="button"
                         disabled={blocked}
@@ -458,15 +487,17 @@ function RndControlCenter() {
                         }
                         className="mt-4 rounded-lg border border-border px-3 py-2 text-sm hover:bg-accent disabled:opacity-40"
                       >
-                        {!device
-                          ? "Enroll agent first"
-                          : operation.mutates && !dryRun && !data.mutationsEnabled
-                            ? "Open mutation window first"
-                            : operation.mutates && !dryRun && !localLiveGate
-                              ? "Agent live gate required"
-                              : operation.mutates && !dryRun
-                                ? "Stage for approval"
-                                : "Queue"}
+                        {browserOnly
+                          ? "Privileged runtime locked"
+                          : !device
+                            ? "Enroll agent first"
+                            : operation.mutates && !dryRun && !data.mutationsEnabled
+                              ? "Open mutation window first"
+                              : operation.mutates && !dryRun && !localLiveGate
+                                ? "Agent live gate required"
+                                : operation.mutates && !dryRun
+                                  ? "Stage for approval"
+                                  : "Queue"}
                       </button>
                     </article>
                   );
@@ -513,9 +544,7 @@ function RndControlCenter() {
                         <td className="py-3 pr-3 font-mono text-xs">
                           {job.payload?.operation ?? "unknown"}
                         </td>
-                        <td className="py-3 pr-3">
-                          {job.payload?.dry_run ? "dry-run" : "live"}
-                        </td>
+                        <td className="py-3 pr-3">{job.payload?.dry_run ? "dry-run" : "live"}</td>
                         <td className="py-3 pr-3">
                           <Badge tone={statusClass(String(job.status))}>{job.status}</Badge>
                         </td>
