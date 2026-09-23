@@ -105,6 +105,36 @@ export async function fetchBackendUserEmail(accessToken: string): Promise<string
   return typeof email === "string" ? email : null;
 }
 
+export async function backendUserHasRole(
+  accessToken: string,
+  userId: string,
+  role: "admin" | "user",
+): Promise<boolean> {
+  if (getBackendProvider() === "sovereign") {
+    const rows = await sovereignDbQuery<Array<{ role?: string }>>({
+      table: "user_roles",
+      action: "select",
+      columns: "role",
+      filters: [
+        { column: "user_id", op: "eq", value: userId },
+        { column: "role", op: "eq", value: role },
+      ],
+      options: { limit: 1 },
+    });
+    return rows.some((row) => row.role === role);
+  }
+
+  const client = supabaseClient(accessToken);
+  const { data, error } = await client
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", role)
+    .maybeSingle();
+  if (error) return false;
+  return data?.role === role;
+}
+
 export type SubscriptionDetailRow = SubscriptionRow & {
   id: string;
   billing_cycle: string;
