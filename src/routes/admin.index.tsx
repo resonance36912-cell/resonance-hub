@@ -91,6 +91,7 @@ function AdminHome() {
 
   const sections = [
     { to: "/admin/control-center", label: "RONS Control Center", desc: "AI development council, governance gates, provider costs, and promotion workspace." },
+    { to: "/admin/rd", label: "R&D Bridge", desc: "Governed ChatGPT/MCP development access, Nova + DataNest context, and remote-evidence boundary." },
     { to: "/admin/revenue", label: "Revenue & Profit", desc: "Per-subscription revenue, costs, and profit." },
     { to: "/admin/billing", label: "Billing Overview", desc: "Cross-app subscriptions, wallets, and ledger activity." },
     { to: "/admin/credits", label: "Credit Adjustments", desc: "Add or subtract subscription credits with a full audit trail." },
