@@ -1,15 +1,12 @@
 import { defineTool } from "@lovable.dev/mcp-js";
 
 async function callBridge(token: string, body: Record<string, unknown>) {
-  const base = (
-    process.env.SUPABASE_URL ??
-    import.meta.env.VITE_SUPABASE_URL ??
-    ""
-  ).replace(/\/+$/, "");
+  const base = (process.env.SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL ?? "").replace(
+    /\/+$/,
+    "",
+  );
   const apiKey =
-    process.env.SUPABASE_PUBLISHABLE_KEY ??
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-    "";
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
   if (!base || !apiKey) throw new Error("remote_bridge_unconfigured");
 
   const response = await fetch(`${base}/functions/v1/remote-bridge-admin`, {
@@ -21,9 +18,7 @@ async function callBridge(token: string, body: Record<string, unknown>) {
     },
     body: JSON.stringify(body),
   });
-  const result = await response
-    .json()
-    .catch(() => ({ error: "invalid_bridge_response" }));
+  const result = await response.json().catch(() => ({ error: "invalid_bridge_response" }));
   if (!response.ok) {
     throw new Error(result?.error ?? `remote_bridge_http_${response.status}`);
   }
