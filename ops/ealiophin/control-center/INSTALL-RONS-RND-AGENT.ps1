@@ -74,26 +74,32 @@ $config = [ordered]@{
 $config | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $configPath -Encoding UTF8
 
 $userId = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$action = New-ScheduledTaskAction \
-    -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' \
-    -Argument ('-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $agentPath + '"')
+$actionParams = @{
+    Execute = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+    Argument = ('-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $agentPath + '"')
+}
+$action = New-ScheduledTaskAction @actionParams
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $userId
-$settings = New-ScheduledTaskSettingsSet \
-    -StartWhenAvailable \
-    -MultipleInstances IgnoreNew \
-    -RestartCount 5 \
-    -RestartInterval (New-TimeSpan -Minutes 1) \
-    -ExecutionTimeLimit ([TimeSpan]::Zero)
+$settingsParams = @{
+    StartWhenAvailable = $true
+    MultipleInstances = 'IgnoreNew'
+    RestartCount = 5
+    RestartInterval = (New-TimeSpan -Minutes 1)
+    ExecutionTimeLimit = [TimeSpan]::Zero
+}
+$settings = New-ScheduledTaskSettingsSet @settingsParams
 $principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType Interactive -RunLevel Limited
 
-Register-ScheduledTask \
-    -TaskName $taskName \
-    -Action $action \
-    -Trigger $trigger \
-    -Settings $settings \
-    -Principal $principal \
-    -Description 'RONSAS Admin/R&D allowlisted ops agent. Recovery HOLD enforced.' \
-    -Force | Out-Null
+$registerParams = @{
+    TaskName = $taskName
+    Action = $action
+    Trigger = $trigger
+    Settings = $settings
+    Principal = $principal
+    Description = 'RONSAS Admin/R&D allowlisted ops agent. Recovery HOLD enforced.'
+    Force = $true
+}
+Register-ScheduledTask @registerParams | Out-Null
 
 Start-ScheduledTask -TaskName $taskName
 Start-Sleep -Seconds 2
