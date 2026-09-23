@@ -20,6 +20,7 @@ const authMiddleware = read("src/lib/rons-auth-middleware.ts");
 const migration = read(
   "supabase/migrations/20260923203500_rnd_control_center_hardening.sql",
 );
+const dbVerification = read("scripts/verify-rnd-control-db.sql");
 
 describe("R&D operation allowlist", () => {
   test("contains only the intended named operations", () => {
@@ -233,6 +234,12 @@ describe("database and UI containment", () => {
   test("audit events are append-only", () => {
     expect(migration).toContain("bridge_audit_append_only");
     expect(migration).toContain("bridge_audit_append_only");
+  });
+
+  test("database acceptance SQL retains valid PostgreSQL dollar quoting", () => {
+    expect(dbVerification).not.toContain("DO $\n");
+    expect(dbVerification).not.toContain("END\n$;\n");
+    expect((dbVerification.match(/\$\$/g) ?? []).length % 2).toBe(0);
   });
 
   test("hardening migration retains valid PostgreSQL function delimiters", () => {
