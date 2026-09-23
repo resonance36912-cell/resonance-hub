@@ -37,9 +37,9 @@
     {
       "key": "youtube_optimizer",
       "label": "YouTube Optimizer",
-      "status": "pilot",
-      "badgeLabel": "Pilot",
-      "access": "Pilot badge, live access",
+      "status": "live",
+      "badgeLabel": "Live",
+      "access": "Live access",
       "accessible": true
     }
   ],
