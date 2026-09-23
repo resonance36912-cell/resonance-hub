@@ -16,6 +16,10 @@ function bearerToken(request: Request): string | null {
   return token && token.length <= 8192 ? token : null;
 }
 
+export function resolveSovereignRequestCredential(request: Request): string | null {
+  return cookieToken(request) ?? bearerToken(request);
+}
+
 function cookieToken(request: Request): string | null {
   for (const segment of (request.headers.get("cookie") ?? "").split(";")) {
     const [name, ...rest] = segment.trim().split("=");
@@ -32,11 +36,11 @@ export function resolveRonsRequestCredential(request: Request): string | null {
   return bearerToken(request);
 }
 
-async function resolveSovereignCookieUserId(
+export async function resolveSovereignRequestUserId(
   request: Request,
   fetchImpl: typeof fetch = fetch,
 ): Promise<string | null> {
-  const token = cookieToken(request) ?? bearerToken(request);
+  const token = resolveSovereignRequestCredential(request);
   if (!token) return null;
   const gateway = (process.env.RESONANCE_SOVEREIGN_GATEWAY_URL ?? DEFAULT_GATEWAY).replace(/\/$/, "");
   const auth = (process.env.RESONANCE_SOVEREIGN_AUTH_URL ?? gateway).replace(/\/$/, "");
@@ -53,7 +57,7 @@ export async function resolveRonsRequestUserId(
   fetchImpl: typeof fetch = fetch,
 ): Promise<string | null> {
   if (getBackendProvider() === "sovereign") {
-    return resolveSovereignCookieUserId(request, fetchImpl);
+    return resolveSovereignRequestUserId(request, fetchImpl);
   }
   const token = bearerToken(request);
   if (!token) return null;
@@ -74,6 +78,26 @@ export const requireRonsAuth = createMiddleware({ type: "function" }).server(
       context: {
         userId,
         authProvider: getBackendProvider(),
+      },
+    });
+  },
+);
+
+export const requireRndSovereignAuth = createMiddleware({ type: "function" }).server(
+  async ({ next }) => {
+    const request = getRequest();
+    if (!request?.headers) throw new Error("Unauthorized: No request headers available");
+    let userId: string | null = null;
+    try {
+      userId = await resolveSovereignRequestUserId(request);
+    } catch {
+      throw new Error("Unauthorized: Sovereign authentication unavailable");
+    }
+    if (!userId) throw new Error("Unauthorized: Invalid or missing sovereign session");
+    return next({
+      context: {
+        userId,
+        authProvider: "sovereign" as const,
       },
     });
   },
