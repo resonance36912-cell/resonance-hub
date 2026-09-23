@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { fetchBackendUserEmail } from "@/lib/backend-provider.server";
@@ -41,14 +42,36 @@ type AuthContext = {
   authProvider?: "supabase" | "sovereign";
 };
 
+function serviceRoleConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
+
 async function db(): Promise<any> {
+  if (!serviceRoleConfigured()) {
+    throw new Error(
+      "Privileged R&D runtime is locked on this deployment. Use the browser/MCP R&D path until the production control database is explicitly connected.",
+    );
+  }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as any;
 }
 
+async function userDb(): Promise<any> {
+  const request = getRequest();
+  const credential = request ? resolveRonsRequestCredential(request) : null;
+  const url = process.env.SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!credential || !url || !key) throw new Error("Unauthorized");
+
+  return createClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${credential}` } },
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
+}
+
 async function assertRndAdmin(context: AuthContext) {
-  const admin = await db();
-  const { data: role, error: roleError } = await admin
+  const client = serviceRoleConfigured() ? await db() : await userDb();
+  const { data: role, error: roleError } = await client
     .from("user_roles")
     .select("role")
     .eq("user_id", context.userId)
@@ -274,6 +297,47 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
   .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
+
+    if (!serviceRoleConfigured()) {
+      return {
+        actor: { email: actor.email },
+        runtimeMode: "browser_mcp" as const,
+        browserMcp: {
+          endpoint: "https://reson8.life/mcp",
+          railwayFallback: "https://ronsas-hub-fallback-production.up.railway.app/mcp",
+          adminGuide: "/admin/rd",
+        },
+        mutationsEnabled: false,
+        mutationControl: {
+          enabled: false,
+          enabledUntil: null,
+          emergencyKill: true,
+          emergencyLock: true,
+          environmentKill: false,
+          recoveryHold: true,
+          updatedAt: null,
+          updatedBy: null,
+        },
+        recoveryHold: true,
+        workspace: workspacePath(),
+        operations: RND_OPERATIONS,
+        devices: [],
+        jobs: [],
+        audit: [],
+        githubRecovery: {
+          state: "hold",
+          activeRuns: [],
+          error: "Privileged recovery integration is intentionally disabled on the browser/MCP runtime.",
+        },
+        approvedAgent: {
+          sha256: null,
+          sourceBlobSha: null,
+          error: "Agent execution remains locked until the privileged production control database is explicitly connected.",
+        },
+        fetchedAt: new Date().toISOString(),
+      };
+    }
+
     const admin = await db();
 
     const [devicesResult, jobsResult, auditResult, mutationControl, recovery, approvedAgent] =
@@ -323,6 +387,12 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
 
     return {
       actor: { email: actor.email },
+      runtimeMode: "privileged" as const,
+      browserMcp: {
+        endpoint: "https://reson8.life/mcp",
+        railwayFallback: "https://ronsas-hub-fallback-production.up.railway.app/mcp",
+        adminGuide: "/admin/rd",
+      },
       mutationsEnabled: mutationControl.enabled,
       mutationControl,
       recoveryHold: true,
