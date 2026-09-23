@@ -105,6 +105,32 @@ export async function fetchBackendUserEmail(accessToken: string): Promise<string
   return typeof email === "string" ? email : null;
 }
 
+export async function fetchSovereignUserEmail(accessToken: string): Promise<string | null> {
+  const response = await fetch(`${sovereignGatewayUrl()}/v1/auth/user`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!response.ok) return null;
+  const body = (await response.json()) as { user?: { email?: string | null } };
+  return body.user?.email ?? null;
+}
+
+export async function sovereignUserHasRole(
+  userId: string,
+  role: "admin" | "user",
+): Promise<boolean> {
+  const rows = await sovereignDbQuery<Array<{ role?: string }>>({
+    table: "user_roles",
+    action: "select",
+    columns: "role",
+    filters: [
+      { column: "user_id", op: "eq", value: userId },
+      { column: "role", op: "eq", value: role },
+    ],
+    options: { limit: 1 },
+  });
+  return rows.some((row) => row.role === role);
+}
+
 export async function backendUserHasRole(
   accessToken: string,
   userId: string,
