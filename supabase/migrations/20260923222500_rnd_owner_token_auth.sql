@@ -454,6 +454,7 @@ BEGIN
 
   IF job_row.id IS NULL THEN RETURN NULL; END IF;
 
+  PERFORM set_config('app.rnd_claim_authorized', 'true', true);
   UPDATE public.bridge_jobs
   SET status='running'::public.bridge_job_status,started_at=now()
   WHERE id=job_row.id
@@ -490,6 +491,7 @@ DECLARE
   job_row public.bridge_jobs;
 BEGIN
   IF NOT public.rnd_token_valid(_device_id,_token) THEN RAISE EXCEPTION 'rnd_agent_forbidden'; END IF;
+  PERFORM set_config('app.rnd_complete_authorized', 'true', true);
   UPDATE public.bridge_jobs
   SET status=CASE WHEN _ok THEN 'succeeded'::public.bridge_job_status ELSE 'failed'::public.bridge_job_status END,
       result=CASE WHEN _ok THEN _result ELSE NULL END,
