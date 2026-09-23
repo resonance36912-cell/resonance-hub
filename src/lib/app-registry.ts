@@ -66,7 +66,16 @@ export type AppRegistryEntry = {
 };
 
 function entry(
-  e: Omit<AppRegistryEntry, "publicUrl" | "appUrl" | "hasBilling" | "includedInSuite" | "pricingPath" | "manageBillingPath" | "backToHubPath">,
+  e: Omit<
+    AppRegistryEntry,
+    | "publicUrl"
+    | "appUrl"
+    | "hasBilling"
+    | "includedInSuite"
+    | "pricingPath"
+    | "manageBillingPath"
+    | "backToHubPath"
+  >,
 ): AppRegistryEntry {
   return {
     ...e,
@@ -185,7 +194,8 @@ export const ECOSYSTEM_REGISTRY: Record<string, EcosystemEntry> = {
     label: "RONSAS Nova Studio",
     url: `${HUB_URL}/nova`,
     status: "pilot",
-    tagline: "Governed AI-human collaboration for projects, apps, products, content, research, and media.",
+    tagline:
+      "Governed AI-human collaboration for projects, apps, products, content, research, and media.",
     includedInSuite: false,
   },
 
