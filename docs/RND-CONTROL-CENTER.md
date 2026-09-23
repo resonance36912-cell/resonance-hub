@@ -10,9 +10,11 @@ The browser route requires:
 
 1. a valid Supabase session;
 2. the existing `admin` role in `user_roles`; and
-3. an exact email match in the server-only R&D allowlist. `RONSAS_RND_ALLOWED_EMAILS` can narrow access further; otherwise the existing `ADMIN_BOOTSTRAP_EMAILS` owner allowlist is reused.
+3. database-bound R&D ownership in `rnd_control_settings.operator_user_id`.
 
-There is no hidden assistant account, shared backdoor, arbitrary command field, or client-side service-role credential. The assistant can only act through the user's authorized workflow/session.
+On first use, `rnd_bootstrap_owner()` can bind ownership only when exactly one admin exists. If more than one admin exists before ownership is established, bootstrap fails closed and ownership must be resolved explicitly.
+
+There is no hidden assistant account, shared backdoor, arbitrary command field, service-role dependency, or client-side privileged credential. The assistant can only act through the user's authorized workflow/session.
 
 ## Server configuration
 
@@ -20,11 +22,8 @@ Required:
 
 - `SUPABASE_URL`
 - `SUPABASE_PUBLISHABLE_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
 
-Optional:
-
-- `RONSAS_RND_ALLOWED_EMAILS` — stricter R&D-only email allowlist; when absent, `ADMIN_BOOTSTRAP_EMAILS` is used.
+The R&D control center intentionally does not require `SUPABASE_SERVICE_ROLE_KEY` or an environment email allowlist. Privileged operations are exposed only through SECURITY DEFINER RPCs that verify the authenticated database-bound R&D owner.
 - `RONSAS_RND_EMERGENCY_KILL=true` — an additional server-side veto that prevents opening or approving live mutation windows. The database-enforced **Lock now** control is the claim-time hard stop for already staged/queued work.
 - `RONSAS_RND_WORKSPACE` — defaults to `C:\Users\Ashley\Documents\GitHub\rons-sovereign-codebase`.
 
@@ -51,6 +50,7 @@ Apply, in order:
 
 1. `20260922071500_bridge_execution_core.sql`
 2. `20260923203500_rnd_control_center_hardening.sql`
+3. `20260923222500_rnd_owner_token_auth.sql`
 
 The hardening migration preserves the generic Bridge RPC surface for non-R&D clients, but isolates Admin/R&D jobs behind dedicated heartbeat/claim/complete RPCs and database transition guards. It enforces the R&D operation allowlist, requires approval for live mutations, binds live jobs to the approved agent SHA-256, freezes R&D job identity fields, and makes the Bridge audit log append-only.
 
@@ -58,7 +58,7 @@ The hardening migration preserves the generic Bridge RPC surface for non-R&D cli
 
 Open `/admin/rnd` and choose **Create one-time agent credentials**.
 
-The site creates a dedicated non-admin Supabase Auth user and a Bridge device row. Save the password immediately; it is not stored for redisplay.
+The site creates an Ealiophin Bridge device row and a one-time random device token. Only the token SHA-256 is stored in Postgres. Save the token immediately; its plaintext is not stored for redisplay.
 
 On Ealiophin, from the deployed Hub production workspace, run:
 
@@ -71,9 +71,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\ops\ealiophin\control-cent
   -EnableMutations
 ```
 
-The installer prompts for the one-time password using `SecureString`, stores the credential with Windows DPAPI-backed CLIXML, copies the agent into the RONS control center with SHA-256 verification, and registers a limited at-logon scheduled task.
+The installer prompts for the one-time device token using `SecureString`, stores it with Windows DPAPI-backed CLIXML, copies the agent into the RONS control center with SHA-256 verification, and registers a limited at-logon scheduled task.
 
-Do not pass the password on the command line.
+Do not pass the token on the command line.
 
 The local agent's mutation capability is off unless the installer is explicitly run with `-EnableMutations`. Enabling this once does not authorize a live action by itself: the Admin/R&D timed mutation window and per-job approval remain independent gates. The optional server emergency kill overrides all live mutation windows.
 

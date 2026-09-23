@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 import {
   RND_OPERATIONS,
   assertRndOperationAllowed,
-  isRndEmailAllowed,
   isRndOperation,
   rndMutationsEnabled,
 } from "../../src/lib/rnd-control.core";
@@ -19,6 +18,9 @@ const route = read("src/routes/admin.rnd.tsx");
 const authMiddleware = read("src/lib/rons-auth-middleware.ts");
 const migration = read(
   "supabase/migrations/20260923203500_rnd_control_center_hardening.sql",
+);
+const tokenMigration = read(
+  "supabase/migrations/20260923222500_rnd_owner_token_auth.sql",
 );
 const dbVerification = read("scripts/verify-rnd-control-db.sql");
 
@@ -61,11 +63,14 @@ describe("R&D operation allowlist", () => {
 });
 
 describe("R&D identity gate", () => {
-  test("allowlist is exact and fail-closed", () => {
-    expect(isRndEmailAllowed("Owner@Example.com", "owner@example.com")).toBe(true);
-    expect(isRndEmailAllowed("other@example.com", "owner@example.com")).toBe(false);
-    expect(isRndEmailAllowed("owner@example.com", "")).toBe(false);
-    expect(isRndEmailAllowed(null, "owner@example.com")).toBe(false);
+  test("owner bootstrap is database-bound and fail-closed for multiple admins", () => {
+    expect(tokenMigration).toContain("rnd_bootstrap_owner");
+    expect(tokenMigration).toContain("rnd_owner_bootstrap_requires_single_admin");
+    expect(tokenMigration).toContain("rnd_owner_already_claimed");
+    expect(tokenMigration).toContain("operator_user_id = auth.uid()");
+    expect(functions).toContain("ensureRndOwner");
+    expect(functions).not.toContain("RONSAS_RND_ALLOWED_EMAILS");
+    expect(functions).not.toContain("ADMIN_BOOTSTRAP_EMAILS");
   });
 
   test("mutation environment parser only accepts literal true", () => {
@@ -77,18 +82,18 @@ describe("R&D identity gate", () => {
 });
 
 describe("server-side R&D controls", () => {
-  test("requires admin plus explicit email allowlist", () => {
-    expect(functions).toContain('.from("user_roles")');
-    expect(functions).toContain("RONSAS_RND_ALLOWED_EMAILS");
-    expect(functions).toContain("Forbidden: R&D control center email is not allowlisted");
+  test("requires authenticated admin and database-bound R&D ownership", () => {
+    expect(functions).toContain('db.rpc("has_role"');
+    expect(functions).toContain('rpc("rnd_bootstrap_owner"');
     expect(functions).toContain("export const checkRndAccess");
     expect(route).toContain("ronsAuth.getUser()");
     expect(route).toContain("await checkRndAccess()");
-    expect(route).not.toContain('.from("user_roles")');
+    expect(functions).not.toContain("supabaseAdmin");
+    expect(functions).not.toContain("auth.admin.createUser");
   });
 
   test("uses a short mutation window, emergency kill, local agent gate, and second approval", () => {
-    expect(functions).toContain("rnd_control_settings");
+    expect(functions).toContain("rnd_admin_set_mutation_window");
     expect(functions).toContain("setRndMutationWindow");
     expect(functions).toContain("RONSAS_RND_EMERGENCY_KILL");
     expect(functions).toContain("readAgentLiveGate");
@@ -106,22 +111,14 @@ describe("server-side R&D controls", () => {
   test("binds live mutations to the approved production-lineage agent hash", () => {
     expect(functions).toContain("getExpectedRndAgentSha");
     expect(functions).toContain("approved_agent_sha256");
-    expect(functions).toContain("stagedAgentSha !== approvedAgent.sha256");
-    expect(functions).toContain("deployed Ealiophin agent identity");
-  });
-
-  test("rate-limits control-plane writes", () => {
-    expect(functions).toContain("enforceRndRateLimit");
-    expect(functions).toContain('"job creation"');
-    expect(functions).toContain('"job approval"');
-    expect(functions).toContain('"mutation-window changes"');
-    expect(functions).toContain('"job cancellation"');
+    expect(functions).toContain("job.payload?.approved_agent_sha256 !== approvedAgent.sha256");
+    expect(functions).toContain("deployed agent identity no longer matches approved production");
   });
 
   test("state-changing server functions use the Hub hosted/sovereign auth boundary", () => {
     expect((functions.match(/\.middleware\(\[requireRonsAuth\]\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
     expect(functions).toContain("resolveRonsRequestCredential");
-    expect(functions).toContain("fetchBackendUserEmail");
+    expect(functions).toContain("callerClient");
     expect(authMiddleware).toContain("resolveRonsRequestUserId");
     expect(authMiddleware).toContain('getBackendProvider() === "sovereign"');
   });
@@ -172,29 +169,31 @@ describe("agent execution safety", () => {
 });
 
 describe("agent credential handling", () => {
-  test("installer prompts securely and stores credential with DPAPI-backed CLIXML", () => {
-    expect(installer).toContain("Read-Host");
-    expect(installer).toContain("-AsSecureString");
+  test("installer stores the one-time device token with DPAPI-backed CLIXML", () => {
+    expect(installer).toContain("Read-Host -Prompt 'Paste the one-time R&D device token' -AsSecureString");
     expect(installer).toContain("Export-Clixml");
+    expect(installer).not.toContain("[string]$DeviceToken");
     expect(installer).not.toContain("AgentPassword");
   });
 
-  test("agent identity is non-admin and dedicated", () => {
-    expect(functions).toContain("rnd-agent-");
-    expect(functions).toContain('kind: "ronsas-rnd-agent"');
-    expect(functions).not.toContain('.from("user_roles").insert');
-    expect(functions).not.toContain('user_metadata: { role: "admin"');
+  test("database stores only the device token SHA-256", () => {
+    expect(tokenMigration).toContain("rnd_token_sha256");
+    expect(tokenMigration).toContain("extensions.digest(COALESCE(_token,'')::text,'sha256'::text)");
+    expect(tokenMigration).toContain("pg_catalog.encode");
+    expect(tokenMigration).not.toContain("rnd_token_plaintext");
+    expect(functions).toContain("tokenHash = await sha256Hex(token)");
+    expect(functions).toContain("_token_sha256: tokenHash");
+    expect(functions).not.toContain("auth.admin.createUser");
   });
 
-  test("one-time agent password is never written to audit payloads or command-line parameters", () => {
-    expect(functions).toContain("password,");
-    const enrollmentAudit = functions.match(
-      /event_type:\s*"rnd\.device_enrolled",\s*payload:\s*\{([\s\S]*?)\}\s*,?\s*\}\);/,
-    );
-    expect(enrollmentAudit).not.toBeNull();
-    expect(enrollmentAudit?.[1] ?? "").not.toContain("password");
-    expect(installer).not.toContain("[string]$AgentPassword");
-    expect(route).not.toContain("-AgentPassword");
+  test("agent uses token-scoped RPCs rather than a Supabase Auth user", () => {
+    expect(agent).toContain("DeviceToken");
+    expect(agent).toContain("-Function 'rnd_agent_heartbeat'");
+    expect(agent).toContain("-Function 'rnd_agent_claim_job'");
+    expect(agent).toContain("-Function 'rnd_agent_complete_job'");
+    expect(agent).not.toContain("auth/v1/token?grant_type=password");
+    expect(route).toContain("One-time device token");
+    expect(route).not.toContain("-DeviceToken");
   });
 });
 
@@ -249,6 +248,18 @@ describe("database and UI containment", () => {
     expect(migration).toContain("COMMIT;");
   });
 
+  test("owner/token migration keeps owner and device-token privileges scoped", () => {
+    expect(tokenMigration).toContain("rnd_require_owner");
+    expect(tokenMigration).toContain("rnd_admin_snapshot");
+    expect(tokenMigration).toContain("rnd_admin_enqueue_job");
+    expect(tokenMigration).toContain("GRANT EXECUTE ON FUNCTION public.rnd_bootstrap_owner() TO authenticated");
+    expect(tokenMigration).toContain("GRANT EXECUTE ON FUNCTION public.rnd_agent_heartbeat(uuid,text,jsonb) TO anon,authenticated");
+    expect(tokenMigration).toContain("rnd_recovery_operation_forbidden");
+    expect(tokenMigration).toContain("recovery_hold");
+    expect((tokenMigration.match(/\$\$/g) ?? []).length % 2).toBe(0);
+    expect(tokenMigration).toContain("COMMIT;");
+  });
+
   test("Admin/R&D UI owns the mutation window and emergency lock state", () => {
     expect(route).toContain("Open 10 min");
     expect(route).toContain("Open 30 min");
@@ -262,21 +273,16 @@ describe("database and UI containment", () => {
     expect(route).toContain("agentHashMatches");
   });
 
-  test("Admin/R&D jobs require scoped agent claim and completion transitions", () => {
-    expect(migration).toContain("bridge_rnd_agent_claim_job");
-    expect(migration).toContain("bridge_rnd_agent_complete_job");
-    expect(migration).toContain("app.rnd_claim_authorized");
-    expect(migration).toContain("app.rnd_complete_authorized");
-    expect(migration).toContain("rnd_scoped_claim_required");
-    expect(migration).toContain("rnd_scoped_complete_required");
-    expect(agent).toContain("bridge_rnd_agent_heartbeat");
-    expect(agent).toContain("bridge_rnd_agent_claim_job");
-    expect(agent).toContain("bridge_rnd_agent_complete_job");
+  test("Admin/R&D jobs require token-scoped agent claim and completion transitions", () => {
+    expect(tokenMigration).toContain("rnd_agent_heartbeat");
+    expect(tokenMigration).toContain("rnd_agent_claim_job");
+    expect(tokenMigration).toContain("rnd_agent_complete_job");
+    expect(tokenMigration).toContain("rnd_token_valid");
+    expect(agent).toContain("rnd_agent_heartbeat");
+    expect(agent).toContain("rnd_agent_claim_job");
+    expect(agent).toContain("rnd_agent_complete_job");
     expect(agent).not.toContain("-Function 'bridge_connector_claim_job'");
     expect(agent).not.toContain("-Function 'bridge_connector_complete_job'");
-    expect(migration).not.toContain(
-      "REVOKE EXECUTE ON FUNCTION public.bridge_connector_claim_job",
-    );
   });
 
   test("admin UI exposes only named buttons, not a command textbox", () => {

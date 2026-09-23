@@ -2,7 +2,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$SupabaseUrl,
     [Parameter(Mandatory=$true)][string]$PublishableKey,
-    [Parameter(Mandatory=$true)][string]$AgentEmail,
     [Parameter(Mandatory=$true)][Guid]$DeviceId,
     [string]$Workspace = 'C:\Users\Ashley\Documents\GitHub\rons-sovereign-codebase',
     [switch]$EnableMutations
@@ -13,7 +12,6 @@ Set-StrictMode -Version Latest
 
 function Get-NormalizedSha256 {
     param([Parameter(Mandatory=$true)][string]$Path)
-
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         throw "Cannot hash missing file: $Path"
     }
@@ -51,8 +49,15 @@ if ($sourceHash -ne $deployedHash) {
     throw 'R&D agent deployment hash mismatch.'
 }
 
-$securePassword = Read-Host -Prompt "Enter the one-time password for $AgentEmail" -AsSecureString
-$credential = [PSCredential]::new($AgentEmail, $securePassword)
+$secureToken = Read-Host -Prompt 'Paste the one-time R&D device token' -AsSecureString
+$probeCredential = [PSCredential]::new('ronsas-rnd-device', $secureToken)
+$tokenProbe = $probeCredential.GetNetworkCredential().Password
+if ($tokenProbe -notmatch '^[0-9a-f]{96}$') {
+    $tokenProbe = $null
+    throw 'The one-time R&D device token is invalid.'
+}
+$tokenProbe = $null
+$credential = [PSCredential]::new('ronsas-rnd-device', $secureToken)
 $credential | Export-Clixml -LiteralPath $credentialPath -Force
 
 $config = [ordered]@{
@@ -91,9 +96,11 @@ $registerParams = @{
     Trigger = $trigger
     Settings = $settings
     Principal = $principal
+    Description = 'RONSAS Admin/R&D allowlisted ops agent. Recovery HOLD enforced.'
     Force = $true
 }
 Register-ScheduledTask @registerParams | Out-Null
+
 Start-ScheduledTask -TaskName $taskName
 Start-Sleep -Seconds 2
 

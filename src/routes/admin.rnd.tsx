@@ -35,8 +35,7 @@ export const Route = createFileRoute("/admin/rnd")({
 });
 
 type BootstrapCredentials = {
-  email: string;
-  password: string;
+  deviceToken: string;
   supabaseUrl: string;
   publishableKey: string;
 };
@@ -95,7 +94,7 @@ function RndControlCenter() {
       if (result.credentials) setCredentials(result.credentials);
       setNotice(
         result.status === "enrolled"
-          ? "Ealiophin agent identity created. Save the one-time password now."
+          ? "Ealiophin device enrolled. Save the one-time device token now."
           : "Ealiophin is already enrolled. Existing credentials were not exposed.",
       );
       void refresh();
@@ -342,8 +341,8 @@ function RndControlCenter() {
               <section className="mb-8 rounded-xl border border-border bg-card p-5">
                 <h2 className="text-lg font-semibold">Enroll Ealiophin Ops Agent</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Creates a dedicated, non-admin Supabase machine identity. It can only heartbeat,
-                  claim its own queued jobs, and report results.
+                  Creates a dedicated device record and one-time token. Postgres stores only the
+                  token SHA-256; the agent can only heartbeat, claim its own queued jobs, and report results.
                 </p>
                 <button
                   type="button"
@@ -363,16 +362,12 @@ function RndControlCenter() {
               <section className="mb-8 rounded-xl border border-amber-500/40 bg-amber-500/10 p-5">
                 <h2 className="font-semibold text-amber-100">One-time agent credentials</h2>
                 <p className="mt-1 text-sm text-amber-100/80">
-                  Save these now. The password is not stored for later display.
+                  Save this now. The plaintext device token is not stored for later display.
                 </p>
                 <dl className="mt-4 grid gap-3 text-sm">
                   <div>
-                    <dt className="text-xs uppercase text-muted-foreground">Agent email</dt>
-                    <dd className="font-mono break-all">{credentials.email}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs uppercase text-muted-foreground">One-time password</dt>
-                    <dd className="font-mono break-all">{credentials.password}</dd>
+                    <dt className="text-xs uppercase text-muted-foreground">One-time device token</dt>
+                    <dd className="font-mono break-all">{credentials.deviceToken}</dd>
                   </div>
                   <div>
                     <dt className="text-xs uppercase text-muted-foreground">Device ID</dt>
@@ -380,17 +375,14 @@ function RndControlCenter() {
                   </div>
                 </dl>
                 <p className="mt-4 text-xs text-muted-foreground">
-                  On Ealiophin, run this from the sovereign repository. The installer prompts
-                  securely for the password above; the password is never passed as a command-line
-                  argument.
+                  On Ealiophin, run this from the sovereign repository. The token is accepted once
+                  by the installer and stored locally using Windows DPAPI.
                 </p>
                 <pre className="mt-3 overflow-x-auto rounded-lg border border-border bg-background p-3 text-[11px]">
                   {"powershell -NoProfile -ExecutionPolicy Bypass -File .\\ops\\ealiophin\\control-center\\INSTALL-RONS-RND-AGENT.ps1 -SupabaseUrl \"" +
                     credentials.supabaseUrl +
                     "\" -PublishableKey \"" +
                     credentials.publishableKey +
-                    "\" -AgentEmail \"" +
-                    credentials.email +
                     "\" -DeviceId \"" +
                     device.id +
                     "\" -EnableMutations"}

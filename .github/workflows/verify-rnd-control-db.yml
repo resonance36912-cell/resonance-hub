@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/20260527142651_24003604-7eb1-44e4-985f-8ce7fcb147a0.sql"
       - "supabase/migrations/20260922071500_bridge_execution_core.sql"
       - "supabase/migrations/20260923203500_rnd_control_center_hardening.sql"
+      - "supabase/migrations/20260923222500_rnd_owner_token_auth.sql"
       - "scripts/verify-governance-bootstrap.sql"
       - "scripts/verify-rnd-control-bootstrap.sql"
       - "scripts/verify-rnd-control-db.sql"
@@ -108,6 +109,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260527142651_24003604-7eb1-44e4-985f-8ce7fcb147a0.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260922071500_bridge_execution_core.sql
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260923203500_rnd_control_center_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260923222500_rnd_owner_token_auth.sql
           psql -v ON_ERROR_STOP=1 -f scripts/verify-rnd-control-db.sql
 
   rnd-control-db-runtime:

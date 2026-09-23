@@ -57,60 +57,33 @@ function Read-AgentConfig {
         PollSeconds = if ($config.PSObject.Properties.Name -contains 'poll_seconds') {
             [Math]::Min(60, [Math]::Max(5, [int]$config.poll_seconds))
         } else { 10 }
-        Credential = $credential
-    }
-}
-
-function Get-AgentAccessToken {
-    param([Parameter(Mandatory=$true)]$Agent)
-
-    $body = @{
-        email = $Agent.Credential.UserName
-        password = $Agent.Credential.GetNetworkCredential().Password
-    } | ConvertTo-Json -Compress
-
-    $headers = @{
-        apikey = $Agent.PublishableKey
-        Authorization = "Bearer $($Agent.PublishableKey)"
-        'Content-Type' = 'application/json'
-    }
-
-    $request = @{
-        Method = 'Post'
-        Uri = "$($Agent.SupabaseUrl)/auth/v1/token?grant_type=password"
-        Headers = $headers
-        Body = $body
-    }
-    $response = Invoke-RestMethod @request
-
-    if ([string]::IsNullOrWhiteSpace([string]$response.access_token)) {
-        throw 'Supabase did not return an R&D agent access token.'
-    }
-
-    return [pscustomobject]@{
-        AccessToken = [string]$response.access_token
-        ExpiresAt = (Get-Date).ToUniversalTime().AddSeconds([Math]::Max(120, [int]$response.expires_in - 120))
+        DeviceToken = $credential.GetNetworkCredential().Password
     }
 }
 
 function Invoke-BridgeRpc {
     param(
         [Parameter(Mandatory=$true)]$Agent,
-        [Parameter(Mandatory=$true)]$Session,
         [Parameter(Mandatory=$true)][string]$Function,
         [Parameter(Mandatory=$true)][hashtable]$Payload
     )
 
+    if ([string]::IsNullOrWhiteSpace([string]$Agent.DeviceToken)) {
+        throw 'R&D agent device token is unavailable.'
+    }
     $headers = @{
         apikey = $Agent.PublishableKey
-        Authorization = "Bearer $($Session.AccessToken)"
+        Authorization = "Bearer $($Agent.PublishableKey)"
         'Content-Type' = 'application/json'
     }
+    $body = @{} + $Payload
+    $body['_device_id'] = $Agent.DeviceId
+    $body['_token'] = [string]$Agent.DeviceToken
     $request = @{
         Method = 'Post'
         Uri = "$($Agent.SupabaseUrl)/rest/v1/rpc/$Function"
         Headers = $headers
-        Body = ($Payload | ConvertTo-Json -Depth 20 -Compress)
+        Body = ($body | ConvertTo-Json -Depth 20 -Compress)
     }
     return Invoke-RestMethod @request
 }
@@ -444,21 +417,15 @@ function Invoke-RndOperation {
 }
 
 $agent = Read-AgentConfig
-$session = $null
 $agentSha256 = Get-NormalizedSha256 -Path $PSCommandPath
 
 Write-Host "RONSAS R&D agent starting. device=$($agent.DeviceId) workspace=$($agent.Workspace) mutations=$($agent.MutationsEnabled) sha256=$agentSha256"
 
 do {
     try {
-        if ($null -eq $session -or (Get-Date).ToUniversalTime() -ge $session.ExpiresAt) {
-            $session = Get-AgentAccessToken -Agent $agent
-        }
-
-        Invoke-BridgeRpc -Agent $agent -Session $session -Function 'bridge_rnd_agent_heartbeat' -Payload @{
-            _device_id = $agent.DeviceId
+        Invoke-BridgeRpc -Agent $agent -Function 'rnd_agent_heartbeat' -Payload @{
             _metadata = @{
-                agent_version = '1'
+                agent_version = '2'
                 agent_sha256 = $agentSha256
                 mutations_enabled = [bool]$agent.MutationsEnabled
                 recovery_hold = $true
@@ -467,9 +434,7 @@ do {
             }
         } | Out-Null
 
-        $job = Invoke-BridgeRpc -Agent $agent -Session $session -Function 'bridge_rnd_agent_claim_job' -Payload @{
-            _device_id = $agent.DeviceId
-        }
+        $job = Invoke-BridgeRpc -Agent $agent -Function 'rnd_agent_claim_job' -Payload @{}
 
         if ($null -ne $job -and -not [string]::IsNullOrWhiteSpace([string]$job.id)) {
             $jobId = [string]$job.id
@@ -479,8 +444,7 @@ do {
                 }
 
                 $result = Invoke-RndOperation -Agent $agent -Job $job -AgentSha256 $agentSha256
-                Invoke-BridgeRpc -Agent $agent -Session $session -Function 'bridge_rnd_agent_complete_job' -Payload @{
-                    _device_id = $agent.DeviceId
+                Invoke-BridgeRpc -Agent $agent -Function 'rnd_agent_complete_job' -Payload @{
                     _job_id = $jobId
                     _ok = $true
                     _result = $result
@@ -490,8 +454,7 @@ do {
             } catch {
                 $message = $_.Exception.Message
                 try {
-                    Invoke-BridgeRpc -Agent $agent -Session $session -Function 'bridge_rnd_agent_complete_job' -Payload @{
-                        _device_id = $agent.DeviceId
+                    Invoke-BridgeRpc -Agent $agent -Function 'rnd_agent_complete_job' -Payload @{
                         _job_id = $jobId
                         _ok = $false
                         _result = $null
@@ -504,7 +467,6 @@ do {
             }
         }
     } catch {
-        $session = $null
         Write-Warning "R&D agent loop error: $($_.Exception.Message)"
     }
 
