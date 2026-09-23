@@ -468,7 +468,7 @@ export const queueRndOperation = createServerFn({ method: "POST" })
       const agentGate = readAgentLiveGate(device, approvedAgent.sha256);
       if (!agentGate.ok || !approvedAgent.sha256) {
         throw new Error(
-          "Live R&D mutation blocked: Ealiophin must be online with the approved main-branch agent hash, local mutations enabled, and Recovery HOLD asserted",
+          "Live R&D mutation blocked: Ealiophin must be online with the approved production-lineage agent hash, local mutations enabled, and Recovery HOLD asserted",
         );
       }
       approvedAgentSha256 = approvedAgent.sha256;
@@ -582,7 +582,7 @@ export const approveRndOperation = createServerFn({ method: "POST" })
       !readAgentLiveGate(device, approvedAgent.sha256).ok
     ) {
       throw new Error(
-        "Live R&D mutation approval blocked: staged or deployed agent identity no longer matches approved main",
+        "Live R&D mutation approval blocked: staged or deployed Ealiophin agent identity no longer matches the approved production lineage",
       );
     }
 
