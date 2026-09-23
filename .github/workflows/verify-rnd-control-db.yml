@@ -1,0 +1,141 @@
+name: Verify Admin R&D control database
+
+on:
+  pull_request:
+    branches: [main, ronsas/ealiophin-production]
+    paths:
+      - "supabase/migrations/20260527142651_24003604-7eb1-44e4-985f-8ce7fcb147a0.sql"
+      - "supabase/migrations/20260922071500_bridge_execution_core.sql"
+      - "supabase/migrations/20260923203500_rnd_control_center_hardening.sql"
+      - "scripts/verify-governance-bootstrap.sql"
+      - "scripts/verify-rnd-control-bootstrap.sql"
+      - "scripts/verify-rnd-control-db.sql"
+      - "scripts/verify-rnd-control-runtime.py"
+      - ".github/workflows/verify-rnd-control-db.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-rnd-control-db-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rnd-control-static:
+    name: Admin R&D static security + production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify Admin/R&D security invariants
+        run: bun test scripts/lib/rnd-control-security.test.ts
+
+      - name: Verify Railway production build
+        run: bun run build:railway
+
+      - name: Probe live public backend reference
+        shell: python
+        run: |
+          import re
+          import urllib.parse
+          import urllib.request
+
+          base = "https://reson8.life/admin/login"
+          try:
+              html = urllib.request.urlopen(base, timeout=20).read().decode("utf-8", "replace")
+              urls = [urllib.parse.urljoin(base, src) for src in re.findall(r'<script[^>]+src=["\']([^"\']+)', html)]
+              refs = set(re.findall(r'https://([a-z0-9]+)\.supabase\.co', html))
+              for url in urls[:40]:
+                  try:
+                      body = urllib.request.urlopen(url, timeout=20).read().decode("utf-8", "replace")
+                      refs.update(re.findall(r'https://([a-z0-9]+)\.supabase\.co', body))
+                  except Exception:
+                      pass
+              print("LIVE_LOGIN_REACHABLE=true")
+              print("LIVE_SUPABASE_PROJECT_REFS=" + ",".join(sorted(refs)))
+          except Exception as exc:
+              print("LIVE_LOGIN_REACHABLE=false")
+              print("LIVE_SUPABASE_PROJECT_REFS=")
+              print("LIVE_PROBE_ERROR=" + type(exc).__name__)
+
+  rnd-control-db-portable:
+    name: Admin R&D PostgreSQL 17 portable runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Apply Admin/R&D database chain
+        run: |
+          set -euo pipefail
+          psql -v ON_ERROR_STOP=1 -f scripts/verify-governance-bootstrap.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/verify-rnd-control-bootstrap.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260527142651_24003604-7eb1-44e4-985f-8ce7fcb147a0.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260922071500_bridge_execution_core.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/migrations/20260923203500_rnd_control_center_hardening.sql
+          psql -v ON_ERROR_STOP=1 -f scripts/verify-rnd-control-db.sql
+
+  rnd-control-db-runtime:
+    name: Admin R&D Bridge migration + runtime
+    runs-on: [self-hosted, Linux, X64, ronsas, ealiophin]
+    timeout-minutes: 20
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Verify exact checked-out head
+        if: github.event_name == 'pull_request'
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$EXPECTED_HEAD"
+          echo "Exact PR head verified: $actual"
+
+      - name: Verify sovereign runner Python 3.12
+        run: |
+          python --version
+          python -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
+
+      - name: Verify Admin/R&D Bridge migrations on sovereign PostgreSQL 17
+        env:
+          PODMAN_API_URL: http://ronsas-podman-api:2375
+        run: python scripts/verify-rnd-control-runtime.py
