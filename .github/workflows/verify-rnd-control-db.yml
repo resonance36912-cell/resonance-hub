@@ -153,7 +153,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f scripts/verify-rnd-control-db.sql
 
   rnd-control-db-runtime:
-    name: Admin R&D Bridge migration + runtime
+    name: Privileged Admin R&D Bridge migration + Ealiophin runtime
+    if: ${{ vars.RONSAS_RND_PRIVILEGED_ACCEPTANCE == 'enabled' }}
     runs-on: [self-hosted, Linux, X64, ronsas, ealiophin]
     timeout-minutes: 20
     steps:
