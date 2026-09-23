@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { fetchBackendUserEmail } from "@/lib/backend-provider.server";
-import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   RND_OPERATIONS,
   assertRndOperationAllowed,
@@ -36,30 +35,76 @@ const MutationWindowInput = z.object({
 });
 
 type AuthContext = {
+  supabase: SupabaseClient;
   userId: string;
-  authProvider?: "supabase" | "sovereign";
+  claims?: Record<string, unknown>;
 };
 
-async function db(): Promise<any> {
+async function db() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin as any;
+  return supabaseAdmin;
+}
+
+type AdminClient = Awaited<ReturnType<typeof db>>;
+type RndDeviceGateInput = {
+  last_seen_at?: unknown;
+  metadata?: unknown;
+} | null;
+
+type RndJobPayload = {
+  operation?: string;
+  dry_run?: boolean;
+  approved_agent_sha256?: string | null;
+  human_actor_email?: string;
+  human_actor_user_id?: string;
+  correlation_id?: string;
+};
+
+type GithubWorkflowRun = {
+  id?: number;
+  status?: string;
+  event?: string;
+  head_sha?: string;
+  created_at?: string;
+  html_url?: string;
+};
+
+function jsonObject(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function readRndJobPayload(value: unknown): RndJobPayload {
+  const payload = jsonObject(value);
+  return {
+    operation: typeof payload?.operation === "string" ? payload.operation : undefined,
+    dry_run: payload?.dry_run === true,
+    approved_agent_sha256:
+      typeof payload?.approved_agent_sha256 === "string" ? payload.approved_agent_sha256 : null,
+    human_actor_email:
+      typeof payload?.human_actor_email === "string" ? payload.human_actor_email : undefined,
+    human_actor_user_id:
+      typeof payload?.human_actor_user_id === "string" ? payload.human_actor_user_id : undefined,
+    correlation_id:
+      typeof payload?.correlation_id === "string" ? payload.correlation_id : undefined,
+  };
+}
+
+function claimEmail(context: AuthContext): string | null {
+  const email = context.claims?.email;
+  return typeof email === "string" ? email : null;
 }
 
 async function assertRndAdmin(context: AuthContext) {
-  const admin = await db();
-  const { data: role, error: roleError } = await admin
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", context.userId)
-    .eq("role", "admin")
-    .maybeSingle();
-  if (roleError || !role) throw new Error("Forbidden");
+  const { data, error } = await context.supabase.rpc("has_role", {
+    _user_id: context.userId,
+    _role: "admin",
+  });
+  if (error || !data) throw new Error("Forbidden");
 
-  const request = getRequest();
-  const credential = request ? resolveRonsRequestCredential(request) : null;
-  const email = credential ? await fetchBackendUserEmail(credential) : null;
-  const rndAllowlist =
-    process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
+  const email = claimEmail(context);
+  const rndAllowlist = process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
   if (!isRndEmailAllowed(email, rndAllowlist)) {
     throw new Error("Forbidden: R&D control center email is not allowlisted");
   }
@@ -71,6 +116,83 @@ function randomAgentPassword(): string {
   crypto.getRandomValues(bytes);
   const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join("");
   return `Ronsas-${hex}-Aa1!`;
+}
+
+function validUuid(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  );
+}
+
+async function getRndControlOperatorId(admin: AdminClient): Promise<string> {
+  const { data, error } = await admin
+    .from("rnd_control_settings")
+    .select("operator_user_id")
+    .eq("singleton", true)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!validUuid(data?.operator_user_id)) {
+    throw new Error("R&D control operator is not initialized. Enroll Ealiophin first.");
+  }
+  return data.operator_user_id;
+}
+
+async function ensureRndControlOperator(admin: AdminClient): Promise<string> {
+  const { data: settings, error: settingsError } = await admin
+    .from("rnd_control_settings")
+    .select("operator_user_id")
+    .eq("singleton", true)
+    .maybeSingle();
+  if (settingsError) throw new Error(settingsError.message);
+  if (validUuid(settings?.operator_user_id)) return settings.operator_user_id;
+
+  const password = randomAgentPassword();
+  const email = `rnd-operator-${crypto.randomUUID()}@agent.reson8.life`;
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      kind: "ronsas-rnd-operator",
+      interactive_login: false,
+    },
+  });
+  if (authError || !authData?.user?.id) {
+    throw new Error(authError?.message ?? "Unable to create R&D control operator identity");
+  }
+
+  const operatorUserId = authData.user.id;
+  const { error: updateError } = await admin
+    .from("rnd_control_settings")
+    .update({
+      operator_user_id: operatorUserId,
+      updated_by: operatorUserId,
+      updated_at: new Date().toISOString(),
+      recovery_hold: true,
+      emergency_lock: true,
+      mutations_enabled_until: null,
+    })
+    .eq("singleton", true)
+    .is("operator_user_id", null);
+  if (updateError) {
+    await admin.auth.admin.deleteUser(operatorUserId).catch(() => undefined);
+    throw new Error(updateError.message);
+  }
+
+  const { data: confirmed, error: confirmError } = await admin
+    .from("rnd_control_settings")
+    .select("operator_user_id")
+    .eq("singleton", true)
+    .single();
+  if (confirmError || !validUuid(confirmed?.operator_user_id)) {
+    await admin.auth.admin.deleteUser(operatorUserId).catch(() => undefined);
+    throw new Error(confirmError?.message ?? "R&D control operator initialization failed");
+  }
+  if (confirmed.operator_user_id !== operatorUserId) {
+    await admin.auth.admin.deleteUser(operatorUserId).catch(() => undefined);
+  }
+  return confirmed.operator_user_id;
 }
 
 function workspacePath(): string {
@@ -85,7 +207,7 @@ function rndEmergencyKillActive(): boolean {
 }
 
 async function enforceRndRateLimit(
-  admin: any,
+  admin: AdminClient,
   userId: string,
   eventTypes: string[],
   limit: number,
@@ -105,10 +227,12 @@ async function enforceRndRateLimit(
   }
 }
 
-async function readMutationControl(admin: any) {
+async function readMutationControl(admin: AdminClient) {
   const { data, error } = await admin
     .from("rnd_control_settings")
-    .select("mutations_enabled_until,emergency_lock,recovery_hold,updated_by,updated_at")
+    .select(
+      "mutations_enabled_until,emergency_lock,recovery_hold,operator_user_id,updated_by,updated_at",
+    )
     .eq("singleton", true)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -129,19 +253,20 @@ async function readMutationControl(admin: any) {
     emergencyLock,
     environmentKill,
     recoveryHold: data?.recovery_hold !== false,
+    operatorConfigured: validUuid(data?.operator_user_id),
+    operatorUserId: validUuid(data?.operator_user_id) ? data.operator_user_id : null,
     updatedAt: data?.updated_at ?? null,
     updatedBy: data?.updated_by ?? null,
   };
 }
 
-function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
-  const agent = device?.metadata?.rnd_agent;
+function readAgentLiveGate(device: RndDeviceGateInput, expectedAgentSha256: string | null) {
+  const metadata = jsonObject(device?.metadata);
+  const agent = jsonObject(metadata?.rnd_agent);
   const lastSeen = typeof device?.last_seen_at === "string" ? Date.parse(device.last_seen_at) : NaN;
-  const observedAt =
-    typeof agent?.observed_at === "string" ? Date.parse(agent.observed_at) : NaN;
+  const observedAt = typeof agent?.observed_at === "string" ? Date.parse(agent.observed_at) : NaN;
   const online = Number.isFinite(lastSeen) && Date.now() - lastSeen <= 90_000;
-  const scopedHeartbeatFresh =
-    Number.isFinite(observedAt) && Date.now() - observedAt <= 90_000;
+  const scopedHeartbeatFresh = Number.isFinite(observedAt) && Date.now() - observedAt <= 90_000;
   const hash = typeof agent?.agent_sha256 === "string" ? agent.agent_sha256 : "";
   const hashValid = /^[0-9a-f]{64}$/.test(hash);
   const expectedHashValid =
@@ -151,12 +276,7 @@ function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
   const recoveryHold = agent?.recovery_hold === true;
 
   return {
-    ok:
-      online &&
-      scopedHeartbeatFresh &&
-      hashMatches &&
-      localMutationsEnabled &&
-      recoveryHold,
+    ok: online && scopedHeartbeatFresh && hashMatches && localMutationsEnabled && recoveryHold,
     online,
     scopedHeartbeatFresh,
     hashValid,
@@ -169,7 +289,7 @@ function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
   };
 }
 
-async function githubGet(path: string): Promise<any> {
+async function githubGet(path: string) {
   const lovableKey = process.env.LOVABLE_API_KEY;
   const ghKey = process.env.GITHUB_API_KEY;
   if (!lovableKey || !ghKey) {
@@ -195,9 +315,9 @@ async function githubGet(path: string): Promise<any> {
 }
 
 async function getExpectedRndAgentSha() {
-  const repo = "resonance36912-cell/resonance-hub";
+  const repo = "resonance36912-cell/RONSAS";
   const path = "ops/ealiophin/control-center/RONS-RnD-Agent.ps1";
-  const file = await githubGet(`/repos/${repo}/contents/${path}?ref=ronsas%2Fealiophin-production`);
+  const file = await githubGet(`/repos/${repo}/contents/${path}?ref=main`);
   if (file?.unavailable) {
     return { sha256: null, sourceBlobSha: null, error: file.reason };
   }
@@ -249,8 +369,8 @@ async function getRecoveryWorkflowState() {
   const activeStates = new Set(["queued", "in_progress", "waiting", "pending", "requested"]);
   const activeRuns = Array.isArray(runs?.workflow_runs)
     ? runs.workflow_runs
-        .filter((run: any) => activeStates.has(String(run.status)))
-        .map((run: any) => ({
+        .filter((run: GithubWorkflowRun) => activeStates.has(String(run.status)))
+        .map((run: GithubWorkflowRun) => ({
           id: run.id,
           status: run.status,
           event: run.event,
@@ -271,14 +391,14 @@ async function getRecoveryWorkflowState() {
 }
 
 export const checkRndAccess = createServerFn({ method: "GET" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
     return { allowed: true as const, email: actor.email };
   });
 
 export const getRndControlSnapshot = createServerFn({ method: "GET" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
@@ -322,11 +442,10 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
     }
 
     const now = Date.now();
-    const devices = (devicesResult.data ?? []).map((device: any) => ({
+    const devices = (devicesResult.data ?? []).map((device) => ({
       ...device,
       online:
-        typeof device.last_seen_at === "string" &&
-        now - Date.parse(device.last_seen_at) <= 90_000,
+        typeof device.last_seen_at === "string" && now - Date.parse(device.last_seen_at) <= 90_000,
     }));
 
     return {
@@ -337,7 +456,10 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
       workspace: workspacePath(),
       operations: RND_OPERATIONS,
       devices,
-      jobs: jobsResult.data ?? [],
+      jobs: (jobsResult.data ?? []).map((job) => ({
+        ...job,
+        payload: readRndJobPayload(job.payload),
+      })),
       audit: auditResult.data ?? [],
       githubRecovery: recovery,
       approvedAgent,
@@ -346,14 +468,15 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
   });
 
 export const bootstrapRndAgent = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => DeviceInput.parse(value))
   .handler(async ({ data, context }) => {
-    await assertRndAdmin(context as AuthContext);
+    const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
+    const operatorUserId = await ensureRndControlOperator(admin);
     await enforceRndRateLimit(
       admin,
-      context.userId,
+      operatorUserId,
       ["rnd.device_enrolled"],
       3,
       60 * 60_000,
@@ -412,13 +535,15 @@ export const bootstrapRndAgent = createServerFn({ method: "POST" })
     }
 
     await admin.from("bridge_audit_events").insert({
-      actor_user_id: context.userId,
+      actor_user_id: operatorUserId,
       device_id: device.id,
       event_type: "rnd.device_enrolled",
       payload: {
         slug: data.slug,
         platform: "windows",
         recovery_hold: true,
+        human_actor_email: actor.email,
+        human_actor_user_id: context.userId,
       },
     });
 
@@ -435,14 +560,15 @@ export const bootstrapRndAgent = createServerFn({ method: "POST" })
   });
 
 export const queueRndOperation = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => QueueInput.parse(value))
   .handler(async ({ data, context }) => {
-    await assertRndAdmin(context as AuthContext);
+    const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
+    const operatorUserId = await getRndControlOperatorId(admin);
     await enforceRndRateLimit(
       admin,
-      context.userId,
+      operatorUserId,
       ["rnd.job_created"],
       20,
       60_000,
@@ -469,7 +595,7 @@ export const queueRndOperation = createServerFn({ method: "POST" })
       const agentGate = readAgentLiveGate(device, approvedAgent.sha256);
       if (!agentGate.ok || !approvedAgent.sha256) {
         throw new Error(
-          "Live R&D mutation blocked: Ealiophin must be online with the approved production-lineage agent hash, local mutations enabled, and Recovery HOLD asserted",
+          "Live R&D mutation blocked: Ealiophin must be online with the approved main-branch agent hash, local mutations enabled, and Recovery HOLD asserted",
         );
       }
       approvedAgentSha256 = approvedAgent.sha256;
@@ -485,12 +611,14 @@ export const queueRndOperation = createServerFn({ method: "POST" })
       requested_at: new Date().toISOString(),
       recovery_hold: true,
       approved_agent_sha256: approvedAgentSha256,
+      human_actor_email: actor.email,
+      human_actor_user_id: context.userId,
     };
 
     const { data: job, error: jobError } = await admin
       .from("bridge_jobs")
       .insert({
-        user_id: context.userId,
+        user_id: operatorUserId,
         client_id: "admin-rnd",
         device_id: device.id,
         tool_name: "job_start",
@@ -499,14 +627,12 @@ export const queueRndOperation = createServerFn({ method: "POST" })
         status,
         approval_required: approvalRequired,
       })
-      .select(
-        "id,device_id,status,approval_required,payload,created_at,workspace",
-      )
+      .select("id,device_id,status,approval_required,payload,created_at,workspace")
       .single();
     if (jobError) throw new Error(jobError.message);
 
     await admin.from("bridge_audit_events").insert({
-      actor_user_id: context.userId,
+      actor_user_id: operatorUserId,
       client_id: "admin-rnd",
       device_id: device.id,
       job_id: job.id,
@@ -516,6 +642,8 @@ export const queueRndOperation = createServerFn({ method: "POST" })
         dry_run: data.dryRun,
         mutates: spec.mutates,
         correlation_id: correlationId,
+        human_actor_email: actor.email,
+        human_actor_user_id: context.userId,
       },
     });
 
@@ -523,14 +651,15 @@ export const queueRndOperation = createServerFn({ method: "POST" })
   });
 
 export const approveRndOperation = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => JobInput.parse(value))
   .handler(async ({ data, context }) => {
-    await assertRndAdmin(context as AuthContext);
+    const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
+    const operatorUserId = await getRndControlOperatorId(admin);
     await enforceRndRateLimit(
       admin,
-      context.userId,
+      operatorUserId,
       ["rnd.job_approved"],
       20,
       60_000,
@@ -552,16 +681,20 @@ export const approveRndOperation = createServerFn({ method: "POST" })
       .eq("client_id", "admin-rnd")
       .maybeSingle();
     if (jobError) throw new Error(jobError.message);
-    if (!job || job.user_id !== context.userId || job.status !== "approval_required") {
+    const jobPayload = readRndJobPayload(job?.payload);
+    if (
+      !job ||
+      job.user_id !== operatorUserId ||
+      jobPayload.human_actor_user_id !== context.userId ||
+      jobPayload.human_actor_email !== actor.email ||
+      job.status !== "approval_required"
+    ) {
       throw new Error("Job is not awaiting your approval");
     }
 
-    const operation = job.payload?.operation;
+    const operation = jobPayload.operation;
     if (!isRndOperation(operation)) throw new Error("Job operation is invalid");
-    const stagedAgentSha =
-      typeof job.payload?.approved_agent_sha256 === "string"
-        ? job.payload.approved_agent_sha256
-        : null;
+    const stagedAgentSha = jobPayload.approved_agent_sha256 ?? null;
     const spec = assertRndOperationAllowed(operation, {
       dryRun: false,
       mutationsEnabled: mutationControl.enabled,
@@ -583,7 +716,7 @@ export const approveRndOperation = createServerFn({ method: "POST" })
       !readAgentLiveGate(device, approvedAgent.sha256).ok
     ) {
       throw new Error(
-        "Live R&D mutation approval blocked: staged or deployed Ealiophin agent identity no longer matches the approved production lineage",
+        "Live R&D mutation approval blocked: staged or deployed agent identity no longer matches approved main",
       );
     }
 
@@ -591,7 +724,7 @@ export const approveRndOperation = createServerFn({ method: "POST" })
       "bridge_rnd_admin_approve_job",
       {
         _job_id: data.jobId,
-        _actor_user_id: context.userId,
+        _actor_user_id: operatorUserId,
       },
     );
     if (approvalError) throw new Error(approvalError.message);
@@ -604,14 +737,15 @@ export const approveRndOperation = createServerFn({ method: "POST" })
   });
 
 export const setRndMutationWindow = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => MutationWindowInput.parse(value))
   .handler(async ({ data, context }) => {
-    await assertRndAdmin(context as AuthContext);
+    const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
+    const operatorUserId = await getRndControlOperatorId(admin);
     await enforceRndRateLimit(
       admin,
-      context.userId,
+      operatorUserId,
       ["rnd.mutation_window_opened", "rnd.mutation_window_closed"],
       12,
       60_000,
@@ -623,16 +757,14 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
     }
 
     const enabledUntil =
-      data.minutes === 0
-        ? null
-        : new Date(Date.now() + data.minutes * 60_000).toISOString();
+      data.minutes === 0 ? null : new Date(Date.now() + data.minutes * 60_000).toISOString();
     const { data: updatedSetting, error } = await admin
       .from("rnd_control_settings")
       .update({
         mutations_enabled_until: enabledUntil,
         emergency_lock: data.minutes === 0,
         recovery_hold: true,
-        updated_by: context.userId,
+        updated_by: operatorUserId,
         updated_at: new Date().toISOString(),
       })
       .eq("singleton", true)
@@ -644,16 +776,17 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
     }
 
     await admin.from("bridge_audit_events").insert({
-      actor_user_id: context.userId,
+      actor_user_id: operatorUserId,
       client_id: "admin-rnd",
-      event_type:
-        data.minutes === 0 ? "rnd.mutation_window_closed" : "rnd.mutation_window_opened",
+      event_type: data.minutes === 0 ? "rnd.mutation_window_closed" : "rnd.mutation_window_opened",
       payload: {
         minutes: data.minutes,
         enabled_until: enabledUntil,
         environment_kill: emergencyKill,
         emergency_lock: data.minutes === 0,
         recovery_hold: true,
+        human_actor_email: actor.email,
+        human_actor_user_id: context.userId,
       },
     });
 
@@ -668,14 +801,15 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
   });
 
 export const cancelRndOperation = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => JobInput.parse(value))
   .handler(async ({ data, context }) => {
-    await assertRndAdmin(context as AuthContext);
+    const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
+    const operatorUserId = await getRndControlOperatorId(admin);
     await enforceRndRateLimit(
       admin,
-      context.userId,
+      operatorUserId,
       ["rnd.job_cancel_requested"],
       20,
       60_000,
@@ -689,7 +823,15 @@ export const cancelRndOperation = createServerFn({ method: "POST" })
       .eq("client_id", "admin-rnd")
       .maybeSingle();
     if (jobError) throw new Error(jobError.message);
-    if (!job || job.user_id !== context.userId) throw new Error("Job not found");
+    const jobPayload = readRndJobPayload(job?.payload);
+    if (
+      !job ||
+      job.user_id !== operatorUserId ||
+      jobPayload.human_actor_user_id !== context.userId ||
+      jobPayload.human_actor_email !== actor.email
+    ) {
+      throw new Error("Job not found");
+    }
     if (!["approval_required", "queued", "running"].includes(job.status)) {
       throw new Error("Job is not cancellable");
     }
@@ -699,22 +841,22 @@ export const cancelRndOperation = createServerFn({ method: "POST" })
       .from("bridge_jobs")
       .update({
         cancel_requested: true,
-        ...(terminal
-          ? { status: "cancelled", completed_at: new Date().toISOString() }
-          : {}),
+        ...(terminal ? { status: "cancelled", completed_at: new Date().toISOString() } : {}),
       })
       .eq("id", data.jobId);
     if (updateError) throw new Error(updateError.message);
 
     await admin.from("bridge_audit_events").insert({
-      actor_user_id: context.userId,
+      actor_user_id: operatorUserId,
       client_id: "admin-rnd",
       device_id: job.device_id,
       job_id: job.id,
       event_type: "rnd.job_cancel_requested",
       payload: {
-        operation: job.payload?.operation ?? "unknown",
+        operation: jobPayload.operation ?? "unknown",
         previous_status: job.status,
+        human_actor_email: actor.email,
+        human_actor_user_id: context.userId,
       },
     });
 
@@ -726,11 +868,12 @@ export const cancelRndOperation = createServerFn({ method: "POST" })
   });
 
 export const getRndJobResult = createServerFn({ method: "POST" })
-  .middleware([requireRonsAuth])
+  .middleware([requireSupabaseAuth])
   .inputValidator((value: unknown) => JobInput.parse(value))
   .handler(async ({ data, context }) => {
-    await assertRndAdmin(context as AuthContext);
+    const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
+    const operatorUserId = await getRndControlOperatorId(admin);
     const { data: job, error } = await admin
       .from("bridge_jobs")
       .select(
@@ -740,8 +883,16 @@ export const getRndJobResult = createServerFn({ method: "POST" })
       .eq("client_id", "admin-rnd")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!job || job.user_id !== context.userId) throw new Error("Job not found");
-    return { ...job, result: normalizeRndResult(job.result) };
+    const jobPayload = readRndJobPayload(job?.payload);
+    if (
+      !job ||
+      job.user_id !== operatorUserId ||
+      jobPayload.human_actor_user_id !== context.userId ||
+      jobPayload.human_actor_email !== actor.email
+    ) {
+      throw new Error("Job not found");
+    }
+    return { ...job, payload: jobPayload, result: normalizeRndResult(job.result) };
   });
 
 export { getRndOperationSpec };

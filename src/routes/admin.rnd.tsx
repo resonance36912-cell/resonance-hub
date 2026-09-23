@@ -2,7 +2,8 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ronsAuth } from "@/lib/auth-provider";
+import { supabase } from "@/integrations/supabase/client";
+import type { RndOperation } from "@/lib/rnd-control.core";
 import {
   approveRndOperation,
   bootstrapRndAgent,
@@ -22,8 +23,15 @@ export const Route = createFileRoute("/admin/rnd")({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await ronsAuth.getUser();
+    const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/admin/login" });
+    const { data: role } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (!role) throw redirect({ to: "/admin/login" });
     try {
       await checkRndAccess();
     } catch {
@@ -55,6 +63,12 @@ function statusClass(value: string) {
     return "border-red-500/40 bg-red-500/10 text-red-300";
   }
   return "border-amber-500/40 bg-amber-500/10 text-amber-200";
+}
+
+function jsonObject(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
 function Badge({ children, tone }: { children: React.ReactNode; tone?: string }) {
@@ -103,7 +117,7 @@ function RndControlCenter() {
   });
 
   const queue = useMutation({
-    mutationFn: (input: { deviceId: string; operation: any; dryRun: boolean }) =>
+    mutationFn: (input: { deviceId: string; operation: RndOperation; dryRun: boolean }) =>
       queueOperation({ data: input }),
     onSuccess: (result) => {
       setNotice(
@@ -145,18 +159,17 @@ function RndControlCenter() {
 
   const data = snapshot.data;
   const device = useMemo(
-    () => data?.devices?.find((item: any) => item.slug === "ealiophin") ?? null,
+    () => data?.devices?.find((item) => item.slug === "ealiophin") ?? null,
     [data?.devices],
   );
-  const agentMeta = device?.metadata?.rnd_agent ?? null;
+  const deviceMetadata = jsonObject(device?.metadata);
+  const agentMeta = jsonObject(deviceMetadata?.rnd_agent);
   const approvedAgentSha =
     typeof data?.approvedAgent?.sha256 === "string" ? data.approvedAgent.sha256 : null;
   const deployedAgentSha =
     typeof agentMeta?.agent_sha256 === "string" ? agentMeta.agent_sha256 : null;
   const agentHashMatches =
-    approvedAgentSha !== null &&
-    deployedAgentSha !== null &&
-    approvedAgentSha === deployedAgentSha;
+    approvedAgentSha !== null && deployedAgentSha !== null && approvedAgentSha === deployedAgentSha;
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -168,9 +181,8 @@ function RndControlCenter() {
             </p>
             <h1 className="mt-2 text-3xl font-semibold">RONSAS Control Center</h1>
             <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-              Sovereign diagnostics and allowlisted optimization jobs. No arbitrary shell, no
-              Remote Desktop Commander, and no TRIGGERcmd dependency after the local Ops Agent is
-              enrolled.
+              Sovereign diagnostics and allowlisted optimization jobs. No arbitrary shell, no Remote
+              Desktop Commander, and no TRIGGERcmd dependency after the local Ops Agent is enrolled.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 text-sm">
@@ -206,9 +218,7 @@ function RndControlCenter() {
               <div className="rounded-xl border border-border bg-card p-4">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">Recovery</p>
                 <div className="mt-2">
-                  <Badge tone="border-red-500/40 bg-red-500/10 text-red-300">
-                    HOLD enforced
-                  </Badge>
+                  <Badge tone="border-red-500/40 bg-red-500/10 text-red-300">HOLD enforced</Badge>
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
                   Runner recovery is excluded from the R&D operation allowlist.
@@ -301,13 +311,11 @@ function RndControlCenter() {
                         {agentMeta.recovery_hold ? "true" : "unknown"}
                       </span>
                     </p>
-                    <p className="break-all font-mono" title={agentMeta.agent_sha256 ?? undefined}>
-                      Deployed SHA:{" "}
-                      {deployedAgentSha ? deployedAgentSha.slice(0, 16) : "unknown"}
+                    <p className="break-all font-mono" title={deployedAgentSha ?? undefined}>
+                      Deployed SHA: {deployedAgentSha ? deployedAgentSha.slice(0, 16) : "unknown"}
                     </p>
                     <p className="break-all font-mono" title={approvedAgentSha ?? undefined}>
-                      Approved SHA:{" "}
-                      {approvedAgentSha ? approvedAgentSha.slice(0, 16) : "unknown"}
+                      Approved SHA: {approvedAgentSha ? approvedAgentSha.slice(0, 16) : "unknown"}
                     </p>
                     <p>
                       Identity:{" "}
@@ -385,15 +393,15 @@ function RndControlCenter() {
                   argument.
                 </p>
                 <pre className="mt-3 overflow-x-auto rounded-lg border border-border bg-background p-3 text-[11px]">
-                  {"powershell -NoProfile -ExecutionPolicy Bypass -File .\\ops\\ealiophin\\control-center\\INSTALL-RONS-RND-AGENT.ps1 -SupabaseUrl \"" +
+                  {'powershell -NoProfile -ExecutionPolicy Bypass -File .\\ops\\ealiophin\\control-center\\INSTALL-RONS-RND-AGENT.ps1 -SupabaseUrl "' +
                     credentials.supabaseUrl +
-                    "\" -PublishableKey \"" +
+                    '" -PublishableKey "' +
                     credentials.publishableKey +
-                    "\" -AgentEmail \"" +
+                    '" -AgentEmail "' +
                     credentials.email +
-                    "\" -DeviceId \"" +
+                    '" -DeviceId "' +
                     device.id +
-                    "\" -EnableMutations"}
+                    '" -EnableMutations'}
                 </pre>
               </section>
             )}
@@ -417,7 +425,7 @@ function RndControlCenter() {
               </div>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {data.operations.map((operation: any) => {
+                {data.operations.map((operation) => {
                   const dryRun = operation.mutates ? dryRunMutations : false;
                   const localLiveGate =
                     device?.online &&
@@ -426,25 +434,17 @@ function RndControlCenter() {
                     agentHashMatches;
                   const blocked =
                     !device ||
-                    (!dryRun &&
-                      operation.mutates &&
-                      (!data.mutationsEnabled || !localLiveGate)) ||
+                    (!dryRun && operation.mutates && (!data.mutationsEnabled || !localLiveGate)) ||
                     queue.isPending;
                   return (
                     <article key={operation.key} className="rounded-lg border border-border p-4">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="font-medium">{operation.label}</h3>
                         <Badge>
-                          {operation.mutates
-                            ? dryRun
-                              ? "dry-run"
-                              : "mutation"
-                            : "read-only"}
+                          {operation.mutates ? (dryRun ? "dry-run" : "mutation") : "read-only"}
                         </Badge>
                       </div>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {operation.description}
-                      </p>
+                      <p className="mt-2 text-sm text-muted-foreground">{operation.description}</p>
                       <button
                         type="button"
                         disabled={blocked}
@@ -507,15 +507,13 @@ function RndControlCenter() {
                     </tr>
                   </thead>
                   <tbody>
-                    {data.jobs.map((job: any) => (
+                    {data.jobs.map((job) => (
                       <tr key={job.id} className="border-t border-border align-top">
                         <td className="py-3 pr-3 text-xs">{formatDate(job.created_at)}</td>
                         <td className="py-3 pr-3 font-mono text-xs">
                           {job.payload?.operation ?? "unknown"}
                         </td>
-                        <td className="py-3 pr-3">
-                          {job.payload?.dry_run ? "dry-run" : "live"}
-                        </td>
+                        <td className="py-3 pr-3">{job.payload?.dry_run ? "dry-run" : "live"}</td>
                         <td className="py-3 pr-3">
                           <Badge tone={statusClass(String(job.status))}>{job.status}</Badge>
                         </td>
@@ -571,7 +569,7 @@ function RndControlCenter() {
                 server-side.
               </p>
               <div className="mt-4 space-y-2">
-                {data.audit.slice(0, 30).map((event: any) => (
+                {data.audit.slice(0, 30).map((event) => (
                   <div
                     key={event.id}
                     className="grid gap-1 rounded-lg border border-border p-3 text-xs md:grid-cols-[190px_170px_1fr]"

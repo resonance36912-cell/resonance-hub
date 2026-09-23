@@ -25,14 +25,16 @@ export const RND_OPERATIONS: readonly RndOperationSpec[] = [
   {
     key: "git_status",
     label: "Git status",
-    description: "Read-only branch, HEAD, worktree, and remote status for the sovereign repository.",
+    description:
+      "Read-only branch, HEAD, worktree, and remote status for the sovereign repository.",
     mutates: false,
     requiresApproval: false,
   },
   {
     key: "verify_public_endpoints",
     label: "Verify public endpoints",
-    description: "Probe the public RONSAS endpoints in memory without writing files or restarting services.",
+    description:
+      "Probe the public RONSAS endpoints in memory without writing files or restarting services.",
     mutates: false,
     requiresApproval: false,
   },
@@ -46,14 +48,16 @@ export const RND_OPERATIONS: readonly RndOperationSpec[] = [
   {
     key: "sync_main_fast_forward",
     label: "Sync main (fast-forward only)",
-    description: "Fetch origin and fast-forward main only when the worktree is clean and already on main.",
+    description:
+      "Fetch origin and fast-forward main only when the worktree is clean and already on main.",
     mutates: true,
     requiresApproval: true,
   },
   {
     key: "restart_public_edge",
     label: "Repair public edge",
-    description: "Invoke the governed public-edge ensure script without touching GitHub runner recovery.",
+    description:
+      "Invoke the governed public-edge ensure script without touching GitHub runner recovery.",
     mutates: true,
     requiresApproval: true,
   },
@@ -109,12 +113,30 @@ export function assertRndOperationAllowed(
   return spec;
 }
 
-export function normalizeRndResult(value: unknown): unknown {
+export type RndJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | RndJsonValue[]
+  | { [key: string]: RndJsonValue };
+
+export function normalizeRndResult(value: unknown): RndJsonValue {
   if (value == null) return null;
-  const serialized = JSON.stringify(value);
-  if (serialized.length <= 20_000) return value;
-  return {
-    truncated: true,
-    preview: serialized.slice(0, 20_000),
-  };
+  try {
+    const serialized = JSON.stringify(value);
+    if (typeof serialized !== "string") return null;
+    if (serialized.length <= 20_000) {
+      return JSON.parse(serialized) as RndJsonValue;
+    }
+    return {
+      truncated: true,
+      preview: serialized.slice(0, 20_000),
+    };
+  } catch {
+    return {
+      truncated: true,
+      preview: "[unserializable result]",
+    };
+  }
 }
