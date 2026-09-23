@@ -53,7 +53,7 @@ function AdminHome() {
     refetchOnWindowFocus: true,
   });
 
-  const rows = (data?.rows ?? []) as AdminSubRow[];
+  const rows = useMemo(() => (data?.rows ?? []) as AdminSubRow[], [data?.rows]);
   const visits = visitsQ.data;
   const traces = auditQ.data?.traces ?? [];
 
