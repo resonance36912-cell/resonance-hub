@@ -383,8 +383,6 @@ function RndControlCenter() {
                     credentials.supabaseUrl +
                     "\" -PublishableKey \"" +
                     credentials.publishableKey +
-                    "\" -DeviceToken \"" +
-                    credentials.deviceToken +
                     "\" -DeviceId \"" +
                     device.id +
                     "\" -EnableMutations"}
