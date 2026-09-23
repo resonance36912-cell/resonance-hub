@@ -145,6 +145,7 @@ function RndControlCenter() {
   });
 
   const data = snapshot.data;
+  const browserOnly = data?.runtimeMode === "browser_mcp";
   const device = useMemo(
     () => data?.devices?.find((item: any) => item.slug === "ealiophin") ?? null,
     [data?.devices],
@@ -195,6 +196,47 @@ function RndControlCenter() {
         {notice && (
           <section className="mb-6 rounded-xl border border-border bg-card p-4 text-sm">
             {notice}
+          </section>
+        )}
+
+        {data?.runtimeMode === "browser_mcp" && (
+          <section className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-emerald-200">Browser/MCP R&D mode is active</h2>
+                <p className="mt-1 max-w-3xl text-sm text-emerald-100/80">
+                  Continue RONSAS development from a compatible ChatGPT browser extension or MCP
+                  client without Remote Desktop Commander or TRIGGERcmd. Privileged machine
+                  mutations remain locked on this deployment.
+                </p>
+              </div>
+              <Link
+                to="/admin/rd"
+                className="rounded-lg border border-emerald-500/40 px-3 py-2 text-sm text-emerald-200"
+              >
+                Open MCP setup
+              </Link>
+            </div>
+            <dl className="mt-4 grid gap-3 text-xs md:grid-cols-2">
+              <div>
+                <dt className="uppercase tracking-wider text-muted-foreground">
+                  Custom MCP endpoint
+                </dt>
+                <dd className="mt-1 break-all font-mono">{data.browserMcp.endpoint}</dd>
+                <p className="mt-1 text-muted-foreground">
+                  Becomes canonical after the reson8.life DNS record validates.
+                </p>
+              </div>
+              <div>
+                <dt className="uppercase tracking-wider text-muted-foreground">
+                  Railway live origin
+                </dt>
+                <dd className="mt-1 break-all font-mono">{data.browserMcp.railwayFallback}</dd>
+                <p className="mt-1 text-muted-foreground">
+                  Current deployed origin for health and login verification.
+                </p>
+              </div>
+            </dl>
           </section>
         )}
 
@@ -332,7 +374,7 @@ function RndControlCenter() {
               </div>
             </section>
 
-            {!device && (
+            {!device && !browserOnly && (
               <section className="mb-8 rounded-xl border border-border bg-card p-5">
                 <h2 className="text-lg font-semibold">Enroll Ealiophin Ops Agent</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -419,6 +461,7 @@ function RndControlCenter() {
                     agentMeta?.recovery_hold === true &&
                     agentHashMatches;
                   const blocked =
+                    browserOnly ||
                     !device ||
                     (!dryRun && operation.mutates && (!data.mutationsEnabled || !localLiveGate)) ||
                     queue.isPending;
@@ -444,8 +487,10 @@ function RndControlCenter() {
                         }
                         className="mt-4 rounded-lg border border-border px-3 py-2 text-sm hover:bg-accent disabled:opacity-40"
                       >
-                        {!device
-                          ? "Enroll agent first"
+                        {browserOnly
+                          ? "Privileged runtime locked"
+                          : !device
+                            ? "Enroll agent first"
                           : operation.mutates && !dryRun && !data.mutationsEnabled
                             ? "Open mutation window first"
                             : operation.mutates && !dryRun && !localLiveGate
