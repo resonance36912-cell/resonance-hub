@@ -10,7 +10,7 @@ The browser route requires:
 
 1. a valid Supabase session;
 2. the existing `admin` role in `user_roles`; and
-3. an exact email match in the server-only R&D allowlist. `RONSAS_RND_ALLOWED_EMAILS` can narrow access further; otherwise the existing `ADMIN_BOOTSTRAP_EMAILS` owner allowlist is reused.
+3. an exact email match in the dedicated server-only R&D allowlist, `RONSAS_RND_ALLOWED_EMAILS`.
 
 There is no hidden assistant account, shared backdoor, arbitrary command field, or client-side service-role credential. The assistant can only act through the user's authorized workflow/session.
 
@@ -24,7 +24,7 @@ Required:
 
 Optional:
 
-- `RONSAS_RND_ALLOWED_EMAILS` — stricter R&D-only email allowlist; when absent, `ADMIN_BOOTSTRAP_EMAILS` is used.
+- `RONSAS_RND_ALLOWED_EMAILS` — required R&D-only email allowlist. Access fails closed when it is absent or empty.
 - `RONSAS_RND_EMERGENCY_KILL=true` — an additional server-side veto that prevents opening or approving live mutation windows. The database-enforced **Lock now** control is the claim-time hard stop for already staged/queued work.
 - `RONSAS_RND_WORKSPACE` — defaults to `C:\Users\Ashley\Documents\GitHub\rons-sovereign-codebase`.
 
