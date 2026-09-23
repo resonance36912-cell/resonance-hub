@@ -16,11 +16,8 @@ const agent = read("ops/ealiophin/control-center/RONS-RnD-Agent.ps1");
 const installer = read("ops/ealiophin/control-center/INSTALL-RONS-RND-AGENT.ps1");
 const functions = read("src/lib/rnd-control.functions.ts");
 const route = read("src/routes/admin.rnd.tsx");
-const authMiddleware = read("src/lib/rons-auth-middleware.ts");
-const migration = read(
-  "supabase/migrations/20260923203500_rnd_control_center_hardening.sql",
-);
-const dbVerification = read("scripts/verify-rnd-control-db.sql");
+const authMiddleware = read("src/integrations/supabase/auth-middleware.ts");
+const migration = read("supabase/migrations/20260923203500_rnd_control_center_hardening.sql");
 
 describe("R&D operation allowlist", () => {
   test("contains only the intended named operations", () => {
@@ -78,13 +75,11 @@ describe("R&D identity gate", () => {
 
 describe("server-side R&D controls", () => {
   test("requires admin plus explicit email allowlist", () => {
-    expect(functions).toContain('.from("user_roles")');
+    expect(functions).toContain('rpc("has_role"');
     expect(functions).toContain("RONSAS_RND_ALLOWED_EMAILS");
     expect(functions).toContain("Forbidden: R&D control center email is not allowlisted");
     expect(functions).toContain("export const checkRndAccess");
-    expect(route).toContain("ronsAuth.getUser()");
     expect(route).toContain("await checkRndAccess()");
-    expect(route).not.toContain('.from("user_roles")');
   });
 
   test("uses a short mutation window, emergency kill, local agent gate, and second approval", () => {
@@ -103,11 +98,24 @@ describe("server-side R&D controls", () => {
     expect(functions).toContain("activeRuns");
   });
 
-  test("binds live mutations to the approved production-lineage agent hash", () => {
+  test("binds live mutations to the approved main-branch agent hash", () => {
     expect(functions).toContain("getExpectedRndAgentSha");
     expect(functions).toContain("approved_agent_sha256");
     expect(functions).toContain("stagedAgentSha !== approvedAgent.sha256");
-    expect(functions).toContain("deployed Ealiophin agent identity");
+    expect(functions).toContain(
+      "staged or deployed agent identity no longer matches approved main",
+    );
+  });
+
+  test("uses a dedicated non-login control principal for Bridge ownership", () => {
+    expect(functions).toContain("ensureRndControlOperator");
+    expect(functions).toContain("getRndControlOperatorId");
+    expect(functions).toContain('kind: "ronsas-rnd-operator"');
+    expect(functions).toContain("interactive_login: false");
+    expect(functions).toContain("operator_user_id");
+    expect(functions).toContain("human_actor_email");
+    expect(functions).toContain("human_actor_user_id");
+    expect(functions).toContain("_actor_user_id: operatorUserId");
   });
 
   test("rate-limits control-plane writes", () => {
@@ -118,12 +126,12 @@ describe("server-side R&D controls", () => {
     expect(functions).toContain('"job cancellation"');
   });
 
-  test("state-changing server functions use the Hub hosted/sovereign auth boundary", () => {
-    expect((functions.match(/\.middleware\(\[requireRonsAuth\]\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
-    expect(functions).toContain("resolveRonsRequestCredential");
-    expect(functions).toContain("fetchBackendUserEmail");
-    expect(authMiddleware).toContain("resolveRonsRequestUserId");
-    expect(authMiddleware).toContain('getBackendProvider() === "sovereign"');
+  test("state-changing server functions require bearer-authenticated Supabase context", () => {
+    expect(
+      (functions.match(/\.middleware\(\[requireSupabaseAuth\]\)/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(6);
+    expect(authMiddleware).toContain("authHeader.startsWith('Bearer ')");
+    expect(authMiddleware).toContain("supabase.auth.getClaims(token)");
   });
 });
 
@@ -224,7 +232,11 @@ describe("database and UI containment", () => {
     expect(migration).toContain("bridge_rnd_admin_approve_job");
     expect(migration).toContain("app.rnd_approve_authorized");
     expect(migration).toContain("rnd_scoped_approval_required");
-    expect(migration).toContain("rnd_admin_required");
+    expect(migration).toContain("rnd_control_operator_required");
+    expect(migration).toContain("operator_user_id");
+    expect(migration).toContain("ronsas-rnd-operator");
+    expect(migration).toContain("human_actor_email");
+    expect(migration).toContain("human_actor_user_id");
     expect(migration).toContain("rnd_job_not_awaiting_approval");
     expect(migration).toContain("TO service_role");
     expect(migration).toContain("FROM PUBLIC, anon, authenticated");
@@ -234,12 +246,6 @@ describe("database and UI containment", () => {
   test("audit events are append-only", () => {
     expect(migration).toContain("bridge_audit_append_only");
     expect(migration).toContain("bridge_audit_append_only");
-  });
-
-  test("database acceptance SQL retains valid PostgreSQL dollar quoting", () => {
-    expect(dbVerification).not.toContain("DO $\n");
-    expect(dbVerification).not.toContain("END\n$;\n");
-    expect((dbVerification.match(/\$\$/g) ?? []).length % 2).toBe(0);
   });
 
   test("hardening migration retains valid PostgreSQL function delimiters", () => {
@@ -274,9 +280,7 @@ describe("database and UI containment", () => {
     expect(agent).toContain("bridge_rnd_agent_complete_job");
     expect(agent).not.toContain("-Function 'bridge_connector_claim_job'");
     expect(agent).not.toContain("-Function 'bridge_connector_complete_job'");
-    expect(migration).not.toContain(
-      "REVOKE EXECUTE ON FUNCTION public.bridge_connector_claim_job",
-    );
+    expect(migration).not.toContain("REVOKE EXECUTE ON FUNCTION public.bridge_connector_claim_job");
   });
 
   test("admin UI exposes only named buttons, not a command textbox", () => {

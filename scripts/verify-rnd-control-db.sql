@@ -45,10 +45,11 @@ BEGIN
 END
 $$;
 
-INSERT INTO auth.users(id, email, created_at, updated_at)
+INSERT INTO auth.users(id, email, raw_user_meta_data, created_at, updated_at)
 VALUES
-  ('00000000-0000-0000-0000-000000000001', 'owner@example.invalid', now(), now()),
-  ('00000000-0000-0000-0000-000000000002', 'rnd-agent@example.invalid', now(), now())
+  ('00000000-0000-0000-0000-000000000001', 'owner@example.invalid', '{}'::jsonb, now(), now()),
+  ('00000000-0000-0000-0000-000000000002', 'rnd-agent@example.invalid', '{"kind":"ronsas-rnd-agent"}'::jsonb, now(), now()),
+  ('00000000-0000-0000-0000-000000000003', 'rnd-operator@example.invalid', '{"kind":"ronsas-rnd-operator","interactive_login":false}'::jsonb, now(), now())
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.user_roles(user_id, role)
@@ -66,6 +67,15 @@ INSERT INTO public.bridge_devices(
   true,
   '{"channel":"ronsas-rnd-agent","recovery_hold":true}'::jsonb
 );
+
+UPDATE public.rnd_control_settings
+SET operator_user_id = '00000000-0000-0000-0000-000000000003',
+    emergency_lock = true,
+    mutations_enabled_until = NULL,
+    recovery_hold = true,
+    updated_by = '00000000-0000-0000-0000-000000000003',
+    updated_at = now()
+WHERE singleton;
 
 SET ROLE authenticated;
 SELECT set_config(
@@ -89,7 +99,7 @@ RESET ROLE;
 UPDATE public.rnd_control_settings
 SET mutations_enabled_until = now() + interval '10 minutes',
     emergency_lock = false,
-    updated_by = '00000000-0000-0000-0000-000000000001',
+    updated_by = '00000000-0000-0000-0000-000000000003',
     updated_at = now()
 WHERE singleton;
 
@@ -98,7 +108,7 @@ INSERT INTO public.bridge_jobs(
   status, approval_required
 ) VALUES (
   '00000000-0000-0000-0000-000000000100',
-  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000003',
   'admin-rnd',
   '00000000-0000-0000-0000-000000000010',
   'job_start',
@@ -108,7 +118,9 @@ INSERT INTO public.bridge_jobs(
     'dry_run', false,
     'correlation_id', 'runtime-live-1',
     'recovery_hold', true,
-    'approved_agent_sha256', repeat('a', 64)
+    'approved_agent_sha256', repeat('a', 64),
+    'human_actor_email', 'owner@example.invalid',
+    'human_actor_user_id', '00000000-0000-0000-0000-000000000001'
   ),
   'approval_required'::public.bridge_job_status,
   true
@@ -140,11 +152,32 @@ END
 $$;
 RESET ROLE;
 
+-- Human admin identity cannot substitute for the dedicated control principal.
+SET ROLE service_role;
+DO $actor$
+BEGIN
+  BEGIN
+    PERFORM public.bridge_rnd_admin_approve_job(
+      '00000000-0000-0000-0000-000000000100',
+      '00000000-0000-0000-0000-000000000001'
+    );
+    RAISE EXCEPTION 'expected_human_actor_operator_rejection';
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLERRM = 'expected_human_actor_operator_rejection'
+         OR position('rnd_control_operator_required' in SQLERRM) = 0 THEN
+        RAISE;
+      END IF;
+  END;
+END
+$actor$;
+RESET ROLE;
+
 -- Only the service-role-scoped R&D approval function can queue the live job.
 SET ROLE service_role;
 SELECT public.bridge_rnd_admin_approve_job(
   '00000000-0000-0000-0000-000000000100',
-  '00000000-0000-0000-0000-000000000001'
+  '00000000-0000-0000-0000-000000000003'
 );
 RESET ROLE;
 
@@ -164,7 +197,7 @@ $$;
 UPDATE public.rnd_control_settings
 SET mutations_enabled_until = NULL,
     emergency_lock = true,
-    updated_by = '00000000-0000-0000-0000-000000000001',
+    updated_by = '00000000-0000-0000-0000-000000000003',
     updated_at = now()
 WHERE singleton;
 
@@ -189,14 +222,14 @@ RESET ROLE;
 UPDATE public.rnd_control_settings
 SET mutations_enabled_until = now() + interval '10 minutes',
     emergency_lock = false,
-    updated_by = '00000000-0000-0000-0000-000000000001',
+    updated_by = '00000000-0000-0000-0000-000000000003',
     updated_at = now()
 WHERE singleton;
 
 UPDATE public.rnd_control_settings
 SET mutations_enabled_until = NULL,
     emergency_lock = true,
-    updated_by = '00000000-0000-0000-0000-000000000001',
+    updated_by = '00000000-0000-0000-0000-000000000003',
     updated_at = now()
 WHERE singleton;
 
@@ -206,7 +239,7 @@ SELECT set_config(
   '00000000-0000-0000-0000-000000000002',
   false
 );
-DO $$
+DO $lock$
 BEGIN
   IF public.bridge_rnd_agent_claim_job(
        '00000000-0000-0000-0000-000000000010'
@@ -214,14 +247,14 @@ BEGIN
     RAISE EXCEPTION 'emergency_lock_claimed_live_job';
   END IF;
 END
-$$;
+$lock$;
 RESET ROLE;
 
 -- Re-open, then prove a changed deployed agent hash cannot claim the staged job.
 UPDATE public.rnd_control_settings
 SET mutations_enabled_until = now() + interval '10 minutes',
     emergency_lock = false,
-    updated_by = '00000000-0000-0000-0000-000000000001',
+    updated_by = '00000000-0000-0000-0000-000000000003',
     updated_at = now()
 WHERE singleton;
 
@@ -325,7 +358,7 @@ $$;
 UPDATE public.rnd_control_settings
 SET mutations_enabled_until = NULL,
     emergency_lock = true,
-    updated_by = '00000000-0000-0000-0000-000000000001',
+    updated_by = '00000000-0000-0000-0000-000000000003',
     updated_at = now()
 WHERE singleton;
 
@@ -353,7 +386,7 @@ INSERT INTO public.bridge_jobs(
   status, approval_required
 ) VALUES (
   '00000000-0000-0000-0000-000000000101',
-  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000003',
   'admin-rnd',
   '00000000-0000-0000-0000-000000000010',
   'job_start',
@@ -363,7 +396,9 @@ INSERT INTO public.bridge_jobs(
     'dry_run', false,
     'correlation_id', 'runtime-readonly-1',
     'recovery_hold', true,
-    'approved_agent_sha256', NULL
+    'approved_agent_sha256', NULL,
+    'human_actor_email', 'owner@example.invalid',
+    'human_actor_user_id', '00000000-0000-0000-0000-000000000001'
   ),
   'queued'::public.bridge_job_status,
   false
@@ -403,7 +438,7 @@ BEGIN
     UPDATE public.rnd_control_settings
     SET mutations_enabled_until = now() + interval '31 minutes',
         emergency_lock = false,
-        updated_by = '00000000-0000-0000-0000-000000000001',
+        updated_by = '00000000-0000-0000-0000-000000000003',
         updated_at = now()
     WHERE singleton;
     RAISE EXCEPTION 'expected_window_cap_rejection';
@@ -423,7 +458,7 @@ BEGIN
   BEGIN
     UPDATE public.rnd_control_settings
     SET recovery_hold = false,
-        updated_by = '00000000-0000-0000-0000-000000000001',
+        updated_by = '00000000-0000-0000-0000-000000000003',
         updated_at = now()
     WHERE singleton;
     RAISE EXCEPTION 'expected_recovery_hold_rejection';

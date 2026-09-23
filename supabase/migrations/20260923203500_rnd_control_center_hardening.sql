@@ -16,12 +16,13 @@ CREATE TABLE IF NOT EXISTS public.rnd_control_settings (
   mutations_enabled_until timestamptz,
   emergency_lock boolean NOT NULL DEFAULT true,
   recovery_hold boolean NOT NULL DEFAULT true CHECK (recovery_hold = true),
+  operator_user_id uuid REFERENCES auth.users(id) ON DELETE RESTRICT,
   updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-INSERT INTO public.rnd_control_settings(singleton, mutations_enabled_until, emergency_lock, recovery_hold)
-VALUES (true, NULL, true, true)
+INSERT INTO public.rnd_control_settings(singleton, mutations_enabled_until, emergency_lock, recovery_hold, operator_user_id)
+VALUES (true, NULL, true, true, NULL)
 ON CONFLICT (singleton) DO NOTHING;
 
 ALTER TABLE public.rnd_control_settings ENABLE ROW LEVEL SECURITY;
@@ -40,6 +41,10 @@ BEGIN
 
   IF NEW.emergency_lock AND NEW.mutations_enabled_until IS NOT NULL THEN
     RAISE EXCEPTION 'rnd_emergency_lock_window_conflict';
+  END IF;
+
+  IF NEW.mutations_enabled_until IS NOT NULL AND NEW.operator_user_id IS NULL THEN
+    RAISE EXCEPTION 'rnd_control_operator_required';
   END IF;
 
   IF NEW.mutations_enabled_until IS NOT NULL
@@ -375,6 +380,8 @@ BEGIN
        OR OLD.payload->>'correlation_id' IS DISTINCT FROM NEW.payload->>'correlation_id'
        OR OLD.payload->>'dry_run' IS DISTINCT FROM NEW.payload->>'dry_run'
        OR OLD.payload->>'approved_agent_sha256' IS DISTINCT FROM NEW.payload->>'approved_agent_sha256'
+       OR OLD.payload->>'human_actor_email' IS DISTINCT FROM NEW.payload->>'human_actor_email'
+       OR OLD.payload->>'human_actor_user_id' IS DISTINCT FROM NEW.payload->>'human_actor_user_id'
        OR OLD.workspace IS DISTINCT FROM NEW.workspace
        OR OLD.device_id IS DISTINCT FROM NEW.device_id
        OR OLD.user_id IS DISTINCT FROM NEW.user_id THEN
@@ -432,17 +439,25 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $$
+AS $rnd$
 DECLARE
   job_row public.bridge_jobs;
 BEGIN
-  IF _actor_user_id IS NULL OR NOT EXISTS (
-    SELECT 1
-    FROM public.user_roles r
-    WHERE r.user_id = _actor_user_id
-      AND r.role = 'admin'::public.app_role
-  ) THEN
-    RAISE EXCEPTION 'rnd_admin_required';
+  IF _actor_user_id IS NULL
+     OR NOT EXISTS (
+       SELECT 1
+       FROM public.rnd_control_settings s
+       WHERE s.singleton
+         AND s.operator_user_id = _actor_user_id
+         AND s.recovery_hold
+     )
+     OR NOT EXISTS (
+       SELECT 1
+       FROM auth.users u
+       WHERE u.id = _actor_user_id
+         AND COALESCE(u.raw_user_meta_data->>'kind', '') = 'ronsas-rnd-operator'
+     ) THEN
+    RAISE EXCEPTION 'rnd_control_operator_required';
   END IF;
 
   SELECT j.* INTO job_row
@@ -476,7 +491,9 @@ BEGIN
     jsonb_build_object(
       'operation', job_row.payload->>'operation',
       'correlation_id', job_row.payload->>'correlation_id',
-      'approved_agent_sha256', job_row.payload->>'approved_agent_sha256'
+      'approved_agent_sha256', job_row.payload->>'approved_agent_sha256',
+      'human_actor_email', job_row.payload->>'human_actor_email',
+      'human_actor_user_id', job_row.payload->>'human_actor_user_id'
     )
   );
 
@@ -487,7 +504,7 @@ BEGIN
     'correlation_id', job_row.payload->>'correlation_id'
   );
 END;
-$$;
+$rnd$;
 
 REVOKE ALL ON FUNCTION public.bridge_rnd_admin_approve_job(uuid, uuid)
   FROM PUBLIC, anon, authenticated;
