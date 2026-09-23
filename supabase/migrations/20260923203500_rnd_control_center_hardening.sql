@@ -432,7 +432,7 @@ RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   job_row public.bridge_jobs;
 BEGIN
@@ -487,7 +487,7 @@ BEGIN
     'correlation_id', job_row.payload->>'correlation_id'
   );
 END;
-$;
+$$;
 
 REVOKE ALL ON FUNCTION public.bridge_rnd_admin_approve_job(uuid, uuid)
   FROM PUBLIC, anon, authenticated;
