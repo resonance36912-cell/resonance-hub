@@ -22,6 +22,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  rnd-control-static:
+    name: Admin R&D static security + production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.3
+
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify Admin/R&D security invariants
+        run: bun test scripts/lib/rnd-control-security.test.ts
+
+      - name: Verify Railway production build
+        run: bun run build:railway
+
   rnd-control-db-runtime:
     name: Admin R&D Bridge migration + runtime
     runs-on: [self-hosted, Linux, X64, ronsas, ealiophin]
