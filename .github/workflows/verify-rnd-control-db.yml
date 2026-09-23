@@ -65,6 +65,23 @@ jobs:
           import urllib.parse
           import urllib.request
 
+          health_url = "https://ronsas-hub-fallback-production.up.railway.app/api/health"
+          try:
+              import json
+              health = json.loads(
+                  urllib.request.urlopen(health_url, timeout=20).read().decode("utf-8", "replace")
+              )
+              backend = health.get("backend") if isinstance(health, dict) else {}
+              if not isinstance(backend, dict):
+                  backend = {}
+              print("LIVE_BACKEND_PROVIDER=" + str(backend.get("provider", "")))
+              print("LIVE_SUPABASE_PROJECT_REF=" + str(backend.get("supabaseProjectRef", "")))
+              print("LIVE_SERVICE_ROLE_CONFIGURED=" + str(bool(backend.get("serviceRoleConfigured"))).lower())
+              print("LIVE_SOVEREIGN_PROXY_ENABLED=" + str(bool(backend.get("sovereignProxyEnabled"))).lower())
+          except Exception as exc:
+              print("LIVE_BACKEND_DIAGNOSTIC_ERROR=" + type(exc).__name__)
+              raise
+
           bases = [
               ("CUSTOM", "https://reson8.life/admin/login"),
               ("RAILWAY", "https://ronsas-hub-fallback-production.up.railway.app/admin/login"),
