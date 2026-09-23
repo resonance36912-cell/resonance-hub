@@ -2,7 +2,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$SupabaseUrl,
     [Parameter(Mandatory=$true)][string]$PublishableKey,
-    [Parameter(Mandatory=$true)][string]$DeviceToken,
     [Parameter(Mandatory=$true)][Guid]$DeviceId,
     [string]$Workspace = 'C:\Users\Ashley\Documents\GitHub\rons-sovereign-codebase',
     [switch]$EnableMutations
@@ -13,7 +12,6 @@ Set-StrictMode -Version Latest
 
 function Get-NormalizedSha256 {
     param([Parameter(Mandatory=$true)][string]$Path)
-
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         throw "Cannot hash missing file: $Path"
     }
@@ -51,72 +49,16 @@ if ($sourceHash -ne $deployedHash) {
     throw 'R&D agent deployment hash mismatch.'
 }
 
-if ($DeviceToken -notmatch '^[0-9a-f]{96}
-
-$config = [ordered]@{
-    supabase_url = $SupabaseUrl.TrimEnd('/')
-    publishable_key = $PublishableKey
-    device_id = $DeviceId.ToString()
-    workspace = $workspaceFull
-    mutations_enabled = [bool]$EnableMutations
-    poll_seconds = 10
-    recovery_hold = $true
-    deployed_agent_sha256 = $deployedHash
-    installed_at = (Get-Date).ToUniversalTime().ToString('o')
-}
-$config | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $configPath -Encoding UTF8
-
-$userId = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$actionParams = @{
-    Execute = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-    Argument = ('-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $agentPath + '"')
-}
-$action = New-ScheduledTaskAction @actionParams
-$trigger = New-ScheduledTaskTrigger -AtLogOn -User $userId
-$settingsParams = @{
-    StartWhenAvailable = $true
-    MultipleInstances = 'IgnoreNew'
-    RestartCount = 5
-    RestartInterval = (New-TimeSpan -Minutes 1)
-    ExecutionTimeLimit = [TimeSpan]::Zero
-}
-$settings = New-ScheduledTaskSettingsSet @settingsParams
-$principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType Interactive -RunLevel Limited
-
-$registerParams = @{
-    TaskName = $taskName
-    Action = $action
-    Trigger = $trigger
-    Settings = $settings
-    Principal = $principal
-    Force = $true
-}
-Register-ScheduledTask @registerParams | Out-Null
-Start-ScheduledTask -TaskName $taskName
-Start-Sleep -Seconds 2
-
-$task = Get-ScheduledTask -TaskName $taskName
-$taskInfo = Get-ScheduledTaskInfo -TaskName $taskName
-
-[pscustomobject]@{
-    TaskName = $taskName
-    State = $task.State
-    UserId = $task.Principal.UserId
-    LastResult = $taskInfo.LastTaskResult
-    AgentPath = $agentPath
-    AgentSha256 = $deployedHash
-    ConfigPath = $configPath
-    CredentialPath = $credentialPath
-    MutationsEnabled = [bool]$EnableMutations
-    RecoveryHold = $true
-} | Format-List
-) {
+$secureToken = Read-Host -Prompt 'Paste the one-time R&D device token' -AsSecureString
+$probeCredential = [PSCredential]::new('ronsas-rnd-device', $secureToken)
+$tokenProbe = $probeCredential.GetNetworkCredential().Password
+if ($tokenProbe -notmatch '^[0-9a-f]{96}$') {
+    $tokenProbe = $null
     throw 'The one-time R&D device token is invalid.'
 }
-$secureToken = ConvertTo-SecureString -String $DeviceToken -AsPlainText -Force
+$tokenProbe = $null
 $credential = [PSCredential]::new('ronsas-rnd-device', $secureToken)
 $credential | Export-Clixml -LiteralPath $credentialPath -Force
-$DeviceToken = $null
 
 $config = [ordered]@{
     supabase_url = $SupabaseUrl.TrimEnd('/')
@@ -132,31 +74,27 @@ $config = [ordered]@{
 $config | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $configPath -Encoding UTF8
 
 $userId = [Security.Principal.WindowsIdentity]::GetCurrent().Name
-$actionParams = @{
-    Execute = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
-    Argument = ('-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $agentPath + '"')
-}
-$action = New-ScheduledTaskAction @actionParams
+$action = New-ScheduledTaskAction \
+    -Execute 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' \
+    -Argument ('-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "' + $agentPath + '"')
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $userId
-$settingsParams = @{
-    StartWhenAvailable = $true
-    MultipleInstances = 'IgnoreNew'
-    RestartCount = 5
-    RestartInterval = (New-TimeSpan -Minutes 1)
-    ExecutionTimeLimit = [TimeSpan]::Zero
-}
-$settings = New-ScheduledTaskSettingsSet @settingsParams
+$settings = New-ScheduledTaskSettingsSet \
+    -StartWhenAvailable \
+    -MultipleInstances IgnoreNew \
+    -RestartCount 5 \
+    -RestartInterval (New-TimeSpan -Minutes 1) \
+    -ExecutionTimeLimit ([TimeSpan]::Zero)
 $principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType Interactive -RunLevel Limited
 
-$registerParams = @{
-    TaskName = $taskName
-    Action = $action
-    Trigger = $trigger
-    Settings = $settings
-    Principal = $principal
-    Force = $true
-}
-Register-ScheduledTask @registerParams | Out-Null
+Register-ScheduledTask \
+    -TaskName $taskName \
+    -Action $action \
+    -Trigger $trigger \
+    -Settings $settings \
+    -Principal $principal \
+    -Description 'RONSAS Admin/R&D allowlisted ops agent. Recovery HOLD enforced.' \
+    -Force | Out-Null
+
 Start-ScheduledTask -TaskName $taskName
 Start-Sleep -Seconds 2
 
