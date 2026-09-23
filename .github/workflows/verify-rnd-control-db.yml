@@ -46,6 +46,31 @@ jobs:
       - name: Verify Railway production build
         run: bun run build:railway
 
+      - name: Probe live public backend reference
+        shell: python
+        run: |
+          import re
+          import urllib.parse
+          import urllib.request
+
+          base = "https://reson8.life/admin/login"
+          try:
+              html = urllib.request.urlopen(base, timeout=20).read().decode("utf-8", "replace")
+              urls = [urllib.parse.urljoin(base, src) for src in re.findall(r'<script[^>]+src=["\']([^"\']+)', html)]
+              refs = set(re.findall(r'https://([a-z0-9]+)\.supabase\.co', html))
+              for url in urls[:40]:
+                  try:
+                      body = urllib.request.urlopen(url, timeout=20).read().decode("utf-8", "replace")
+                      refs.update(re.findall(r'https://([a-z0-9]+)\.supabase\.co', body))
+                  except Exception:
+                      pass
+              print("LIVE_LOGIN_REACHABLE=true")
+              print("LIVE_SUPABASE_PROJECT_REFS=" + ",".join(sorted(refs)))
+          except Exception as exc:
+              print("LIVE_LOGIN_REACHABLE=false")
+              print("LIVE_SUPABASE_PROJECT_REFS=")
+              print("LIVE_PROBE_ERROR=" + type(exc).__name__)
+
   rnd-control-db-runtime:
     name: Admin R&D Bridge migration + runtime
     runs-on: [self-hosted, Linux, X64, ronsas, ealiophin]
