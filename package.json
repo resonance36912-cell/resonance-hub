@@ -47,7 +47,10 @@
     "start:local": "node .output-local/server/index.mjs",
     "datanest:import:jsonl": "bun run scripts/datanest/import-jsonl.ts",
     "datanest:import:chatgpt": "bun run scripts/datanest/import-chatgpt-export.ts",
-    "datanest:import:git": "bun run scripts/datanest/import-git-history.ts"
+    "datanest:import:git": "bun run scripts/datanest/import-git-history.ts",
+    "build:railway": "node --test scripts/railway-build-contract.test.mjs && bun run prebuild && vite --config vite.railway.config.ts build",
+    "start:railway": "node .output-railway/server/index.mjs",
+    "test:railway-config": "node --test scripts/railway-build-contract.test.mjs"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "1.56.0",

@@ -56,3 +56,4 @@ supabase/.temp/
 src/routeTree.gen.ts
 
 reports/discernment-violations.json
+.output-railway/
