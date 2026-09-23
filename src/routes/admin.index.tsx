@@ -10,10 +10,7 @@ import { listPayfastAudit } from "@/lib/payfast-audit.functions";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({
-    meta: [
-      { title: "Admin — Resonance" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "Admin — Resonance" }, { name: "robots", content: "noindex, nofollow" }],
   }),
   beforeLoad: async () => {
     const { data, error } = await ronsAuth.getUser();
@@ -90,18 +87,62 @@ function AdminHome() {
   }
 
   const sections = [
-    { to: "/admin/control-center", label: "RONS Control Center", desc: "AI development council, governance gates, provider costs, and promotion workspace." },
-    { to: "/admin/rd", label: "R&D Bridge", desc: "Governed ChatGPT/MCP development access, Nova + DataNest context, and remote-evidence boundary." },
-    { to: "/admin/rnd", label: "Admin / R&D", desc: "Sovereign Ealiophin diagnostics, audited jobs, and gated optimization controls." },
-    { to: "/admin/revenue", label: "Revenue & Profit", desc: "Per-subscription revenue, costs, and profit." },
-    { to: "/admin/billing", label: "Billing Overview", desc: "Cross-app subscriptions, wallets, and ledger activity." },
-    { to: "/admin/credits", label: "Credit Adjustments", desc: "Add or subtract subscription credits with a full audit trail." },
-    { to: "/admin/payfast-audit", label: "PayFast Audit", desc: "Launch ↔ ITN trace and amount reconciliation." },
-    { to: "/admin/webhooks", label: "Raw ITN Log", desc: "Every ITN webhook received from PayFast." },
-    { to: "/admin/entitlement-diagnostics", label: "Entitlement Diagnostics", desc: "Last 50 entitlement checks across spoke apps." },
-    { to: "/admin/rop", label: "Optimization Protocol", desc: "Register spoke apps, mint signing keys, review suggestions and outcomes." },
+    {
+      to: "/admin/control-center",
+      label: "RONS Control Center",
+      desc: "AI development council, governance gates, provider costs, and promotion workspace.",
+    },
+    {
+      to: "/admin/rd",
+      label: "R&D Bridge",
+      desc: "Governed ChatGPT/MCP development access, Nova + DataNest context, and remote-evidence boundary.",
+    },
+    {
+      to: "/admin/rnd",
+      label: "Admin / R&D",
+      desc: "Sovereign Ealiophin diagnostics, audited jobs, and gated optimization controls.",
+    },
+    {
+      to: "/admin/revenue",
+      label: "Revenue & Profit",
+      desc: "Per-subscription revenue, costs, and profit.",
+    },
+    {
+      to: "/admin/billing",
+      label: "Billing Overview",
+      desc: "Cross-app subscriptions, wallets, and ledger activity.",
+    },
+    {
+      to: "/admin/credits",
+      label: "Credit Adjustments",
+      desc: "Add or subtract subscription credits with a full audit trail.",
+    },
+    {
+      to: "/admin/payfast-audit",
+      label: "PayFast Audit",
+      desc: "Launch ↔ ITN trace and amount reconciliation.",
+    },
+    {
+      to: "/admin/webhooks",
+      label: "Raw ITN Log",
+      desc: "Every ITN webhook received from PayFast.",
+    },
+    {
+      to: "/admin/entitlement-diagnostics",
+      label: "Entitlement Diagnostics",
+      desc: "Last 50 entitlement checks across spoke apps.",
+    },
+    {
+      to: "/admin/rop",
+      label: "Optimization Protocol",
+      desc: "Register spoke apps, mint signing keys, review suggestions and outcomes.",
+    },
     { to: "/admin/emails", label: "Email Queue", desc: "Transactional sends and delivery status." },
-    { to: "/admin/email-domain", label: "Email Domain", desc: "Sending domain configuration and DNS." },
+    {
+      to: "/admin/email-domain",
+      label: "Email Domain",
+      desc: "Sending domain configuration and DNS.",
+    },
   ] as const;
 
   return (
@@ -109,10 +150,13 @@ function AdminHome() {
       <div className="mx-auto max-w-7xl px-6 py-12">
         <header className="mb-10 flex items-end justify-between flex-wrap gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Resonance Admin</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              Resonance Admin
+            </p>
             <h1 className="mt-2 text-3xl font-semibold">Sales Overview</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Live view of subscriptions, PayFast payments, and site traffic. Auto-refreshes every 15s.
+              Live view of subscriptions, PayFast payments, and site traffic. Auto-refreshes every
+              15s.
             </p>
           </div>
           <button
@@ -145,7 +189,10 @@ function AdminHome() {
 
             <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
               <Kpi label="Visits (24h)" value={visits ? String(visits.total24h) : "—"} />
-              <Kpi label="Unique sessions (24h)" value={visits ? String(visits.uniqueSessions24h) : "—"} />
+              <Kpi
+                label="Unique sessions (24h)"
+                value={visits ? String(visits.uniqueSessions24h) : "—"}
+              />
               <Kpi label="Visits (7d)" value={visits ? String(visits.total7d) : "—"} />
               <Kpi label="Visits (all time)" value={visits ? String(visits.totalAll) : "—"} />
             </section>
@@ -160,7 +207,9 @@ function AdminHome() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {kpis.byApp.map(([app, v]) => (
                     <div key={app} className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-xs uppercase tracking-wider text-muted-foreground">{app}</p>
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                        {app}
+                      </p>
                       <p className="mt-1 text-xl font-semibold">{zar(v.revenue)}</p>
                       <p className="text-xs text-muted-foreground">{v.count} active</p>
                     </div>
@@ -195,14 +244,14 @@ function AdminHome() {
                             {new Date(r.created_at).toLocaleString()}
                           </td>
                           <td className="px-4 py-3 text-xs">
-                            {r.user_email ?? <span className="font-mono">{r.user_id.slice(0, 8)}…</span>}
+                            {r.user_email ?? (
+                              <span className="font-mono">{r.user_id.slice(0, 8)}…</span>
+                            )}
                           </td>
                           <td className="px-4 py-3">{r.app}</td>
                           <td className="px-4 py-3">{r.tier}</td>
                           <td className="px-4 py-3 text-xs">{r.status}</td>
-                          <td className="px-4 py-3 text-right font-mono">
-                            {zar(r.amount_cents)}
-                          </td>
+                          <td className="px-4 py-3 text-right font-mono">{zar(r.amount_cents)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -232,16 +281,15 @@ function AdminHome() {
                       </thead>
                       <tbody>
                         {traces.slice(0, 8).map((t) => {
-                          const when =
-                            t.launch?.created_at ?? t.itns[0]?.received_at ?? "";
+                          const when = t.launch?.created_at ?? t.itns[0]?.received_at ?? "";
                           const badge =
                             t.match === "match"
                               ? "text-emerald-400"
                               : t.match === "mismatch"
-                              ? "text-red-400"
-                              : t.match === "rejected"
-                              ? "text-red-400"
-                              : "text-muted-foreground";
+                                ? "text-red-400"
+                                : t.match === "rejected"
+                                  ? "text-red-400"
+                                  : "text-muted-foreground";
                           return (
                             <tr key={t.m_payment_id} className="border-t border-border">
                               <td className="px-3 py-2 font-mono text-xs">

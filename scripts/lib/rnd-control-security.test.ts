@@ -17,9 +17,7 @@ const installer = read("ops/ealiophin/control-center/INSTALL-RONS-RND-AGENT.ps1"
 const functions = read("src/lib/rnd-control.functions.ts");
 const route = read("src/routes/admin.rnd.tsx");
 const authMiddleware = read("src/lib/rons-auth-middleware.ts");
-const migration = read(
-  "supabase/migrations/20260923203500_rnd_control_center_hardening.sql",
-);
+const migration = read("supabase/migrations/20260923203500_rnd_control_center_hardening.sql");
 const dbVerification = read("scripts/verify-rnd-control-db.sql");
 
 describe("R&D operation allowlist", () => {
@@ -119,7 +117,9 @@ describe("server-side R&D controls", () => {
   });
 
   test("state-changing server functions use the Hub hosted/sovereign auth boundary", () => {
-    expect((functions.match(/\.middleware\(\[requireRonsAuth\]\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
+    expect(
+      (functions.match(/\.middleware\(\[requireRonsAuth\]\)/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(6);
     expect(functions).toContain("resolveRonsRequestCredential");
     expect(functions).toContain("fetchBackendUserEmail");
     expect(authMiddleware).toContain("resolveRonsRequestUserId");
@@ -274,9 +274,7 @@ describe("database and UI containment", () => {
     expect(agent).toContain("bridge_rnd_agent_complete_job");
     expect(agent).not.toContain("-Function 'bridge_connector_claim_job'");
     expect(agent).not.toContain("-Function 'bridge_connector_complete_job'");
-    expect(migration).not.toContain(
-      "REVOKE EXECUTE ON FUNCTION public.bridge_connector_claim_job",
-    );
+    expect(migration).not.toContain("REVOKE EXECUTE ON FUNCTION public.bridge_connector_claim_job");
   });
 
   test("admin UI exposes only named buttons, not a command textbox", () => {

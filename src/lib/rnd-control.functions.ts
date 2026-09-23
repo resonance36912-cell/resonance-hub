@@ -58,8 +58,7 @@ async function assertRndAdmin(context: AuthContext) {
   const request = getRequest();
   const credential = request ? resolveRonsRequestCredential(request) : null;
   const email = credential ? await fetchBackendUserEmail(credential) : null;
-  const rndAllowlist =
-    process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
+  const rndAllowlist = process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
   if (!isRndEmailAllowed(email, rndAllowlist)) {
     throw new Error("Forbidden: R&D control center email is not allowlisted");
   }
@@ -137,11 +136,9 @@ async function readMutationControl(admin: any) {
 function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
   const agent = device?.metadata?.rnd_agent;
   const lastSeen = typeof device?.last_seen_at === "string" ? Date.parse(device.last_seen_at) : NaN;
-  const observedAt =
-    typeof agent?.observed_at === "string" ? Date.parse(agent.observed_at) : NaN;
+  const observedAt = typeof agent?.observed_at === "string" ? Date.parse(agent.observed_at) : NaN;
   const online = Number.isFinite(lastSeen) && Date.now() - lastSeen <= 90_000;
-  const scopedHeartbeatFresh =
-    Number.isFinite(observedAt) && Date.now() - observedAt <= 90_000;
+  const scopedHeartbeatFresh = Number.isFinite(observedAt) && Date.now() - observedAt <= 90_000;
   const hash = typeof agent?.agent_sha256 === "string" ? agent.agent_sha256 : "";
   const hashValid = /^[0-9a-f]{64}$/.test(hash);
   const expectedHashValid =
@@ -151,12 +148,7 @@ function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
   const recoveryHold = agent?.recovery_hold === true;
 
   return {
-    ok:
-      online &&
-      scopedHeartbeatFresh &&
-      hashMatches &&
-      localMutationsEnabled &&
-      recoveryHold,
+    ok: online && scopedHeartbeatFresh && hashMatches && localMutationsEnabled && recoveryHold,
     online,
     scopedHeartbeatFresh,
     hashValid,
@@ -325,8 +317,7 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
     const devices = (devicesResult.data ?? []).map((device: any) => ({
       ...device,
       online:
-        typeof device.last_seen_at === "string" &&
-        now - Date.parse(device.last_seen_at) <= 90_000,
+        typeof device.last_seen_at === "string" && now - Date.parse(device.last_seen_at) <= 90_000,
     }));
 
     return {
@@ -499,9 +490,7 @@ export const queueRndOperation = createServerFn({ method: "POST" })
         status,
         approval_required: approvalRequired,
       })
-      .select(
-        "id,device_id,status,approval_required,payload,created_at,workspace",
-      )
+      .select("id,device_id,status,approval_required,payload,created_at,workspace")
       .single();
     if (jobError) throw new Error(jobError.message);
 
@@ -623,9 +612,7 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
     }
 
     const enabledUntil =
-      data.minutes === 0
-        ? null
-        : new Date(Date.now() + data.minutes * 60_000).toISOString();
+      data.minutes === 0 ? null : new Date(Date.now() + data.minutes * 60_000).toISOString();
     const { data: updatedSetting, error } = await admin
       .from("rnd_control_settings")
       .update({
@@ -646,8 +633,7 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
     await admin.from("bridge_audit_events").insert({
       actor_user_id: context.userId,
       client_id: "admin-rnd",
-      event_type:
-        data.minutes === 0 ? "rnd.mutation_window_closed" : "rnd.mutation_window_opened",
+      event_type: data.minutes === 0 ? "rnd.mutation_window_closed" : "rnd.mutation_window_opened",
       payload: {
         minutes: data.minutes,
         enabled_until: enabledUntil,
@@ -699,9 +685,7 @@ export const cancelRndOperation = createServerFn({ method: "POST" })
       .from("bridge_jobs")
       .update({
         cancel_requested: true,
-        ...(terminal
-          ? { status: "cancelled", completed_at: new Date().toISOString() }
-          : {}),
+        ...(terminal ? { status: "cancelled", completed_at: new Date().toISOString() } : {}),
       })
       .eq("id", data.jobId);
     if (updateError) throw new Error(updateError.message);
