@@ -59,7 +59,7 @@ async function assertRndAdmin(context: AuthContext) {
   const request = getRequest();
   const credential = request ? resolveRonsRequestCredential(request) : null;
   const email = credential ? await fetchBackendUserEmail(credential) : null;
-  const rndAllowlist = process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
+  const rndAllowlist = process.env.RONSAS_RND_ALLOWED_EMAILS;
   if (!isRndEmailAllowed(email, rndAllowlist)) {
     throw new Error("Forbidden: R&D control center email is not allowlisted");
   }
