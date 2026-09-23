@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { fetchBackendUserEmail } from "@/lib/backend-provider.server";
+import { requireRonsAuth, resolveRonsRequestCredential } from "@/lib/rons-auth-middleware";
 import {
   RND_OPERATIONS,
   assertRndOperationAllowed,
@@ -34,9 +36,8 @@ const MutationWindowInput = z.object({
 });
 
 type AuthContext = {
-  supabase: any;
   userId: string;
-  claims?: Record<string, unknown>;
+  authProvider?: "supabase" | "sovereign";
 };
 
 async function db(): Promise<any> {
@@ -44,19 +45,19 @@ async function db(): Promise<any> {
   return supabaseAdmin as any;
 }
 
-function claimEmail(context: AuthContext): string | null {
-  const email = context.claims?.email;
-  return typeof email === "string" ? email : null;
-}
-
 async function assertRndAdmin(context: AuthContext) {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error || !data) throw new Error("Forbidden");
+  const admin = await db();
+  const { data: role, error: roleError } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", context.userId)
+    .eq("role", "admin")
+    .maybeSingle();
+  if (roleError || !role) throw new Error("Forbidden");
 
-  const email = claimEmail(context);
+  const request = getRequest();
+  const credential = request ? resolveRonsRequestCredential(request) : null;
+  const email = credential ? await fetchBackendUserEmail(credential) : null;
   const rndAllowlist =
     process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
   if (!isRndEmailAllowed(email, rndAllowlist)) {
@@ -270,14 +271,14 @@ async function getRecoveryWorkflowState() {
 }
 
 export const checkRndAccess = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
     return { allowed: true as const, email: actor.email };
   });
 
 export const getRndControlSnapshot = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
     const admin = await db();
@@ -345,7 +346,7 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
   });
 
 export const bootstrapRndAgent = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .inputValidator((value: unknown) => DeviceInput.parse(value))
   .handler(async ({ data, context }) => {
     await assertRndAdmin(context as AuthContext);
@@ -434,7 +435,7 @@ export const bootstrapRndAgent = createServerFn({ method: "POST" })
   });
 
 export const queueRndOperation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .inputValidator((value: unknown) => QueueInput.parse(value))
   .handler(async ({ data, context }) => {
     await assertRndAdmin(context as AuthContext);
@@ -522,7 +523,7 @@ export const queueRndOperation = createServerFn({ method: "POST" })
   });
 
 export const approveRndOperation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .inputValidator((value: unknown) => JobInput.parse(value))
   .handler(async ({ data, context }) => {
     await assertRndAdmin(context as AuthContext);
@@ -603,7 +604,7 @@ export const approveRndOperation = createServerFn({ method: "POST" })
   });
 
 export const setRndMutationWindow = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .inputValidator((value: unknown) => MutationWindowInput.parse(value))
   .handler(async ({ data, context }) => {
     await assertRndAdmin(context as AuthContext);
@@ -667,7 +668,7 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
   });
 
 export const cancelRndOperation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .inputValidator((value: unknown) => JobInput.parse(value))
   .handler(async ({ data, context }) => {
     await assertRndAdmin(context as AuthContext);
@@ -725,7 +726,7 @@ export const cancelRndOperation = createServerFn({ method: "POST" })
   });
 
 export const getRndJobResult = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireRonsAuth])
   .inputValidator((value: unknown) => JobInput.parse(value))
   .handler(async ({ data, context }) => {
     await assertRndAdmin(context as AuthContext);
