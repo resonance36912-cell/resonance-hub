@@ -491,13 +491,13 @@ function RndControlCenter() {
                           ? "Privileged runtime locked"
                           : !device
                             ? "Enroll agent first"
-                          : operation.mutates && !dryRun && !data.mutationsEnabled
-                            ? "Open mutation window first"
-                            : operation.mutates && !dryRun && !localLiveGate
-                              ? "Agent live gate required"
-                              : operation.mutates && !dryRun
-                                ? "Stage for approval"
-                                : "Queue"}
+                            : operation.mutates && !dryRun && !data.mutationsEnabled
+                              ? "Open mutation window first"
+                              : operation.mutates && !dryRun && !localLiveGate
+                                ? "Agent live gate required"
+                                : operation.mutates && !dryRun
+                                  ? "Stage for approval"
+                                  : "Queue"}
                       </button>
                     </article>
                   );
