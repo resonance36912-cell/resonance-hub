@@ -206,7 +206,7 @@ SELECT set_config(
   '00000000-0000-0000-0000-000000000002',
   false
 );
-DO $
+DO $$
 BEGIN
   IF public.bridge_rnd_agent_claim_job(
        '00000000-0000-0000-0000-000000000010'
@@ -214,7 +214,7 @@ BEGIN
     RAISE EXCEPTION 'emergency_lock_claimed_live_job';
   END IF;
 END
-$;
+$$;
 RESET ROLE;
 
 -- Re-open, then prove a changed deployed agent hash cannot claim the staged job.
