@@ -46,6 +46,18 @@ jobs:
       - name: Verify Railway production build
         run: bun run build:railway
 
+      - name: Compute approved R&D agent identity
+        shell: python
+        run: |
+          import hashlib
+          from pathlib import Path
+
+          source = Path("ops/ealiophin/control-center/RONS-RnD-Agent.ps1").read_text(
+              encoding="utf-8"
+          )
+          normalized = source.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+          print("RND_APPROVED_AGENT_SHA256=" + hashlib.sha256(normalized).hexdigest())
+
       - name: Probe live public backend reference
         shell: python
         run: |
