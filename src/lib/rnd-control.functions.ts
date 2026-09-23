@@ -46,8 +46,15 @@ function serviceRoleConfigured(): boolean {
   return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
 }
 
+function privilegedRuntimeEnabled(): boolean {
+  return (
+    process.env.RONSAS_RND_PRIVILEGED_MODE?.trim().toLowerCase() === "enabled" &&
+    serviceRoleConfigured()
+  );
+}
+
 async function db(): Promise<any> {
-  if (!serviceRoleConfigured()) {
+  if (!privilegedRuntimeEnabled()) {
     throw new Error(
       "Privileged R&D runtime is locked on this deployment. Use the browser/MCP R&D path until the production control database is explicitly connected.",
     );
@@ -70,7 +77,7 @@ async function userDb(): Promise<any> {
 }
 
 async function assertRndAdmin(context: AuthContext) {
-  const client = serviceRoleConfigured() ? await db() : await userDb();
+  const client = privilegedRuntimeEnabled() ? await db() : await userDb();
   const { data: role, error: roleError } = await client
     .from("user_roles")
     .select("role")
@@ -298,7 +305,7 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
 
-    if (!serviceRoleConfigured()) {
+    if (!privilegedRuntimeEnabled()) {
       return {
         actor: { email: actor.email },
         runtimeMode: "browser_mcp" as const,

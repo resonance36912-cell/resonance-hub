@@ -66,6 +66,14 @@ describe("R&D identity gate", () => {
     expect(isRndEmailAllowed(null, "owner@example.com")).toBe(false);
   });
 
+  test("privileged runtime requires an explicit gate in addition to the service-role secret", () => {
+    expect(functions).toContain("RONSAS_RND_PRIVILEGED_MODE");
+    expect(functions).toContain('=== "enabled"');
+    expect(functions).toContain("privilegedRuntimeEnabled()");
+    expect(functions).toContain('runtimeMode: "browser_mcp"');
+    expect(functions).toContain('runtimeMode: "privileged"');
+  });
+
   test("mutation environment parser only accepts literal true", () => {
     expect(rndMutationsEnabled("true")).toBe(true);
     expect(rndMutationsEnabled("TRUE")).toBe(false);
