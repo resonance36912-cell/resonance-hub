@@ -190,7 +190,7 @@ async function githubGet(path: string): Promise<any> {
 async function getExpectedRndAgentSha() {
   const repo = "resonance36912-cell/resonance-hub";
   const path = "ops/ealiophin/control-center/RONS-RnD-Agent.ps1";
-  const file = await githubGet(`/repos/${repo}/contents/${path}?ref=ronsas%2Fealiophin-production`);
+  const file = await githubGet(`/repos/${repo}/contents/${path}?ref=main`);
   if (file?.unavailable) {
     return { sha256: null, sourceBlobSha: null, error: file.reason };
   }
