@@ -100,7 +100,7 @@ describe("server-side R&D controls", () => {
     expect(functions).toContain("activeRuns");
   });
 
-  test("binds live mutations to the approved main-branch agent hash", () => {
+  test("binds live mutations to the approved production-lineage agent hash", () => {
     expect(functions).toContain("getExpectedRndAgentSha");
     expect(functions).toContain("approved_agent_sha256");
     expect(functions).toContain("stagedAgentSha !== approvedAgent.sha256");
