@@ -2,7 +2,7 @@ name: Verify Admin R&D control database
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, ronsas/ealiophin-production]
     paths:
       - "supabase/migrations/20260527142651_24003604-7eb1-44e4-985f-8ce7fcb147a0.sql"
       - "supabase/migrations/20260922071500_bridge_execution_core.sql"
