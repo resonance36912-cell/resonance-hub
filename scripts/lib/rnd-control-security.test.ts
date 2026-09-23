@@ -170,10 +170,9 @@ describe("agent execution safety", () => {
 
 describe("agent credential handling", () => {
   test("installer stores the one-time device token with DPAPI-backed CLIXML", () => {
-    expect(installer).toContain("[string]$DeviceToken");
-    expect(installer).toContain("ConvertTo-SecureString");
+    expect(installer).toContain("Read-Host -Prompt 'Paste the one-time R&D device token' -AsSecureString");
     expect(installer).toContain("Export-Clixml");
-    expect(installer).toContain("$DeviceToken = $null");
+    expect(installer).not.toContain("[string]$DeviceToken");
     expect(installer).not.toContain("AgentPassword");
   });
 
@@ -193,7 +192,7 @@ describe("agent credential handling", () => {
     expect(agent).toContain("-Function 'rnd_agent_complete_job'");
     expect(agent).not.toContain("auth/v1/token?grant_type=password");
     expect(route).toContain("One-time device token");
-    expect(route).toContain("-DeviceToken");
+    expect(route).not.toContain("-DeviceToken");
   });
 });
 
