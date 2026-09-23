@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { fetchBackendUserEmail } from "@/lib/backend-provider.server";
@@ -40,14 +42,43 @@ type AuthContext = {
   authProvider?: "supabase" | "sovereign";
 };
 
+function serviceRoleConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
+
+function privilegedRuntimeEnabled(): boolean {
+  return (
+    process.env.RONSAS_RND_PRIVILEGED_MODE?.trim().toLowerCase() === "enabled" &&
+    serviceRoleConfigured()
+  );
+}
+
 async function db(): Promise<any> {
+  if (!privilegedRuntimeEnabled()) {
+    throw new Error(
+      "Privileged R&D runtime is locked on this deployment. Use the browser/MCP R&D path until the production control database is explicitly connected.",
+    );
+  }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as any;
 }
 
+async function userDb(): Promise<any> {
+  const request = getRequest();
+  const credential = request ? resolveRonsRequestCredential(request) : null;
+  const url = process.env.SUPABASE_URL?.trim();
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!credential || !url || !key) throw new Error("Unauthorized");
+
+  return createClient(url, key, {
+    global: { headers: { Authorization: `Bearer ${credential}` } },
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+  });
+}
+
 async function assertRndAdmin(context: AuthContext) {
-  const admin = await db();
-  const { data: role, error: roleError } = await admin
+  const client = privilegedRuntimeEnabled() ? await db() : await userDb();
+  const { data: role, error: roleError } = await client
     .from("user_roles")
     .select("role")
     .eq("user_id", context.userId)
@@ -58,8 +89,7 @@ async function assertRndAdmin(context: AuthContext) {
   const request = getRequest();
   const credential = request ? resolveRonsRequestCredential(request) : null;
   const email = credential ? await fetchBackendUserEmail(credential) : null;
-  const rndAllowlist =
-    process.env.RONSAS_RND_ALLOWED_EMAILS ?? process.env.ADMIN_BOOTSTRAP_EMAILS;
+  const rndAllowlist = process.env.RONSAS_RND_ALLOWED_EMAILS;
   if (!isRndEmailAllowed(email, rndAllowlist)) {
     throw new Error("Forbidden: R&D control center email is not allowlisted");
   }
@@ -137,11 +167,9 @@ async function readMutationControl(admin: any) {
 function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
   const agent = device?.metadata?.rnd_agent;
   const lastSeen = typeof device?.last_seen_at === "string" ? Date.parse(device.last_seen_at) : NaN;
-  const observedAt =
-    typeof agent?.observed_at === "string" ? Date.parse(agent.observed_at) : NaN;
+  const observedAt = typeof agent?.observed_at === "string" ? Date.parse(agent.observed_at) : NaN;
   const online = Number.isFinite(lastSeen) && Date.now() - lastSeen <= 90_000;
-  const scopedHeartbeatFresh =
-    Number.isFinite(observedAt) && Date.now() - observedAt <= 90_000;
+  const scopedHeartbeatFresh = Number.isFinite(observedAt) && Date.now() - observedAt <= 90_000;
   const hash = typeof agent?.agent_sha256 === "string" ? agent.agent_sha256 : "";
   const hashValid = /^[0-9a-f]{64}$/.test(hash);
   const expectedHashValid =
@@ -151,12 +179,7 @@ function readAgentLiveGate(device: any, expectedAgentSha256: string | null) {
   const recoveryHold = agent?.recovery_hold === true;
 
   return {
-    ok:
-      online &&
-      scopedHeartbeatFresh &&
-      hashMatches &&
-      localMutationsEnabled &&
-      recoveryHold,
+    ok: online && scopedHeartbeatFresh && hashMatches && localMutationsEnabled && recoveryHold,
     online,
     scopedHeartbeatFresh,
     hashValid,
@@ -197,7 +220,7 @@ async function githubGet(path: string): Promise<any> {
 async function getExpectedRndAgentSha() {
   const repo = "resonance36912-cell/resonance-hub";
   const path = "ops/ealiophin/control-center/RONS-RnD-Agent.ps1";
-  const file = await githubGet(`/repos/${repo}/contents/${path}?ref=ronsas%2Fealiophin-production`);
+  const file = await githubGet(`/repos/${repo}/contents/${path}?ref=main`);
   if (file?.unavailable) {
     return { sha256: null, sourceBlobSha: null, error: file.reason };
   }
@@ -281,6 +304,49 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
   .middleware([requireRonsAuth])
   .handler(async ({ context }) => {
     const actor = await assertRndAdmin(context as AuthContext);
+
+    if (!privilegedRuntimeEnabled()) {
+      return {
+        actor: { email: actor.email },
+        runtimeMode: "browser_mcp" as const,
+        browserMcp: {
+          endpoint: "https://reson8.life/mcp",
+          railwayFallback: "https://ronsas-hub-fallback-production.up.railway.app/mcp",
+          adminGuide: "/admin/rd",
+        },
+        mutationsEnabled: false,
+        mutationControl: {
+          enabled: false,
+          enabledUntil: null,
+          emergencyKill: true,
+          emergencyLock: true,
+          environmentKill: false,
+          recoveryHold: true,
+          updatedAt: null,
+          updatedBy: null,
+        },
+        recoveryHold: true,
+        workspace: workspacePath(),
+        operations: RND_OPERATIONS,
+        devices: [],
+        jobs: [],
+        audit: [],
+        githubRecovery: {
+          state: "hold",
+          activeRuns: [],
+          error:
+            "Privileged recovery integration is intentionally disabled on the browser/MCP runtime.",
+        },
+        approvedAgent: {
+          sha256: null,
+          sourceBlobSha: null,
+          error:
+            "Agent execution remains locked until the privileged production control database is explicitly connected.",
+        },
+        fetchedAt: new Date().toISOString(),
+      };
+    }
+
     const admin = await db();
 
     const [devicesResult, jobsResult, auditResult, mutationControl, recovery, approvedAgent] =
@@ -325,12 +391,17 @@ export const getRndControlSnapshot = createServerFn({ method: "GET" })
     const devices = (devicesResult.data ?? []).map((device: any) => ({
       ...device,
       online:
-        typeof device.last_seen_at === "string" &&
-        now - Date.parse(device.last_seen_at) <= 90_000,
+        typeof device.last_seen_at === "string" && now - Date.parse(device.last_seen_at) <= 90_000,
     }));
 
     return {
       actor: { email: actor.email },
+      runtimeMode: "privileged" as const,
+      browserMcp: {
+        endpoint: "https://reson8.life/mcp",
+        railwayFallback: "https://ronsas-hub-fallback-production.up.railway.app/mcp",
+        adminGuide: "/admin/rd",
+      },
       mutationsEnabled: mutationControl.enabled,
       mutationControl,
       recoveryHold: true,
@@ -499,9 +570,7 @@ export const queueRndOperation = createServerFn({ method: "POST" })
         status,
         approval_required: approvalRequired,
       })
-      .select(
-        "id,device_id,status,approval_required,payload,created_at,workspace",
-      )
+      .select("id,device_id,status,approval_required,payload,created_at,workspace")
       .single();
     if (jobError) throw new Error(jobError.message);
 
@@ -623,9 +692,7 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
     }
 
     const enabledUntil =
-      data.minutes === 0
-        ? null
-        : new Date(Date.now() + data.minutes * 60_000).toISOString();
+      data.minutes === 0 ? null : new Date(Date.now() + data.minutes * 60_000).toISOString();
     const { data: updatedSetting, error } = await admin
       .from("rnd_control_settings")
       .update({
@@ -646,8 +713,7 @@ export const setRndMutationWindow = createServerFn({ method: "POST" })
     await admin.from("bridge_audit_events").insert({
       actor_user_id: context.userId,
       client_id: "admin-rnd",
-      event_type:
-        data.minutes === 0 ? "rnd.mutation_window_closed" : "rnd.mutation_window_opened",
+      event_type: data.minutes === 0 ? "rnd.mutation_window_closed" : "rnd.mutation_window_opened",
       payload: {
         minutes: data.minutes,
         enabled_until: enabledUntil,
@@ -699,9 +765,7 @@ export const cancelRndOperation = createServerFn({ method: "POST" })
       .from("bridge_jobs")
       .update({
         cancel_requested: true,
-        ...(terminal
-          ? { status: "cancelled", completed_at: new Date().toISOString() }
-          : {}),
+        ...(terminal ? { status: "cancelled", completed_at: new Date().toISOString() } : {}),
       })
       .eq("id", data.jobId);
     if (updateError) throw new Error(updateError.message);
