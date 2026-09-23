@@ -84,7 +84,7 @@ describe("R&D identity gate", () => {
 describe("server-side R&D controls", () => {
   test("requires authenticated admin and database-bound R&D ownership", () => {
     expect(functions).toContain('db.rpc("has_role"');
-    expect(functions).toContain('db.rpc("rnd_bootstrap_owner"');
+    expect(functions).toContain('rpc("rnd_bootstrap_owner"');
     expect(functions).toContain("export const checkRndAccess");
     expect(route).toContain("ronsAuth.getUser()");
     expect(route).toContain("await checkRndAccess()");
@@ -93,7 +93,7 @@ describe("server-side R&D controls", () => {
   });
 
   test("uses a short mutation window, emergency kill, local agent gate, and second approval", () => {
-    expect(functions).toContain("rnd_control_settings");
+    expect(functions).toContain("rnd_admin_set_mutation_window");
     expect(functions).toContain("setRndMutationWindow");
     expect(functions).toContain("RONSAS_RND_EMERGENCY_KILL");
     expect(functions).toContain("readAgentLiveGate");
@@ -111,8 +111,8 @@ describe("server-side R&D controls", () => {
   test("binds live mutations to the approved production-lineage agent hash", () => {
     expect(functions).toContain("getExpectedRndAgentSha");
     expect(functions).toContain("approved_agent_sha256");
-    expect(functions).toContain("stagedAgentSha !== approvedAgent.sha256");
-    expect(functions).toContain("deployed Ealiophin agent identity");
+    expect(functions).toContain("job.payload?.approved_agent_sha256 !== approvedAgent.sha256");
+    expect(functions).toContain("deployed agent identity no longer matches approved production");
   });
 
   test("state-changing server functions use the Hub hosted/sovereign auth boundary", () => {
