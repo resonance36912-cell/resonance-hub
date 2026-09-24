@@ -1,0 +1,87 @@
+name: Observe Ealiophin public Hub
+
+on:
+  push:
+    branches:
+      - ronsas/diagnose-reson8-domain-20260924
+    paths:
+      - ".github/workflows/observe-ealiophin-public-hub-20260924.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  observe:
+    runs-on: [self-hosted, Linux, X64, ronsas, ealiophin]
+    timeout-minutes: 8
+    steps:
+      - name: Observe runner and canonical Hub
+        shell: bash
+        run: |
+          set -u
+          echo "RUNNER_HOST=$(hostname)"
+          uname -a || true
+          CANON="/mnt/c/Resonance/Sources/ronsas-hub-canonical"
+          echo "CANON_EXISTS=$(test -d "$CANON" && echo true || echo false)"
+          if test -d "$CANON"; then
+            echo "CANON_HEAD=$(git -C "$CANON" rev-parse HEAD 2>/dev/null || echo unavailable)"
+            echo "CANON_BRANCH=$(git -C "$CANON" branch --show-current 2>/dev/null || echo unavailable)"
+            echo "CANON_STATUS_BEGIN"
+            git -C "$CANON" status --short --untracked-files=normal 2>/dev/null | head -200 || true
+            echo "CANON_STATUS_END"
+            echo "OUTPUT_LOCAL_EXISTS=$(test -d "$CANON/.output-local" && echo true || echo false)"
+            echo "PACKAGE_EXISTS=$(test -f "$CANON/package.json" && echo true || echo false)"
+          fi
+
+      - name: Observe Windows listeners and public supervisor
+        shell: bash
+        run: |
+          set -u
+          if command -v powershell.exe >/dev/null 2>&1; then
+            powershell.exe -NoProfile -Command '
+              $ports = 4173,4174,8800
+              foreach ($port in $ports) {
+                $rows = Get-NetTCPConnection -State Listen -LocalPort $port -ErrorAction SilentlyContinue
+                if (-not $rows) { Write-Output ("LISTENER_{0}=NONE" -f $port); continue }
+                foreach ($row in $rows) {
+                  $proc = Get-Process -Id $row.OwningProcess -ErrorAction SilentlyContinue
+                  $path = if ($proc) { $proc.Path } else { "" }
+                  Write-Output ("LISTENER_{0}=PID:{1};PROCESS:{2};PATH:{3}" -f $port,$row.OwningProcess,$proc.ProcessName,$path)
+                }
+              }
+              $control = "C:\Users\Ashley\AppData\Local\Resonance\RONS-ControlCenter"
+              Write-Output ("CONTROL_CENTER_EXISTS=" + (Test-Path $control))
+              if (Test-Path $control) {
+                Write-Output "CONTROL_FILES_BEGIN"
+                Get-ChildItem $control -Force -ErrorAction SilentlyContinue | Select-Object -First 80 -ExpandProperty Name
+                Write-Output "CONTROL_FILES_END"
+              }
+            ' | tr -d '\r'
+          else
+            echo "POWERSHELL_EXE=unavailable"
+          fi
+
+      - name: Probe local and public routes read-only
+        shell: bash
+        run: |
+          set +e
+          probe() {
+            label="$1"; url="$2"
+            code="$(curl -k -sS --max-redirs 0 -o /dev/null -w '%{http_code}' --connect-timeout 8 --max-time 15 "$url" 2>/dev/null)"
+            rc=$?
+            echo "PROBE_$label=HTTP:$code;RC:$rc;URL:$url"
+          }
+          probe LOCAL4173_ROOT http://127.0.0.1:4173/
+          probe LOCAL4173_HEALTH http://127.0.0.1:4173/api/health
+          probe LOCAL4173_ADMIN_LOGIN http://127.0.0.1:4173/admin/login
+          probe LOCAL4173_ADMIN_RD http://127.0.0.1:4173/admin/rd
+          probe LOCAL4173_ADMIN_RND http://127.0.0.1:4173/admin/rnd
+          probe LOCAL4173_MCP http://127.0.0.1:4173/mcp
+          probe LOCAL4174_ROOT http://127.0.0.1:4174/
+          probe CADDY8800_ROOT http://127.0.0.1:8800/
+          probe PUBLIC_ROOT https://reson8.life/
+          probe PUBLIC_HEALTH https://reson8.life/api/health
+          probe PUBLIC_ADMIN_LOGIN https://reson8.life/admin/login
+          probe PUBLIC_ADMIN_RD https://reson8.life/admin/rd
+          probe PUBLIC_ADMIN_RND https://reson8.life/admin/rnd
+          probe PUBLIC_MCP https://reson8.life/mcp
