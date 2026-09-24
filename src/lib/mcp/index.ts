@@ -5,8 +5,14 @@ import { submitMemoryTool, submitCorrectionTool } from "./tools/datanest-submit"
 import pulseTool from "./tools/datanest-pulse";
 import coverageTool from "./tools/datanest-coverage";
 import projectContextTool from "./tools/nova-project-context";
+import remoteListDevicesTool from "./tools/remote-list-devices";
+import remoteGetSnapshotTool from "./tools/remote-get-snapshot";
 
-const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
+const supabaseUrl = (
+  process.env.SUPABASE_URL ??
+  import.meta.env.VITE_SUPABASE_URL ??
+  "https://supabase.invalid"
+).replace(/\/+$/, "");
 
 export const GOVERNED_MCP_TOOL_NAMES = [
   "datanest_search",
@@ -16,16 +22,29 @@ export const GOVERNED_MCP_TOOL_NAMES = [
   "datanest_resonance_pulse",
   "datanest_get_coverage",
   "nova_get_project_context",
+  "remote_list_devices",
+  "remote_get_snapshot",
 ] as const;
 
 export default defineMcp({
   name: "ronsas-nova-datanest-mcp",
-  title: "RONSAS Nova + DataNest MCP",
-  version: "0.2.0",
-  instructions: "Governed cross-AI access to approved DataNest memory, provenance, coverage, project context, review candidates and explicit Resonance Pulse feedback. External tools never have canonical-memory approval authority.",
+  title: "RONSAS Nova + DataNest + Remote Evidence MCP",
+  version: "0.3.0",
+  instructions:
+    "Governed RONSAS project context, approved DataNest memory operations, and read-only Remote Bridge device evidence. Remote evidence tools never execute commands, release recovery HOLDs, or grant desktop control.",
   auth: auth.oauth.issuer({
-    issuer: `https://${projectRef}.supabase.co/auth/v1`,
+    issuer: `${supabaseUrl}/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [searchTool, traceTool, submitMemoryTool, submitCorrectionTool, pulseTool, coverageTool, projectContextTool],
+  tools: [
+    searchTool,
+    traceTool,
+    submitMemoryTool,
+    submitCorrectionTool,
+    pulseTool,
+    coverageTool,
+    projectContextTool,
+    remoteListDevicesTool,
+    remoteGetSnapshotTool,
+  ],
 });
