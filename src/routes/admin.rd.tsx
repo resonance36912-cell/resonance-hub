@@ -44,6 +44,9 @@ type RemoteDevice = {
 
 function ResearchBridgePage() {
   const [copied, setCopied] = useState(false);
+  const [profileCopied, setProfileCopied] = useState(false);
+  const [healthStatus, setHealthStatus] = useState<"checking" | "ready" | "failed">("checking");
+  const [healthDetail, setHealthDetail] = useState("Checking /api/health…");
   const [devices, setDevices] = useState<RemoteDevice[]>([]);
   const [bridgeBusy, setBridgeBusy] = useState(true);
   const [bridgeError, setBridgeError] = useState<string | null>(null);
@@ -54,6 +57,59 @@ function ResearchBridgePage() {
   const endpoint = useMemo(() => {
     if (typeof window === "undefined") return "https://reson8.life/mcp";
     return new URL("/mcp", window.location.origin).toString();
+  }, []);
+
+  const connectionProfile = useMemo(() => {
+    const origin = new URL(endpoint).origin;
+    return JSON.stringify(
+      {
+        name: "RONSAS browser R&D",
+        endpoint,
+        transport: "remote_http",
+        authentication: "oauth",
+        admin: `${origin}/admin/rd`,
+        controlCenter: `${origin}/admin/rnd`,
+        health: `${origin}/api/health`,
+        mode: "browser_mcp",
+        workflow: [
+          "Use governed MCP tools for RONSAS context, DataNest memory, and read-only remote evidence.",
+          "Keep source changes in reviewed GitHub pull requests and production deployment in Railway.",
+          "Do not paste device tokens, service-role keys, passwords, or recovery credentials into prompts.",
+        ],
+        boundaries: [
+          "No runner recovery through MCP.",
+          "No arbitrary shell execution.",
+          "No hidden desktop control.",
+          "No privileged machine mutation unless the separate production gates are explicitly enabled.",
+        ],
+      },
+      null,
+      2,
+    );
+  }, [endpoint]);
+
+  const checkHealth = useCallback(async () => {
+    setHealthStatus("checking");
+    setHealthDetail("Checking /api/health…");
+    try {
+      const response = await fetch("/api/health", {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+      const provider =
+        typeof payload.backendProvider === "string"
+          ? payload.backendProvider
+          : typeof payload.backend_provider === "string"
+            ? payload.backend_provider
+            : null;
+      setHealthStatus("ready");
+      setHealthDetail(provider ? `HTTP ${response.status} · ${provider}` : `HTTP ${response.status}`);
+    } catch (error) {
+      setHealthStatus("failed");
+      setHealthDetail((error as Error).message || "Health check failed");
+    }
   }, []);
 
   const invokeBridge = useCallback(async (body: Record<string, unknown>) => {
@@ -79,6 +135,10 @@ function ResearchBridgePage() {
   useEffect(() => {
     void refreshDevices();
   }, [refreshDevices]);
+
+  useEffect(() => {
+    void checkHealth();
+  }, [checkHealth]);
 
   async function enrollDevice(event: React.FormEvent) {
     event.preventDefault();
@@ -111,6 +171,12 @@ function ResearchBridgePage() {
     await navigator.clipboard.writeText(endpoint);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
+  }
+
+  async function copyConnectionProfile() {
+    await navigator.clipboard.writeText(connectionProfile);
+    setProfileCopied(true);
+    window.setTimeout(() => setProfileCopied(false), 1500);
   }
 
   return (
@@ -173,7 +239,50 @@ function ResearchBridgePage() {
             >
               {copied ? "Copied" : "Copy endpoint"}
             </button>
+            <button
+              type="button"
+              onClick={copyConnectionProfile}
+              className="rounded-lg border border-border px-4 py-2 text-sm hover:bg-accent"
+            >
+              {profileCopied ? "Profile copied" : "Copy browser profile"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void checkHealth()}
+              disabled={healthStatus === "checking"}
+              className="rounded-lg border border-border px-3 py-2 text-xs hover:bg-accent disabled:opacity-50"
+            >
+              {healthStatus === "checking" ? "Checking…" : "Recheck health"}
+            </button>
           </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <span
+              className={
+                healthStatus === "ready"
+                  ? "rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-emerald-300"
+                  : healthStatus === "failed"
+                    ? "rounded-full border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-red-300"
+                    : "rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-amber-200"
+              }
+            >
+              {healthStatus === "ready"
+                ? "Browser path ready"
+                : healthStatus === "failed"
+                  ? "Health check failed"
+                  : "Checking browser path"}
+            </span>
+            <span className="text-muted-foreground">{healthDetail}</span>
+          </div>
+          <details className="mt-4 rounded-xl border border-border bg-background p-4">
+            <summary className="cursor-pointer text-sm font-medium">Portable browser profile</summary>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Reference profile for compatible browser extensions and MCP clients. Import formats
+              differ by client, so the endpoint and OAuth settings remain the authoritative fields.
+            </p>
+            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap break-words text-[11px] text-muted-foreground">
+              {connectionProfile}
+            </pre>
+          </details>
         </section>
 
         <section className="mb-8 grid gap-6 lg:grid-cols-2">
