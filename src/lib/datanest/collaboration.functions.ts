@@ -132,7 +132,7 @@ export const listDataNestCollaborationProjects = createServerFn({ method: "GET" 
 
 export const getDataNestCollaborationProject = createServerFn({ method: "GET" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => CollaborationProjectId.parse(input))
+  .validator((input: unknown) => CollaborationProjectId.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     const role = await requireProjectRole(db, context.userId, data.project_id, ALL_PROJECT_ROLES);
@@ -187,7 +187,7 @@ export const getDataNestCollaborationProject = createServerFn({ method: "GET" })
 
 export const addDataNestProjectMember = createServerFn({ method: "POST" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => AddProjectMemberInput.parse(input))
+  .validator((input: unknown) => AddProjectMemberInput.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     await requireOwner(db, context.userId, data.project_id);
@@ -209,7 +209,7 @@ export const addDataNestProjectMember = createServerFn({ method: "POST" })
 
 export const removeDataNestProjectMember = createServerFn({ method: "POST" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => RemoveProjectMemberInput.parse(input))
+  .validator((input: unknown) => RemoveProjectMemberInput.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     await requireOwner(db, context.userId, data.project_id);
@@ -228,7 +228,7 @@ export const removeDataNestProjectMember = createServerFn({ method: "POST" })
 
 export const attachDataNestIntegration = createServerFn({ method: "POST" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => AttachIntegrationInput.parse(input))
+  .validator((input: unknown) => AttachIntegrationInput.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     await requireOwner(db, context.userId, data.project_id);
@@ -251,7 +251,7 @@ export const attachDataNestIntegration = createServerFn({ method: "POST" })
 
 export const revokeDataNestIntegration = createServerFn({ method: "POST" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => RevokeIntegrationInput.parse(input))
+  .validator((input: unknown) => RevokeIntegrationInput.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     await requireOwner(db, context.userId, data.project_id);
@@ -270,7 +270,7 @@ export const revokeDataNestIntegration = createServerFn({ method: "POST" })
 
 export const attachDataNestDevice = createServerFn({ method: "POST" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => AttachDeviceInput.parse(input))
+  .validator((input: unknown) => AttachDeviceInput.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     await requireOwner(db, context.userId, data.project_id);
@@ -314,7 +314,7 @@ export const attachDataNestDevice = createServerFn({ method: "POST" })
 
 export const detachDataNestDevice = createServerFn({ method: "POST" })
   .middleware([requireRonsAuth])
-  .inputValidator((input: unknown) => DetachDeviceInput.parse(input))
+  .validator((input: unknown) => DetachDeviceInput.parse(input))
   .handler(async ({ data, context }) => {
     const db = await collaborationDb();
     await requireOwner(db, context.userId, data.project_id);
