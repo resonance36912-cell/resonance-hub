@@ -1,0 +1,78 @@
+name: Diagnose Reson8 custom domain
+
+on:
+  push:
+    branches:
+      - ronsas/diagnose-reson8-domain-20260924
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Probe DNS TLS and HTTP
+        shell: python
+        run: |
+          import http.client
+          import socket
+          import ssl
+          import urllib.error
+          import urllib.request
+
+          host = "reson8.life"
+          print("DNS_ADDRINFO_BEGIN")
+          for row in socket.getaddrinfo(host, 443, type=socket.SOCK_STREAM):
+              print(row)
+          print("DNS_ADDRINFO_END")
+
+          try:
+              answers = socket.gethostbyname_ex(host)
+              print("DNS_HOSTBYNAME_EX=", answers)
+          except Exception as exc:
+              print("DNS_HOSTBYNAME_EX_ERROR=", type(exc).__name__, str(exc))
+
+          ctx = ssl.create_default_context()
+          with socket.create_connection((host, 443), timeout=15) as raw:
+              with ctx.wrap_socket(raw, server_hostname=host) as tls:
+                  cert = tls.getpeercert()
+                  print("TLS_VERSION=", tls.version())
+                  print("TLS_CIPHER=", tls.cipher())
+                  print("TLS_SUBJECT=", cert.get("subject"))
+                  print("TLS_ISSUER=", cert.get("issuer"))
+                  print("TLS_SAN=", cert.get("subjectAltName"))
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+          opener = urllib.request.build_opener(NoRedirect())
+          for path in ["/", "/api/health", "/admin/login", "/admin/rd", "/admin/rnd", "/mcp"]:
+              url = "https://" + host + path
+              try:
+                  resp = opener.open(urllib.request.Request(url, headers={"User-Agent":"RONSAS-Domain-Diagnostic/1.0"}), timeout=20)
+                  print("HTTP", path, resp.status, dict(resp.headers))
+                  body = resp.read(300).decode("utf-8", "replace").replace("\n", " ")
+                  print("BODY", path, body)
+              except urllib.error.HTTPError as exc:
+                  print("HTTP_ERROR", path, exc.code, dict(exc.headers))
+                  body = exc.read(300).decode("utf-8", "replace").replace("\n", " ")
+                  print("BODY_ERROR", path, body)
+              except Exception as exc:
+                  print("REQUEST_ERROR", path, type(exc).__name__, str(exc))
+
+          railway = "ronsas-hub-fallback-production.up.railway.app"
+          for path in ["/api/health", "/admin/login", "/mcp"]:
+              url = "https://" + railway + path
+              try:
+                  resp = opener.open(urllib.request.Request(url, headers={"User-Agent":"RONSAS-Domain-Diagnostic/1.0"}), timeout=20)
+                  print("RAILWAY_HTTP", path, resp.status, dict(resp.headers))
+                  body = resp.read(300).decode("utf-8", "replace").replace("\n", " ")
+                  print("RAILWAY_BODY", path, body)
+              except urllib.error.HTTPError as exc:
+                  print("RAILWAY_HTTP_ERROR", path, exc.code, dict(exc.headers))
+                  print("RAILWAY_BODY_ERROR", path, exc.read(300).decode("utf-8", "replace").replace("\n", " "))
+              except Exception as exc:
+                  print("RAILWAY_REQUEST_ERROR", path, type(exc).__name__, str(exc))
