@@ -62,6 +62,19 @@ jobs:
         if: steps.schema.outcome == 'success'
         run: echo "DATANEST_SCHEMA_GREEN=1"
 
+      - name: Run collaboration API contract
+        id: functions
+        continue-on-error: true
+        run: bun test scripts/lib/datanest-collaboration-functions.test.ts
+
+      - name: Preserve API RED as a failing check
+        if: steps.functions.outcome == 'failure'
+        run: exit 1
+
+      - name: Confirm API contract passed
+        if: steps.functions.outcome == 'success'
+        run: echo "DATANEST_API_GREEN=1"
+
       - name: Run repository test suite
-        if: steps.schema.outcome == 'success'
+        if: steps.schema.outcome == 'success' && steps.functions.outcome == 'success'
         run: bun run test
