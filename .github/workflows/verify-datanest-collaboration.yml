@@ -61,3 +61,7 @@ jobs:
       - name: Confirm schema contract passed
         if: steps.schema.outcome == 'success'
         run: echo "DATANEST_SCHEMA_GREEN=1"
+
+      - name: Run repository test suite
+        if: steps.schema.outcome == 'success'
+        run: bun run test
