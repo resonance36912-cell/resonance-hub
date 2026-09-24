@@ -75,6 +75,19 @@ jobs:
         if: steps.functions.outcome == 'success'
         run: echo "DATANEST_API_GREEN=1"
 
+      - name: Run collaboration UI contract
+        id: ui
+        continue-on-error: true
+        run: bun test scripts/lib/datanest-collaboration-ui.test.ts
+
+      - name: Preserve UI RED as a failing check
+        if: steps.ui.outcome == 'failure'
+        run: exit 1
+
+      - name: Confirm UI contract passed
+        if: steps.ui.outcome == 'success'
+        run: echo "DATANEST_UI_GREEN=1"
+
       - name: Run repository test suite
-        if: steps.schema.outcome == 'success' && steps.functions.outcome == 'success'
+        if: steps.schema.outcome == 'success' && steps.functions.outcome == 'success' && steps.ui.outcome == 'success'
         run: bun run test
