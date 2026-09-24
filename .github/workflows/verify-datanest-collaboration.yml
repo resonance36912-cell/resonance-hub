@@ -91,3 +91,12 @@ jobs:
       - name: Run repository test suite
         if: steps.schema.outcome == 'success' && steps.functions.outcome == 'success' && steps.ui.outcome == 'success'
         run: bun run test
+
+      - name: Build production bundle
+        if: steps.schema.outcome == 'success' && steps.functions.outcome == 'success' && steps.ui.outcome == 'success'
+        env:
+          SUPABASE_URL: "http://127.0.0.1:54321"
+          SUPABASE_PUBLISHABLE_KEY: "ci-datanest-not-a-secret"
+          VITE_SUPABASE_URL: "http://127.0.0.1:54321"
+          VITE_SUPABASE_PUBLISHABLE_KEY: "ci-datanest-not-a-secret"
+        run: bun run build
