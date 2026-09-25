@@ -153,7 +153,6 @@ export const getDataNestCollaborationProject = createServerFn({ method: "GET" })
           .from("datanest_project_integrations")
           .select("id,project_id,provider,display_name,external_ref,status,metadata,created_by,created_at,updated_at")
           .eq("project_id", data.project_id)
-          .neq("status", "revoked")
           .order("created_at"),
         db
           .from("datanest_project_devices")
@@ -179,7 +178,9 @@ export const getDataNestCollaborationProject = createServerFn({ method: "GET" })
       project: projectResult.data,
       role,
       members: membersResult.data ?? [],
-      integrations: integrationsResult.data ?? [],
+      integrations: (integrationsResult.data ?? []).filter(
+        (row: { status?: string }) => row.status !== "revoked",
+      ),
       devices,
       available_devices: availableDevices,
     };
