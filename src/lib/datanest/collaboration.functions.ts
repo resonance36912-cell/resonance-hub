@@ -117,7 +117,18 @@ export const listDataNestCollaborationProjects = createServerFn({ method: "GET" 
       .limit(500);
     if (membershipError) throw new Error(membershipError.message);
 
-    const ids = [...new Set((memberships ?? []).map((row: { project_id: string }) => String(row.project_id)))];
+    const memberIds = (memberships ?? []).map((row: { project_id: string }) => String(row.project_id));
+    const { data: ownedProjects, error: ownerError } = await db
+      .from("nova_projects")
+      .select("id")
+      .eq("owner_user_id", context.userId)
+      .limit(500);
+    if (ownerError) throw new Error(ownerError.message);
+
+    const ids = [...new Set([
+      ...memberIds,
+      ...(ownedProjects ?? []).map((row: { id: string }) => String(row.id)),
+    ])];
     if (ids.length === 0) return { projects: [] };
 
     const { data, error } = await db
