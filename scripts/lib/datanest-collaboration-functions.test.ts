@@ -48,6 +48,11 @@ describe("DataNest collaboration server boundary", () => {\n  test("uses the Hub
     expect(functions).toContain("requireOwner");
   });
 
+  test("keeps collaboration reads compatible with the sovereign query adapter", () => {
+    expect(functions).not.toContain('.neq("status", "revoked")');
+    expect(functions).toContain('row.status !== "revoked"');
+  });
+
   test("integration mutations persist no secret-bearing fields", () => {
     expect(functions).not.toMatch(/access_token|refresh_token|password|cookie|service_role_key/i);
   });
