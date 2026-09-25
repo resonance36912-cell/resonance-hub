@@ -6,7 +6,11 @@ const root = join(import.meta.dir, "..", "..");
 const contracts = readFileSync(join(root, "src/lib/datanest/collaboration.contracts.ts"), "utf8");
 const functions = readFileSync(join(root, "src/lib/datanest/collaboration.functions.ts"), "utf8");
 
-describe("DataNest collaboration server boundary", () => {\n  test("uses the Hub validator API", () => {\n    expect(functions).toContain(".validator((input: unknown) =>");\n    expect(functions).not.toContain(".inputValidator(");\n  });
+describe("DataNest collaboration server boundary", () => {
+  test("uses the Hub validator API", () => {
+    expect(functions).toContain(".validator((input: unknown) =>");
+    expect(functions).not.toContain(".inputValidator(");
+  });
   test("authenticates every exported server function", () => {
     for (const name of [
       "listDataNestCollaborationProjects",
