@@ -663,7 +663,7 @@ function Index() {
           <div>
             <div className="inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/65 border border-white/10 rounded-full px-4 py-1.5 mb-5">
               <span className="size-1.5 rounded-full bg-[hsl(295_90%_60%)] shadow-[0_0_10px_hsl(295_90%_60%)]" />
-              Reson8.life · South African AI app hub
+              RONSAS · Sovereign application suite
             </div>
             <h1 className="font-display text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[4.5rem] font-bold tracking-[-0.035em] leading-[0.96] text-balance mb-8">
               AI tools for South African creators, publishers, schools, and small businesses.
@@ -710,6 +710,7 @@ function Index() {
 
             {[
               "Built in South Africa",
+              "RONSAS governed",
               "Free promotional access",
               "No payment required",
               "Cost study active",
