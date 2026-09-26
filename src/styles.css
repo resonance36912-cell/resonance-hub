@@ -305,3 +305,70 @@
     transform: translateY(-1px);
   }
 }
+
+
+/* Resonance Sovereign Spectrum 2026 alignment
+   Canonical direction: resonance36912-cell/RONSAS/docs/design/RESONANCE_SOVEREIGN_SPECTRUM_2026.md */
+:root {
+  --rs-bg-0: #05030d;
+  --rs-bg-1: #090619;
+  --rs-surface: rgba(18,10,39,.92);
+  --rs-surface-soft: rgba(24,12,52,.78);
+  --rs-control: rgba(10,6,25,.72);
+  --rs-line: rgba(103,226,255,.14);
+  --rs-line-strong: rgba(255,54,216,.28);
+  --rs-text: #f8f7ff;
+  --rs-muted: #aaa7c7;
+  --rs-cyan: #42e7ff;
+  --rs-magenta: #ff36d8;
+  --rs-violet: #8b5cf6;
+  --rs-success: #72e6ae;
+  --rs-warning: #f4c66f;
+  --rs-danger: #ff86ab;
+  --rs-product-accent: #ff36d8;
+  --rs-product-accent-2: #42e7ff;
+  --rs-radius-control: 12px;
+  --rs-radius-panel: 18px;
+  --rs-radius-hero: 24px;
+  --rs-ease-out: cubic-bezier(.16,1,.3,1);
+}
+
+:focus-visible {
+  outline: 2px solid var(--rs-product-accent-2);
+  outline-offset: 3px;
+}
+
+.rs-work-surface {
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-line);
+  border-radius: var(--rs-radius-panel);
+}
+
+.rs-control-surface {
+  background: var(--rs-control);
+  border: 1px solid var(--rs-line);
+  border-radius: var(--rs-radius-control);
+  backdrop-filter: blur(18px);
+}
+
+.rs-system-label {
+  color: var(--rs-product-accent-2);
+  font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.rs-status-ok{color:var(--rs-success)}
+.rs-status-review{color:var(--rs-warning)}
+.rs-status-blocked{color:var(--rs-danger)}
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+  }
+}
